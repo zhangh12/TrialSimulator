@@ -1,0 +1,19 @@
+Package: TrialSimulator
+Type: Package
+Title: Clinical Trial Simulator
+Version: 0.1.0
+Description: Simulate phase II and phase II clinical trials. It supports various types of endpoints and adaptive strategies.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    dplyr,
+    R6,
+    rlang,
+    stringr,
+    survival
+Authors@R: 
+    person("Han", "Zhang", , "zhangh.ustc@gmail.com", role = c("cre", "aut"))
+RoxygenNote: 7.3.1
+Suggests: 
+    survminer
