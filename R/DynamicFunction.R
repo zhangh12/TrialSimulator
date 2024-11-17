@@ -20,13 +20,20 @@
 #' @export
 DynamicFunction <- function(fn, ...) {
 
-  fn_name <- deparse(substitute(fn))
   # Capture fixed arguments
   fixed_args <- list(...)
+  if(is.null(fixed_args$rng)){
+    fn_name <- deparse(substitute(fn))
+  }else{
+    fn_name <- fixed_args$rng
+    fixed_args$rng <- NULL
+  }
 
   # Validate fixed arguments against fn
-  if (!all(names(fixed_args) %in% names(formals(fn)))) {
-    stop('Some arguments in ... are not valid for the function `fn`.')
+  unused_args <- setdiff(names(fixed_args), names(formals(fn)))
+  if (length(unused_args) > 0) {
+    stop('Some arguments in ... are not valid for the function `fn`: \n',
+         paste0(unused_args, collapse = ', '))
   }
 
   # Create the wrapper function

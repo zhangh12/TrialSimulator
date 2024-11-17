@@ -18,13 +18,37 @@
 #' @importFrom stats runif
 #'
 #' @examples
+#' set.seed(12345)
+#' ## Example 1. Generate a time-to-event endpoint.
+#' ## Two columns are returned, one for time, one for event (1/0, 0 for
+#  ## censoring)
+#' ## A builtin RNG function is used to handle piecewise constant exponential
+#' ## distribution
 #' risk <- data.frame(
 #'   end_time = c(1, 10, 26.0, 52.0),
 #'   piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01)
 #' )
 #'
-#' pfs <- Endpoint$new(name = 'pfs', type='tte', method='piecewise_const_exp', risk = risk)
+#' pfs <- Endpoint$new(name = 'pfs', type='tte', method='piecewise_const_exp',
+#' risk = risk)
 #' pfs$get_generator()
+#'
+#' ## Example 2. Generate continuous and binary endpoints using R's builtin
+#' ## RNG functions, e.g. rnorm, rexp, rbinom, etc.
+#' ep1 <- Endpoint$new(
+#'          name = 'cd4', type = 'c', generator = rnorm, mean = 1.2)
+#' ep2 <- Endpoint$new(
+#'          name = 'resp_time', type = 'c', generator = rexp, rate = 4.5)
+#' ep3 <- Endpoint$new(
+#'          name = 'orr', type = 'binary', generator = rbinom,
+#'          size = 1, prob = .4)
+#'
+#' mean(ep1$get_generator()(1e4)) # compared to 1.2
+#' sd(ep1$get_generator()(1e4)) # compared to 1.0
+#'
+#' log(2) / median(ep2$get_generator()(1e4)) # compared to 4.5
+#'
+#' mean(ep3$get_generator()(1e4)) # compared to 0.4
 #'
 #' ## An example of piecewise constant exponential random number generator
 #' ## Baseline hazards are piecewise constant
@@ -43,7 +67,6 @@
 #' }
 #'
 #' if(run){
-#' set.seed(12345)
 #' risk1 <- risk
 #' ep1 <- TrialSimulator::Endpoint$new(
 #'   name = 'pfs', type='tte', method='piecewise_const_exp', risk=risk1)
@@ -53,7 +76,7 @@
 #' ep2 <- TrialSimulator::Endpoint$new(
 #'   name = 'pfs', type='tte', method='piecewise_const_exp', risk=risk2)
 #'
-#' n <- 100
+#' n <- 1000
 #' tte <- rbind(ep1$get_generator()(n), ep2$get_generator()(n))
 #' arm <- rep(0:1, each = n)
 #' dat <- data.frame(tte, arm)
@@ -105,7 +128,8 @@ Endpoint <- R6::R6Class(
       self$type <- type
 
       if(!is.null(generator)){
-        self$generator <- generator
+        self$generator <- DynamicFunction(
+          generator, rng = deparse(substitute(generator)), ...)
         ## ignore all other arguments in ... if generator is provided
         return()
       }
@@ -157,9 +181,16 @@ Endpoint <- R6::R6Class(
         }
 
         n_ <- 1
-        example_data <- generator(n = n_)
-        if(!is.data.frame(example_data)){
-          stop('generator must return a data frame.')
+        generator_ <- DynamicFunction(
+          generator, rng = deparse(substitute(generator)), ...)
+        example_data <- generator_(n = n_)
+        if(!is.data.frame(example_data) && !is.vector(example_data)){
+          stop('generator must return a data frame (for multiple endpoints or a TTE) or a vector.')
+        }
+
+        if(is.vector(example_data)){
+          example_data <- data.frame(v1 = example_data) %>%
+            rename(!!name := .data$v1)
         }
 
         if(ncol(example_data) != length(name)){
