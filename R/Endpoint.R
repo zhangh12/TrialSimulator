@@ -3,15 +3,7 @@
 #' Create a class of endpoint to specify its name, type and assign a random number
 #' generator.
 #'
-#' @field name a character vector for name(s) of endpoint(s), e.g., \code{"pfs"}, \code{"ORR"}.
-#' @field type a character vector for type(s) of endpoint(s), e.g., \code{"tte"},
-#' \code{"continuous"}, \code{"binary"}. More types may be supported in the future.
-#' @field value data frame of simulated endpoints
-#' @field generator a user-defined RNG function. Its first argument must be \code{n},
-#' number of patients. It must return a data frame of \code{n} rows. When `generator`
-#' is \code{NULL}, one can create one endpoint at a time, i.e., both \code{name} and \code{type}
-#' are of length 1. Otherwise, one can create multiple endpoints at a time as
-#' long as \code{generator} is capable to generate data for the endpoints.
+#' @docType class
 #' @importFrom R6 R6Class
 #' @importFrom stringr str_glue
 #' @import dplyr survival
@@ -96,10 +88,6 @@ Endpoint <- R6::R6Class(
   'Endpoint',
 
   public = list(
-    name = NULL,
-    type = NULL,
-    value = NULL,
-    generator = NULL,
 
     #' @description
     #' initialize an endpoint
@@ -119,16 +107,17 @@ Endpoint <- R6::R6Class(
     ){
 
       private$validate_arguments(name, type, generator, ...)
-      self$name <- name
+      private$name <- name
+      private$uid <- paste0(name, collapse = '/')
 
       type <- match.arg(type, several.ok = TRUE)
       if(length(type) == 1 && length(name) > 1){
         type <- rep(type, length(name))
       }
-      self$type <- type
+      private$type <- type
 
       if(!is.null(generator)){
-        self$generator <- DynamicFunction(
+        private$generator <- DynamicFunction(
           generator, rng = deparse(substitute(generator)), ...)
         ## ignore all other arguments in ... if generator is provided
         return()
@@ -138,7 +127,7 @@ Endpoint <- R6::R6Class(
       method <- args$method
 
       if('piecewise_const_exp' %in% method){
-        self$generator <-
+        private$generator <-
           DynamicFunction(
             PiecewiseConstantExponentialRNG,
             risk = args$risk,
@@ -153,13 +142,47 @@ Endpoint <- R6::R6Class(
     },
 
     #' @description
-        #' return random number generator of an endpoint
+    #' return random number generator of an endpoint
     get_generator = function(){
-      self$generator
+      private$generator
+    },
+
+    #' @description
+    #' return uid
+    get_uid = function(){
+      private$uid
+    },
+
+    #' @description
+    #' return endpoints' name
+    get_name = function(){
+      private$name
+    },
+
+    #' @description
+    #' return endpoints' type
+    get_type = function(){
+      private$type
     }
   ),
 
   private = list(
+    ## @field uid a character for unique ID of an Endpoint object. This is needed
+    ## because an object can probably consist of more than one endpoints, i.e.,
+    ## \code{name} has length greater than 1.
+    ## @field name a character vector for name(s) of endpoint(s), e.g., \code{"pfs"}, \code{"ORR"}.
+    ## @field type a character vector for type(s) of endpoint(s), e.g., \code{"tte"},
+    ## \code{"continuous"}, \code{"binary"}. More types may be supported in the future.
+    ## @field generator a user-defined RNG function. Its first argument must be \code{n},
+    ## number of patients. It must return a data frame of \code{n} rows. When `generator`
+    ## is \code{NULL}, one can create one endpoint at a time, i.e., both \code{name} and \code{type}
+    ## are of length 1. Otherwise, one can create multiple endpoints at a time as
+    ## long as \code{generator} is capable to generate data for the endpoints.
+    uid = NULL,
+    name = NULL,
+    type = NULL,
+    generator = NULL,
+
     validate_arguments = function(
       name,
       type = c('tte', 'continuous', 'binary'),

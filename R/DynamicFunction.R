@@ -15,7 +15,8 @@
 #'
 #' @examples
 #' # example code
-#' dfunc <- DynamicFunction(rnorm)
+#' dfunc <- DynamicFunction(rnorm, sd = 3.2)
+#' hist(dfunc()(1e3))
 #'
 #' @export
 DynamicFunction <- function(fn, ...) {
@@ -32,7 +33,7 @@ DynamicFunction <- function(fn, ...) {
   # Validate fixed arguments against fn
   unused_args <- setdiff(names(fixed_args), names(formals(fn)))
   if (length(unused_args) > 0) {
-    stop('Some arguments in ... are not valid for the function `fn`: \n',
+    stop('Some arguments in ... are not valid for the function ', fn_name, ': \n',
          paste0(unused_args, collapse = ', '))
   }
 
