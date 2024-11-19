@@ -39,10 +39,10 @@
 #' trial$add_arms(sample_ratio = c(1, 2), placebo, active)
 #' trial
 #' table(trial$get_randomization_queue())
-#' trial$get_enroll_time()[1:4]
+#' trial$get_enroll_time(1:4)
 #' trial$enroll_a_patient()
 #' trial$enroll_a_patient()
-#' trial$get_enroll_time()[1:2]
+#' trial$get_enroll_time(1:2)
 #' table(trial$get_randomization_queue())
 #'
 #' trial$get_trial_data()
@@ -75,6 +75,7 @@ Trial <- R6::R6Class(
         private$validate_arguments(
           name, n_patients, description, enroller, ...)
 
+        private$arms <- list()
         private$name <- name
         private$description <- description
         private$n_patients <- n_patients
@@ -205,20 +206,60 @@ Trial <- R6::R6Class(
     #' return randomization queue of planned but not yet enrolled patients.
     #' This function does not update randomization_queue, just return its value
     #' for debugging purpose.
-    get_randomization_queue = function(){
-      private$randomization_queue
+    #' @param index index to be extracted. Return all queue if \code{NULL}.
+    get_randomization_queue = function(index = NULL){
+      if(length(private$randomization_queue) == 0){
+        private$randomization_queue <- NULL
+      }
+
+      if(!is.null(index) && is.null(private$randomization_queue)){
+        stop('Cannot randomize patients from empty list. ')
+      }
+
+      if(is.null(index)){ # return all
+        return(private$randomization_queue)
+      }
+      stopifnot(max(abs(index)) <= length(private$randomization_queue))
+
+      private$randomization_queue[index]
+
     },
 
     #' @description
     #' return enrollment time of planned but not yet enrolled patients.
     #' This function does not update enroll_time, just return its value
     #' for debugging purpose.
-    get_enroll_time = function(){
-      private$enroll_time
+    #' @param index index to extract. Return all enroll time if \code{NULL}.
+    #' @examples
+    #' ## trial$get_enroll_time(1:3) ## first three
+    #' ## trial$get_enroll_time(-1) ## all except the last one
+    get_enroll_time = function(index = NULL){
+
+      if(length(private$enroll_time) == 0){
+        private$enroll_time <- NULL
+      }
+
+      if(!is.null(index) && is.null(private$enroll_time)){
+        stop('Cannot enroll patients from empty list. ')
+      }
+
+      if(is.null(index)){ # return all
+        return(private$enroll_time)
+      }
+      stopifnot(max(abs(index)) <= length(private$enroll_time))
+
+      private$enroll_time[index]
     },
 
     #' @description
     #' assign a new patient to an arm based on planned randomization queue
+    #' I may consider make this function deprecated. Instead, I'd like to
+    #' have a function to sample the remaining n patients, with n as an argument.
+    #' Reason: if an action (analysis, add/remove arm, early stop) is triggered
+    #' based on number of event of TTE, we may need to sample ALL patients to
+    #' know the accurate time point. With an enrollment function of more than
+    #' one patient, we can find out the time point and roll back to then, and
+    #' recover randomization queue and enrollment time for the remaining patients.
     enroll_a_patient = function(){
 
       if(length(self$get_arms) == 0){
@@ -229,13 +270,13 @@ Trial <- R6::R6Class(
         stop('Maximum planned sample size has been reached. Patient cannot be enrolled. ')
       }
 
-      next_enroll_arm <- private$randomization_queue[1]
+      next_enroll_arm <- self$get_randomization_queue(1)
       ## update randomization_queue after enrolling a new patient.
       ## randomization_queue only keep randomization queue for future patients
-      private$randomization_queue <- private$randomization_queue[-1]
+      private$randomization_queue <- self$get_randomization_queue(-1)
 
-      next_enroll_time <- private$enroll_time[1]
-      private$enroll_time <- private$enroll_time[-1]
+      next_enroll_time <- self$get_enroll_time(1)
+      private$enroll_time <- self$get_enroll_time(-1)
 
       patient_data <-
         data.frame(
@@ -251,6 +292,69 @@ Trial <- R6::R6Class(
 
       private$trial_data <- bind_rows(private$trial_data, patient_data)
       private$n_enrolled_patients <- private$n_enrolled_patients + 1
+      stopifnot(nrow(private$trial_data) == private$n_enrolled_patients)
+
+    },
+
+    #' @description
+    #' assign new patients to pre-planned randomization queue at pre-specified
+    #' enrollment time.
+    #' @param n_patients number of new patients to be enrolled. If \code{NULL},
+    #' all remaining patients in plan are enrolled. Error may be triggered if
+    #' n_patients is greater than remaining patients as planned.
+    enroll_patients = function(n_patients = NULL){
+
+      if(length(self$get_arms) == 0){
+        stop('No arm is added in the trial yet. Patient cannot be enrolled. ')
+      }
+
+      if(self$get_number_unenrolled_patients() == 0){
+        stop('Maximum planned sample size has been reached. Patient cannot be enrolled. ')
+      }
+
+      if(is.null(n_patients)){
+        n_patients <- self$get_number_unenrolled_patients()
+      }
+
+      if(n_patients > self$get_number_unenrolled_patients()){
+        stop('Cannot enroll ', n_patients, ' patients for the trial. ',
+             'Only ', self$get_number_unenrolled_patients(), ' left. ')
+      }
+
+      next_enroll_arms <- self$get_randomization_queue(1:n_patients)
+      ## update randomization_queue after enrolling a new patient.
+      ## randomization_queue only keep randomization queue for future patients
+      private$randomization_queue <- self$get_randomization_queue(-c(1:n_patients))
+
+      next_enroll_time <- self$get_enroll_time(1:n_patients)
+      private$enroll_time <- self$get_enroll_time(-c(1:n_patients))
+
+      patient_data <- NULL
+      arm_data <- list()
+      arms_in_trial <- sort(unique(next_enroll_arms))
+      for(i in seq_along(arms_in_trial)){
+        arm <- arms_in_trial[i]
+        patients_index <- which(next_enroll_arms %in% arm)
+        n_patients_in_arm <- length(patients_index)
+        arm_data[[arm]] <-
+          data.frame(
+            patient_id = self$get_number_enrolled_patients() + patients_index,
+            arm = arm,
+            enroll_time = next_enroll_time[patients_index]
+          )
+        for(ep in self$get_an_arm(arm)$get_endpoints()){
+          arm_data[[arm]] <- cbind(arm_data[[arm]], ep$get_generator()(n_patients_in_arm))
+        }
+        patient_data <- rbind(patient_data, arm_data[[arm]])
+      }
+
+
+      for(arm in names(arm_data)){
+        patient_data[which(next_enroll_arms %in% arm), ] <- arm_data[[arm]]
+      }
+
+      private$trial_data <- bind_rows(private$trial_data, patient_data)
+      private$n_enrolled_patients <- private$n_enrolled_patients + n_patients
       stopifnot(nrow(private$trial_data) == private$n_enrolled_patients)
 
     }
@@ -306,9 +410,9 @@ Trial <- R6::R6Class(
     ## This function will be called by add_arms, remove_arms, etc.
     permuted_block_randomization = function(block_size = NULL){
 
-      if(!is.null(private$randomization_queue)){
+      if(!is.null(self$get_randomization_queue())){
         stopifnot(
-          length(private$randomization_queue) ==
+          length(self$get_randomization_queue()) ==
             self$get_number_unenrolled_patients())
       }
 
