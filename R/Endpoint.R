@@ -35,12 +35,12 @@
 #'          name = 'orr', type = 'binary', generator = rbinom,
 #'          size = 1, prob = .4)
 #'
-#' mean(ep1$get_generator()(1e4)) # compared to 1.2
-#' sd(ep1$get_generator()(1e4)) # compared to 1.0
+#' mean(ep1$get_generator()(1e4)[, 1]) # compared to 1.2
+#' sd(ep1$get_generator()(1e4)[, 1]) # compared to 1.0
 #'
-#' log(2) / median(ep2$get_generator()(1e4)) # compared to 4.5
+#' log(2) / median(ep2$get_generator()(1e4)[, 1]) # compared to 4.5
 #'
-#' mean(ep3$get_generator()(1e4)) # compared to 0.4
+#' mean(ep3$get_generator()(1e4)[, 1]) # compared to 0.4
 #'
 #' ## An example of piecewise constant exponential random number generator
 #' ## Baseline hazards are piecewise constant
@@ -118,7 +118,8 @@ Endpoint <- R6::R6Class(
 
       if(!is.null(generator)){
         private$generator <- DynamicFunction(
-          generator, rng = deparse(substitute(generator)), ...)
+          generator, rng = deparse(substitute(generator)),
+          var_name = self$get_name(), ...)
         ## ignore all other arguments in ... if generator is provided
         return()
       }
@@ -203,10 +204,11 @@ Endpoint <- R6::R6Class(
           stop("The first argument of generator must be 'n'.")
         }
 
-        n_ <- 1
+        n_ <- 2
         generator_ <- DynamicFunction(
-          generator, rng = deparse(substitute(generator)), ...)
+          generator, ...)
         example_data <- generator_(n = n_)
+
         if(!is.data.frame(example_data) && !is.vector(example_data)){
           stop('generator must return a data frame (for multiple endpoints or a TTE) or a vector.')
         }

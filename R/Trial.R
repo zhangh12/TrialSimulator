@@ -29,6 +29,8 @@
 #' active <- Arm$new(
 #'   name = 'ac', description = 'Active arm')
 #'
+#' active$add_endpoints(pfs2, orr2)
+#'
 #' ## Plan a trial, Trial-3415, of up to 100 patients.
 #' ## Enrollment time follows an exponential distribution, with median 5
 #' trial <- Trial$new(
@@ -42,7 +44,9 @@
 #' trial$enroll_a_patient()
 #' trial$get_enroll_time()[1:2]
 #' table(trial$get_randomization_queue())
-
+#'
+#' trial$get_trial_data()
+#'
 #' @export
 Trial <- R6::R6Class(
   'Trial',
@@ -75,14 +79,23 @@ Trial <- R6::R6Class(
         private$description <- description
         private$n_patients <- n_patients
         private$n_enrolled_patients <- 0
+        private$trial_data <- NULL
 
-        private$enroller <- DynamicFunction(enroller, ...)
+        private$enroller <- DynamicFunction(enroller, simplify = TRUE, ...)
+        stopifnot(is.vector(private$enroller(2)))
 
         ## sort enrollment time
         private$enroll_time <-
           sort(private$enroller(n_patients), decreasing = FALSE)
 
       },
+
+    #' @description
+    #' return trial data of enrolled patients at the time of this
+    #' function is called
+    get_trial_data = function(){
+      private$trial_data
+    },
 
     #' @description
     #' add a list of arms to the trial
@@ -147,6 +160,23 @@ Trial <- R6::R6Class(
     },
 
     #' @description
+    #' get number of arms in the trial
+    get_number_arms = function(){
+      length(private$arms)
+    },
+
+    #' @description
+    #' return an arm
+    #' @param arm_name character, name of arm to be extracted
+    get_an_arm = function(arm_name){
+      if(!(arm_name %in% self$get_arms_name())){
+        stop(arm_name, ' is not in the trial \'', self$get_name(), '\'')
+      }
+
+      self$get_arms()[[arm_name]]
+    },
+
+    #' @description
     #' return current sample ratio of the trial. The ratio can probably change
     #' during the trial (e.g., arm is removed or added)
     get_sample_ratio = function(){
@@ -207,20 +237,24 @@ Trial <- R6::R6Class(
       next_enroll_time <- private$enroll_time[1]
       private$enroll_time <- private$enroll_time[-1]
 
+      patient_data <-
+        data.frame(
+          patient_id = self$get_number_enrolled_patients() + 1,
+          arm = next_enroll_arm,
+          enroll_time = next_enroll_time
+        )
+
+      n_ <- 1 # sample data for one patient
+      for(ep in self$get_an_arm(next_enroll_arm)$get_endpoints()){
+        patient_data <- cbind(patient_data, ep$get_generator()(n_))
+      }
+
+      private$trial_data <- bind_rows(private$trial_data, patient_data)
       private$n_enrolled_patients <- private$n_enrolled_patients + 1
+      stopifnot(nrow(private$trial_data) == private$n_enrolled_patients)
 
-      list(
-        next_enroll_arm = next_enroll_arm,
-        next_enroll_time = next_enroll_time
-      )
-
-    },
-
-    #' @description
-    #' get number of arms in the trial
-    get_number_arms = function(){
-      length(private$arms)
     }
+
   ),
 
   private = list(
@@ -237,15 +271,6 @@ Trial <- R6::R6Class(
 
     trial_data = NULL,
 
-    ## add_arms() can only be called once, then arms_is_added is set to TRUE which
-    ## prevents calling add_arms() again. As a result, all arms should be added
-    ## into the trial together. sample_ratio should also be specified accordingly.
-    ## This makes sure that Trial can link each arm to the correct sample ratio.
-    ## If arms need to be added or removed while the trial is running
-    ## (e.g., arm selection, futility, interim, etc.), use update_arms() instead
-    ## which allows updating sample_ratio as well.
-    arms_is_added = FALSE,
-
     validate_arguments =
       function(name, n_patients, description, enroller, ...){
 
@@ -261,9 +286,9 @@ Trial <- R6::R6Class(
       # Check that the first argument of enroller is "n"
       arg_names <- names(formals(enroller))
 
-      n_ <- 10
+      n_ <- 2
       enroller_ <- DynamicFunction(
-        enroller, rng = deparse(substitute(enroller)), ...)
+        enroller, rng = deparse(substitute(enroller)), simplify = TRUE, ...)
       example_data <- enroller_(n = n_)
       if(!is.vector(example_data)){
         stop('enroller must return a vector.')
@@ -308,5 +333,7 @@ Trial <- R6::R6Class(
       arm_names <- names(private$sample_ratio)
       private$randomization_queue <- arm_names[randomization_queue]
     }
+
+
   )
 )

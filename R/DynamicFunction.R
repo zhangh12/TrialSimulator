@@ -2,8 +2,15 @@
 #' @param fn random number generator, e.g., rnorm, rchisq, etc. It can be
 #' user-defined random number generator as well, e.g.,
 #' PiecewiseConstantExponentialRNG
-#' @param ... arguments for fn. Specifying invalid arguments can trigger error and
-#' be stopped.
+#' @param ... arguments for \code{fn}. Specifying invalid arguments can trigger error and
+#' be stopped. There are three exceptions. (1) \code{rng} can be passed through
+#' `...` to give true name of \code{fn}. This could be necessary as it may be
+#' hard to parse it accurately in \code{DynamicFunction}, or simply for a more
+#' informative purpose in some scenarios. (2) \code{var_name} can be passed
+#' through `...` to specify the name of generated variable. (3) \code{simplify}
+#' can be set to FALSE to convert a vector into a one-column data frame in returned
+#' object. This happens for builtin random number generators, e.g., \code{rnorm},
+#' \code{rbinom}, etc. These three arguments will not be passed into \code{fn}.
 #'
 #' @return a function to generate random number based on `fn` and arguments in
 #' `...`. Specified arguments will be fixed and cannot be changed when invoking
@@ -16,7 +23,8 @@
 #' @examples
 #' # example code
 #' dfunc <- DynamicFunction(rnorm, sd = 3.2)
-#' hist(dfunc()(1e3))
+#' x <- dfunc(1e3)[, 1]
+#' hist(x)
 #'
 #' @export
 DynamicFunction <- function(fn, ...) {
@@ -29,6 +37,15 @@ DynamicFunction <- function(fn, ...) {
     fn_name <- fixed_args$rng
     fixed_args$rng <- NULL
   }
+
+  var_name <- fixed_args$var_name
+  fixed_args$var_name <- NULL
+  if(length(var_name) > 1){
+    stop('var_name should be of length 1 in DynamicFunction. ')
+  }
+
+  simplify <- ifelse(is.null(fixed_args$simplify), FALSE, fixed_args$simplify)
+  fixed_args$simplify <- NULL
 
   # Validate fixed arguments against fn
   unused_args <- setdiff(names(fixed_args), names(formals(fn)))
@@ -52,7 +69,14 @@ DynamicFunction <- function(fn, ...) {
     all_args <- c(fixed_args, new_args)
 
     # Call the original function
-    do.call(fn, all_args)
+    dat <- do.call(fn, all_args)
+    if(is.vector(dat) && !simplify){
+      dat <- data.frame(V1 = dat)
+      if(!is.null(var_name)){
+        colnames(dat) <- var_name
+      }
+    }
+    dat
   }
 
   # Add fixed arguments as an attribute for printing
@@ -60,7 +84,7 @@ DynamicFunction <- function(fn, ...) {
   attr(wrapper, 'function_name') <- fn_name
 
   # Define a custom print method for the wrapper
-  class(wrapper) <- c('dynamic_function', class(wrapper))
+  class(wrapper) <- c('dynamic_function1', class(wrapper))
   wrapper
 }
 
