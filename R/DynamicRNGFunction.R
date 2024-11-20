@@ -1,11 +1,11 @@
-#' A wrapper of random number generator fn.
+#' A wrapper of random number generator.
 #' @param fn random number generator, e.g., rnorm, rchisq, etc. It can be
 #' user-defined random number generator as well, e.g.,
 #' PiecewiseConstantExponentialRNG
 #' @param ... arguments for \code{fn}. Specifying invalid arguments can trigger error and
 #' be stopped. There are three exceptions. (1) \code{rng} can be passed through
 #' `...` to give true name of \code{fn}. This could be necessary as it may be
-#' hard to parse it accurately in \code{DynamicFunction}, or simply for a more
+#' hard to parse it accurately in \code{DynamicRNGFunction}, or simply for a more
 #' informative purpose in some scenarios. (2) \code{var_name} can be passed
 #' through `...` to specify the name of generated variable. (3) \code{simplify}
 #' can be set to FALSE to convert a vector into a one-column data frame in returned
@@ -14,20 +14,20 @@
 #'
 #' @return a function to generate random number based on `fn` and arguments in
 #' `...`. Specified arguments will be fixed and cannot be changed when invoking
-#' `DynamicFunction(fn, ...)()`. For example, if `foo <- DynamicFunction(rnorm, sd = 2)`,
+#' `DynamicRNGFunction(fn, ...)()`. For example, if `foo <- DynamicRNGFunction(rnorm, sd = 2)`,
 #' then `foo(n = 100)` will always generate data from normal distribution of
 #' variance 4. `foo(n = 100, sd = 1)` will trigger an error. However,
-#' if an argument is not specified in `DynamicFunction`, then it can be specified
+#' if an argument is not specified in `DynamicRNGFunction`, then it can be specified
 #' later. For example, `foo(n = 100, mean = -1)` will generate data from N(-1, 4).
 #'
 #' @examples
 #' # example code
-#' dfunc <- DynamicFunction(rnorm, sd = 3.2)
+#' dfunc <- DynamicRNGFunction(rnorm, sd = 3.2)
 #' x <- dfunc(1e3)[, 1]
 #' hist(x)
 #'
 #' @export
-DynamicFunction <- function(fn, ...) {
+DynamicRNGFunction <- function(fn, ...) {
 
   # Capture fixed arguments
   fixed_args <- list(...)
@@ -41,7 +41,7 @@ DynamicFunction <- function(fn, ...) {
   var_name <- fixed_args$var_name
   fixed_args$var_name <- NULL
   if(length(var_name) > 1){
-    stop('var_name should be of length 1 in DynamicFunction. ')
+    stop('var_name should be of length 1 in DynamicRNGFunction. ')
   }
 
   simplify <- ifelse(is.null(fixed_args$simplify), FALSE, fixed_args$simplify)
@@ -84,13 +84,13 @@ DynamicFunction <- function(fn, ...) {
   attr(wrapper, 'function_name') <- fn_name
 
   # Define a custom print method for the wrapper
-  class(wrapper) <- c('dynamic_function1', class(wrapper))
+  class(wrapper) <- c('dynamic_rng_function', class(wrapper))
   wrapper
 }
 
-# Custom print method for objects of class 'dynamic_function'
+# Custom print method for objects of class 'dynamic_rng_function'
 #' @export
-print.dynamic_function <- function(x, ...) {
+print.dynamic_rng_function <- function(x, ...) {
   cat(attr(x, 'function_name'), ':\n')
   print(attr(x, 'args'))
 }

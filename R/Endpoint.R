@@ -117,7 +117,7 @@ Endpoint <- R6::R6Class(
       private$type <- type
 
       if(!is.null(generator)){
-        private$generator <- DynamicFunction(
+        private$generator <- DynamicRNGFunction(
           generator, rng = deparse(substitute(generator)),
           var_name = self$get_name(), ...)
         ## ignore all other arguments in ... if generator is provided
@@ -129,7 +129,7 @@ Endpoint <- R6::R6Class(
 
       if('piecewise_const_exp' %in% method){
         private$generator <-
-          DynamicFunction(
+          DynamicRNGFunction(
             PiecewiseConstantExponentialRNG,
             risk = args$risk,
             endpoint_name = name
@@ -205,7 +205,7 @@ Endpoint <- R6::R6Class(
         }
 
         n_ <- 2
-        generator_ <- DynamicFunction(
+        generator_ <- DynamicRNGFunction(
           generator, ...)
         example_data <- generator_(n = n_)
 

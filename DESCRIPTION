@@ -1,7 +1,7 @@
 Package: TrialSimulator
 Type: Package
 Title: Clinical Trial Simulator
-Version: 0.3.0
+Version: 0.4.0
 Description: Simulate phase II and phase II clinical trials. It supports various types of endpoints and adaptive strategies.
 License: MIT + file LICENSE
 Encoding: UTF-8
