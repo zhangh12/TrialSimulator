@@ -38,18 +38,6 @@
 #'   seed = 31415926,
 #'   enroller = rexp, rate = log(2) / 5)
 #' trial$add_arms(sample_ratio = c(1, 2), placebo, active)
-#' trial
-#' table(trial$get_randomization_queue())
-#' trial$get_enroll_time(1:4)
-#' trial$enroll_a_patient()
-#' trial$enroll_a_patient()
-#' trial$get_enroll_time(1:2)
-#' table(trial$get_randomization_queue())
-#'
-#' trial$get_trial_data()
-#'
-#' ## trial$enroll_patients()
-#' ## dim(trial$get_trial_data())
 #'
 #' @export
 Trial <- R6::R6Class(
@@ -389,9 +377,6 @@ Trial <- R6::R6Class(
     #' This function does not update enroll_time, just return its value
     #' for debugging purpose.
     #' @param index index to extract. Return all enroll time if \code{NULL}.
-    #' @examples
-    #' ## trial$get_enroll_time(1:3) ## first three
-    #' ## trial$get_enroll_time(-1) ## all except the last one
     get_enroll_time = function(index = NULL){
 
       if(length(private$enroll_time) == 0){
