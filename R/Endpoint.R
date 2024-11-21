@@ -143,6 +143,13 @@ Endpoint <- R6::R6Class(
     },
 
     #' @description
+    #' test random number generator of the endpoints. It returns an example
+    #' dataset.
+    test_generator = function(n = 1e3){
+      self$get_generator()(n)
+    },
+
+    #' @description
     #' return random number generator of an endpoint
     get_generator = function(){
       private$generator
