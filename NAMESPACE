@@ -3,6 +3,7 @@
 S3method(print,dynamic_rng_function)
 S3method(print,dynamic_trigger_condition_function)
 export(Arm)
+export(Controller)
 export(DynamicRNGFunction)
 export(DynamicTriggerConditionFunction)
 export(Endpoint)
