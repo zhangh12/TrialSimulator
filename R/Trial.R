@@ -127,9 +127,91 @@ Trial <- R6::R6Class(
         dplyr::filter(enroll_time <= current_time) %>%
         arrange(enroll_time)
       message('Trial data is rolling back to time = ', current_time, '. \n',
-              'Randomization is carried out again for unenrolled patients. ')
+              'Randomization will be carried out again for unenrolled patients. \n')
 
     },
+
+    #' @description
+    #' remove arms from a trial. \code{enroll_patients()} will be always called
+    #' at the end to enroll all remaining patients after
+    #' \code{Trial$get_current_time()}. This function may be used with futility
+    #' analysis, dose selection, enrichment analysis (sub-population) or
+    #' interim analysis (early stop for efficacy)
+    #' @param arms_name character vector. Name of arms to be removed.
+    remove_arms = function(arms_name){
+      stopifnot(is.character(arms_name))
+      stopifnot(all(arms_name %in% self$get_arms_name()))
+
+      private$sample_ratio <-
+        private$sample_ratio[!(names(private$sample_ratio) %in% arms_name)]
+
+      for(arm_name in arms_name){
+        private$arms[[arm_name]] <- NULL
+      }
+
+      message('Arm <', paste0(arms_name, collapse = ', '), '> is removed. \n')
+
+      message('Sample ratio is updated to be <',
+              paste0(paste0(names(self$get_sample_ratio()),
+                            ': ', self$get_sample_ratio()), collapse = ', '),
+              '>. \n')
+
+      ## with an arm is removed, unenrolled patient at current time should be
+      ## randomized again.
+      self$roll_back()
+
+      ## update randomization plan for unenrolled patients
+      private$permuted_block_randomization()
+
+      ## update data for unrolled patients based on new arms and possibly
+      ## new sample ratio.
+      self$enroll_patients()
+
+
+    },
+
+    #' @description
+    #' update sample ratio of an arm. This could happen after an arm is added
+    #' or removed. We may want to update sample ratio of unaffected arms as
+    #' well. This function can only update sample ratio for one arm at a time.
+    #' Once sample ratio is updated, trial data should be rolled back with
+    #' updated randomization queue. Data of unenrolled patients should be
+    #' re-sampled as well.
+    #' @param arm_name character. Name of an arm of length 1.
+    #' @param sample_ratio integer. Sample ratio of the arm.
+    update_sample_ratio = function(arm_name, sample_ratio){
+
+      stopifnot(is.character(arm_name))
+      stopifnot(length(arm_name) == 1)
+      stopifnot(is.numeric(sample_ratio) && all(is.wholenumber(sample_ratio)))
+      stopifnot(length(sample_ratio) == 1)
+      if(is.null(private$arms[[arm_name]])){
+        stop('Arm ', arm_name, ' is not in the trial. ')
+      }
+
+      if(!(arm_name %in% names(self$get_sample_ratio()))){
+        stop('Sample ratio of arm ', arm_name, ' is not in the trial. \n',
+             'Usually this means issue in the package. Debug it. ')
+      }
+
+      private$sample_ratio[arm_name] <- sample_ratio
+      message('Sample ratio has been udpated to be <',
+              paste0(paste0(names(self$get_sample_ratio()),
+                            ': ', self$get_sample_ratio()), collapse = ', '),
+              '>. ')
+
+      ## with sample ratio of an arm is updated, unenrolled patient at current
+      ## time should be randomized again.
+      self$roll_back()
+
+      ## update randomization plan for unenrolled patients
+      private$permuted_block_randomization()
+
+      ## update data for unrolled patients based on new arms and possibly
+      ## new sample ratio.
+      self$enroll_patients()
+    },
+
 
     #' @description
     #' add one or more arms to the trial. \code{enroll_patients()} will be
@@ -177,7 +259,8 @@ Trial <- R6::R6Class(
 
         if(arm$get_name() %in% self$get_arms_name()){
           stop('Arm ', arm$get_name(), ' already exists in the trial. ',
-               'Do you want to update it instead?')
+               'Do you want to update it instead? ',
+               'Currently this is not supported. ')
         }
         arm_names <- c(arm_names, arm$get_name())
       }
@@ -186,18 +269,19 @@ Trial <- R6::R6Class(
         private$arms[[arm$get_name()]] <- arm
       }
 
+      message('Arm(s) <', paste0(arm_names, collapse = ', '),
+              '> are added to the trial. \n')
+
       names(sample_ratio) <- arm_names
       private$sample_ratio <- c(private$sample_ratio, sample_ratio)
       rm(sample_ratio)
-
-      block_size <- sum(private$sample_ratio)
 
       if(enforce){
         self$roll_back()
       }
 
       ## update randomization plan for unenrolled patients
-      private$permuted_block_randomization(block_size)
+      private$permuted_block_randomization()
 
       self$enroll_patients()
 
@@ -404,22 +488,39 @@ Trial <- R6::R6Class(
       private$enroll_time <- self$get_enroll_time(-c(1:n_patients))
 
       patient_data <- NULL
-      arm_data <- list()
+      arms_data <- list()
       arms_in_trial <- sort(unique(next_enroll_arms))
       for(i in seq_along(arms_in_trial)){
         arm <- arms_in_trial[i]
         patients_index <- which(next_enroll_arms %in% arm)
         n_patients_in_arm <- length(patients_index)
-        arm_data[[arm]] <-
+        arms_data[[arm]] <-
           data.frame(
             patient_id = self$get_number_enrolled_patients() + patients_index,
             arm = arm,
             enroll_time = next_enroll_time[patients_index]
           )
+
         for(ep in self$get_an_arm(arm)$get_endpoints()){
-          arm_data[[arm]] <- cbind(arm_data[[arm]], ep$get_generator()(n_patients_in_arm))
+          arms_data[[arm]] <- cbind(arms_data[[arm]], ep$get_generator()(n_patients_in_arm))
         }
-        patient_data <- rbind(patient_data, arm_data[[arm]])
+
+        arm_data <- arms_data[[arm]]
+        if(!is.null(patient_data)){
+          diff_cols1 <- setdiff(names(arm_data), names(patient_data))
+          diff_cols2 <- setdiff(names(patient_data), names(arm_data))
+          if(length(diff_cols1) > 0){
+            stop('Arm <', arm, '> may have endpoints different from other arms: <',
+                 paste0(diff_cols1, collapse = ', '), '>.')
+          }
+
+          if(length(diff_cols2) > 0){
+            stop('Arm <', arm, '> may have endpoints different from other arms: <',
+                 paste0(diff_cols2, collapse = ', '), '>.')
+          }
+        }
+
+        patient_data <- bind_rows(patient_data, arm_data)
       }
 
 
@@ -427,16 +528,17 @@ Trial <- R6::R6Class(
         patient_data[which(next_enroll_arms %in% arm), ] <- arm_data[[arm]]
       }
 
-      private$trial_data <- bind_rows(private$trial_data, patient_data)
+      private$trial_data <- bind_rows(self$get_trial_data(), patient_data)
 
       message('Data of ', n_patients,
               ' potential patients are generated for the trial with ',
-              self$get_number_arms(), ' arms (',
-              paste0(self$get_arms_name(), collapse = ", "), '). ',
-              'Depending on the scenarios, some of those patients may be ',
-              'eventually enrolled and used in data lock, ',
-              'while some will be abandoned and re-generated ',
-              '(e.g. arm is removed or added). ')
+              self$get_number_arms(), ' arm(s) <',
+              paste0(self$get_arms_name(), collapse = ", "), '>. \n')#,
+              # 'Depending on the scenarios, ',
+              # 'some of those patients may be eventually enrolled \n',
+              # 'and used in data lock, \n',
+              # 'while some will be abandoned and re-generated ',
+              # '(e.g. arm is removed or added). \n')
 
     },
 
@@ -542,10 +644,14 @@ Trial <- R6::R6Class(
         )
 
 
+      attr(lock_time, 'n_events') <- list()
       for(i in seq_along(event_counts)){
         ec <- event_counts[[i]]
-        attr(lock_time, names(event_counts)[i]) <-
-              max(ec$n_events[ec$calendar_time <= lock_time])
+        attr(lock_time, 'n_events')[[names(event_counts)[i]]] <-
+          ifelse(any(ec$calendar_time <= lock_time),
+                 max(ec$n_events[ec$calendar_time <= lock_time]),
+                 0)
+
       }
 
       lock_time
@@ -606,10 +712,10 @@ Trial <- R6::R6Class(
       attr(locked_data, 'event_name') <- event_name
       private$locked_data[[event_name]] <- locked_data
       self$set_current_time(at_calendar_time)
-      message('data is locked at time = ', at_calendar_time, ' for event "',
-              event_name, '".\n',
+      message('Data is locked at time = ', at_calendar_time, ' for event <',
+              event_name, '>.\n',
               'Locked data can be accessed in Trial$get_locked_data(\'',
-              event_name, '\'). ')
+              event_name, '\'). \n')
 
       ## I am not sure about this part yet.
       ## Once data is locked for an event, it is not always necessary to
@@ -695,14 +801,15 @@ Trial <- R6::R6Class(
     permuted_block_randomization = function(block_size = NULL){
 
       if(!is.null(self$get_randomization_queue())){
-        message('condition check is triggered in permuted_block_randomization. Debug this.')
+        message('condition check is triggered in permuted_block_randomization. ',
+        ' Debug this.\n')
         stopifnot(
           length(self$get_randomization_queue()) ==
             self$get_number_unenrolled_patients())
       }
 
       if(is.null(block_size)){
-        block_size <- sum(private$sample_ratio)
+        block_size <- sum(self$get_sample_ratio())
       }
 
       if(self$get_number_unenrolled_patients() == 0){
@@ -713,7 +820,7 @@ Trial <- R6::R6Class(
              'However, whenever an event is triggered during a trial, ',
              'patients being enrolled after the event time will be rolled back, ',
              'so that a new arm can be removed or added. \n',
-             'Those patients will be randomized again. ')
+             'Those patients will be randomized again. \n')
       }
       block <- rep(seq(private$sample_ratio), times = private$sample_ratio)
       blocks <- rep(block, length.out = self$get_number_unenrolled_patients())
@@ -727,6 +834,11 @@ Trial <- R6::R6Class(
 
       arm_names <- names(private$sample_ratio)
       private$randomization_queue <- arm_names[randomization_queue]
+      message('Randomization is done for ', length(randomization_queue),
+              ' potential patients. \n') #,
+              # 'Make sure that you only see this message when initializing a trial, \n',
+              # 'or after adding/removing an arm from the trial. \n',
+              # 'Otherwise it may indicator a potential issue. \n')
     }
 
 

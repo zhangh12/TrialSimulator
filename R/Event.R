@@ -80,8 +80,18 @@ Event <- R6::R6Class(
     #' @description
     #' return action function
     get_action = function(){
-      message('Action for ', self$get_name(), ' is executed. ')
       private$action
+    },
+
+    #' @description
+    #' execute action function
+    execute_action = function(trial){
+
+      action <- self$get_action()(trial, self$get_name())
+
+      message('Action for <', self$get_name(), '> is executed: \n')
+      print(action)
+
     },
 
     #' @description
@@ -107,12 +117,13 @@ Event <- R6::R6Class(
 
       ## find time that meets the trigger condition to lock data in trial,
       ## so that action can be executed on it.
+      message('Conditioin of event <', self$get_name(), '> is being checked. \n')
       data_lock_time <- self$get_trigger_condition()(trial)
 
       ## always lock data after an event and before taking actions
       trial$lock_data(data_lock_time, self$get_name())
 
-      self$get_action()(trial, self$get_name())
+      self$execute_action(trial)
       private$triggered <- TRUE
     }
   )
