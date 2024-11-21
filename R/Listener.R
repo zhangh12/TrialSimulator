@@ -19,7 +19,7 @@ Listener <- R6::R6Class(
     #' @description
     #' initialize a listener
     initialize = function(){
-      self$events <- list()
+      private$events <- list()
     },
 
     #' @description
@@ -51,6 +51,7 @@ Listener <- R6::R6Class(
     #' scan, check, and trigger registered events.
     #' Events are triggered in the order when calling
     #' \code{Listener$add_events}.
+    #' @param trial a \code{Trial} object.
     monitor = function(trial){
       for(event in self$get_events()){
         event$trigger_event(trial)

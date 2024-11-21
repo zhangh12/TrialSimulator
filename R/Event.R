@@ -85,6 +85,7 @@ Event <- R6::R6Class(
 
     #' @description
     #' execute action function
+    #' @param trial a \code{Trial} object.
     execute_action = function(trial){
 
       action <- self$get_action()(trial, self$get_name())
