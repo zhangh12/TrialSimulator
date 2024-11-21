@@ -12,14 +12,13 @@ source('./example/DefinePfsInterimEvent.R')
 source('./example/DefinePfsFinalEvent.R')
 source('./example/DefineOsFinalEvent.R')
 
-futility_event$trigger_event(trial)
-pfs_interim_event$trigger_event(trial)
-pfs_final_event$trigger_event(trial)
-os_final_event$trigger_event(trial)
+trial_listener <- Listener$new()
+trial_listener$add_events(
+    futility_event,
+    pfs_interim_event,
+    pfs_final_event,
+    os_final_event
+  )
 
-
-
-
-
-
+trial_listener$monitor(trial)
 
