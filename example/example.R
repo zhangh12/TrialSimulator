@@ -10,10 +10,13 @@ source('./example/DefineTrial.R')
 source('./example/DefineFutilityEvent.R')
 source('./example/DefinePfsInterimEvent.R')
 source('./example/DefinePfsFinalEvent.R')
+source('./example/DefineOsFinalEvent.R')
 
 futility_event$trigger_event(trial)
 pfs_interim_event$trigger_event(trial)
 pfs_final_event$trigger_event(trial)
+os_final_event$trigger_event(trial)
+
 
 
 
