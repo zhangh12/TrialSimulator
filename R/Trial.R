@@ -35,6 +35,7 @@
 #' ## Enrollment time follows an exponential distribution, with median 5
 #' trial <- Trial$new(
 #'   name = 'Trial-3415', n_patients = 100,
+#'   seed = 31415926,
 #'   enroller = rexp, rate = log(2) / 5)
 #' trial$add_arms(sample_ratio = c(1, 2), placebo, active)
 #' trial
@@ -46,6 +47,9 @@
 #' table(trial$get_randomization_queue())
 #'
 #' trial$get_trial_data()
+#'
+#' ## trial$enroll_patients()
+#' ## dim(trial$get_trial_data())
 #'
 #' @export
 Trial <- R6::R6Class(
@@ -60,6 +64,8 @@ Trial <- R6::R6Class(
     #' to the trial.
     #' @param description character. Optional for description of the trial. By
     #' default it is set to be trial's \code{name}.
+    #' @param seed random seed. If \code{NULL}, \code{set.seed()} will not be
+    #' called, which uses seed set outside.
     #' @param enroller a function returning a vector enrollment time for
     #' patients. Its first argument is the number of enrolled patients.
     #' @param ... arguments of \code{enroller}.
@@ -68,21 +74,27 @@ Trial <- R6::R6Class(
         name,
         n_patients,
         description = name,
+        seed,
         enroller,
         ...
       ){
 
         private$validate_arguments(
-          name, n_patients, description, enroller, ...)
+          name, n_patients, description, seed, enroller, ...)
+
+        if(!is.null(seed)){
+          set.seed(seed)
+        }
 
         private$arms <- list()
         private$name <- name
         private$description <- description
         private$n_patients <- n_patients
-        private$n_enrolled_patients <- 0
+        private$now <- 0
         private$trial_data <- NULL
+        private$locked_data <- list()
 
-        private$enroller <- DynamicFunction(enroller, simplify = TRUE, ...)
+        private$enroller <- DynamicRNGFunction(enroller, simplify = TRUE, ...)
         stopifnot(is.vector(private$enroller(2)))
 
         ## sort enrollment time
@@ -99,15 +111,64 @@ Trial <- R6::R6Class(
     },
 
     #' @description
-    #' add a list of arms to the trial
+    #' roll back data to current time of trial. By doing so,
+    #' \code{Trial$trial_data} will be cut at current time, and data after then
+    #' are deleted. However, \code{Trial$enroll_time} after current time are
+    #' kept unchanged because that is planned enrollment curve.
+    roll_back = function(){
+
+      current_time <- self$get_current_time()
+
+      private$enroll_time <- (self$get_trial_data() %>%
+        dplyr::filter(enroll_time > current_time) %>%
+        arrange(enroll_time))$enroll_time
+
+      private$trial_data <- self$get_trial_data() %>%
+        dplyr::filter(enroll_time <= current_time) %>%
+        arrange(enroll_time)
+      message('Trial data is rolling back to time = ', current_time, '. \n',
+              'Randomization is carried out again for unenrolled patients. ')
+
+    },
+
+    #' @description
+    #' add one or more arms to the trial. \code{enroll_patients()} will be
+    #' called at the end to enroll all remaining patients in
+    #' \code{private$randomization_queue}. This function can be used in two
+    #' scenarios.
+    #' (1) add arms right after a trial is created (i.e., \code{Trial$new(...)}).
+    #' \code{sample_ratio} and arms added through \code{...} should be of same
+    #' length.
+    #' (2) add arms to a trial already with arm(s)
     #' @param sample_ratio integer vector. Sample ratio for permuted block
     #' randomization. It will be appended to existing sample ratio in the trial.
-    #' @param ... one or more objects of class \code{Arm}
+    #' @param enforce TRUE
+    #' \code{enforce = TRUE}
+    #' @param ... one or more objects of class \code{Arm}. One exception in
+    #' \code{...} is an argument \code{enforce}. When \code{enforce = TRUE},
+    #  it makes sure randomization is carried out with updated
+    #' sample ratio of newly added arm. It rolls back all patients after
+    #' \code{Trial$get_current_time()}, i.e. redo randomization for those
+    #' patients. This can be useful to add arms one by one when creating a trial.
+    #' Note that we can run \code{Trial$add_arm(sample_ratio1, arm1)} followed
+    #' by \code{Trial$add_arm(sample_ratio2, enforce = TRUE, arm2)}.
+    #' We would expected similar result with
+    #' \code{Trial$add_arms(c(sample_ratio1, sample_ratio2), arm1, arm2)}. Note
+    #' that these two method won't return exactly the same trial because
+    #' randomization_queue were generated twice in the first approach but only
+    #' once in the second approach. But statistically, they are equivalent and
+    #' of the same distribution.
     add_arms = function(sample_ratio, ...){
 
       stopifnot(is.numeric(sample_ratio) && all(is.wholenumber(sample_ratio)))
 
       arm_list <- list(...)
+      enforce <- arm_list$enforce
+      if(is.null(enforce)){
+        enforce <- FALSE
+      }
+
+      arm_list$enforce <- NULL
       stopifnot(length(arm_list) == length(sample_ratio))
 
       arm_names <- NULL
@@ -131,8 +192,14 @@ Trial <- R6::R6Class(
 
       block_size <- sum(private$sample_ratio)
 
+      if(enforce){
+        self$roll_back()
+      }
+
       ## update randomization plan for unenrolled patients
       private$permuted_block_randomization(block_size)
+
+      self$enroll_patients()
 
     },
 
@@ -180,8 +247,13 @@ Trial <- R6::R6Class(
     #' @description
     #' return current sample ratio of the trial. The ratio can probably change
     #' during the trial (e.g., arm is removed or added)
-    get_sample_ratio = function(){
-      private$sample_ratio
+    #' @param arm_names character vector of arms.
+    get_sample_ratio = function(arm_names = NULL){
+      if(is.null(arm_names)){
+        arm_names <- names(private$sample_ratio)
+      }
+      stopifnot(all(arm_names %in% names(private$sample_ratio)))
+      private$sample_ratio[arm_names]
     },
 
     #' @description
@@ -193,13 +265,16 @@ Trial <- R6::R6Class(
     #' @description
     #' return number of enrolled (randomized) patients
     get_number_enrolled_patients = function(){
-      private$n_enrolled_patients
+      if(is.null(self$get_trial_data())){
+        return(0)
+      }
+      nrow(self$get_trial_data())
     },
 
     #' @description
     #' return number of unenrolled patients
     get_number_unenrolled_patients = function(){
-      private$n_patients - private$n_enrolled_patients
+      self$get_number_patients() - self$get_number_enrolled_patients()
     },
 
     #' @description
@@ -292,7 +367,6 @@ Trial <- R6::R6Class(
 
       private$trial_data <- bind_rows(private$trial_data, patient_data)
       private$n_enrolled_patients <- private$n_enrolled_patients + 1
-      stopifnot(nrow(private$trial_data) == private$n_enrolled_patients)
 
     },
 
@@ -354,14 +428,213 @@ Trial <- R6::R6Class(
       }
 
       private$trial_data <- bind_rows(private$trial_data, patient_data)
-      private$n_enrolled_patients <- private$n_enrolled_patients + n_patients
-      stopifnot(nrow(private$trial_data) == private$n_enrolled_patients)
 
+      message('Data of ', n_patients,
+              ' potential patients are generated for the trial with ',
+              self$get_number_arms(), ' arms (',
+              paste0(self$get_arms_name(), collapse = ", "), '). ',
+              'Depending on the scenarios, some of those patients may be ',
+              'eventually enrolled and used in data lock, ',
+              'while some will be abandoned and re-generated ',
+              '(e.g. arm is removed or added). ')
+
+    },
+
+    #' @description
+    #' set current time of a trial. Any data collected before could not be
+    #' changed. private$now should be set after an event is triggered
+    #' (through Event class, futility, interim, etc), an arm is added or
+    #' removed as a result of an event
+    #' @param time current calendar time of a trial.
+    set_current_time = function(time){
+      stopifnot(time >= 0)
+      private$now <- time
+    },
+
+    #' @description
+    #' return current time of a trial
+    get_current_time = function(){
+      private$now
+    },
+
+    #' @description
+    #' count accumulative number of events (for TTE) or samples (otherwise) over
+    #' calendar time (enroll time + tte for TTE, or enroll time otherwise)
+    get_event_tables = function(){
+
+      trial_data <- self$get_trial_data()
+
+      event_counts <- list()
+
+      event_cols <- grep('_event$', names(trial_data), value = TRUE)
+      for(event_col in event_cols){
+        tte_col <- gsub('_event$', '', event_col)
+        event_counts[[tte_col]] <- trial_data %>%
+          dplyr::select(all_of(c('patient_id', 'arm', 'enroll_time', tte_col, event_col))) %>%
+          mutate(calendar_time := enroll_time + !!sym(tte_col)) %>%
+          arrange(calendar_time) %>%
+          mutate(n_events = cumsum(get(event_col)))
+
+      }
+
+      other_cols <-
+        setdiff(
+          names(trial_data),
+          c('patient_id', 'arm', 'enroll_time', event_cols, gsub('_event$', '', event_cols)))
+
+      for(event_col in other_cols){
+        event_counts[[event_col]] <- trial_data %>%
+          dplyr::select(all_of(c('patient_id', 'arm', 'enroll_time', event_col))) %>%
+          mutate(calendar_time = enroll_time) %>%
+          arrange(calendar_time) %>%
+          mutate(n_events = row_number())
+      }
+
+      event_counts
+
+    },
+
+    #' @description
+    #' given a set of endpoints and target number of events, determine the data
+    #' lock time for Event (futility, interim, final (?)). This function does
+    #' not change trial object (e.g. rolling back not yet randomized patients after
+    #' the found data lock time).
+    #' @param endpoints character vector. Data lock time is determined by a set
+    #' of endpoints.
+    #' @param target_n_events target number of events for each of the
+    #' \code{endpoints}.
+    #' @param type \code{all} if all target number of events are reached.
+    #' \code{any} if the any target number of events is reached.
+    #' @return data lock time
+    #' @examples
+    #' ## dat <- trial$get_trial_data()
+    #' ## trial$get_data_lock_time(c('pfs','orr'), c(200,500), 'any')
+    get_data_lock_time = function(endpoints, target_n_events, type = c('all', 'any')){
+
+      type <- match.arg(type)
+
+      stopifnot(is.character(endpoints))
+      stopifnot(all(is.wholenumber(target_n_events)))
+      stopifnot(length(endpoints) == length(target_n_events))
+
+      event_counts <- trial$get_event_tables()
+      stopifnot(all(endpoints %in% names(event_counts)))
+
+      event_times <- NULL
+      for(i in seq_along(endpoints)){
+        if(max(event_counts[[endpoints[i]]]$n_events) < target_n_events[i]){
+          stop('No enough events/samples for endpoint ', endpoints[i],
+               ' to reach the target number. ')
+        }
+
+        event_times <-
+          c(event_times,
+            min(event_counts[[endpoints[i]]]$calendar_time[
+              event_counts[[endpoints[i]]]$n_events >= target_n_events[i]
+            ]))
+      }
+
+      lock_time <-
+        case_when(
+          type %in% 'all' ~ max(event_times),
+          type %in% 'any' ~ min(event_times),
+          TRUE ~ -Inf
+        )
+
+
+      for(i in seq_along(event_counts)){
+        ec <- event_counts[[i]]
+        attr(lock_time, names(event_counts)[i]) <-
+              max(ec$n_events[ec$calendar_time <= lock_time])
+      }
+
+      lock_time
+
+    },
+
+    #' @description
+    #' return locked data for an event
+    #' @param event_name character, event name of which the locked data to be
+    #' extracted.
+    get_locked_data = function(event_name){
+      private$locked_data[[event_name]]
+    },
+
+    #' @description
+    #' lock data at specific calendar time.
+    #' For time-to-event endpoints, their event indicator *_event should be
+    #' updated accordingly. Locked data should be stored separately.
+    #' DO NOT OVERWRITE/UPDATE self$trial_data! which can lose actual
+    #' time-to-event information. For example, a patient may be censored at
+    #' the first data lock. However, he may have event being observed in a
+    #' later data lock.
+    #' @param at_calendar_time time point to lock trial data
+    #' @param event_name assign event name as the name of locked data for
+    #' future reference.
+    lock_data = function(at_calendar_time, event_name){
+
+      trial_data <- self$get_trial_data()
+
+      event_cols <- grep('_event$', names(trial_data), value = TRUE)
+
+      for(event_col in event_cols){
+        tte_col <- gsub('_event$', '', event_col)
+        trial_data <- trial_data %>%
+          mutate(calendar_time := enroll_time + !!sym(tte_col)) %>%
+          mutate(!!event_col := ifelse(calendar_time > at_calendar_time, 0, !!sym(event_col))) %>%
+          mutate(!!tte_col :=
+                   ifelse(calendar_time > at_calendar_time,
+                          at_calendar_time - enroll_time,
+                          !!sym(tte_col)
+                          )
+                 )
+      }
+
+      locked_data <- trial_data %>%
+        dplyr::filter(enroll_time <= at_calendar_time) %>%
+        arrange(enroll_time) %>%
+        dplyr::select(-calendar_time)
+
+      unenrolled_data <- trial_data %>%
+        dplyr::filter(enroll_time > at_calendar_time) %>%
+        arrange(enroll_time) %>%
+        dplyr::select(enroll_time, arm)
+      rm(trial_data)
+
+      attr(locked_data, 'lock_time') <- at_calendar_time
+      attr(locked_data, 'n_enrolled_patients') <- length(unique(locked_data$patient_id))
+      attr(locked_data, 'event_name') <- event_name
+      private$locked_data[[event_name]] <- locked_data
+      self$set_current_time(at_calendar_time)
+      message('data is locked at time = ', at_calendar_time, ' for event "',
+              event_name, '".\n',
+              'Locked data can be accessed in Trial$get_locked_data(\'',
+              event_name, '\'). ')
+
+      ## I am not sure about this part yet.
+      ## Once data is locked for an event, it is not always necessary to
+      ## roll back. For example, all arms are keeping moving without anything
+      ## change is possible. This could happen except for futility analysis
+      ## (early stop), or adding/removing arms. It seems like this part should
+      ## be done in action() depending on the type of event.
+      if(0){
+      private$enroll_time <- unenrolled_data$enroll_time
+      private$randomization_queue <- unenrolled_data$arm
+
+
+      private$trial_data <- self$get_trial_data() %>%
+        dplyr::filter(enroll_time <= at_calendar_time)
+
+      self$enroll_patients()
+      }
+
+      NULL
     }
 
   ),
 
   private = list(
+    seed = NULL,
     name = NULL,
     description = NULL,
     n_patients = NULL,
@@ -369,15 +642,26 @@ Trial <- R6::R6Class(
     sample_ratio = NULL,
 
     arms = list(),
+    now = 0, # current time point of a trial. Change to the data of patients
+             # enrolled before are not allowed. When a trial is created,
+             # now = 0. If an event triggers a data lock (in Event class),
+             # now will be set to the time of data lock (e.g. futility, interim).
+             # When adding or removing a arm at an event,
+             # private$randomizatioon_queue[private$enroll_time > now] will be
+             # regenerated. This is important because randomization needs to be
+             # done with possibly changed sample ratio. enroll_patients() is
+             # then executed with updated randomizatioon_queue.
     randomization_queue = NULL,
     enroller = NULL,
     enroll_time = NULL,
 
     trial_data = NULL,
+    locked_data = list(),
 
     validate_arguments =
-      function(name, n_patients, description, enroller, ...){
+      function(name, n_patients, description, seed, enroller, ...){
 
+      stopifnot(is.null(seed) || is.wholenumber(seed))
       stopifnot(is.character(name))
       stopifnot(is.character(description))
 
@@ -391,7 +675,7 @@ Trial <- R6::R6Class(
       arg_names <- names(formals(enroller))
 
       n_ <- 2
-      enroller_ <- DynamicFunction(
+      enroller_ <- DynamicRNGFunction(
         enroller, rng = deparse(substitute(enroller)), simplify = TRUE, ...)
       example_data <- enroller_(n = n_)
       if(!is.vector(example_data)){
@@ -411,6 +695,7 @@ Trial <- R6::R6Class(
     permuted_block_randomization = function(block_size = NULL){
 
       if(!is.null(self$get_randomization_queue())){
+        message('condition check is triggered in permuted_block_randomization. Debug this.')
         stopifnot(
           length(self$get_randomization_queue()) ==
             self$get_number_unenrolled_patients())
@@ -421,8 +706,14 @@ Trial <- R6::R6Class(
       }
 
       if(self$get_number_unenrolled_patients() == 0){
-        stop('All patients are enrolled. No further randomization is needed. ',
-             'If you see this message, there is probably an unexpected issue with your code. ')
+        stop('All patients are enrolled. No further randomization is needed. \n',
+             'If you see this message, there is probably an unexpected issue with your code. \n',
+             'One known reason is that arms are added into the trial one right after one, \n',
+             'e.g., calling $add_arms twice and no event happen in between. \n',
+             'However, whenever an event is triggered during a trial, ',
+             'patients being enrolled after the event time will be rolled back, ',
+             'so that a new arm can be removed or added. \n',
+             'Those patients will be randomized again. ')
       }
       block <- rep(seq(private$sample_ratio), times = private$sample_ratio)
       blocks <- rep(block, length.out = self$get_number_unenrolled_patients())
