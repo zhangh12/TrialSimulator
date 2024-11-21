@@ -34,7 +34,7 @@ PiecewiseConstantExponentialRNG <- function(n, risk, endpoint_name){
   required_columns <- c('end_time', 'piecewise_risk')
   missed_columns <- setdiff(required_columns, names(risk))
   if(length(missed_columns) > 0){
-    stop(str_glue('Missed column(s) in risk table: {paste0(missed_columns, collapse = ", ")}'))
+    stop('Missed column(s) in risk table: <', paste0(missed_columns, collapse = ', '), '>. ')
   }
 
   if('odds_ratio' %in% names(risk)){
@@ -67,7 +67,7 @@ PiecewiseConstantExponentialRNG <- function(n, risk, endpoint_name){
   data.frame(tte = tte) %>%
     mutate(event = ifelse(is.na(tte), 0, 1)) %>%
     mutate(tte = ifelse(is.na(tte), tau[length(tau)], tte)) %>%
-    rename(!!str_glue('{endpoint_name}_event') := .data$event) %>%
+    rename(!!paste0(endpoint_name, '_event') := .data$event) %>%
     rename(!!endpoint_name := tte)
 }
 

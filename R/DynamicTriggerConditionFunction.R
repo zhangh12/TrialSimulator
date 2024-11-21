@@ -1,5 +1,7 @@
 #' A wrapper of event trigger condition function
 #'
+#' @param fn a function.
+#' @param ... arguments for \code{fn}.
 #' @return a function to determine whether the trigger condition is met,
 #' based on `fn` and arguments in
 #' `...`. Specified arguments will be fixed and cannot be changed when invoking

@@ -5,7 +5,6 @@
 #'
 #' @docType class
 #' @importFrom R6 R6Class
-#' @importFrom stringr str_glue
 #' @import dplyr survival
 #' @importFrom stats runif
 #'
@@ -251,7 +250,7 @@ Endpoint <- R6::R6Class(
 
       valid_methods <- c('piecewise_const_exp', 'TBD')
       if(!(method %in% valid_methods)){
-        stop(str_glue("Valid methods are \"{paste0(valid_methods, collapse = '\", \"')}\"."))
+        stop('Valid methods are <', paste0(valid_methods, collapse = ', '), '>. ')
       }
 
       if('piecewise_const_exp' %in% method){
