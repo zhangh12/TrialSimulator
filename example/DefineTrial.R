@@ -2,8 +2,6 @@
 ## Plan a trial, Trial-3415, of up to 100 patients.
 ## Enrollment time follows an exponential distribution, with median 5
 
-## max number of enrolled patients
-n_patients <- 1000
 
 trial <- Trial$new(
   name = 'Trial-3415', n_patients = n_patients,
