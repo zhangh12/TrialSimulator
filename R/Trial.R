@@ -20,7 +20,7 @@
 #' placebo$add_endpoints(pfs1, orr1)
 #'
 #' risk2 <- risk1
-#' risk2$odds_ratio <- .8
+#' risk2$hazard_ratio <- .8
 #' pfs2 <- Endpoint$new(name = 'pfs', type='tte', method='piecewise_const_exp',
 #'   risk = risk2)
 #' orr2 <- Endpoint$new(

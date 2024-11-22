@@ -9,10 +9,10 @@
 #'       piecewise_risk:
 #'           A constant risk in a time window, which is absolute risk * relative risk,
 #'           or (h0 * g) in the link.
-#'       odds_ratio:
+#'       hazard_ratio:
 #'           An optional column for simulating an active arm. If absent, a column
 #'           of 1s will be added. Equvalently, user can multiply piecewise_risk
-#'           by odds_ratio manually and ignore this column.
+#'           by hazard_ratio manually and ignore this column.
 #' @param endpoint_name name of endpoint
 #'
 #' @import rlang
@@ -37,10 +37,10 @@ PiecewiseConstantExponentialRNG <- function(n, risk, endpoint_name){
     stop('Missed column(s) in risk table: <', paste0(missed_columns, collapse = ', '), '>. ')
   }
 
-  if('odds_ratio' %in% names(risk)){
+  if('hazard_ratio' %in% names(risk)){
     risk <- risk %>%
-      mutate(piecewise_risk = .data$piecewise_risk * .data$odds_ratio) %>%
-      dplyr::select(-.data$odds_ratio)
+      mutate(piecewise_risk = .data$piecewise_risk * .data$hazard_ratio) %>%
+      dplyr::select(-.data$hazard_ratio)
   }
 
   n_windows <- nrow(risk)
