@@ -4,3 +4,4 @@
 .Ruserdata
 *.Rproj
 man/
+.DS_Store

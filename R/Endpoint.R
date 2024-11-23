@@ -63,7 +63,7 @@
 #'   name = 'pfs', type='tte', method='piecewise_const_exp', risk=risk1)
 #'
 #' risk2 <- risk1
-#' risk2$odds_ratio <- c(1, 1, .6, .4)
+#' risk2$hazard_ratio <- c(1, 1, .6, .4)
 #' ep2 <- TrialSimulator::Endpoint$new(
 #'   name = 'pfs', type='tte', method='piecewise_const_exp', risk=risk2)
 #'

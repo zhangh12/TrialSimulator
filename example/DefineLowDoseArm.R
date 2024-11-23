@@ -2,7 +2,7 @@
 risk <- data.frame(
   end_time = c(1, 10, 26.0, 52.0),
   piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01),
-  odds_ratio = .9
+  hazard_ratio = .9
 )
 
 pfs <- Endpoint$new(name = 'pfs', type='tte', method='piecewise_const_exp',
