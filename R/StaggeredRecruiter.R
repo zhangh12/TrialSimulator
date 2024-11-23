@@ -16,12 +16,12 @@
 #' accrual_rate <- data.frame(
 #'   end_time = c(12, 13:17, Inf),
 #'   piecewise_rate = c(15, 15 + 6 * (1:5), 45)
-#')
+#' )
 #'
-#'accrual_rate <- data.frame(
-#'  end_time = c(3, 4, 5, 8, Inf),
-#'  piecewise_rate = c(1, 2, 2, 3, 4)
-#')
+#' accrual_rate <- data.frame(
+#'   end_time = c(3, 4, 5, 8, Inf),
+#'   piecewise_rate = c(1, 2, 2, 3, 4)
+#' )
 #'
 #' StaggeredRecruiter(30, accrual_rate)
 #' @export
@@ -37,17 +37,13 @@ StaggeredRecruiter <- function(n, accrual_rate){
       ## because accrual rate is flat from now on
       n_ <- n - length(enroll_time)
       end <- start + 1/rate * n_
-      enroll_time <- c(enroll_time,
-                       seq(from = start, to = end, by = 1/rate)[-1]
-                       )
-      stopifnot(length(enroll_time) == n)
-      return(enroll_time)
     }
+
     enroll_time <- c(enroll_time,
                      seq(from = start, to = end,
                          by = 1/rate)[-1]
                      )
-    if(length(enroll_time) > n){
+    if(length(enroll_time) >= n){
       return(head(enroll_time, n))
     }
 
