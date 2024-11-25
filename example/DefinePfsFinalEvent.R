@@ -30,5 +30,5 @@ pfs_final_event <- Event$new(name = 'pfs final', type = 'final analysis',
                                trigger_condition = TriggerByEventNumbers,
                                action = pfs_final_action,
                                endpoints = c('pfs', 'os'),
-                               target_n_events = c(300, 100), meet = 'any')
+                               target_n_events = c(300, 200), meet = 'any')
 

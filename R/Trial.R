@@ -602,7 +602,7 @@ Trial <- R6::R6Class(
       stopifnot(all(is.wholenumber(target_n_events)))
       stopifnot(length(endpoints) == length(target_n_events))
 
-      event_counts <- trial$get_event_tables()
+      event_counts <- self$get_event_tables()
       stopifnot(all(endpoints %in% names(event_counts)))
 
       event_times <- NULL
@@ -698,7 +698,10 @@ Trial <- R6::R6Class(
       message('Data is locked at time = ', at_calendar_time, ' for event <',
               event_name, '>.\n',
               'Locked data can be accessed in Trial$get_locked_data(\'',
-              event_name, '\'). \n')
+              event_name, '\'). \n',
+              'Number of events at lock time: \n')
+      print(as.data.frame(attr(at_calendar_time, 'n_events')))
+      cat('\n')
 
       ## I am not sure about this part yet.
       ## Once data is locked for an event, it is not always necessary to
@@ -706,6 +709,12 @@ Trial <- R6::R6Class(
       ## change is possible. This could happen except for futility analysis
       ## (early stop), or adding/removing arms. It seems like this part should
       ## be done in action() depending on the type of event.
+      ##
+      ## updated note: Yes, should be done by users in action function of event
+      ## Actually, $add_arms, $remove_arms, and $update_sample_ratio can be
+      ## called by users in action function. All these three functions will
+      ## do randomization, and patient enrollment again. We possibly support
+      ## update enrollment curve in the future.
       if(0){
       private$enroll_time <- unenrolled_data$enroll_time
       private$randomization_queue <- unenrolled_data$arm
