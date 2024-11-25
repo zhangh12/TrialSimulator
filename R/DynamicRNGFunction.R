@@ -47,6 +47,10 @@ DynamicRNGFunction <- function(fn, ...) {
   simplify <- ifelse(is.null(fixed_args$simplify), FALSE, fixed_args$simplify)
   fixed_args$simplify <- NULL
 
+  type <- ifelse(is.null(fixed_args$type) || (fixed_args$type != 'tte'), 'other', 'tte')
+  fixed_args$type <- NULL
+
+
   # Validate fixed arguments against fn
   unused_args <- setdiff(names(fixed_args), names(formals(fn)))
   if (length(unused_args) > 0) {
@@ -70,11 +74,27 @@ DynamicRNGFunction <- function(fn, ...) {
 
     # Call the original function
     dat <- do.call(fn, all_args)
-    if(is.vector(dat) && !simplify){
-      dat <- data.frame(V1 = dat)
-      if(!is.null(var_name)){
-        colnames(dat) <- var_name
+
+    if(is.vector(dat)){
+      if(simplify){ ## useful when an Endpoint class is used to define enroller
+        return(dat)
       }
+
+      ## otherwise add column names
+      if(type %in% 'tte'){ ## if tte, add event indicator
+        dat <- data.frame(tte = dat, tte1_event = 1)
+        if(!is.null(var_name)){
+          colnames(dat) <- c(var_name, paste0(var_name, '_event'))
+        }
+      }else{
+        dat <- data.frame(V1 = dat)
+        if(!is.null(var_name)){
+          colnames(dat) <- var_name
+        }
+      }
+    }else{ ## user-defined rng function is received. It is user's responsibility
+           ## to name all columns in data frame returned from their own function
+      ## do nothing
     }
     dat
   }

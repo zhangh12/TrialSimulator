@@ -118,7 +118,8 @@ Endpoint <- R6::R6Class(
       if(!is.null(generator)){
         private$generator <- DynamicRNGFunction(
           generator, rng = deparse(substitute(generator)),
-          var_name = self$get_name(), ...)
+          var_name = self$get_name(),
+          type = self$get_type(), ...)
         ## ignore all other arguments in ... if generator is provided
         return()
       }
