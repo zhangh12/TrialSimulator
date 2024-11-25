@@ -212,8 +212,6 @@ Trial <- R6::R6Class(
     #' (2) add arms to a trial already with arm(s)
     #' @param sample_ratio integer vector. Sample ratio for permuted block
     #' randomization. It will be appended to existing sample ratio in the trial.
-    #' @param enforce TRUE
-    #' \code{enforce = TRUE}
     #' @param ... one or more objects of class \code{Arm}. One exception in
     #' \code{...} is an argument \code{enforce}. When \code{enforce = TRUE},
     #  it makes sure randomization is carried out with updated
@@ -406,7 +404,7 @@ Trial <- R6::R6Class(
     #' recover randomization queue and enrollment time for the remaining patients.
     enroll_a_patient = function(){
 
-      if(length(self$get_arms) == 0){
+      if(length(self$get_arms()) == 0){
         stop('No arm is added in the trial yet. Patient cannot be enrolled. ')
       }
 
@@ -447,7 +445,7 @@ Trial <- R6::R6Class(
     #' n_patients is greater than remaining patients as planned.
     enroll_patients = function(n_patients = NULL){
 
-      if(length(self$get_arms) == 0){
+      if(length(self$get_arms()) == 0){
         stop('No arm is added in the trial yet. Patient cannot be enrolled. ')
       }
 
@@ -509,8 +507,8 @@ Trial <- R6::R6Class(
       }
 
 
-      for(arm in names(arm_data)){
-        patient_data[which(next_enroll_arms %in% arm), ] <- arm_data[[arm]]
+      for(arm in arms_in_trial){
+        patient_data[which(next_enroll_arms %in% arm), ] <- arms_data[[arm]]
       }
 
       private$trial_data <- bind_rows(self$get_trial_data(), patient_data)
