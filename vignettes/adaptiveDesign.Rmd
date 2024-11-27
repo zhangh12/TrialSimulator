@@ -1,0 +1,374 @@
+---
+title: "An Example of Simulating a Trial with Adaptive Design"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{An Example of Simulating a Trial with Adaptive Design}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  cache = TRUE,
+  cache.path = "cache/example1/",
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(dplyr)
+library(R6)
+library(rlang)
+library(survival)
+library(survminer)
+library(ggplot2)
+library(TrialSimulator)
+```
+
+In this vignette, we illustrate how to use `TrialSimulator` to develop codes 
+to simulate a trial with seamless design, where dose selection, futility 
+analysis, interim analysis are triggered by user-defined events. 
+
+First we define endpoints in the trial. User can define arbitrary number of 
+endpoints of class `Endpoint` using the `new` function in `R6`. 
+PFS and OS are used as endpoints in this trial. In phase II, 
+a binary endpoint, VRR, is used in dose selection. We consider two active arms 
+(low or high dose) and a placebo arm with `1:1:1` randomization. By default, 
+the permuted block randomization is executed. For PFS, we assume a piecewise 
+constant exponential distribution in the placebo arm. Here we use a builtin 
+function (`TrialSimulator::PiecewiseConstantExponentialRNG`) to specify the random number generator for PFS.
+
+```{r ljgai, class.source="fold-show"}
+#' define endpoints in arm <pbo>
+#' 
+#' define a time-to-event endpoint PFS, with piecewise constant hazard
+risk <- data.frame(
+  end_time = c(1, 10, 26.0, 52.0),
+  piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01)
+)
+pfs <- Endpoint$new(name = 'pfs', type='tte', method='piecewise_const_exp',
+                    risk = risk)
+#' or equivalently
+#' pfs <- Endpoint$new(name = 'pfs', type='tte', 
+#'                     generator = PiecewiseConstantExponentialRNG, 
+#'                     risk = risk)
+#'                     
+#' test the random number generator with a method of the class Endpoint
+pfs_test <- pfs$test_generator(10000)
+head(pfs_test)
+```
+```{r}
+km <- survfit(Surv(pfs, pfs_event) ~ 1, data = pfs_test)
+
+ggsurvplot(
+  km,
+  data = pfs_test,
+  conf.int = TRUE,
+  risk.table = TRUE,
+  legend = 'none',
+  ggtheme = theme_minimal()
+)
+```
+
+Similarly, we can define OS and VRR for placebo. Here builtin functions `rexp` 
+and `rbinom` are used. User-defined functions are also supported as long as 
+it has the first argument `n`, number of samples to be drawn, and returns a 
+data frame of `n` rows. For any time-to-event endpoint (e.g., `ed`) in the data 
+frame, `TrialSimulator` expects a column ending with `_event` (e.g., 
+`ed_event`) being present as the event indicator. In general, user can define 
+their own generator that returns more than one endpoints. For example, correlated 
+endpoints would be generated together, using packages i.e., `simstudy`, 
+`gestate`, `simdata`, etc. Once all endpoints are defined, an arm can be created 
+using class `Arm` and its method `new`. 
+```{r dfaffageaf, class.source="fold-show"}
+#' define a time-to-event endpoint OS, 
+#' exponential distribution with median 25
+os <- Endpoint$new(name = 'os', type='tte', rexp, rate = log(2)/25)
+head(os$test_generator(1000))
+median(os$test_generator(1000)$os)
+
+#' define binary endpoint VRR
+vrr <- Endpoint$new(
+  name = 'vrr', type = 'binary', generator = rbinom,
+  size = 1, prob = .4)
+head(vrr$test_generator(1000))
+mean(vrr$test_generator(1000)$vrr)
+
+#' define the placebo arm
+placebo <- Arm$new(
+  name = 'pbo', description = 'Placebo arm')
+#' add endpoints into the arm
+placebo$add_endpoints(pfs, os, vrr)
+```
+
+Likewise, we can define the three endpoints in the two active arms. 
+
+```{r}
+#' define endpoints in the low dose arm
+risk$hazard_ratio <- .9 # HR
+pfs <- Endpoint$new(name = 'pfs', type='tte', method='piecewise_const_exp',
+                     risk = risk)
+vrr <- Endpoint$new(
+  name = 'vrr', type = 'binary', generator = rbinom,
+  size = 1, prob = .45) # slightly higher probability
+
+os <- Endpoint$new(name = 'os', type='tte', 
+                   rexp, rate = log(2)/25 * .85) # HR = .85
+
+low <- Arm$new(
+  name = 'low dose', description = 'Low dose arm')
+low$add_endpoints(pfs, os, vrr)
+
+#' define endpoints in the high dose arm
+risk$hazard_ratio <- .7
+pfs <- Endpoint$new(name = 'pfs', type='tte', method='piecewise_const_exp',
+                    risk = risk)
+vrr <- Endpoint$new(
+  name = 'vrr', type = 'binary', generator = rbinom,
+  size = 1, prob = .55) # higher probability
+
+os <- Endpoint$new(name = 'os', type='tte', 
+                   rexp, rate = log(2)/25 * .75)
+
+high <- Arm$new(
+  name = 'high dose', description = 'High dose arm')
+high$add_endpoints(pfs, os, vrr)
+```
+
+With three arms, we can define a trial of class `Trial`, where up to 1000 
+patients are enrolled. Recruitment are modeled by exponential distribution. 
+We also provide a builtin function `StaggeredRecruiter` for patient enrollment 
+with piecewise constant rate. User-defined function are also supported. 
+Sample ratio can be specified through `sample_ratio`, which can be updated 
+during a trial using method `update_sample_ratio`. 
+
+```{r lagieg, class.source="fold-show"}
+n_patients <- 1000
+trial <- Trial$new(
+  name = 'Trial-3415', n_patients = n_patients,
+  seed = 31415926,
+  enroller = rexp, rate = log(2) / 5)
+
+trial$add_arms(sample_ratio = 1, placebo)
+trial$add_arms(sample_ratio = c(1, 1), enforce = TRUE, low, high)
+#' or equivalent, one can add three arms together
+#' trial$add_arms(sample_ratio = c(1, 1, 1), 
+#'                placebo, low, high)
+```
+
+The class `Trial` maintains a clock (`trial$get_current_time()`). Data of 
+patients who are enrolled before the time point are considered locked and cannot 
+be changed. Data of patients who is currently unenrolled will be regenerated 
+immediately whenever the setting of trial are changed. Note that randomization 
+may be re-executed. Trial's setting is considered changed if an arm is added
+(method `add_arms`), removed (method `remove_arms`) or the sample ratio of one 
+or multiple arm(s) is updated (method `update_sample_ratio`). These methods are 
+usually invoked after pre-specified events are triggered, which will be 
+discussed later. 
+
+The `Trial` only manages its arms and endpoints. A `Listener` will be used to 
+launch and monitor a trial according to a set of `Event` that register to it. 
+An event consists two main parts, one is the condition to trigger it, one is 
+the action function defining the action to be taken once the condition is met. 
+Usually, a condition is met if a pre-specified number of events (or samples) 
+are observed, or a specific calendar time is reached. In this example, four 
+events are defined for dose selection, futility, interim and final analysis. 
+
+Dose selection is planned to be done when VRR are observed for 50 patients. 
+A builtin function `TriggerByEventNumbers` is used as the condition function 
+to define the event. The function can figure out the time point when this 
+condition is met. Data is then locked, and the clock will be set to update the 
+"current time" of the trial. A user-defined function, `futility_action` will 
+be executed by the listener. In `futility_action`, it is recommended that 
+the user should load the locked data at current time. Analysis is then done 
+to support further actions. In this example, an active arm can be dropped, 
+and sample ratio of the remaining arms are updated accordingly. All unenrolled
+patients will have their data being regenerated afterward.
+
+```{r aotel, class.source="fold-show"}
+#' action function is defined by user. 
+#' it always take at least two arguments, 
+#' (1) trial: an object of class Trial
+#' (2) event_name: character of event's name
+#' It is recommended that user should always requests for the locked data
+#' at current time when the event is triggered, from which the user can 
+#' carry out various analysis fitting their purpose
+futility_action <- function(trial, event_name){
+
+  locked_data <- trial$get_locked_data(event_name)
+  ## do something with locked_data, e.g. estimate, test, etc.,
+  ## to support further actions
+  ## ...
+
+  ## this is just for illustration
+  ## pick an arm to drop
+  affected_arm <- sample(c('high dose', 'low dose'), size = 1, prob = c(.45, .55))
+
+  ## action 1: remove an arm <affected_arm>
+  trial$remove_arms(affected_arm)
+
+  ## action 2: update sample ratio for the remaining arms
+  trial$update_sample_ratio('pbo', 1)
+  if(affected_arm == 'high dose'){
+    ## if low dose arm is kept, increase its ratio
+    trial$update_sample_ratio('low dose', 2)
+  }else{
+    ## if high dose arm is kept, reduce its ratio for safety
+    trial$update_sample_ratio('high dose', 1)
+  }
+
+  ## return for displaying purpose (print on screen later)
+  ## user can return NULL
+  action <- data.frame(
+    order = c(1, 2),
+    type = c('remove', 'update sample ratio'),
+    value = c(affected_arm, ifelse(affected_arm == 'high dose', 'low dose -> 2', 'high dose -> 1'))
+  )
+
+  action
+
+}
+
+futility_event <- Event$new(name = 'futility', type = 'futility analysis',
+                    trigger_condition = TriggerByEventNumbers,
+                    action = futility_action,
+                    endpoints = 'vrr',
+                    target_n_events = 50)
+```
+
+Likewise, we can define events for interim and final analyses of PFS and OS.
+
+```{r}
+#' event to trigger interim analysis for PFS
+pfs_interim_action <- function(trial, event_name){
+
+  locked_data <- trial$get_locked_data(event_name)
+  ## do something with locked_data, e.g. estimate, test, etc.,
+  ## to support further actions
+  ## ...
+
+  ## this p-value is just for illustration
+  ## it can be calculated from locked_data
+  pfs_interim_pval <- runif(1, 1e-3, .05)
+
+  ## action 1: if pfs is significant, increase its sample ratio
+  ##           and reduce sample ratio of pbo.
+  ##           otherwise no action.
+  action <- paste0('No action. P-value: <pfs interim = ',
+                   signif(pfs_interim_pval, 2), '>. ')
+  if(pfs_interim_pval < .05){
+    active_arm <- setdiff(trial$get_arms_name(), 'pbo')
+    trial$update_sample_ratio(active_arm, 2)
+    trial$update_sample_ratio('pbo', 1)
+
+    ## for displaying purpose, not essential
+    action <- data.frame(
+      order = c(1, 2),
+      type = 'update sample ratio',
+      value = c(paste0(active_arm, ' -> 2'), 'pbo -> 1')
+    )
+  }
+
+  ## return for displaying purpose
+  action
+
+}
+
+pfs_interim_event <- Event$new(name = 'pfs interim', type = 'interim analysis',
+                            trigger_condition = TriggerByEventNumbers,
+                            action = pfs_interim_action,
+                            endpoints = 'pfs',
+                            target_n_events = 100)
+```
+```{r}
+#'  event to trigger final analysis for PFS and interim analysis for OS
+#'  In this example, the triggering condition is defined by number of events 
+#'  of PFS and OS together. See meet = 'any' below.
+pfs_final_action <- function(trial, event_name){
+
+  locked_data <- trial$get_locked_data(event_name)
+  ## do something with locked_data, e.g. estimate, test, etc.,
+  ## to support further actions
+  ## ...
+
+  ## this is just for illustration
+  pfs_final_pval <- runif(1, 0, 0.1)
+  os_interim_pval <- runif(1, 0, 0.3)
+
+  ## only compute p-values for pfs and os, no further action
+  action <- paste0('No action. P-values: <pfs final = ',
+                   signif(pfs_final_pval, 2),
+                   '>, <os interim = ', signif(os_interim_pval, 2), '>.')
+
+  ## return for displaying purpose
+  action
+
+}
+## meet = 'any' means that final analysis for PFS is triggered
+## when pfs event reaches 300 or os event reaches 100.
+## if meet = 'all', then final analysis for PFS is carried out only if
+## both conditions are met.
+pfs_final_event <- Event$new(name = 'pfs final', type = 'pfs final/os interim',
+                               trigger_condition = TriggerByEventNumbers,
+                               action = pfs_final_action,
+                               endpoints = c('pfs', 'os'),
+                               target_n_events = c(300, 200), meet = 'any')
+```
+
+```{r}
+#'  event to trigger final analysis OS
+#'  triggering condition: all 1000 patients are enrolled and 
+#'  number of OS event reaches 800, i.e., meet = 'all', see below
+os_final_action <- function(trial, event_name){
+
+  locked_data <- trial$get_locked_data(event_name)
+  ## do something with locked_data, e.g. estimate, test, etc.,
+  ## to support further actions
+  ## ...
+
+  ## this is just for illustration
+  os_final_pval <- runif(1, 1e-3, .1)
+
+  ## action 1: end the trial, no futher action
+  action <- paste0('No action. P-value: <os final = ',
+                   signif(os_final_pval, 2), '>. ')
+
+  ## return for displaying purpose
+  action
+
+}
+
+os_final_event <- Event$new(name = 'os final', type = 'os final analysis',
+                            trigger_condition = TriggerByEventNumbers,
+                            action = os_final_action,
+                            endpoints = c('vrr', 'os'),
+                            target_n_events = c(n_patients, 800),
+                            meet = 'all')
+```
+
+Now we can register the four events with the listener, and launch the trial.
+
+```{r aloganl, class.source="fold-show"}
+listener <- Listener$new()
+#' register events with listener
+listener$add_events(
+    futility_event,
+    pfs_interim_event,
+    pfs_final_event,
+    os_final_event
+  )
+
+controller <- Controller$new(trial, listener)
+controller$run()
+```
+
+In the action functions, user can save results to the `Trial` object or 
+any place they want to summarize the trial later. The package can also summarize 
+commonly used metrics by default. For common design, the package can carry out 
+standard analysis, e.g., group sequential design with combination test or 
+graphical test as well, which would be implemented later. 
+
+In summary, `TrialSimulator` abstracts the data generation and management to 
+allow user focus on the programming for statistical analysis. It simulates a 
+trial on patient level, and provide flexibility in adaptive design. 

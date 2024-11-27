@@ -7,6 +7,7 @@
 #' @importFrom R6 R6Class
 #' @import dplyr survival
 #' @importFrom stats runif
+#' @importFrom utils head tail
 #'
 #' @examples
 #' set.seed(12345)

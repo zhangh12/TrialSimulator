@@ -5,3 +5,4 @@
 *.Rproj
 man/
 .DS_Store
+inst/doc
