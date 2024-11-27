@@ -5,7 +5,7 @@
 
 trial <- Trial$new(
   name = 'Trial-3415', n_patients = n_patients,
-  seed = 31415,
+  seed = 31415926,
   enroller = rexp, rate = log(2) / 5)
 
 trial$add_arms(sample_ratio = 1, placebo)
