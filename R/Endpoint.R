@@ -95,6 +95,10 @@ Endpoint <- R6::R6Class(
     #' @param type type(s) of endpoint(s)
     #' @param generator a RNG function. Its first argument must be `n`, number of
     #' patients. It must return a data frame of `n` rows. It can be optional if
+    #' @param readout numeric vector with name to be the non-tte endpoint(s).
+    #' \code{readout} should be specified for every non-tte endpoint. For
+    #' example, \code{c(endpoint1 = 6, endpoint2 = 3)}.  If all
+    #' endpoints are tte, \code{readout} can be \code{NULL}.
     #'
     #' @param ... Other supported arguments.
     #' It includes `method` a character with possible values as follow
@@ -103,10 +107,11 @@ Endpoint <- R6::R6Class(
       name,
       type = c('tte', 'continuous', 'binary'),
       generator = NULL,
+      readout = NULL,
       ...
     ){
 
-      private$validate_arguments(name, type, generator, ...)
+      private$validate_arguments(name, type, generator, readout, ...)
       private$name <- name
       private$uid <- paste0(name, collapse = '/')
 
@@ -116,11 +121,14 @@ Endpoint <- R6::R6Class(
       }
       private$type <- type
 
+      private$readout <- readout
+
       if(!is.null(generator)){
         private$generator <- DynamicRNGFunction(
           generator, rng = deparse(substitute(generator)),
           var_name = self$get_name(),
-          type = self$get_type(), ...)
+          type = self$get_type(),
+          readout = self$get_readout(), ...)
         ## ignore all other arguments in ... if generator is provided
         return()
       }
@@ -159,6 +167,12 @@ Endpoint <- R6::R6Class(
     },
 
     #' @description
+    #' return readout function
+    get_readout = function(){
+      private$readout
+    },
+
+    #' @description
     #' return uid
     get_uid = function(){
       private$uid
@@ -193,17 +207,41 @@ Endpoint <- R6::R6Class(
     name = NULL,
     type = NULL,
     generator = NULL,
+    readout = NULL,
 
     validate_arguments = function(
       name,
       type = c('tte', 'continuous', 'binary'),
       generator = NULL,
+      readout = NULL,
       ...
     ){
       stopifnot(is.character(name))
       stopifnot(is.character(type))
       stopifnot((length(name) == length(type)) || (length(type) == 1))
       type <- match.arg(type, several.ok = TRUE)
+
+      if(!is.null(readout)){
+        stopifnot(is.numeric(readout) && all(readout >= 0))
+        if(!all(names(readout) %in% name[type != 'tte'])){
+          stop('Readout is set for unknown or time-to-event endpoint(s) <',
+               paste0(setdiff(names(readout), name[type != 'tte']), collapse = ', '),
+               '>. ')
+        }
+
+        if(!setequal(names(readout), name[type != 'tte'])){
+          stop('Readout is missing for endpoint(s) <',
+               paste0(setdiff(name[type != 'tte'], names(readout)), collapse = ', '),
+               '>. ')
+        }
+      }else{
+        if(!all(type %in% 'tte')){
+          stop('Readout is missing for endpoint(s) <',
+               paste0(name[type != 'tte'], collapse = ', '),
+               '>. ')
+        }
+      }
+
 
       if(!is.null(generator)){
         stopifnot(is.function(generator))
@@ -215,8 +253,7 @@ Endpoint <- R6::R6Class(
         }
 
         n_ <- 2
-        generator_ <- DynamicRNGFunction(
-          generator, ...)
+        generator_ <- DynamicRNGFunction(generator, ...)
         example_data <- generator_(n = n_)
 
         if(!is.data.frame(example_data) && !is.vector(example_data)){
@@ -228,7 +265,7 @@ Endpoint <- R6::R6Class(
             rename(!!name := .data$v1)
         }
 
-        if(ncol(example_data) != length(name)){
+        if(!all(name %in% colnames(example_data))){
           stop('generator must return data for every endpoints in \'name\'.')
         }
 
