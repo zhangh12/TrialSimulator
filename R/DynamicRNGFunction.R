@@ -50,6 +50,8 @@ DynamicRNGFunction <- function(fn, ...) {
   type <- ifelse(is.null(fixed_args$type) || (fixed_args$type != 'tte'), 'other', 'tte')
   fixed_args$type <- NULL
 
+  readout <- fixed_args$readout
+  fixed_args$readout <- NULL
 
   # Validate fixed arguments against fn
   unused_args <- setdiff(names(fixed_args), names(formals(fn)))
@@ -82,19 +84,30 @@ DynamicRNGFunction <- function(fn, ...) {
 
       ## otherwise add column names
       if(type %in% 'tte'){ ## if tte, add event indicator
-        dat <- data.frame(tte = dat, tte1_event = 1)
+        dat <- data.frame(tte = dat, tte_event = 1)
         if(!is.null(var_name)){
           colnames(dat) <- c(var_name, paste0(var_name, '_event'))
         }
       }else{
-        dat <- data.frame(V1 = dat)
+        dat <- data.frame(V1 = dat, V1_readout = readout)
         if(!is.null(var_name)){
-          colnames(dat) <- var_name
+          colnames(dat) <- c(var_name, paste0(var_name, '_readout'))
         }
       }
     }else{ ## user-defined rng function is received. It is user's responsibility
            ## to name all columns in data frame returned from their own function
       ## do nothing
+      base_cols <- gsub('_event', '', names(dat))
+      tte_cols <- base_cols[duplicated(base_cols)]
+      non_tte_cols <- setdiff(base_cols, tte_cols)
+      if(!setequal(non_tte_cols, names(readout))){
+        stop('Readout may be missing for some endpoints, ',
+             'or specified for some non-existing endpoints. ')
+      }
+
+      for(col in non_tte_cols){
+        dat[, paste0(col, '_readout')] <- readout[col]
+      }
     }
     dat
   }
