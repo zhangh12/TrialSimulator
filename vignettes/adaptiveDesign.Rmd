@@ -11,12 +11,13 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   cache = TRUE,
-  cache.path = "cache/example1/",
-  comment = "#>"
+  cache.path = 'cache/adaptiveDesign/',
+  comment = '#>'#,
+  #out.width = '80%'
 )
 ```
 
-```{r setup}
+```{r setup, echo = FALSE}
 library(dplyr)
 library(R6)
 library(rlang)
@@ -47,12 +48,9 @@ risk <- data.frame(
   end_time = c(1, 10, 26.0, 52.0),
   piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01)
 )
-pfs <- Endpoint$new(name = 'pfs', type='tte', method='piecewise_const_exp',
-                    risk = risk)
-#' or equivalently
-#' pfs <- Endpoint$new(name = 'pfs', type='tte', 
-#'                     generator = PiecewiseConstantExponentialRNG, 
-#'                     risk = risk)
+pfs <- Endpoint$new(name = 'pfs', type='tte', 
+                    generator=PiecewiseConstantExponentialRNG,
+                    risk = risk, endpoint_name = 'pfs')
 #'                     
 #' test the random number generator with a method of the class Endpoint
 pfs_test <- pfs$test_generator(10000)
@@ -61,14 +59,7 @@ head(pfs_test)
 ```{r}
 km <- survfit(Surv(pfs, pfs_event) ~ 1, data = pfs_test)
 
-ggsurvplot(
-  km,
-  data = pfs_test,
-  conf.int = TRUE,
-  risk.table = TRUE,
-  legend = 'none',
-  ggtheme = theme_minimal()
-)
+ggsurvplot(km, data = pfs_test, legend = 'none', ggtheme = theme_minimal())
 ```
 
 Similarly, we can define OS and VRR for placebo. Here builtin functions `rexp` 
@@ -79,18 +70,21 @@ frame, `TrialSimulator` expects a column ending with `_event` (e.g.,
 `ed_event`) being present as the event indicator. In general, user can define 
 their own generator that returns more than one endpoints. For example, correlated 
 endpoints would be generated together, using packages i.e., `simstudy`, 
-`gestate`, `simdata`, etc. Once all endpoints are defined, an arm can be created 
+`gestate`, `simdata`, etc. Note that VRR is not a time-to-event endpoint, 
+so a readout time is also needed when creating the endpoint. 
+Once all endpoints are defined, an arm can be created 
 using class `Arm` and its method `new`. 
 ```{r dfaffageaf, class.source="fold-show"}
 #' define a time-to-event endpoint OS, 
 #' exponential distribution with median 25
-os <- Endpoint$new(name = 'os', type='tte', rexp, rate = log(2)/25)
+os <- Endpoint$new(name = 'os', type='tte', generator = rexp, rate = log(2)/25)
 head(os$test_generator(1000))
 median(os$test_generator(1000)$os)
 
-#' define binary endpoint VRR
+#' define binary endpoint VRR, with readout time = 2
 vrr <- Endpoint$new(
-  name = 'vrr', type = 'binary', generator = rbinom,
+  name = 'vrr', type = 'binary', 
+  readout = c(vrr=2), generator = rbinom,
   size = 1, prob = .4)
 head(vrr$test_generator(1000))
 mean(vrr$test_generator(1000)$vrr)
@@ -107,32 +101,35 @@ Likewise, we can define the three endpoints in the two active arms.
 ```{r}
 #' define endpoints in the low dose arm
 risk$hazard_ratio <- .9 # HR
-pfs <- Endpoint$new(name = 'pfs', type='tte', method='piecewise_const_exp',
-                     risk = risk)
+pfs <- Endpoint$new(name = 'pfs', type='tte', 
+                    generator = PiecewiseConstantExponentialRNG,
+                    risk = risk, endpoint_name = 'pfs')
 vrr <- Endpoint$new(
-  name = 'vrr', type = 'binary', generator = rbinom,
+  name = 'vrr', type = 'binary', 
+  readout = c(vrr=2), generator = rbinom,
   size = 1, prob = .45) # slightly higher probability
 
 os <- Endpoint$new(name = 'os', type='tte', 
-                   rexp, rate = log(2)/25 * .85) # HR = .85
+                   generator=rexp, rate = log(2)/25 * .85) # HR = .85
 
-low <- Arm$new(
-  name = 'low dose', description = 'Low dose arm')
+low <- Arm$new(name = 'low dose', description = 'Low dose arm')
 low$add_endpoints(pfs, os, vrr)
 
 #' define endpoints in the high dose arm
 risk$hazard_ratio <- .7
-pfs <- Endpoint$new(name = 'pfs', type='tte', method='piecewise_const_exp',
-                    risk = risk)
+pfs <- Endpoint$new(name = 'pfs', type='tte', 
+                    generator = PiecewiseConstantExponentialRNG, 
+                    risk = risk, endpoint_name = 'pfs')
+
 vrr <- Endpoint$new(
-  name = 'vrr', type = 'binary', generator = rbinom,
+  name = 'vrr', type = 'binary', 
+  readout = c(vrr=2), generator = rbinom, 
   size = 1, prob = .55) # higher probability
 
 os <- Endpoint$new(name = 'os', type='tte', 
-                   rexp, rate = log(2)/25 * .75)
+                   generator=rexp, rate = log(2)/25 * .75)
 
-high <- Arm$new(
-  name = 'high dose', description = 'High dose arm')
+high <- Arm$new(name = 'high dose', description = 'High dose arm')
 high$add_endpoints(pfs, os, vrr)
 ```
 
@@ -234,7 +231,7 @@ futility_event <- Event$new(name = 'futility', type = 'futility analysis',
                     trigger_condition = TriggerByEventNumbers,
                     action = futility_action,
                     endpoints = 'vrr',
-                    target_n_events = 50)
+                    target_n_events = 150)
 ```
 
 Likewise, we can define events for interim and final analyses of PFS and OS.
@@ -279,7 +276,7 @@ pfs_interim_event <- Event$new(name = 'pfs interim', type = 'interim analysis',
                             trigger_condition = TriggerByEventNumbers,
                             action = pfs_interim_action,
                             endpoints = 'pfs',
-                            target_n_events = 100)
+                            target_n_events = 400)
 ```
 ```{r}
 #'  event to trigger final analysis for PFS and interim analysis for OS
@@ -313,7 +310,7 @@ pfs_final_event <- Event$new(name = 'pfs final', type = 'pfs final/os interim',
                                trigger_condition = TriggerByEventNumbers,
                                action = pfs_final_action,
                                endpoints = c('pfs', 'os'),
-                               target_n_events = c(300, 200), meet = 'any')
+                               target_n_events = c(600, 500), meet = 'any')
 ```
 
 ```{r}

@@ -9,4 +9,4 @@ trial <- Trial$new(
   enroller = rexp, rate = log(2) / 5)
 
 trial$add_arms(sample_ratio = 1, placebo)
-trial$add_arms(sample_ratio = c(2, 1), enforce = TRUE, low, high)
+trial$add_arms(sample_ratio = c(1, 1), enforce = TRUE, low, high)

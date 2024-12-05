@@ -10,14 +10,15 @@ risk <- data.frame(
   piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01)
 )
 
-pfs <- Endpoint$new(name = 'pfs', type='tte', method='piecewise_const_exp',
-                    risk = risk)
+pfs <- Endpoint$new(name = 'pfs', type='tte',
+                    generator=PiecewiseConstantExponentialRNG,
+                    risk = risk, endpoint_name = 'pfs')
 
-os <- Endpoint$new(name = 'os', type='tte', rexp, rate = log(2)/25)
+os <- Endpoint$new(name = 'os', type='tte', generator=rexp, rate = log(2)/25)
 
 orr <- Endpoint$new(
   name = 'orr', type = 'binary', generator = rbinom,
-  size = 1, prob = .4)
+  size = 1, prob = .4, readout = c(orr=6))
 
 placebo <- Arm$new(
   name = 'pbo', description = 'Placebo arm')

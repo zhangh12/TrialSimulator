@@ -37,5 +37,5 @@ pfs_interim_event <- Event$new(name = 'pfs interim', type = 'interim analysis',
                             trigger_condition = TriggerByEventNumbers,
                             action = pfs_interim_action,
                             endpoints = 'pfs',
-                            target_n_events = 100)
+                            target_n_events = 400)
 

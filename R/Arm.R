@@ -9,11 +9,13 @@
 #'   piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01)
 #' )
 #'
-#' pfs <- Endpoint$new(name = 'pfs', type='tte', method='piecewise_const_exp',
-#'   risk = risk)
+#' pfs <- Endpoint$new(name = 'pfs', type='tte',
+#' generator = PiecewiseConstantExponentialRNG,
+#' risk = risk, endpoint_name = 'pfs')
 #'
 #' orr <- Endpoint$new(
-#'   name = 'orr', type = 'binary', generator = rbinom,
+#'   name = 'orr', type = 'binary',
+#'   readout = c(orr = 2), generator = rbinom,
 #'   size = 1, prob = .4)
 #'
 #' placebo <- Arm$new(

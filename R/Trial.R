@@ -9,10 +9,12 @@
 #'   piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01)
 #' )
 #'
-#' pfs1 <- Endpoint$new(name = 'pfs', type='tte', method='piecewise_const_exp',
-#'   risk = risk1)
+#' pfs1 <- Endpoint$new(name = 'pfs', type='tte',
+#'           generator = PiecewiseConstantExponentialRNG,
+#'           risk = risk1, endpoint_name = 'pfs')
 #' orr1 <- Endpoint$new(
-#'   name = 'orr', type = 'binary', generator = rbinom,
+#'   name = 'orr', type = 'binary',
+#'   readout = c(orr=1), generator = rbinom,
 #'   size = 1, prob = .4)
 #' placebo <- Arm$new(
 #'   name = 'pbo', description = 'Placebo arm')
@@ -21,10 +23,12 @@
 #'
 #' risk2 <- risk1
 #' risk2$hazard_ratio <- .8
-#' pfs2 <- Endpoint$new(name = 'pfs', type='tte', method='piecewise_const_exp',
-#'   risk = risk2)
+#' pfs2 <- Endpoint$new(name = 'pfs', type='tte',
+#'           generator = PiecewiseConstantExponentialRNG,
+#'           risk = risk2, endpoint_name = 'pfs')
 #' orr2 <- Endpoint$new(
-#'   name = 'orr', type = 'binary', generator = rbinom,
+#'   name = 'orr', type = 'binary',
+#'   generator = rbinom, readout = c(orr=3),
 #'   size = 1, prob = .6)
 #' active <- Arm$new(
 #'   name = 'ac', description = 'Active arm')
@@ -533,6 +537,7 @@ Trial <- R6::R6Class(
     #' @param time current calendar time of a trial.
     set_current_time = function(time){
       stopifnot(time >= 0)
+      attributes(time) <- NULL
       private$now <- time
     },
 
@@ -544,7 +549,7 @@ Trial <- R6::R6Class(
 
     #' @description
     #' count accumulative number of events (for TTE) or samples (otherwise) over
-    #' calendar time (enroll time + tte for TTE, or enroll time otherwise)
+    #' calendar time (enroll time + tte for TTE, or enroll time + readout otherwise)
     get_event_tables = function(){
 
       trial_data <- self$get_trial_data()
@@ -562,15 +567,12 @@ Trial <- R6::R6Class(
 
       }
 
-      other_cols <-
-        setdiff(
-          names(trial_data),
-          c('patient_id', 'arm', 'enroll_time', event_cols, gsub('_event$', '', event_cols)))
-
-      for(event_col in other_cols){
-        event_counts[[event_col]] <- trial_data %>%
-          dplyr::select(all_of(c('patient_id', 'arm', 'enroll_time', event_col))) %>%
-          mutate(calendar_time = enroll_time) %>%
+      readout_cols <- grep('_readout$', names(trial_data), value = TRUE)
+      for(readout_col in readout_cols){
+        ep_col <- gsub('_readout$', '', readout_col)
+        event_counts[[ep_col]] <- trial_data %>%
+          dplyr::select(all_of(c('patient_id', 'arm', 'enroll_time', ep_col, readout_col))) %>%
+          mutate(calendar_time := enroll_time + !!sym(readout_col)) %>%
           arrange(calendar_time) %>%
           mutate(n_events = row_number())
       }
@@ -608,15 +610,17 @@ Trial <- R6::R6Class(
       event_times <- NULL
       for(i in seq_along(endpoints)){
         if(max(event_counts[[endpoints[i]]]$n_events) < target_n_events[i]){
-          stop('No enough events/samples for endpoint ', endpoints[i],
-               ' to reach the target number. ')
-        }
+          warning('No enough events/samples for endpoint <', endpoints[i],
+               '> to reach the target number <', target_n_events[i], '>. ')
+          event_times <- c(event_times, Inf)
+        }else{
 
-        event_times <-
-          c(event_times,
-            min(event_counts[[endpoints[i]]]$calendar_time[
-              event_counts[[endpoints[i]]]$n_events >= target_n_events[i]
-            ]))
+          event_times <-
+            c(event_times,
+              min(event_counts[[endpoints[i]]]$calendar_time[
+                event_counts[[endpoints[i]]]$n_events >= target_n_events[i]
+              ]))
+        }
       }
 
       lock_time <-
@@ -625,6 +629,10 @@ Trial <- R6::R6Class(
           type %in% 'any' ~ min(event_times),
           TRUE ~ -Inf
         )
+
+      if(is.infinite(lock_time)){
+        stop('None of the endpoints can reach target event number during the trial. ')
+      }
 
 
       attr(lock_time, 'n_events') <- list()
@@ -636,6 +644,7 @@ Trial <- R6::R6Class(
                  0)
 
       }
+      attr(lock_time, 'n_events') <- data.frame(attr(lock_time, 'n_events'))
 
       lock_time
 
@@ -650,10 +659,42 @@ Trial <- R6::R6Class(
     },
 
     #' @description
+    #' return names of locked data
+    get_locked_data_name = function(){
+      names(private$locked_data)
+    },
+
+    #' @description
+    #' return number of events at lock time
+    #' @param event_name names of triggered events. Use all triggered events
+    #' if \code{NULL}.
+    get_event_number = function(event_name = NULL){
+      if(is.null(event_name)){
+        event_name <- self$get_locked_data_name()
+      }
+
+      n_events <- NULL
+      lock_time <- NULL
+      for(event in event_name){
+        lock_time <- c(lock_time,
+                       attr(self$get_locked_data(event), 'lock_time')[1])
+        n_events <- bind_rows(n_events,
+                              attr(attr(self$get_locked_data(event), 'lock_time'), 'n_events'))
+      }
+
+      n_events <- n_events %>%
+        mutate(lock_time = lock_time) %>%
+        mutate(event_name = event_name) %>%
+        arrange(lock_time)
+
+      n_events
+    },
+
+    #' @description
     #' lock data at specific calendar time.
     #' For time-to-event endpoints, their event indicator *_event should be
     #' updated accordingly. Locked data should be stored separately.
-    #' DO NOT OVERWRITE/UPDATE self$trial_data! which can lose actual
+    #' DO NOT OVERWRITE/UPDATE private$trial_data! which can lose actual
     #' time-to-event information. For example, a patient may be censored at
     #' the first data lock. However, he may have event being observed in a
     #' later data lock.
@@ -677,6 +718,16 @@ Trial <- R6::R6Class(
                           !!sym(tte_col)
                           )
                  )
+      }
+
+      readout_cols <- grep('_readout$', names(trial_data), value = TRUE)
+      for(readout_col in readout_cols){
+        ep_col <- gsub('_readout$', '', readout_col)
+        trial_data <- trial_data %>%
+          mutate(calendar_time := enroll_time + !!sym(readout_col)) %>%
+          ## in locked data, some patients may have been enrolled, but
+          ## their non-tte endpoints have no readout, thus set to be NA
+          mutate(!!ep_col := ifelse(calendar_time > at_calendar_time, NA, !!sym(ep_col)))
       }
 
       locked_data <- trial_data %>%
@@ -727,6 +778,104 @@ Trial <- R6::R6Class(
       }
 
       NULL
+    },
+
+
+    #' @description
+    #' plot of cumulative number of events/samples over calendar time.
+    event_plot = function(){
+
+      trial_data <- self$get_trial_data()
+
+      event_number <- self$get_event_number()
+      event_number$event_name <- paste0(1:nrow(event_number), ': ',
+                                        event_number$event_name)
+
+      event_cols <- grep('_event$', names(trial_data), value = TRUE)
+      readout_cols <- grep('_readout$', names(trial_data), value = TRUE)
+
+      all_data_list <- NULL
+      for(col in c(event_cols, readout_cols)){
+        tte_col <- gsub('_event$', '', col)
+        ep_col <- gsub('_readout$', '', col)
+
+        stopifnot((tte_col != col) || (ep_col != col))
+
+        data_list <- list()
+
+        if(ep_col == col){ ## a tte endpoint
+          event_counts <- trial_data %>%
+            dplyr::select(all_of(c('patient_id', 'arm', 'enroll_time', tte_col, col))) %>%
+            mutate(calendar_time := enroll_time + !!sym(tte_col)) %>%
+            arrange(calendar_time)
+          col_ <- tte_col
+
+          data_list[['1: overall']] <- event_counts %>%
+            mutate(n_events = cumsum(get(col)))
+
+          idx <- 1
+          for(arm_ in sort(unique(trial_data$arm))){
+            idx <- idx + 1
+            data_list[[paste0(idx, ': ', arm_)]] <- event_counts %>%
+              dplyr::filter(arm %in% arm_) %>%
+              arrange(calendar_time) %>%
+              mutate(n_events = cumsum(get(col)))
+          }
+
+        }else{ ## a non-tte endpoint
+          event_counts <- trial_data %>%
+            dplyr::select(all_of(c('patient_id', 'arm', 'enroll_time', ep_col, col))) %>%
+            mutate(calendar_time := enroll_time + !!sym(col)) %>%
+            arrange(calendar_time)
+          col_ <- ep_col
+
+          data_list[['1: overall']] <- event_counts %>%
+            mutate(n_events = row_number())
+
+          idx <- 1
+          for(arm_ in sort(unique(trial_data$arm))){
+            idx <- idx + 1
+            data_list[[paste0(idx, ': ', arm_)]] <- event_counts %>%
+              dplyr::filter(arm %in% arm_) %>%
+              arrange(calendar_time) %>%
+              mutate(n_events = row_number())
+          }
+
+        }
+
+        all_data_list <- bind_rows(
+          all_data_list,
+          lapply(names(data_list), function(name){
+            data_list[[name]] %>%
+              mutate(arm = name) %>%
+              mutate(endpoint = col_)
+          })
+        )
+
+      }
+
+      p <-
+      ggplot() +
+        geom_line(data = all_data_list,
+                  aes(x = calendar_time, y = n_events,
+                      color = arm, group = arm),
+                  size = 1) +
+        geom_vline(
+          data = event_number,
+          aes(xintercept = lock_time),
+          linetype = 'dashed'
+        ) +
+        labs(
+          x = 'Calendar Time',
+          y = 'Cumulative # of Events/Samples',
+          color = ''
+        ) +
+        facet_wrap(~ endpoint, scales = 'free_x') +
+        theme_minimal() +
+        theme(legend.position = 'bottom')
+
+      plot(p)
+
     }
 
   ),
