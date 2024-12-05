@@ -23,7 +23,7 @@
 #' @examples
 #' # example code
 #' dfunc <- DynamicRNGFunction(rnorm, sd = 3.2)
-#' x <- dfunc(1e3)[, 1]
+#' x <- dfunc(1e3)
 #' hist(x)
 #'
 #' @export
@@ -31,6 +31,8 @@ DynamicRNGFunction <- function(fn, ...) {
 
   # Capture fixed arguments
   fixed_args <- list(...)
+
+  ## name of generator
   if(is.null(fixed_args$rng)){
     fn_name <- deparse(substitute(fn))
   }else{
@@ -40,14 +42,11 @@ DynamicRNGFunction <- function(fn, ...) {
 
   var_name <- fixed_args$var_name
   fixed_args$var_name <- NULL
-  if(length(var_name) > 1){
-    stop('var_name should be of length 1 in DynamicRNGFunction. ')
-  }
 
   simplify <- ifelse(is.null(fixed_args$simplify), FALSE, fixed_args$simplify)
   fixed_args$simplify <- NULL
 
-  type <- ifelse(is.null(fixed_args$type) || (fixed_args$type != 'tte'), 'other', 'tte')
+  type <- fixed_args$type
   fixed_args$type <- NULL
 
   readout <- fixed_args$readout
@@ -62,6 +61,7 @@ DynamicRNGFunction <- function(fn, ...) {
 
   # Create the wrapper function
   wrapper <- function(...) {
+
     # Capture new arguments
     new_args <- list(...)
 
@@ -78,20 +78,25 @@ DynamicRNGFunction <- function(fn, ...) {
     dat <- do.call(fn, all_args)
 
     if(is.vector(dat)){
-      if(simplify){ ## useful when an Endpoint class is used to define enroller
+      if(simplify || is.null(type)){ ## useful when an Endpoint class is used to define enroller
         return(dat)
       }
+
+      stopifnot(is.null(type) || (length(type) == 1))
+      stopifnot(is.null(var_name) || (length(var_name) == 1))
 
       ## otherwise add column names
       if(type %in% 'tte'){ ## if tte, add event indicator
         dat <- data.frame(tte = dat, tte_event = 1)
         if(!is.null(var_name)){
-          colnames(dat) <- c(var_name, paste0(var_name, '_event'))
+          colnames(dat) <- paste0(var_name, c('', '_event'))
         }
       }else{
-        dat <- data.frame(V1 = dat, V1_readout = readout)
+
+        stopifnot(is.null(readout) || (length(readout) == 1))
+        dat <- data.frame(V1 = dat, V1_readout = unname(readout))
         if(!is.null(var_name)){
-          colnames(dat) <- c(var_name, paste0(var_name, '_readout'))
+          colnames(dat) <- paste0(var_name, c('', '_readout'))
         }
       }
     }else{ ## user-defined rng function is received. It is user's responsibility

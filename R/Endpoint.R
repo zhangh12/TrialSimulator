@@ -8,6 +8,7 @@
 #' @import dplyr survival
 #' @importFrom stats runif
 #' @importFrom utils head tail
+#' @import ggplot2
 #'
 #' @examples
 #' set.seed(12345)
@@ -21,18 +22,21 @@
 #'   piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01)
 #' )
 #'
-#' pfs <- Endpoint$new(name = 'pfs', type='tte', method='piecewise_const_exp',
-#' risk = risk)
+#' pfs <- Endpoint$new(name = 'pfs', type='tte',
+#' generator = PiecewiseConstantExponentialRNG,
+#' risk = risk, endpoint_name = 'pfs')
 #' pfs$get_generator()
 #'
 #' ## Example 2. Generate continuous and binary endpoints using R's builtin
 #' ## RNG functions, e.g. rnorm, rexp, rbinom, etc.
 #' ep1 <- Endpoint$new(
-#'          name = 'cd4', type = 'c', generator = rnorm, mean = 1.2)
+#'          name = 'cd4', type = 'c', generator = rnorm, readout = c(cd4=1),
+#'          mean = 1.2)
 #' ep2 <- Endpoint$new(
-#'          name = 'resp_time', type = 'c', generator = rexp, rate = 4.5)
+#'          name = 'resp_time', type = 'c', generator = rexp, readout = c(resp_time=0),
+#'          rate = 4.5)
 #' ep3 <- Endpoint$new(
-#'          name = 'orr', type = 'binary', generator = rbinom,
+#'          name = 'orr', type = 'binary', readout = c(orr=3), generator = rbinom,
 #'          size = 1, prob = .4)
 #'
 #' mean(ep1$get_generator()(1e4)[, 1]) # compared to 1.2
@@ -61,12 +65,16 @@
 #' if(run){
 #' risk1 <- risk
 #' ep1 <- TrialSimulator::Endpoint$new(
-#'   name = 'pfs', type='tte', method='piecewise_const_exp', risk=risk1)
+#'   name = 'pfs', type='tte',
+#'   generator = PiecewiseConstantExponentialRNG,
+#'   risk=risk1, endpoint_name = 'pfs')
 #'
 #' risk2 <- risk1
 #' risk2$hazard_ratio <- c(1, 1, .6, .4)
 #' ep2 <- TrialSimulator::Endpoint$new(
-#'   name = 'pfs', type='tte', method='piecewise_const_exp', risk=risk2)
+#'   name = 'pfs', type='tte',
+#'   generator = PiecewiseConstantExponentialRNG,
+#'   risk=risk2, endpoint_name = 'pfs')
 #'
 #' n <- 1000
 #' tte <- rbind(ep1$get_generator()(n), ep2$get_generator()(n))
@@ -99,19 +107,16 @@ Endpoint <- R6::R6Class(
     #' \code{readout} should be specified for every non-tte endpoint. For
     #' example, \code{c(endpoint1 = 6, endpoint2 = 3)}.  If all
     #' endpoints are tte, \code{readout} can be \code{NULL}.
-    #'
-    #' @param ... Other supported arguments.
-    #' It includes `method` a character with possible values as follow
-    # (1) piecewise_const_exp: piecewise constant exponential distribution
+    #' @param ... optional arguments for \code{generator}.
     initialize = function(
       name,
       type = c('tte', 'continuous', 'binary'),
-      generator = NULL,
       readout = NULL,
+      generator,
       ...
     ){
 
-      private$validate_arguments(name, type, generator, readout, ...)
+      private$validate_arguments(name, type, readout, generator, ...)
       private$name <- name
       private$uid <- paste0(name, collapse = '/')
 
@@ -130,19 +135,6 @@ Endpoint <- R6::R6Class(
           type = self$get_type(),
           readout = self$get_readout(), ...)
         ## ignore all other arguments in ... if generator is provided
-        return()
-      }
-
-      args <- list(...)
-      method <- args$method
-
-      if('piecewise_const_exp' %in% method){
-        private$generator <-
-          DynamicRNGFunction(
-            PiecewiseConstantExponentialRNG,
-            risk = args$risk,
-            endpoint_name = name
-          )
         return()
       }
 
@@ -212,8 +204,8 @@ Endpoint <- R6::R6Class(
     validate_arguments = function(
       name,
       type = c('tte', 'continuous', 'binary'),
-      generator = NULL,
-      readout = NULL,
+      readout,
+      generator,
       ...
     ){
       stopifnot(is.character(name))
@@ -221,8 +213,22 @@ Endpoint <- R6::R6Class(
       stopifnot((length(name) == length(type)) || (length(type) == 1))
       type <- match.arg(type, several.ok = TRUE)
 
-      if(!is.null(readout)){
+      stopifnot(!is.null(generator))
+
+      if(is.null(readout)){
+        if(any(type != 'tte')){
+          stop('Readout cannot be NULL for <',
+               paste0(name[type != 'tte'], collapse = ', '),
+               '>. ')
+        }
+      }else{
+
         stopifnot(is.numeric(readout) && all(readout >= 0))
+        if(is.null(names(readout)) || ('' %in% names(readout))){
+          stop('readout should be a named numeric vector, ',
+               'e.g. c(os = 1, pfs = 2). ')
+        }
+
         if(!all(names(readout) %in% name[type != 'tte'])){
           stop('Readout is set for unknown or time-to-event endpoint(s) <',
                paste0(setdiff(names(readout), name[type != 'tte']), collapse = ', '),
@@ -234,71 +240,40 @@ Endpoint <- R6::R6Class(
                paste0(setdiff(name[type != 'tte'], names(readout)), collapse = ', '),
                '>. ')
         }
-      }else{
-        if(!all(type %in% 'tte')){
-          stop('Readout is missing for endpoint(s) <',
-               paste0(name[type != 'tte'], collapse = ', '),
-               '>. ')
-        }
       }
 
+      stopifnot(is.function(generator))
 
-      if(!is.null(generator)){
-        stopifnot(is.function(generator))
-
-        # Check that the first argument of generator is "n"
-        arg_names <- names(formals(generator))
-        if (length(arg_names) == 0 || arg_names[1] != "n") {
-          stop("The first argument of generator must be 'n'.")
-        }
-
-        n_ <- 2
-        generator_ <- DynamicRNGFunction(generator, ...)
-        example_data <- generator_(n = n_)
-
-        if(!is.data.frame(example_data) && !is.vector(example_data)){
-          stop('generator must return a data frame (for multiple endpoints or a TTE) or a vector.')
-        }
-
-        if(is.vector(example_data)){
-          example_data <- data.frame(v1 = example_data) %>%
-            rename(!!name := .data$v1)
-        }
-
-        if(!all(name %in% colnames(example_data))){
-          stop('generator must return data for every endpoints in \'name\'.')
-        }
-
-        if(nrow(example_data) != n_){
-          stop('\'n\' in generator does not work correctly.')
-        }
-        ## ignore all other arguments in ... if generator is provided
-        return()
+      # Check that the first argument of generator is "n"
+      arg_names <- names(formals(generator))
+      if (length(arg_names) == 0 || arg_names[1] != "n") {
+        stop("The first argument of generator must be 'n'.")
       }
 
-      ## if generator is not provided
-      if(length(name) != 1){
-        stop('Only one endpoint can be specified if \'generator\' is not specified.')
+      n_ <- 2
+      generator_ <- DynamicRNGFunction(generator,
+                                       rng = deparse(substitute(generator)),
+                                       var_name = name,
+                                       type = type,
+                                       readout = readout, ...)
+      example_data <- generator_(n = n_)
+
+      if(!is.data.frame(example_data) && !is.vector(example_data)){
+        stop('generator must return a data frame (for multiple endpoints or a TTE) or a vector.')
       }
 
-      args <- list(...)
-      method <- args$method
-      if(is.null(method)){
-        stop('\'method\' cannot be NULL if generator is not specified.')
+      if(is.vector(example_data)){
+        example_data <- data.frame(v1 = example_data) %>%
+          rename(!!name := .data$v1)
       }
 
-      valid_methods <- c('piecewise_const_exp', 'TBD')
-      if(!(method %in% valid_methods)){
-        stop('Valid methods are <', paste0(valid_methods, collapse = ', '), '>. ')
+      if(!all(name %in% colnames(example_data))){
+        stop('generator must return data for every endpoints in \'name\'.')
       }
 
-      if('piecewise_const_exp' %in% method){
-        if(is.null(args$risk)){
-          stop('\'risk\' should be provided if method = \'piecewise_const_exp\'.')
-        }
+      if(nrow(example_data) != n_){
+        stop('\'n\' in generator does not work correctly.')
       }
-
-      return()
     }
   )
 )

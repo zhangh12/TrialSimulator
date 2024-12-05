@@ -5,13 +5,15 @@ risk <- data.frame(
   hazard_ratio = .9
 )
 
-pfs <- Endpoint$new(name = 'pfs', type='tte', method='piecewise_const_exp',
-                     risk = risk)
+pfs <- Endpoint$new(name = 'pfs', type='tte',
+                    generator=PiecewiseConstantExponentialRNG,
+                    risk = risk,
+                    endpoint_name = 'pfs')
 orr <- Endpoint$new(
   name = 'orr', type = 'binary', generator = rbinom,
-  size = 1, prob = .45)
+  size = 1, prob = .45, readout=c(orr=6))
 
-os <- Endpoint$new(name = 'os', type='tte', rexp, rate = log(2)/25 * .85)
+os <- Endpoint$new(name = 'os', type='tte', generator=rexp, rate = log(2)/25 * .85)
 
 low <- Arm$new(
   name = 'low dose', description = 'Low dose arm')

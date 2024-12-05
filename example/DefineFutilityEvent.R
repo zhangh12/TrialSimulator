@@ -18,10 +18,10 @@ futility_action <- function(trial, event_name){
   trial$update_sample_ratio('pbo', 1)
   if(affected_arm == 'high dose'){
     ## if low dose arm is kept, increase its ratio
-    trial$update_sample_ratio('low dose', 2)
+    trial$update_sample_ratio('low dose', 3)
   }else{
     ## if high dose arm is kept, reduce its ratio for safety
-    trial$update_sample_ratio('high dose', 1)
+    trial$update_sample_ratio('high dose', 2)
   }
 
   ## return for displaying purpose
@@ -40,5 +40,5 @@ futility_event <- Event$new(name = 'futility', type = 'futility analysis',
                     trigger_condition = TriggerByEventNumbers,
                     action = futility_action,
                     endpoints = 'orr',
-                    target_n_events = 50)
+                    target_n_events = 100)
 

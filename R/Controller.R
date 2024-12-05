@@ -44,6 +44,7 @@ Controller <- R6::R6Class(
     run = function(){
 
       self$get_listener()$monitor(self$get_trial())
+      self$get_trial()$event_plot()
 
     }
   )
