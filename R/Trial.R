@@ -54,6 +54,7 @@ Trial <- R6::R6Class(
     #' @param name character. Name of trial.
     #' @param n_patients integer. Maximum number of patients could be enrolled
     #' to the trial.
+    #' @param duration Numeric. Trial duration.
     #' @param description character. Optional for description of the trial. By
     #' default it is set to be trial's \code{name}.
     #' @param seed random seed. If \code{NULL}, \code{set.seed()} will not be
@@ -65,6 +66,7 @@ Trial <- R6::R6Class(
       function(
         name,
         n_patients,
+        duration,
         description = name,
         seed,
         enroller,
@@ -72,7 +74,7 @@ Trial <- R6::R6Class(
       ){
 
         private$validate_arguments(
-          name, n_patients, description, seed, enroller, ...)
+          name, n_patients, duration, description, seed, enroller, ...)
 
         if(!is.null(seed)){
           set.seed(seed)
@@ -82,6 +84,7 @@ Trial <- R6::R6Class(
         private$name <- name
         private$description <- description
         private$n_patients <- n_patients
+        private$duration <- duration
         private$now <- 0
         private$trial_data <- NULL
         private$locked_data <- list()
@@ -100,6 +103,12 @@ Trial <- R6::R6Class(
     #' function is called
     get_trial_data = function(){
       private$trial_data
+    },
+
+    #' @description
+    #' return maximum duration of a trial
+    get_duration = function(){
+      private$duration
     },
 
     #' @description
@@ -516,6 +525,7 @@ Trial <- R6::R6Class(
       }
 
       private$trial_data <- bind_rows(self$get_trial_data(), patient_data)
+      self$censor_trial_data() # updated trial data is censored at trial duration
 
       message('Data of ', n_patients,
               ' potential patients are generated for the trial with ',
@@ -876,6 +886,42 @@ Trial <- R6::R6Class(
 
       plot(p)
 
+    },
+
+    #' @description
+    #' censor data at trial duration
+    #' @param censor_at time of censoring. It is set to trial duration if
+    #' \code{NULL}.
+    censor_trial_data = function(censor_at = NULL){
+
+      if(is.null(censor_at)){
+        censor_at <- self$get_duration()
+      }
+
+      trial_data <- self$get_trial_data()
+
+      event_cols <- grep('_event$', names(trial_data), value = TRUE)
+      readout_cols <- grep('_readout$', names(trial_data), value = TRUE)
+
+      for(event_col in event_cols){
+        tte_col <- gsub('_event$', '', event_col)
+        trial_data <- trial_data %>%
+          mutate(calendar_time := enroll_time + !!sym(tte_col)) %>%
+          mutate(!!event_col := ifelse(calendar_time > censor_at, 0, !!sym(event_col))) %>%
+          dplyr::select(-calendar_time) %>%
+          arrange(enroll_time)
+      }
+
+      for(readout_col in readout_cols){
+        ep_col <- gsub('_readout$', '', readout_col)
+        trial_data <- trial_data %>%
+          mutate(calendar_time := enroll_time + !!sym(readout_col)) %>%
+          mutate(!!ep_col := ifelse(calendar_time > censor_at, NA, !!sym(ep_col))) %>%
+          dplyr::select(-calendar_time) %>%
+          arrange(enroll_time)
+      }
+
+      private$trial_data <- trial_data
     }
 
   ),
@@ -885,6 +931,7 @@ Trial <- R6::R6Class(
     name = NULL,
     description = NULL,
     n_patients = NULL,
+    duration = NULL,
     n_enrolled_patients = NULL,
     sample_ratio = NULL,
 
@@ -906,7 +953,7 @@ Trial <- R6::R6Class(
     locked_data = list(),
 
     validate_arguments =
-      function(name, n_patients, description, seed, enroller, ...){
+      function(name, n_patients, duration, description, seed, enroller, ...){
 
       stopifnot(is.null(seed) || is.wholenumber(seed))
       stopifnot(is.character(name))
@@ -915,6 +962,8 @@ Trial <- R6::R6Class(
       stopifnot(is.numeric(n_patients) &&
                   (length(n_patients) == 1) &&
                   is.wholenumber(n_patients))
+
+      stopifnot(is.numeric(duration) && (length(duration) == 1))
 
       stopifnot(is.function(enroller))
 
