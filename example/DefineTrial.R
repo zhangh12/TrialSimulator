@@ -5,6 +5,7 @@
 
 trial <- Trial$new(
   name = 'Trial-3415', n_patients = n_patients,
+  duration = 160,
   seed = 31415926,
   enroller = rexp, rate = log(2) / 5)
 
