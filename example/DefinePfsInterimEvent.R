@@ -1,13 +1,10 @@
-
-
+#' event to trigger interim analysis for PFS
 pfs_interim_action <- function(trial, event_name){
 
   locked_data <- trial$get_locked_data(event_name)
-  ## do something with locked_data, e.g. estimate, test, etc.,
-  ## to support further actions
-  ## ...
 
-  ## this is just for illustration
+  ## this p-value is just for illustration
+  ## it can be calculated from locked_data
   pfs_interim_pval <- runif(1, 1e-3, .05)
 
   ## action 1: if pfs is significant, increase its sample ratio
@@ -20,6 +17,7 @@ pfs_interim_action <- function(trial, event_name){
     trial$update_sample_ratio(active_arm, 2)
     trial$update_sample_ratio('pbo', 1)
 
+    ## for displaying purpose, not essential
     action <- data.frame(
       order = c(1, 2),
       type = 'update sample ratio',
@@ -32,10 +30,8 @@ pfs_interim_action <- function(trial, event_name){
 
 }
 
-
 pfs_interim_event <- Event$new(name = 'pfs interim', type = 'interim analysis',
-                            trigger_condition = TriggerByEventNumbers,
-                            action = pfs_interim_action,
-                            endpoints = 'pfs',
-                            target_n_events = 400)
-
+                               trigger_condition = TriggerByEventNumbers,
+                               action = pfs_interim_action,
+                               endpoints = 'pfs',
+                               target_n_events = 110)

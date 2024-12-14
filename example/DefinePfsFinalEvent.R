@@ -1,5 +1,3 @@
-
-
 pfs_final_action <- function(trial, event_name){
 
   locked_data <- trial$get_locked_data(event_name)
@@ -20,15 +18,12 @@ pfs_final_action <- function(trial, event_name){
   action
 
 }
-
-
 ## meet = 'any' means that final analysis for PFS is triggered
 ## when pfs event reaches 300 or os event reaches 100.
 ## if meet = 'all', then final analysis for PFS is carried out only if
 ## both conditions are met.
-pfs_final_event <- Event$new(name = 'pfs final', type = 'final analysis',
-                               trigger_condition = TriggerByEventNumbers,
-                               action = pfs_final_action,
-                               endpoints = c('pfs', 'os'),
-                               target_n_events = c(600, 500), meet = 'any')
-
+pfs_final_event <- Event$new(name = 'pfs final', type = 'pfs final/os interim',
+                             trigger_condition = TriggerByEventNumbers,
+                             action = pfs_final_action,
+                             endpoints = c('pfs', 'os'),
+                             target_n_events = c(331, 207), meet = 'any')

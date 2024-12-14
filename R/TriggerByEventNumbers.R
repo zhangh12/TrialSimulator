@@ -12,7 +12,7 @@
 #' @param meet \code{'all'} if all target event numbers need to be met before
 #' triggering the event. \code{'any'} if triggering the event when the first
 #' target is met for corresponding endpoint.
-#' @return data lock time (calendar).
+#' @return data lock time (calendar), so that the `Event` class can lock data.
 #' @export
 TriggerByEventNumbers <-
   function(trial = NULL, event_name, endpoints, target_n_events, meet = c('all', 'any')){
@@ -21,7 +21,7 @@ TriggerByEventNumbers <-
       stop('trial is needed in TriggerByEventNumbers to trigger an event in. ')
     }
     meet <- match.arg(meet)
-    data_lock_time <- trial$get_data_lock_time(endpoints, target_n_events, type = meet)
+    data_lock_time <- trial$get_data_lock_time_by_event_number(endpoints, target_n_events, type = meet)
 
     attr(data_lock_time, 'event_name') <- event_name
     return(data_lock_time)
