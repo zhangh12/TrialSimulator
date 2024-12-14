@@ -1,0 +1,61 @@
+---
+title: "Modular Clinical Trial Simulation: Overview of Core Functions and Workflow"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Modular Clinical Trial Simulation: Overview of Core Functions and Workflow}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(TrialSimulator)
+```
+
+`TrialSimulator` maintains a private field, `now`, representing the
+current time in a running trial. This field is initialized to zero.
+Additionally, the package includes a data frame, `trial_data`, which
+stores simulated data of all planned patients given the setting by
+`now`. Data collected (recruited) or observed (readouts, or
+time-to-event) before `now` is considered final and fixed. Because
+`TrialSimulator` aims to conduct simulation for adaptive clinical trial
+design, data of patients recruited after `now` can be refreshed if
+trial's setting is changed.
+
+When trial settings change--such as adding or removing arms (`add_arms`
+or `remove_arms`) or updating the sampling ratio for one or more arms
+(`update_sample_ratio`)--the package invokes the `roll_back` function.
+This function performs two key actions.
+
+1.  Saving enrollment times: The `enroll_time` for patients who have not
+    yet been enrolled by `now` is preserved, as recruitment curve is
+    pre-defined and fixed.
+2.  Deleting future patient data: Data corresponding to patients not yet
+    enrolled is removed from `trial_data`.
+
+After rolling back, the package updates the randomization process. It
+uses `permuted_block_randomization` to refresh the
+`randomization_queue`, ensuring proper randomization for patients who
+have not yet been enrolled. Following this, the `enroll_patients` method
+generates new data for these patients, reflecting the updated trial
+settings. This ensures that `trial_data` remains consistent with the
+trial's current configuration. This is critical to allow the package to
+handle complex adaptive design.
+
+The trial's progress is monitored by a listener, which tracks
+pre-defined events. When the condition for a event is met, the `now`
+field is updated to the time of the event, triggering a data lock. At
+this point, the data is "frozen", creating a snapshot of `trial_data` as
+of `now` in `locked_data`. This locked dataset is saved and can be
+accessed by event's name. A locked dataset serves as the basis for
+executing pre-defined action functions of an event, such as dose
+selection, futility analysis, interim analysis or final analysis.

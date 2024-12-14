@@ -39,7 +39,7 @@
 #' ## Enrollment time follows an exponential distribution, with median 5
 #' trial <- Trial$new(
 #'   name = 'Trial-3415', n_patients = 100,
-#'   seed = 31415926,
+#'   seed = 31415926, duration = 100,
 #'   enroller = rexp, rate = log(2) / 5)
 #' trial$add_arms(sample_ratio = c(1, 2), placebo, active)
 #'
@@ -157,6 +157,14 @@ Trial <- R6::R6Class(
                             ': ', self$get_sample_ratio()), collapse = ', '),
               '>. \n')
 
+      ## data of removed arms should be censored at event time
+      ## so that number of events of those arms are fixed.
+      ## Otherwise, number of events can possibly increase later and affect
+      ## calculation of triggering condition based on event numbers.
+      ## Idealy, number of events in removed arms should be flatten afterward,
+      ## and can be seen through Trial$event_plot().
+      self$censor_trial_data(censor_at = self$get_current_time(),
+                             selected_arms = arms_name)
       ## with an arm is removed, unenrolled patient at current time should be
       ## randomized again.
       self$roll_back()
@@ -525,7 +533,7 @@ Trial <- R6::R6Class(
       }
 
       private$trial_data <- bind_rows(self$get_trial_data(), patient_data)
-      self$censor_trial_data() # updated trial data is censored at trial duration
+      self$censor_trial_data() # newly updated trial data should be always censored at trial duration
 
       message('Data of ', n_patients,
               ' potential patients are generated for the trial with ',
@@ -583,6 +591,7 @@ Trial <- R6::R6Class(
         event_counts[[ep_col]] <- trial_data %>%
           dplyr::select(all_of(c('patient_id', 'arm', 'enroll_time', ep_col, readout_col))) %>%
           mutate(calendar_time := enroll_time + !!sym(readout_col)) %>%
+          dplyr::filter(!is.na(!!sym(ep_col))) %>%
           arrange(calendar_time) %>%
           mutate(n_events = row_number())
       }
@@ -604,9 +613,8 @@ Trial <- R6::R6Class(
     #' \code{any} if the any target number of events is reached.
     #' @return data lock time
     #' @examples
-    #' ## dat <- trial$get_trial_data()
-    #' ## trial$get_data_lock_time(c('pfs','orr'), c(200,500), 'any')
-    get_data_lock_time = function(endpoints, target_n_events, type = c('all', 'any')){
+    #' ## trial$get_data_lock_time_by_event_number(c('pfs','orr'), c(200,500), 'any')
+    get_data_lock_time_by_event_number = function(endpoints, target_n_events, type = c('all', 'any')){
 
       type <- match.arg(type)
 
@@ -644,6 +652,37 @@ Trial <- R6::R6Class(
         stop('None of the endpoints can reach target event number during the trial. ')
       }
 
+
+      attr(lock_time, 'n_events') <- list()
+      for(i in seq_along(event_counts)){
+        ec <- event_counts[[i]]
+        attr(lock_time, 'n_events')[[names(event_counts)[i]]] <-
+          ifelse(any(ec$calendar_time <= lock_time),
+                 max(ec$n_events[ec$calendar_time <= lock_time]),
+                 0)
+
+      }
+      attr(lock_time, 'n_events') <- data.frame(attr(lock_time, 'n_events'))
+
+      lock_time
+
+    },
+
+
+    #' @description
+    #' given the calendar time to lock the data, return it with event counts of
+    #' each of the endpoints.
+    #' @param calendar_time numeric. Calendar time to lock the data
+    #' @return data lock time
+    #' @examples
+    #' ## trial$get_data_lock_time_by_calendar_time(20)
+    get_data_lock_time_by_calendar_time = function(calendar_time){
+
+      stopifnot(is.numeric(calendar_time) && length(calendar_time) && calendar_time >= 0)
+
+      event_counts <- self$get_event_tables()
+
+      lock_time <- calendar_time
 
       attr(lock_time, 'n_events') <- list()
       for(i in seq_along(event_counts)){
@@ -835,6 +874,7 @@ Trial <- R6::R6Class(
         }else{ ## a non-tte endpoint
           event_counts <- trial_data %>%
             dplyr::select(all_of(c('patient_id', 'arm', 'enroll_time', ep_col, col))) %>%
+            dplyr::filter(!is.na(!!sym(ep_col))) %>%
             mutate(calendar_time := enroll_time + !!sym(col)) %>%
             arrange(calendar_time)
           col_ <- ep_col
@@ -870,6 +910,7 @@ Trial <- R6::R6Class(
                   aes(x = calendar_time, y = n_events,
                       color = arm, group = arm),
                   size = 1) +
+        xlim(0, self$get_duration() * 1.05) +
         geom_vline(
           data = event_number,
           aes(xintercept = lock_time),
@@ -877,7 +918,7 @@ Trial <- R6::R6Class(
         ) +
         labs(
           x = 'Calendar Time',
-          y = 'Cumulative # of Events/Samples',
+          y = 'Cumulative N',
           color = ''
         ) +
         facet_wrap(~ endpoint, scales = 'free_x') +
@@ -889,16 +930,27 @@ Trial <- R6::R6Class(
     },
 
     #' @description
-    #' censor data at trial duration
+    #' censor trial data at calendar time
     #' @param censor_at time of censoring. It is set to trial duration if
     #' \code{NULL}.
-    censor_trial_data = function(censor_at = NULL){
+    #' @param selected_arms censoring is applied to selected arms (e.g.,
+    #' removed arms) only. If \code{NULL}, it will be set to all available arms
+    #' in trial data. Otherwise, censoring is applied to user-specified arms only.
+    #' This is necessary because number of events/sample size in removed arms
+    #' should be fixed unchanged since corresponding event is triggered. In that
+    #' case, one can update trial data by something like
+    #' \code{censor_trial_data(censor_at = event_time, selected_arms = removed_arms)}.
+    censor_trial_data = function(censor_at = NULL, selected_arms = NULL){
 
       if(is.null(censor_at)){
         censor_at <- self$get_duration()
       }
 
       trial_data <- self$get_trial_data()
+
+      if(is.null(selected_arms)){
+        selected_arms <- unique(trial_data$arm)
+      }
 
       event_cols <- grep('_event$', names(trial_data), value = TRUE)
       readout_cols <- grep('_readout$', names(trial_data), value = TRUE)
@@ -907,7 +959,13 @@ Trial <- R6::R6Class(
         tte_col <- gsub('_event$', '', event_col)
         trial_data <- trial_data %>%
           mutate(calendar_time := enroll_time + !!sym(tte_col)) %>%
-          mutate(!!event_col := ifelse(calendar_time > censor_at, 0, !!sym(event_col))) %>%
+          mutate(!!event_col := ifelse((calendar_time > censor_at) &
+                                         (arm %in% selected_arms),
+                                       0, !!sym(event_col))) %>%
+          mutate(!!tte_col := ifelse((calendar_time > censor_at) &
+                                       (arm %in% selected_arms),
+                                     censor_at - enroll_time, !!sym(tte_col))) %>%
+          mutate(!!tte_col := ifelse(!!sym(tte_col) < 0, 0, !!sym(tte_col))) %>%
           dplyr::select(-calendar_time) %>%
           arrange(enroll_time)
       }
@@ -916,7 +974,9 @@ Trial <- R6::R6Class(
         ep_col <- gsub('_readout$', '', readout_col)
         trial_data <- trial_data %>%
           mutate(calendar_time := enroll_time + !!sym(readout_col)) %>%
-          mutate(!!ep_col := ifelse(calendar_time > censor_at, NA, !!sym(ep_col))) %>%
+          mutate(!!ep_col := ifelse((calendar_time > censor_at) &
+                                      (arm %in% selected_arms),
+                                    NA, !!sym(ep_col))) %>%
           dplyr::select(-calendar_time) %>%
           arrange(enroll_time)
       }

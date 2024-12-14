@@ -52,6 +52,10 @@ Arm <- R6::R6Class(
 
       for(ep in endpoint_list){
         stopifnot(inherits(ep, 'Endpoint'))
+        if(ep$get_uid() %in% names(private$endpoints)){
+          stop('Endpoint <', ep$get_uid(), '> is already in the arm <',
+               self$get_name(), '>. ')
+        }
         private$endpoints[[ep$get_uid()]] <- ep
       }
     },

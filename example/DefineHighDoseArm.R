@@ -1,21 +1,16 @@
+#' hazard ratios
+hr <- c(pfs_low = 0.7, os_low = 0.8, pfs_high = 0.65, os_high = 0.75)
 
-risk <- data.frame(
-  end_time = c(1, 10, 26.0, 52.0),
-  piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01),
-  hazard_ratio = .7
-)
-
+#' define endpoints in the high dose arm
 pfs <- Endpoint$new(name = 'pfs', type='tte',
-                    generator=PiecewiseConstantExponentialRNG,
-                    risk = risk,
-                    endpoint_name = 'pfs')
-orr <- Endpoint$new(
-  name = 'orr', type = 'binary', generator = rbinom,
-  size = 1, prob = .55, readout = c(orr=6))
+                    generator = rexp, rate = log(2)/5.45 * hr['pfs_high'])
 
-os <- Endpoint$new(name = 'os', type='tte', generator=rexp, rate = log(2)/25 * .75)
+vrr <- Endpoint$new(
+  name = 'vrr', type = 'binary', readout = c(vrr = 6 / 52 * 12),
+  generator = rbinom, size = 1, prob = .25) # higher probability
 
-high <- Arm$new(
-  name = 'high dose', description = 'High dose arm')
-high$add_endpoints(pfs, os, orr)
+os <- Endpoint$new(name = 'os', type='tte',
+                   generator=rexp, rate = log(2)/13.71 * hr['os_high'])
 
+high <- Arm$new(name = 'high dose', description = 'treated with high dose')
+high$add_endpoints(pfs, os, vrr)

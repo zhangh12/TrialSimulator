@@ -1,5 +1,3 @@
-
-
 os_final_action <- function(trial, event_name){
 
   locked_data <- trial$get_locked_data(event_name)
@@ -19,11 +17,7 @@ os_final_action <- function(trial, event_name){
 
 }
 
-
-os_final_event <- Event$new(name = 'os final', type = 'final analysis',
-                            trigger_condition = TriggerByEventNumbers,
+os_final_event <- Event$new(name = 'os final', type = 'os final analysis',
+                            trigger_condition = TriggerByCalendarTime,
                             action = os_final_action,
-                            endpoints = c('orr', 'os'),
-                            target_n_events = c(n_patients, 800),
-                            meet = 'all')
-
+                            calendar_time = 64)
