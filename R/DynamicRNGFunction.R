@@ -9,7 +9,7 @@
 #' informative purpose in some scenarios. (2) \code{var_name} can be passed
 #' through `...` to specify the name of generated variable. (3) \code{simplify}
 #' can be set to FALSE to convert a vector into a one-column data frame in returned
-#' object. This happens for builtin random number generators, e.g., \code{rnorm},
+#' object. This happens for built-in random number generators, e.g., \code{rnorm},
 #' \code{rbinom}, etc. These three arguments will not be passed into \code{fn}.
 #'
 #' @return a function to generate random number based on `fn` and arguments in

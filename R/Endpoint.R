@@ -15,7 +15,7 @@
 #' ## Example 1. Generate a time-to-event endpoint.
 #' ## Two columns are returned, one for time, one for event (1/0, 0 for
 #  ## censoring)
-#' ## A builtin RNG function is used to handle piecewise constant exponential
+#' ## A built-in RNG function is used to handle piecewise constant exponential
 #' ## distribution
 #' risk <- data.frame(
 #'   end_time = c(1, 10, 26.0, 52.0),
@@ -27,7 +27,7 @@
 #' risk = risk, endpoint_name = 'pfs')
 #' pfs$get_generator()
 #'
-#' ## Example 2. Generate continuous and binary endpoints using R's builtin
+#' ## Example 2. Generate continuous and binary endpoints using R's built-in
 #' ## RNG functions, e.g. rnorm, rexp, rbinom, etc.
 #' ep1 <- Endpoint$new(
 #'          name = 'cd4', type = 'c', generator = rnorm, readout = c(cd4=1),

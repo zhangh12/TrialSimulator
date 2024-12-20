@@ -96,6 +96,8 @@ Trial <- R6::R6Class(
         private$enroll_time <-
           sort(private$enroller(n_patients), decreasing = FALSE)
 
+        self$set_dropout(rconst, value = Inf)
+
       },
 
     #' @description
@@ -109,6 +111,41 @@ Trial <- R6::R6Class(
     #' return maximum duration of a trial
     get_duration = function(){
       private$duration
+    },
+
+    #' @description
+    #' set distribution of drop out time. This can be done when initialize a
+    #' trial, or when updating a trial in adaptive design.
+    #' @param func function to generate dropout time. It can be built-in
+    #' function like `rexp` or customized functions.
+    #' @param ... arguments for `func`.
+    set_dropout = function(func, ...){
+
+      stopifnot(is.function(func))
+      arg_names <- names(formals(func))
+      if (length(arg_names) == 0 || arg_names[1] != "n") {
+        stop("The first argument of random number generator for dropout time must be 'n'.")
+      }
+      dropout_ <- DynamicRNGFunction(func, simplify = TRUE, ...)
+      n_ <- 2
+      example_data <- dropout_(n = n_)
+      if(!is.vector(example_data)){
+        stop('dropout must return a vector.')
+      }
+
+      if(length(example_data) != n_){
+        stop('\'n\' in dropout does not work correctly.')
+      }
+
+      private$dropout <- dropout_
+      message('Dropout is specified. ')
+
+    },
+
+    #' @description
+    #' get generator of dropout time
+    get_dropout = function(){
+      private$dropout
     },
 
     #' @description
@@ -169,9 +206,6 @@ Trial <- R6::R6Class(
       ## randomized again.
       self$roll_back()
 
-      ## update randomization plan for unenrolled patients
-      private$permuted_block_randomization()
-
       ## update data for unrolled patients based on new arms and possibly
       ## new sample ratio.
       self$enroll_patients()
@@ -212,9 +246,6 @@ Trial <- R6::R6Class(
       ## with sample ratio of an arm is updated, unenrolled patient at current
       ## time should be randomized again.
       self$roll_back()
-
-      ## update randomization plan for unenrolled patients
-      private$permuted_block_randomization()
 
       ## update data for unrolled patients based on new arms and possibly
       ## new sample ratio.
@@ -286,9 +317,6 @@ Trial <- R6::R6Class(
       if(enforce){
         self$roll_back()
       }
-
-      ## update randomization plan for unenrolled patients
-      private$permuted_block_randomization()
 
       self$enroll_patients()
 
@@ -483,6 +511,9 @@ Trial <- R6::R6Class(
              'Only ', self$get_number_unenrolled_patients(), ' left. ')
       }
 
+      ## update randomization plan for unenrolled patients
+      private$permuted_block_randomization()
+
       next_enroll_arms <- self$get_randomization_queue(1:n_patients)
       ## update randomization_queue after enrolling a new patient.
       ## randomization_queue only keep randomization queue for future patients
@@ -502,7 +533,8 @@ Trial <- R6::R6Class(
           data.frame(
             patient_id = self$get_number_enrolled_patients() + patients_index,
             arm = arm,
-            enroll_time = next_enroll_time[patients_index]
+            enroll_time = next_enroll_time[patients_index],
+            dropout_time = self$get_dropout()(n = n_patients_in_arm)
           )
 
         for(ep in self$get_an_arm(arm)$get_endpoints()){
@@ -1009,6 +1041,8 @@ Trial <- R6::R6Class(
     enroller = NULL,
     enroll_time = NULL,
 
+    dropout = NULL, # function to generate dropout time
+
     trial_data = NULL,
     locked_data = list(),
 
@@ -1029,6 +1063,9 @@ Trial <- R6::R6Class(
 
       # Check that the first argument of enroller is "n"
       arg_names <- names(formals(enroller))
+      if (length(arg_names) == 0 || arg_names[1] != "n") {
+        stop("The first argument of enroller must be 'n'.")
+      }
 
       n_ <- 2
       enroller_ <- DynamicRNGFunction(
