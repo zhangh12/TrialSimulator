@@ -56,7 +56,7 @@ km <- survfit(Surv(pfs, pfs_event) ~ 1, data = pfs_test)
 ggsurvplot(km, data = pfs_test, legend = 'none', ggtheme = theme_minimal())
 ```
 
-Similarly, we can define OS and VRR for placebo. Here builtin functions
+Similarly, we can define OS and VRR for placebo. Here built-in functions
 `rexp` and `rbinom` are used. User-defined functions are also supported
 as long as it has the first argument `n`, number of samples to be drawn,
 and returns a data frame of `n` rows. For any time-to-event endpoint
@@ -128,19 +128,21 @@ high <- Arm$new(name = 'high dose', description = 'treated with high dose')
 high$add_endpoints(pfs, os, vrr)
 ```
 
-With three arms, we can define a trial of class `Trial`, where up to 750
+With three arms, we can define a trial of class `Trial`, where up to 950
 patients are enrolled. Recruitment curve are specified through
-`enroller` with a builtin function `StaggeredRecruiter` of piecewise
-constant rate: 15 patients per month until 14 months, and then 20
-patients per month until the end of the trial. Builtin random number
+`enroller` with a built-in function `StaggeredRecruiter` of piecewise
+constant rate: 20 patients per month until 15 months, and then 25
+patients per month until the end of the trial. built-in random number
 functions like `rexp` and user-defined function are also accepted.
 Sample ratio can be specified through `sample_ratio`, which can be
-updated during a trial using method `update_sample_ratio`.
+updated during a trial using method `update_sample_ratio`. We set a
+dropout rate 20% per 12 months through `set_dropout`. By default, no
+dropout if users do not specify one.
 
 ```{r lagieg, class.source="fold-show"}
-accrual_rate <- data.frame(end_time = c(14, Inf), piecewise_rate = c(15, 20))
+accrual_rate <- data.frame(end_time = c(15, Inf), piecewise_rate = c(20, 25))
 trial <- Trial$new(
-  name = 'Trial-3415', n_patients = 750,
+  name = 'Trial-3415', n_patients = 950,
   seed = 31415926, duration = 64,
   enroller = StaggeredRecruiter, accrual_rate = accrual_rate)
 
@@ -149,6 +151,7 @@ trial$add_arms(sample_ratio = c(1, 1), enforce = TRUE, low, high)
 #' or equivalent, one can add three arms together
 #' trial$add_arms(sample_ratio = c(1, 1, 1), 
 #'                placebo, low, high)
+trial$set_dropout(rexp, rate = -log(1 - 0.2)/12)
 ```
 
 The class `Trial` maintains a clock (`trial$get_current_time()`). Data
@@ -172,7 +175,7 @@ specific calendar time is reached. In this example, four events are
 defined for dose selection, futility, interim and final analysis.
 
 Dose selection and a non-binding futility analysis are planned to be
-done at month 14. A builtin function `TriggerByCalendarTime` is used as
+done at month 15. A built-in function `TriggerByCalendarTime` is used as
 the condition function. Once data is locked, and trial's clock is
 updated. A user-defined action function, `dose_selection_action` will be
 executed by the listener. It is recommended that the user should load
@@ -231,15 +234,15 @@ dose_selection_action <- function(trial, event_name){
 
 }
 
-## dose selection is carried out at month 14
+## dose selection is carried out at month 15
 dose_selection_event <- Event$new(name = 'dose selection', type = 'dose selection',
                                   trigger_condition = TriggerByCalendarTime,
                                   action = dose_selection_action,
-                                  calendar_time = 14)
+                                  calendar_time = 15)
 ```
 
 Likewise, we can define events for interim and final analyses of PFS and
-OS. The interim analysis for PFS will be carried out when 110 events are
+OS. The interim analysis for PFS will be carried out when 140 events are
 observed.
 
 ```{r}
@@ -279,11 +282,11 @@ pfs_interim_event <- Event$new(name = 'pfs interim', type = 'interim analysis',
                             trigger_condition = TriggerByEventNumbers,
                             action = pfs_interim_action,
                             endpoints = 'pfs',
-                            target_n_events = 110)
+                            target_n_events = 140)
 ```
 
 The final analysis for PFS will be performed with an interim of OS when
-331 events are observed for PFS, or 207 events for OS, whichever comes
+420 events are observed for PFS, or 262 events for OS, whichever comes
 first.
 
 ```{r}
@@ -311,14 +314,14 @@ pfs_final_action <- function(trial, event_name){
 
 }
 ## meet = 'any' means that final analysis for PFS is triggered
-## when pfs event reaches 300 or os event reaches 100.
+## when pfs event reaches 420 or os event reaches 262.
 ## if meet = 'all', then final analysis for PFS is carried out only if
 ## both conditions are met.
 pfs_final_event <- Event$new(name = 'pfs final', type = 'pfs final/os interim',
                                trigger_condition = TriggerByEventNumbers,
                                action = pfs_final_action,
                                endpoints = c('pfs', 'os'),
-                               target_n_events = c(331, 207), meet = 'any')
+                               target_n_events = c(420, 262), meet = 'any')
 ```
 
 Finally, one more analysis will be done for OS only at month 64.

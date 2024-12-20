@@ -33,7 +33,7 @@ trial's setting is changed.
 
 When trial settings change--such as adding or removing arms (`add_arms`
 or `remove_arms`) or updating the sampling ratio for one or more arms
-(`update_sample_ratio`)--the package invokes the `roll_back` function.
+(`update_sample_ratio`)-the package invokes the `roll_back` function.
 This function performs two key actions.
 
 1.  Saving enrollment times: The `enroll_time` for patients who have not
@@ -48,8 +48,9 @@ uses `permuted_block_randomization` to refresh the
 have not yet been enrolled. Following this, the `enroll_patients` method
 generates new data for these patients, reflecting the updated trial
 settings. This ensures that `trial_data` remains consistent with the
-trial's current configuration. This is critical to allow the package to
-handle complex adaptive design.
+trial's current configuration. Note that dropout times for newly
+recruited patients are also refreshed. This is critical to allow the
+package to handle complex adaptive design.
 
 The trial's progress is monitored by a listener, which tracks
 pre-defined events. When the condition for a event is met, the `now`
