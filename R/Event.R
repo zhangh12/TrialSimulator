@@ -113,7 +113,9 @@ Event <- R6::R6Class(
     #' @param ... other arguments.
     trigger_event = function(trial, ...){
       if(self$get_trigger_status()){
-        stop('Event ', self$get_name(), ' cannot be triggered again. ')
+        message('Event <', self$get_name(),
+                '> has already been triggered before, thus is skipped. ')
+        return(NULL)
       }
 
       ## find time that meets the trigger condition to lock data in trial,

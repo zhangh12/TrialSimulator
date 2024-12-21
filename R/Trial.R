@@ -61,7 +61,9 @@ Trial <- R6::R6Class(
     #' called, which uses seed set outside.
     #' @param enroller a function returning a vector enrollment time for
     #' patients. Its first argument is the number of enrolled patients.
-    #' @param ... arguments of \code{enroller}.
+    #' @param dropout a function returning a vector of dropout time for
+    #' patients. Its first argument is the number of enrolled patients.
+    #' @param ... arguments of \code{enroller} and \code{dropout}.
     initialize =
       function(
         name,
@@ -70,11 +72,12 @@ Trial <- R6::R6Class(
         description = name,
         seed,
         enroller,
+        dropout = NULL,
         ...
       ){
 
         private$validate_arguments(
-          name, n_patients, duration, description, seed, enroller, ...)
+          name, n_patients, duration, description, seed, enroller, dropout, ...)
 
         if(!is.null(seed)){
           set.seed(seed)
@@ -89,14 +92,17 @@ Trial <- R6::R6Class(
         private$trial_data <- NULL
         private$locked_data <- list()
 
-        private$enroller <- DynamicRNGFunction(enroller, simplify = TRUE, ...)
-        stopifnot(is.vector(private$enroller(2)))
+        self$set_enroller(enroller, ...)
 
         ## sort enrollment time
         private$enroll_time <-
-          sort(private$enroller(n_patients), decreasing = FALSE)
+          sort(self$get_enroller()(n = n_patients), decreasing = FALSE)
 
-        self$set_dropout(rconst, value = Inf)
+        if(is.null(dropout)){
+          self$set_dropout(rconst, value = Inf)
+        }else{
+          self$set_dropout(dropout, ...)
+        }
 
       },
 
@@ -114,19 +120,54 @@ Trial <- R6::R6Class(
     },
 
     #' @description
+    #' set recruitment curve when initialize a
+    #' trial.
+    #' @param func function to generate enrollment time. It can be built-in
+    #' function like `rexp` or customized functions like `StaggeredRecruiter`.
+    #' @param ... arguments for \code{func}.
+    set_enroller = function(func, ...){
+
+      # Check that the first argument of enroller is "n"
+      arg_names <- names(formals(func))
+      if (length(arg_names) == 0 || arg_names[1] != "n") {
+        stop("The first argument of enroller must be 'n'.")
+      }
+
+      n_ <- 2
+      enroller_ <- DynamicRNGFunction(
+        func, rng = deparse(substitute(func)), simplify = TRUE, ...)
+      example_data <- enroller_(n = n_)
+      if(!is.vector(example_data)){
+        stop('enroller must return a vector.')
+      }
+
+      if(length(example_data) != n_){
+        stop('\'n\' in enroller does not work correctly.')
+      }
+
+      private$enroller <- enroller_
+    },
+
+    #' @description
+    #' get function of recruitment curve
+    get_enroller = function(){
+      private$enroller
+    },
+
+    #' @description
     #' set distribution of drop out time. This can be done when initialize a
     #' trial, or when updating a trial in adaptive design.
     #' @param func function to generate dropout time. It can be built-in
     #' function like `rexp` or customized functions.
-    #' @param ... arguments for `func`.
+    #' @param ... arguments for \code{func}.
     set_dropout = function(func, ...){
 
-      stopifnot(is.function(func))
       arg_names <- names(formals(func))
       if (length(arg_names) == 0 || arg_names[1] != "n") {
         stop("The first argument of random number generator for dropout time must be 'n'.")
       }
-      dropout_ <- DynamicRNGFunction(func, simplify = TRUE, ...)
+      dropout_ <- DynamicRNGFunction(func, rng = deparse(substitute(func)),
+                                     simplify = TRUE, ...)
       n_ <- 2
       example_data <- dropout_(n = n_)
       if(!is.vector(example_data)){
@@ -138,7 +179,6 @@ Trial <- R6::R6Class(
       }
 
       private$dropout <- dropout_
-      message('Dropout is specified. ')
 
     },
 
@@ -542,6 +582,7 @@ Trial <- R6::R6Class(
         }
 
         arm_data <- arms_data[[arm]]
+
         if(!is.null(patient_data)){
           diff_cols1 <- setdiff(names(arm_data), names(patient_data))
           diff_cols2 <- setdiff(names(patient_data), names(arm_data))
@@ -565,7 +606,10 @@ Trial <- R6::R6Class(
       }
 
       private$trial_data <- bind_rows(self$get_trial_data(), patient_data)
-      self$censor_trial_data() # newly updated trial data should be always censored at trial duration
+      ## newly updated trial data should be always censored at trial duration
+      ## also, non-tte endpoints would be NA if readout time is after dropout time,
+      ## and tte endpoints should be censored at dropout time.
+      self$censor_trial_data()
 
       message('Data of ', n_patients,
               ' potential patients are generated for the trial with ',
@@ -600,9 +644,22 @@ Trial <- R6::R6Class(
     #' @description
     #' count accumulative number of events (for TTE) or samples (otherwise) over
     #' calendar time (enroll time + tte for TTE, or enroll time + readout otherwise)
-    get_event_tables = function(){
+    #' @param arms a vector of arms' name on which the event tables are created.
+    #' if \code{NULL}, all arms in the trial will be used.
+    get_event_tables = function(arms = NULL){
 
-      trial_data <- self$get_trial_data()
+      if(is.null(arms)){
+        arms <- self$get_arms_name()
+      }
+
+      if(!all(arms %in% self$get_arms_name())){
+        stop('Arm(s) <',
+             paste0(setdiff(arms, self$get_arms_name()), collapse = ', '),
+             '> cannot be found in the trial, debug Trial$get_event_table. ')
+      }
+
+      trial_data <- self$get_trial_data() %>%
+        dplyr::filter(arm %in% arms)
 
       event_counts <- list()
 
@@ -641,12 +698,16 @@ Trial <- R6::R6Class(
     #' of endpoints.
     #' @param target_n_events target number of events for each of the
     #' \code{endpoints}.
+    #' @param arms a vector of arms' name on which number of events will be
+    #' counted.
     #' @param type \code{all} if all target number of events are reached.
     #' \code{any} if the any target number of events is reached.
     #' @return data lock time
     #' @examples
     #' ## trial$get_data_lock_time_by_event_number(c('pfs','orr'), c(200,500), 'any')
-    get_data_lock_time_by_event_number = function(endpoints, target_n_events, type = c('all', 'any')){
+    get_data_lock_time_by_event_number = function(endpoints, arms,
+                                                  target_n_events,
+                                                  type = c('all', 'any')){
 
       type <- match.arg(type)
 
@@ -654,7 +715,7 @@ Trial <- R6::R6Class(
       stopifnot(all(is.wholenumber(target_n_events)))
       stopifnot(length(endpoints) == length(target_n_events))
 
-      event_counts <- self$get_event_tables()
+      event_counts <- self$get_event_tables(arms)
       stopifnot(all(endpoints %in% names(event_counts)))
 
       event_times <- NULL
@@ -694,7 +755,9 @@ Trial <- R6::R6Class(
                  0)
 
       }
-      attr(lock_time, 'n_events') <- data.frame(attr(lock_time, 'n_events'))
+      attr(lock_time, 'n_events') <-
+        data.frame(attr(lock_time, 'n_events')) %>%
+        mutate(arms = paste0('<', paste0(arms, collapse = ', '), '>'))
 
       lock_time
 
@@ -705,14 +768,16 @@ Trial <- R6::R6Class(
     #' given the calendar time to lock the data, return it with event counts of
     #' each of the endpoints.
     #' @param calendar_time numeric. Calendar time to lock the data
+    #' @param arms a vector of arms' name on which number of events will be
+    #' counted.
     #' @return data lock time
     #' @examples
     #' ## trial$get_data_lock_time_by_calendar_time(20)
-    get_data_lock_time_by_calendar_time = function(calendar_time){
+    get_data_lock_time_by_calendar_time = function(calendar_time, arms){
 
       stopifnot(is.numeric(calendar_time) && length(calendar_time) && calendar_time >= 0)
 
-      event_counts <- self$get_event_tables()
+      event_counts <- self$get_event_tables(arms)
 
       lock_time <- calendar_time
 
@@ -725,7 +790,9 @@ Trial <- R6::R6Class(
                  0)
 
       }
-      attr(lock_time, 'n_events') <- data.frame(attr(lock_time, 'n_events'))
+      attr(lock_time, 'n_events') <-
+        data.frame(attr(lock_time, 'n_events')) %>%
+        mutate(arms = paste0('<', paste0(arms, collapse = ', '), '>'))
 
       lock_time
 
@@ -769,6 +836,29 @@ Trial <- R6::R6Class(
         arrange(lock_time)
 
       n_events
+    },
+
+    #' @description
+    #' save time of a new event.
+    #' @param event_time numeric. Time of new event.
+    #' @param event_name character. Name of new event.
+    save_event_time = function(event_time, event_name){
+      if(event_name %in% names(private$event_time)){
+        stop('Time of event <', event_name, '> has already been saved before. ')
+      }
+
+      if(length(private$event_time) > 0){
+        if(any(private$event_time > event_time)){
+          en <- names(private$event_time)[private$event_time > event_time]
+          et <- private$event_time[private$event_time > event_time]
+          stop('New event <', event_name, '> (time = ', round(event_time, 2),
+               ') happens before events <',
+               paste0(en, ' (time = ', round(et, 2), ')', collapse = ', '), '>. \n',
+               'A possible reason is mis-specification of event order or conditions. ')
+        }
+      }
+
+      private$event_time[event_name] <- event_time
     },
 
     #' @description
@@ -827,6 +917,7 @@ Trial <- R6::R6Class(
       attr(locked_data, 'event_name') <- event_name
       private$locked_data[[event_name]] <- locked_data
       self$set_current_time(at_calendar_time)
+      self$save_event_time(at_calendar_time, event_name)
       message('Data is locked at time = ', at_calendar_time, ' for event <',
               event_name, '>.\n',
               'Locked data can be accessed in Trial$get_locked_data(\'',
@@ -990,6 +1081,12 @@ Trial <- R6::R6Class(
       for(event_col in event_cols){
         tte_col <- gsub('_event$', '', event_col)
         trial_data <- trial_data %>%
+          mutate(!!event_col := ifelse((!!sym(tte_col) > dropout_time) &
+                                         (arm %in% selected_arms),
+                                       0, !!sym(event_col))) %>%
+          mutate(!!tte_col := ifelse((!!sym(tte_col) > dropout_time) &
+                                       (arm %in% selected_arms),
+                                     dropout_time, !!sym(tte_col))) %>%
           mutate(calendar_time := enroll_time + !!sym(tte_col)) %>%
           mutate(!!event_col := ifelse((calendar_time > censor_at) &
                                          (arm %in% selected_arms),
@@ -1005,6 +1102,9 @@ Trial <- R6::R6Class(
       for(readout_col in readout_cols){
         ep_col <- gsub('_readout$', '', readout_col)
         trial_data <- trial_data %>%
+          mutate(!!ep_col := ifelse((!!sym(readout_col) > dropout_time) &
+                                      (arm %in% selected_arms),
+                                    NA, !!sym(ep_col))) %>%
           mutate(calendar_time := enroll_time + !!sym(readout_col)) %>%
           mutate(!!ep_col := ifelse((calendar_time > censor_at) &
                                       (arm %in% selected_arms),
@@ -1046,8 +1146,11 @@ Trial <- R6::R6Class(
     trial_data = NULL,
     locked_data = list(),
 
+    event_time = c(),
+
     validate_arguments =
-      function(name, n_patients, duration, description, seed, enroller, ...){
+      function(name, n_patients, duration, description, seed,
+               enroller, dropout, ...){
 
       stopifnot(is.null(seed) || is.wholenumber(seed))
       stopifnot(is.character(name))
@@ -1060,24 +1163,7 @@ Trial <- R6::R6Class(
       stopifnot(is.numeric(duration) && (length(duration) == 1))
 
       stopifnot(is.function(enroller))
-
-      # Check that the first argument of enroller is "n"
-      arg_names <- names(formals(enroller))
-      if (length(arg_names) == 0 || arg_names[1] != "n") {
-        stop("The first argument of enroller must be 'n'.")
-      }
-
-      n_ <- 2
-      enroller_ <- DynamicRNGFunction(
-        enroller, rng = deparse(substitute(enroller)), simplify = TRUE, ...)
-      example_data <- enroller_(n = n_)
-      if(!is.vector(example_data)){
-        stop('enroller must return a vector.')
-      }
-
-      if(length(example_data) != n_){
-        stop('\'n\' in enroller does not work correctly.')
-      }
+      stopifnot(is.null(dropout) || is.function(dropout))
 
     },
 
