@@ -55,8 +55,12 @@ DynamicRNGFunction <- function(fn, ...) {
   # Validate fixed arguments against fn
   unused_args <- setdiff(names(fixed_args), names(formals(fn)))
   if (length(unused_args) > 0) {
-    stop('Some arguments in ... are not valid for the function ', fn_name, ': \n',
+    warning('Some arguments in ... are not valid for the function <',
+            fn_name, '>: \n',
          paste0(unused_args, collapse = ', '))
+    for(arg in unused_args){
+      fixed_args[[arg]] <- NULL
+    }
   }
 
   # Create the wrapper function

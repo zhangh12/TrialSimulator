@@ -66,9 +66,9 @@ In general, user can define their own generator that returns more than
 one endpoints. For example, correlated endpoints would be generated
 together, using packages i.e., `simstudy`, `gestate`, `simdata`, etc.
 Note that VRR is not a time-to-event endpoint, so a readout time
-(`vrr_readout`) is also needed when creating the endpoint. Once all
-endpoints are defined, an arm can be defined using class `Arm` and its
-method `new`.
+(`vrr_readout`) is also needed when creating the endpoint. In this
+example, the readout time is 6 weeks. Once all endpoints are defined, an
+arm can be defined using class `Arm` and its method `new`.
 
 ```{r dfaffageaf, class.source="fold-show"}
 #' define a time-to-event endpoint OS, 
@@ -80,8 +80,9 @@ head(os$test_generator(1000))
 median(os$test_generator(1000)$os)
 
 #' define binary endpoint VRR, with readout time = 6 weeks
+six_weeks <- 6 / 52 * 12
 vrr <- Endpoint$new(
-  name = 'vrr', type = 'binary', readout = c(vrr=6 /52 * 12), 
+  name = 'vrr', type = 'binary', readout = c(vrr = six_weeks), 
   generator = rbinom, size = 1, prob = .01)
 
 head(vrr$test_generator(1000))
@@ -104,7 +105,7 @@ pfs <- Endpoint$new(name = 'pfs', type='tte',
                     generator = rexp, rate = log(2)/5.45 * hr['pfs_low'])
 
 vrr <- Endpoint$new(
-  name = 'vrr', type = 'binary', readout = c(vrr=6 / 52 * 12), 
+  name = 'vrr', type = 'binary', readout = c(vrr = six_weeks), 
   generator = rbinom, size = 1, prob = .15) # lower probability
 
 os <- Endpoint$new(name = 'os', type='tte', 
@@ -118,7 +119,7 @@ pfs <- Endpoint$new(name = 'pfs', type='tte',
                     generator = rexp, rate = log(2)/5.45 * hr['pfs_high'])
 
 vrr <- Endpoint$new(
-  name = 'vrr', type = 'binary', readout = c(vrr = 6 / 52 * 12), 
+  name = 'vrr', type = 'binary', readout = c(vrr = six_weeks), 
   generator = rbinom, size = 1, prob = .25) # higher probability
 
 os <- Endpoint$new(name = 'os', type='tte', 
@@ -136,22 +137,23 @@ patients per month until the end of the trial. built-in random number
 functions like `rexp` and user-defined function are also accepted.
 Sample ratio can be specified through `sample_ratio`, which can be
 updated during a trial using method `update_sample_ratio`. We set a
-dropout rate 20% per 12 months through `set_dropout`. By default, no
-dropout if users do not specify one.
+dropout rate 20% per 12 months. By default, no dropout if users do not
+specify one.
 
 ```{r lagieg, class.source="fold-show"}
 accrual_rate <- data.frame(end_time = c(15, Inf), piecewise_rate = c(20, 25))
 trial <- Trial$new(
   name = 'Trial-3415', n_patients = 950,
   seed = 31415926, duration = 64,
-  enroller = StaggeredRecruiter, accrual_rate = accrual_rate)
+  enroller = StaggeredRecruiter, accrual_rate = accrual_rate, 
+  dropout = rexp, rate = -log(1 - 0.2)/12
+)
 
 trial$add_arms(sample_ratio = 1, placebo)
 trial$add_arms(sample_ratio = c(1, 1), enforce = TRUE, low, high)
 #' or equivalent, one can add three arms together
 #' trial$add_arms(sample_ratio = c(1, 1, 1), 
 #'                placebo, low, high)
-trial$set_dropout(rexp, rate = -log(1 - 0.2)/12)
 ```
 
 The class `Trial` maintains a clock (`trial$get_current_time()`). Data
@@ -238,12 +240,12 @@ dose_selection_action <- function(trial, event_name){
 dose_selection_event <- Event$new(name = 'dose selection', type = 'dose selection',
                                   trigger_condition = TriggerByCalendarTime,
                                   action = dose_selection_action,
-                                  calendar_time = 15)
+                                  calendar_time = 15 + six_weeks)
 ```
 
 Likewise, we can define events for interim and final analyses of PFS and
 OS. The interim analysis for PFS will be carried out when 140 events are
-observed.
+observed in remaining arms.
 
 ```{r}
 #' event to trigger interim analysis for PFS

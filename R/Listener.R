@@ -38,6 +38,7 @@ Listener <- R6::R6Class(
                   'Do you want to over-write it? \n')
         }
         private$events[[event$get_name()]] <- event
+        message('An event <', event$get_name(), '> is registered. ')
       }
     },
 

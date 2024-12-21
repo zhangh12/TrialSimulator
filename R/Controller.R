@@ -41,10 +41,13 @@ Controller <- R6::R6Class(
 
     #' @description
     #' run a trial
-    run = function(){
+    #' @param plot_event create event plot
+    run = function(plot_event = FALSE){
 
       self$get_listener()$monitor(self$get_trial())
-      self$get_trial()$event_plot()
+      if(plot_event){
+        self$get_trial()$event_plot()
+      }
 
     }
   )
