@@ -1,22 +1,100 @@
-#' Class of GST
+#' Class of GroupSequentialTest
 #' @description
-#' Create a class of group sequential test for a single endpoint.
+#' Perform group sequential test for a single endpoint based on sequential
+#' one-sided p-values at each stages. Selected alpha spending functions,
+#' including user-defined functions, are supported. Boundaries are calculated
+#' with `rpact`. At the final analysis, adjustment can be applied for
+#' over-running or under-running trial where observed final information is
+#' greater or lower than the planned maximum information. See
+#' Wassmer & Brannath, 2016, p78f. The test is based on p-values not z
+#' statistics because it is easier to not handling direction of alternative
+#' hypothesis in current implementation. In addition, one one-sided test is
+#' supported which should be sufficient for common use in clinical design.
 #'
 #' @docType class
+#' @importFrom rpact getDesignGroupSequential
+#'
+#' @examples
+#' ## Note: examples showed here replicate the results from
+#' ## https://www.rpact.org/vignettes/planning/rpact_boundary_update_example/
+#'
+#' ## Example 1. Generate boundaries for a pre-fix group sequential design
+#' gst <- GroupSequentialTest$new(
+#'   alpha = .025, alpha_spending = 'asOF',
+#'   info_fraction = c(.5, .75, 1), planned_max_info = 387)
+#'
+#' ## without giving p-values, boundaries are returned without actual testing
+#' gst$test_all()
+#' gst
+#'
+#' ## Example 2. Calculate boundaries with observed information at stages
+#'
+#' ## get an error without resetting an used object
+#' try( gst$test_all(observed_info = c(205, 285, 393)) )
+#'
+#' ## reset the object for re-use
+#' gst$reset()
+#' gst$test_all(observed_info = c(205, 285, 393))
+#' gst
+#'
+#' ## Example 3. Test stagewise p-values sequentially
+#' gst$reset()
+#'
+#' gst$test(p_value = .09, observed_info = 205)
+#' gst$test(.006, 285)
+#'
+#' ## print testing trajectory by now
+#' gst
+#'
+#' gst$test(.002, 393)
+#'
+#' ## print all testing trajectory
+#' gst
+#'
+#' ## you can also test all stages at once
+#' ## the result is the same as calling test() for each stage
+#' gst$reset()
+#' gst$test_all(c(.09, .006, .002), c(205, 285, 393))
+#' gst
+#'
+#' ## Example 4. You don't have to update observed_info at all stages if
+#' ## a trial runs as planned. For example, for the primary endpoint being
+#' ## used to determine the stage (e.g., perform interim/final analysis when
+#' ## number of events is reached), observed_info can be NULL. However,
+#' ## observed_info is usually needed for other endpoints (e.g., secondary
+#' ## endpoints)
+#'
+#' gst$reset()
+#' gst$test(p_value = .09)
+#' gst$test(0.006)
+#' gst$test(0.002, observed_info = 393) # if final information is not as planned
+#' gst
+#'
 #' @export
-GST <- R6::R6Class(
+#'
+GroupSequentialTest <- R6::R6Class(
   'Group Sequential Test',
 
   public = list(
 
+    #' @description
+    #' initialize a group sequential test. Now only support one-sided test
+    #' based on p-values.
+    #' @param alpha familywise error rate
+    #' @param alpha_spending alpha spending function
+    #' @param info_fraction a vector of numeric. Cumulative information fraction
+    #' @param planned_max_info integer. Planned maximum number of patients for
+    #' non-tte endpoints or number of events for tte endpoints
+    #' @param name character. Name of the hypothesis, e.g. endpoint, subgroup,
+    #' etc.
     initialize =
       function(alpha = .025,
                alpha_spending = c('asP', 'asOF', 'asKD', 'asHSD'),
                info_fraction,
                planned_max_info,
-               sided = 1,
                name = 'H0'){
 
+        sided <- 1
         stopifnot(is.numeric(alpha) && length(alpha) == 1 &&
                     alpha > 0 && alpha < 1)
 
@@ -47,22 +125,38 @@ GST <- R6::R6Class(
 
       },
 
+    #' @description
+    #' get current stage. \code{GroupSequentialTest} maintains a private field
+    #' for tracking the current stage.
     get_stage = function(){
       private$stage
     },
 
+    #' @description
+    #' set alpha spending function. This is useful when set 'asUser' at the
+    #' final stage to adjust for an under- or over-running trial.
+    #' @param asf character of alpha spending function.
     set_alpha_spending = function(asf){
       private$alpha_spending <- asf
     },
 
+    #' @description
+    #' return character of alpha spending function
     get_alpha_spending = function(){
       private$alpha_spending
     },
 
+    #' @description
+    #' return planned maximum information
     get_max_info = function(){
       private$planned_max_info
     },
 
+    #' @description
+    #' set planned maximum information. This is used at the final stage
+    #' to adjust for an under- or over-running trial.
+    #' @param obs_max_info integer. Maximum information, which could be
+    #' observed number of patients or events at the final stage.
     set_max_info = function(obs_max_info){
       tmp <- private$planned_max_info
       private$planned_max_info <- obs_max_info
@@ -70,6 +164,14 @@ GST <- R6::R6Class(
               ' (', tmp, ' -> ', obs_max_info, '). ')
     },
 
+    #' @description
+    #' an object of class \code{GroupSequentialTest} is designed to be used
+    #' sequentially by calling \code{GroupSequentialTest$test}. When all
+    #' planned tests are performed, no further analysis could be done. In that
+    #' case keep calling \code{GroupSequentialTest$test} will trigger an error.
+    #' To reuse the object for a new set of staged p-values, call this function
+    #' to reset the status to stage 1. See examples. This implementation can
+    #' prevent the error that more than the planned number of stages are tested.
     reset = function(){
       private$planned_max_info <- private$original_planned_max_info
       private$info_fraction <- private$original_info_fraction
@@ -78,9 +180,13 @@ GST <- R6::R6Class(
       private$update_max_info <- FALSE
       private$alpha_spent <- NULL
       private$trajectory <- NULL
-      message('GST object <', private$name, '> has been reset and is ready to use. ')
+      message('GroupSequentialTest object <', private$name,
+              '> has been reset and is ready to use. ')
     },
 
+    #' @description
+    #' save testing result at current stage
+    #' @param result a data frame storing testing result at a stage.
     set_trajectory = function(result){
       private$trajectory <- rbind(private$trajectory, result)
       if(nrow(private$trajectory) == private$n_stages){
@@ -88,10 +194,16 @@ GST <- R6::R6Class(
       }
     },
 
+    #' @description
+    #' return testing trajectory until current stage. This function can be
+    #' called at any stage. See examples.
     get_trajectory = function(){
       private$trajectory
     },
 
+    #' @description
+    #' compute boundaries given current (potentially updated) settings. It
+    #' returns different values if settings are changed over time.
     get_stage_level = function(){
 
       if(!private$update_max_info){ # not an over or under running trial
@@ -141,13 +253,12 @@ GST <- R6::R6Class(
     #' \code{userAlphaSpending} will be used when calling
     #' \code{rpact::getDesignGroupSequential}. It can be \code{NULL} if
     #' \code{info_fraction} and \code{planned_max_info} are not changed.
-    test_at_stage = function(p_value,
-                             observed_info = NULL){
+    test = function(p_value, observed_info = NULL){
 
       if(self$get_stage() > private$n_stages){
-        stop('Group sequential test has been completed. ',
-             'No further test is available. ',
-             'Try GST$reset() before restarting it. ')
+        stop('Group sequential test has been completed. \n',
+             'No further test is available. \n',
+             'Try GroupSequentialTest$reset() before restarting it. ')
       }
 
       stopifnot(is.null(observed_info) ||
@@ -193,14 +304,17 @@ GST <- R6::R6Class(
     },
 
     #' @description
-    #' similar to \code{GST$test_at_stage} if \code{p_value} is provided.
-    #' If \code{p_value} is \code{NULL}, boundary of planned design will be
-    #' returned with updated observed information \code{observed_info}.
+    #' similar to \code{GroupSequentialTest$test} if \code{p_value}
+    #' is provided. If \code{p_value} is \code{NULL}, boundary of planned design
+    #' will be returned with updated observed information \code{observed_info}.
+    #' This function can be used to test p-values of all planned stages.
+    #' If you want to test at current stage dynamically, use \code{test}.
     #' @param p_values a vector of p-values. If specified, its length should
-    #' equal to the number of stages in the \code{GST} object.
+    #' equal to the number of stages in the \code{GroupSequentialTest} object.
     #' @param observed_info a vector of integers. If specified, its length
-    #' should equal to the number of stages in the \code{GST} object.
-    test = function(p_values = NULL, observed_info = NULL){
+    #' should equal to the number of stages in the \code{GroupSequentialTest}
+    #' object.
+    test_all = function(p_values = NULL, observed_info = NULL){
 
       if(!is.null(p_values)){
         if(length(p_values) != private$n_stages){
@@ -225,10 +339,12 @@ GST <- R6::R6Class(
           oi <- observed_info[i]
         }
 
-        self$test_at_stage(p_value = p_values[i], observed_info = oi)
+        self$test(p_value = p_values[i], observed_info = oi)
       }
     },
 
+    #' @description
+    #' generic function for \code{print}
     print = function(){
       print(self$get_trajectory())
     }
