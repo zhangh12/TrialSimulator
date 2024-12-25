@@ -6,6 +6,7 @@
 #' @param event_name character. Name of event. It should be the same as
 #' \code{Event$get_name()}.
 #' @param calendar_time numeric. Calendar time to trigger the event.
+#' @param arms a vector of arms' name on which triggering condition is tested.
 #' @return data lock time (calendar), so that the `Event` class can lock data.
 #' @export
 TriggerByCalendarTime <-
