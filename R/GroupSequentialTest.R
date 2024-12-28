@@ -90,7 +90,7 @@ GroupSequentialTest <- R6::R6Class(
     initialize =
       function(alpha = .025,
                alpha_spending = c('asP', 'asOF', 'asKD', 'asHSD'),
-               info_fraction,
+               info_fraction = NULL,
                planned_max_info,
                name = 'H0'){
 
@@ -98,10 +98,11 @@ GroupSequentialTest <- R6::R6Class(
         stopifnot(is.numeric(alpha) && length(alpha) == 1 &&
                     alpha > 0 && alpha < 1)
 
-        stopifnot(is.vector(info_fraction) && all(info_fraction >= 0))
-
-        if(any(diff(info_fraction) <= 0)){
-          stop('info_fraction should be monotonically increasing. ')
+        if(!is.null(info_fraction)){
+          stopifnot(is.vector(info_fraction) && all(info_fraction >= 0))
+          if(any(diff(info_fraction) <= 0)){
+            stop('info_fraction should be monotonically increasing. ')
+          }
         }
 
         stopifnot(is.wholenumber(planned_max_info))
@@ -254,6 +255,11 @@ GroupSequentialTest <- R6::R6Class(
     #' \code{rpact::getDesignGroupSequential}. It can be \code{NULL} if
     #' \code{info_fraction} and \code{planned_max_info} are not changed.
     test = function(p_value, observed_info = NULL){
+
+      if(missing(p_value)){
+        p_value <- NA
+        message('p_value is missing so a dummy test is performed by setting it to NA. ')
+      }
 
       if(self$get_stage() > private$n_stages){
         stop('Group sequential test has been completed. \n',
