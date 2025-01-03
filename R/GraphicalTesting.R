@@ -17,9 +17,15 @@ GraphicalTesting <- R6::R6Class(
 
     initialize = function(alpha,
                           transition,
+                          alpha_spending,
+                          planned_max_info,
                           hypotheses = NULL){
 
-      private$validate_arguments(alpha, transition, hypotheses)
+      private$validate_arguments(alpha,
+                                 transition,
+                                 alpha_spending,
+                                 planned_max_info,
+                                 hypotheses)
 
       if(is.null(hypotheses)){
         hypotheses <- paste0('H', 1:length(alpha))
@@ -28,6 +34,18 @@ GraphicalTesting <- R6::R6Class(
       private$hids_in_graph <- 1:length(hypotheses)
       private$transition <- transition
       private$alpha <- alpha
+
+      private$gst <- list()
+      for(i in seq_along(private$hypotheses)){
+        private$gst[[i]] <-
+          list(
+            alpha = private$alpha[i],
+            alpha_spending = alpha_spending[i],
+            info = NULL,
+            planned_max_info = planned_max_info[i],
+            name = private$hypotheses[i]
+          )
+      }
 
       message('A graph is initialized for ', length(private$hypotheses),
               ' hypotheses at FWER = ', sum(private$alpha), '. ')
@@ -86,6 +104,10 @@ GraphicalTesting <- R6::R6Class(
       which(private$alpha > 0)
     },
 
+    has_testable_hypotheses = function(){
+      length(self$get_testable_hypotheses() > 0)
+    },
+
     is_in_graph = function(hid){
       hid %in% private$hids_in_graph
     },
@@ -94,10 +116,19 @@ GraphicalTesting <- R6::R6Class(
       hid %in% self$get_testable_hypotheses()
     },
 
+    get_hid = function(hypothesis){
+      stopifnot(hypothesis %in% private$hypotheses)
+      hid <- which(private$hypotheses %in% hypothesis)
+      stopifnot(length(hid) == 1 && !is.na(hid))
+      hid
+    },
+
     #' @description
     #' remove a node from graph when a hypothesis is rejected
     #' @param hid id of a hypothesis
-    reject_a_hypothese = function(hid){
+    reject_a_hypothesis = function(hypothesis){
+
+      hid <- self$get_hid(hypothesis)
 
       self$is_valid_hid(hid)
       if(!self$is_in_graph(hid)){
@@ -144,16 +175,162 @@ GraphicalTesting <- R6::R6Class(
         self$set_weight(lst$l, lst$m, .0)
       }
 
+      message('Hypothesis <', hypothesis, '> is rejected. ')
+
     },
 
-    print = function(){
+    set_trajectory = function(result){
+      private$trajectory <- rbind(private$trajectory, result)
+    },
+
+    get_trajectory = function(){
+      private$trajectory
+    },
+
+    test_hypotheses = function(stats){
+
+      if(nrow(stats) == 0){
+        message('No hypothesis is given to be tested. ')
+        return(invisible(NULL))
+      }
+
+      try_again <- TRUE
+      while(try_again){
+        try_again <- FALSE
+
+        for(h in stats$hypotheses){
+
+          hid <- self$get_hid(h)
+
+          stat <- stats %>% dplyr::filter(hypotheses == self$get_hypothesis_name(hid))
+          stopifnot(private$gst[[hid]]$name == stat$hypotheses)
+
+          if(!is.na(stat$max_info)){
+            private$gst[[hid]]$planned_max_info <- stat$max_info
+          }
+
+          stopifnot(is.null(private$gst[[hid]]$info) || stat$info >= max(private$gst[[hid]]$info))
+          private$gst[[hid]]$info <- sort(unique(c(private$gst[[hid]]$info, stat$info)))
+          stopifnot(private$gst[[hid]]$planned_max_info >= max(private$gst[[hid]]$info))
+
+          private$gst[[hid]]$info_fraction <-
+            private$gst[[hid]]$info / private$gst[[hid]]$planned_max_info
+
+          if(!(1 %in% private$gst[[hid]]$info_fraction)){
+            private$gst[[hid]]$info_fraction <- c(private$gst[[hid]]$info_fraction, 1.)
+          }
+          current_stage <- length(private$gst[[hid]]$info)
+
+          args <- private$gst[[hid]]
+
+          if(self$get_alpha(hid) == 0){
+            private$gst[[hid]]$info_fraction <- NULL
+            message('<', args$name, ', order = ', stat$order,
+                    '> cannot be tested with alpha = 0. ')
+            next
+          }
+
+          gst <- GroupSequentialTest$new(alpha = self$get_alpha(hid),
+                                         alpha_spending = args$alpha_spending,
+                                         info_fraction = args$info_fraction,
+                                         planned_max_info = args$planned_max_info,
+                                         name = args$name)
+
+          gst$test_all()
+
+          gst <- gst$get_trajectory() %>%
+            dplyr::filter(stages == current_stage)
+
+          decision_ <- ifelse(stat$p < gst$stageLevels, 'reject', 'accept')
+
+          message('<', args$name, ', order = ', stat$order,
+                  '> is ', decision_,
+                  'ed (obs = ', signif(stat$p, 2),
+                  ', level = ', signif(gst$stageLevels, 2), '). ')
+
+          if(decision_ == 'reject'){
+            self$reject_a_hypothesis(self$get_hypothesis_name(hid))
+
+            self$print(trajectory = FALSE)
+          }
+
+          gst <- gst %>%
+            mutate(obs_p_value = stat$p) %>%
+            mutate(decision = decision_) %>%
+            mutate(order = stat$order)
+
+          self$set_trajectory(gst)
+          private$gst[[hid]]$info_fraction <- NULL
+
+          if(decision_ == 'reject'){
+            try_again <- TRUE
+            break
+          }
+
+        }
+
+        if(!try_again){
+          message('No further hypothesis can be rejected (order = ',
+                  stats$order[1], '). ')
+        }
+      }
+
+    },
+
+    test = function(stats){
+
+      if(!self$has_testable_hypotheses()){
+        message('All hypotheses in graph have been tested and completed. ')
+        return(invisible(NULL))
+      }
+
+      if(!is.data.frame(stats)){
+        stop('stats of test should be a data frame. ')
+      }
+
+      if(is.null(stats$order)){
+        stats$order <- 0
+      }
+
+      if(!all(c('hypotheses', 'p', 'info', 'max_info') %in% names(stats))){
+        stop('Columns <',
+             paste0(setdiff(c('hypotheses', 'p', 'info', 'max_info'), names(stats)),
+                    collapse = ', '),
+             '> are missing in stats. ')
+      }
+
+      if(!all(is.wholenumber(stats$order))){
+        stop('Column <order> in stats should be integers. ')
+      }
+
+      self$print(trajectory = FALSE)
+
+      for(ord in sort(unique(stats$order))){
+        ## hypotheses to be tested together
+        stats_ <- stats %>% dplyr::filter(order == ord)
+
+        self$test_hypotheses(stats_)
+
+      }
+
+    },
+
+    print = function(graph = TRUE, trajectory = TRUE){
 
       gplot <-
         gMCPLite::hGraph(nHypotheses = self$get_number_hypotheses(),
                          nameHypotheses = private$hypotheses,
                          alphaHypotheses = private$alpha,
-                         m = private$transition)
-      print(gplot)
+                         m = private$transition,
+                         palette = '#56B4E9')
+      if(graph){
+        print(gplot)
+      }
+
+      if(trajectory){
+        View(self$get_trajectory())
+      }
+
     }
 
   ),
@@ -164,8 +341,14 @@ GraphicalTesting <- R6::R6Class(
     alpha = NULL,
 
     hids_in_graph = NULL,
+    gst = NULL, ## arguments for defining a group sequential test object,
+    trajectory = NULL,
 
-    validate_arguments = function(alpha, transition, hypotheses){
+    validate_arguments = function(alpha,
+                                  transition,
+                                  alpha_spending,
+                                  planned_max_info,
+                                  hypotheses){
 
       stopifnot(is.matrix(transition))
       stopifnot(is.vector(alpha) && is.numeric(alpha))
@@ -189,6 +372,14 @@ GraphicalTesting <- R6::R6Class(
       stopifnot(all(alpha >= 0))
       stopifnot(sum(alpha) <= 1)
       stopifnot(all(rowSums(transition) == 1))
+
+      stopifnot(all(alpha_spending %in% c('asP', 'asOF', 'asKD', 'asHSD')))
+      stopifnot(is.vector(alpha_spending) && is.character(alpha_spending))
+      stopifnot(length(alpha_spending) == nrow(transition))
+
+      stopifnot(all(is.wholenumber(planned_max_info)))
+      stopifnot(all(planned_max_info > 0))
+      stopifnot(length(planned_max_info) == nrow(transition))
 
     }
   )
