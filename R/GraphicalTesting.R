@@ -15,17 +15,37 @@ GraphicalTesting <- R6::R6Class(
 
   public = list(
 
+    #' @description
+        #' Initialize an object for graphical testing procedure.
+        #' Group sequential design is also supported.
+        #' @param alpha initial alpha allocated to each of the hypotheses.
+        #' @param transition matrix of transition weights. Its diagonals should
+        #' be all 0s, and row sums should be 1s (for better power).
+        #' @param alpha_spending character vector of same length of \code{alpha}.
+        #' Currently it supports \code{'asP'}, \code{'asOF'}, \code{'asKD'},
+        #' and \code{'asHSD'}.
+        #' @param planned_max_info vector of integers. Maximum numbers of
+        #' events (tte endpoints) or patients (non-tte endpoints) at the final
+        #' analysis of each hypothesis when planning a trial. The actual numbers
+        #' could be different, which can be specified elsewhere.
+        #' @param hypotheses vector of characters. Names of hypotheses.
+        #' @param silent \code{TRUE} if muting all messages and not generating
+        #' plots.
     initialize = function(alpha,
                           transition,
                           alpha_spending,
                           planned_max_info,
-                          hypotheses = NULL){
+                          hypotheses = NULL,
+                          silent = FALSE){
 
       private$validate_arguments(alpha,
                                  transition,
                                  alpha_spending,
                                  planned_max_info,
                                  hypotheses)
+
+      stopifnot(is.logical(silent))
+      private$silent <- silent
 
       if(is.null(hypotheses)){
         hypotheses <- paste0('H', 1:length(alpha))
@@ -47,26 +67,43 @@ GraphicalTesting <- R6::R6Class(
           )
       }
 
-      message('A graph is initialized for ', length(private$hypotheses),
-              ' hypotheses at FWER = ', sum(private$alpha), '. ')
+      if(!private$silent){
+        message('A graph is initialized for ', length(private$hypotheses),
+                ' hypotheses at FWER = ', sum(private$alpha), '. ')
+      }
 
     },
 
+    #' @description
+        #' determine if index of a hypothesis is valid
+        #' @param hid an integer
     is_valid_hid = function(hid){
       stopifnot(hid > 0 && hid <= nrow(private$transition))
     },
 
+    #' @description
+        #' get name of a hypothesis given its index.
+        #' @param hid an integer
     get_hypothesis_name = function(hid){
       self$is_valid_hid(hid)
       private$hypotheses[hid]
     },
 
+    #' @description
+        #' return weight between two nodes
+        #' @param hid1 an integer
+        #' @param hid2 an integer
     get_weight = function(hid1, hid2){
       self$is_valid_hid(hid1)
       self$is_valid_hid(hid2)
       private$transition[hid1, hid2]
     },
 
+    #' @description
+    #' update weight between two nodes
+    #' @param hid1 an integer
+    #' @param hid2 an integer
+    #' @param value numeric value to be set as a weight two nodes
     set_weight = function(hid1, hid2, value){
       self$is_valid_hid(hid1)
       self$is_valid_hid(hid2)
@@ -76,11 +113,15 @@ GraphicalTesting <- R6::R6Class(
 
       if(value < 0 && value > -1e-6){
         value <- .0
-        warning('A slightly less-than-zero weight value is reset to 0. ')
+        if(!private$silent){
+          warning('A slightly less-than-zero weight value is reset to 0. ')
+        }
       }
 
       if(value > 1 && value - 1 < 1e-6){
-        warning('A slightly greater-than-1 weight value is reset to 1. ')
+        if(!private$silent){
+          warning('A slightly greater-than-1 weight value is reset to 1. ')
+        }
         value <- 1.0
       }
 
@@ -88,45 +129,74 @@ GraphicalTesting <- R6::R6Class(
       private$transition[hid1, hid2] <- value
     },
 
+    #' @description
+        #' return alpha allocated to a hypothesis when calling this function
+        #' Note that a function can be called several time with the graph is
+        #' updated dramatically. Thus, returned alpha can be different even for
+        #' the same \code{hid}.
+        #' @param hid an integer
     get_alpha = function(hid){
       self$is_valid_hid(hid)
       private$alpha[hid]
     },
 
+    #' @description
+    #' update alpha of a hypothesis
+    #' @param hid an integer
+    #' @param value numeric value to be allocated
     set_alpha = function(hid, value){
       self$is_valid_hid(hid)
       stopifnot(value >= 0 && value <= 1)
       private$alpha[hid] <- value
     },
 
+
+    #' @description
+        #' return all valid \code{hid}
     get_hypotheses_ids = function(){
       1:nrow(private$transition)
     },
 
+    #' @description
+        #' return number of hypotheses, including those been rejected.
     get_number_hypotheses = function(){
       nrow(private$transition)
     },
 
+    #' @description
+        #' return index of hypotheses that are rejected.
     get_hids_not_in_graph = function(){
       setdiff(self$get_hypotheses_ids(), private$hids_in_graph)
     },
 
+    #' @description
+        #' return index of hypotheses with non-zero alphas, thus can be tested
+        #' at the current stage.
     get_testable_hypotheses = function(){
       which(private$alpha > 0)
     },
 
+    #' @description
+        #' determine whether at least one hypothesis is testable.
+        #' If return \code{FALSE}, the testing procedure is completed.
     has_testable_hypotheses = function(){
-      length(self$get_testable_hypotheses() > 0)
+      length(self$get_testable_hypotheses()) > 0
     },
 
+    #' @description
+        #' determine whether a hypothesis is not yet rejected (in graph).
     is_in_graph = function(hid){
       hid %in% private$hids_in_graph
     },
 
+    #' @description
+        #' determine whether a hypothesis has a non-zero alpha allocated.
     is_testable = function(hid){
       hid %in% self$get_testable_hypotheses()
     },
 
+    #' @description
+        #' convert hypothesis's name into (unique) index.
     get_hid = function(hypothesis){
       stopifnot(hypothesis %in% private$hypotheses)
       hid <- which(private$hypotheses %in% hypothesis)
@@ -136,7 +206,8 @@ GraphicalTesting <- R6::R6Class(
 
     #' @description
     #' remove a node from graph when a hypothesis is rejected
-    #' @param hid id of a hypothesis
+    #' @param hypothesis name of a hypothesis. It is different from
+    #' \code{hid}, which is an index.
     reject_a_hypothesis = function(hypothesis){
 
       hid <- self$get_hid(hypothesis)
@@ -187,18 +258,47 @@ GraphicalTesting <- R6::R6Class(
         self$set_weight(lst$l, lst$m, .0)
       }
 
-      message('Hypothesis <', hypothesis, '> is rejected. ')
+      if(!private$silent){
+        message('Hypothesis <', hypothesis, '> is rejected. ')
+      }
 
     },
 
+    #' @description
+        #' save new testing results at current stage
     set_trajectory = function(result){
       private$trajectory <- rbind(private$trajectory, result)
     },
 
+    #' @description
+        #' return testing results by the time this function is called.
+        #' Note that graphical test is carried out in a sequential manner.
+        #' Users may want to review the results anytime. Value returned
+        #' by this function can possibly vary over time.
     get_trajectory = function(){
       private$trajectory
     },
 
+    #' @description
+        #' test hypotheses using p-values (and other information in \code{stats})
+        #' base on the current graph. All rows should have the same order
+        #' number.
+        #' @param stats a data frame. It must contain the following columns:
+        #' - **order**: integer. P-values (among others) of hypotheses that
+        #' can be tested at the same time (e.g., an interim, or final analysis)
+        #' should be labeled with the same order number.
+        #' If a hypothesis is not tested at a stage,
+        #' simply don't put it in \code{stats} with that order number.
+        #' - **hypotheses**: character. Name of hypotheses to be tested. They
+        #' should be identical to those when calling
+        #' \code{GraphicalTesting$new}.
+        #' - **p**: nominal p-values.
+        #' - **info**: observed number of events or samples at test. These will
+        #' be used to compute information fractions in group sequential design.
+        #' -- **max_info**: integers. Maximum information at test. At interim,
+        #' \code{max_info} should be equal to \code{planned_max_info} when
+        #' calling \code{GraphicalTesting$new}. At the final stage of a
+        #' hypothesis, one can update it with observed numbers.
     test_hypotheses = function(stats){
 
       if(nrow(stats) == 0){
@@ -242,8 +342,10 @@ GraphicalTesting <- R6::R6Class(
 
           if(self$get_alpha(hid) == 0){
             private$gst[[hid]]$info_fraction <- NULL
-            message('<', args$name, ', order = ', stat$order,
-                    '> cannot be tested with alpha = 0. ')
+            if(!private$silent){
+              message('<', args$name, ', order = ', stat$order,
+                      '> cannot be tested with alpha = 0. ')
+            }
             next
           }
 
@@ -260,15 +362,17 @@ GraphicalTesting <- R6::R6Class(
 
           decision_ <- ifelse(stat$p < gst$stageLevels, 'reject', 'accept')
 
-          message('<', args$name, ', order = ', stat$order,
-                  '> is ', decision_,
-                  'ed (obs = ', signif(stat$p, 2),
-                  ', level = ', signif(gst$stageLevels, 2), '). ')
+          if(!private$silent){
+            message('<', args$name, ', order = ', stat$order,
+                    '> is ', decision_,
+                    'ed (obs = ', signif(stat$p, 2),
+                    ', level = ', signif(gst$stageLevels, 2), '). ')
+          }
 
           if(decision_ == 'reject'){
             self$reject_a_hypothesis(self$get_hypothesis_name(hid))
 
-            self$print(trajectory = FALSE)
+            self$print(graph = !private$silent, trajectory = FALSE)
           }
 
           gst <- gst %>%
@@ -287,13 +391,47 @@ GraphicalTesting <- R6::R6Class(
         }
 
         if(!try_again){
-          message('No further hypothesis can be rejected (order = ',
-                  stats$order[1], '). ')
+          if(!private$silent){
+            message('No further hypothesis can be rejected (order = ',
+                    stats$order[1], '). ')
+          }
         }
       }
 
     },
 
+    #' @description
+    #' test hypotheses using p-values (and other information in \code{stats})
+    #' base on the current graph. Users can call this function multiple times.
+    #' P-values of the same order should be passed through \code{stats}
+    #' together. P-values of multiple orders can be passed together as well.
+    #' For example, if users only have p-values at current stage, they can call
+    #' this function and update the graph accordingly. In this case, column
+    #' \code{order} in \code{stats} is a constant. They can call this
+    #' function again when p-values of next stage is available, where
+    #' \code{order} is another integer. In simulation, if p-values of all
+    #' stages are on hand, users can call this function to
+    #' test them all in a single pass. In this case, column \code{order} in
+    #' \code{stats} can have different values.
+    #' @param stats a data frame. It must contain the following columns:
+    #' - **order**: integer. P-values (among others) of hypotheses that
+    #' can be tested at the same time (e.g., an interim, or final analysis)
+    #' should be labeled with the same order number.
+    #' If a hypothesis is not tested at a stage,
+    #' simply don't put it in \code{stats} with that order number.
+    #' - **hypotheses**: character. Name of hypotheses to be tested. They
+    #' should be identical to those when calling
+    #' \code{GraphicalTesting$new}.
+    #' - **p**: nominal p-values.
+    #' - **info**: observed number of events or samples at test. These will
+    #' be used to compute information fractions in group sequential design.
+    #' -- **max_info**: integers. Maximum information at test. At interim,
+    #' \code{max_info} should be equal to \code{planned_max_info} when
+    #' calling \code{GraphicalTesting$new}. At the final stage of a
+    #' hypothesis, one can update it with observed numbers.
+    #'
+    #' @return a data frame returned by \code{get_current_testing_results}.
+    #' It contains details of each of the testing steps.
     test = function(stats){
 
       if(!self$has_testable_hypotheses()){
@@ -320,7 +458,7 @@ GraphicalTesting <- R6::R6Class(
         stop('Column <order> in stats should be integers. ')
       }
 
-      self$print(trajectory = FALSE)
+      self$print(graph = !private$silent, trajectory = FALSE)
 
       for(ord in sort(unique(stats$order))){
         ## hypotheses to be tested together
@@ -334,6 +472,20 @@ GraphicalTesting <- R6::R6Class(
 
     },
 
+    #' @description
+    #' return testing results with details by the time this function
+    #' is called. This function can be called by users by multiple
+    #' times, thus the returned value varies over time.
+    #' This function is called by \code{GraphicalTesting::test}.
+    #' It contains columns
+    #' - **hypothesis**: name of hypotheses.
+    #' - **obs_p_value**: observed p-values.
+    #' - **max_allocated_alpha**: maximum allocated alpha for the hypothesis.
+    #' - **decision**: \code{'reject'} or \code{'accept'} the hypotheses.
+    #' - **stages**: stage of a hypothesis
+    #' - **order**: order number that this hypothesis is tested for the last time.
+    #' It is different from \code{stages}.
+    #' - **typeOfDesign**: name of alpha spending functions.
     get_current_testing_results = function(){
 
       current_results <- self$get_trajectory() %>%
@@ -375,6 +527,8 @@ GraphicalTesting <- R6::R6Class(
       current_results
     },
 
+    #' @description
+    #' generic function for \code{print}
     print = function(graph = TRUE, trajectory = TRUE){
 
       gplot <-
@@ -403,6 +557,8 @@ GraphicalTesting <- R6::R6Class(
     hids_in_graph = NULL,
     gst = NULL, ## arguments for defining a group sequential test object,
     trajectory = NULL,
+
+    silent = NULL,
 
     validate_arguments = function(alpha,
                                   transition,

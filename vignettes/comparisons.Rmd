@@ -1,0 +1,98 @@
+---
+title: "Comparisons with graphicalMCP and gMCP"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Comparisons with graphicalMCP and gMCP}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  cache = TRUE,
+  cache.path = 'cache/comparisons/',
+  comment = '#>',
+  dpi = 300,
+  out.width = '100%'
+)
+```
+
+```{r setup, echo = FALSE, message = FALSE}
+library(TrialSimulator)
+library(gMCPLite)
+library(graphicalMCP)
+library(dplyr)
+```
+
+
+`gMCP` (and `gMCPLite`) is a well-established R package implementing the 
+graphical testing procedure under a group sequential design. `graphicalMCP` 
+releases a vignette showing that it can produce testing results that are 
+identical or similar to `gMCP`. However, current version of `graphicalMCP` 
+only supports testing a graph at a given time (i.e., the length of argument
+`p` of `graphicalMCP::graph_test_shortcut` is equal to the number of 
+hypotheses in the graph); additional efforts are needed from users to 
+implement customized codes to adapt it to group sequential design. 
+
+This vignette uses the simulation setting in `graphicalMCP` where five 
+hypotheses are tested on random graphs. It shows that, at a given time, 
+`TrialSimulator` can reproduce testing results of `graphicalMCP` through 
+its `S6` class `GraphicalTesting`. Please note that `GraphicalTesting` is 
+able to carry out full graphical testing under a group sequential design, 
+which will be tested elsewhere. No comparison is made with `gMCP` directly. 
+
+Unlike `graphicalMCP`, `TrialSimulator::GraphicalTesting` is based on nominal 
+p-values at each stages. Neither adjusted nor sequential p-values are computed. 
+Thus, we only compare testing decisions of hypotheses (`TRUE` or `FALSE`). 
+
+```{r ljgai, class.source="fold-show"}
+set.seed(1234)
+alpha <- 0.025
+identical <- NULL
+for (i in 1:100) {
+  graph <- random_graph(5)
+  p <- runif(5, 0, alpha)
+  
+  gmcp <-
+    graph_test_shortcut(graph, p, alpha = alpha)$outputs$rejected
+  
+  ## Note that we only test a graph at a given time, so alpha_spending 
+  ## and planned_max_info can be set to arbitrary valid values
+  gt <- GraphicalTesting$new(
+    alpha = graph$hypotheses * alpha, 
+    transition = graph$transitions, 
+    ## any valid characters would work
+    alpha_spending = rep('asOF', 5),
+    ## any integers would work
+    planned_max_info = rep(100, 5), 
+    hypotheses = paste0('H', 1:5),
+    silent = TRUE
+  )
+  
+  stats <- 
+    data.frame(order = rep(1, 5), 
+               hypotheses = paste0('H', 1:5), 
+               p = p, 
+               ## info should be identical to max_info 
+               ## as if we are testing at the final stage
+               ## to use all allocated alpha
+               info = rep(100, 5), 
+               max_info = rep(100, 5)
+    )
+  
+  gt$test(stats)
+  res <- gt$get_current_testing_results() %>% arrange(hypothesis)
+  
+  identical <- c(
+    identical,
+    all.equal(
+      ifelse(gmcp, 'reject', 'accept') %>% unname(), 
+      res$decision, 
+      tolerance = 1e-7)
+  )
+}
+all(identical)
+```
+
+
