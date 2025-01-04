@@ -73,6 +73,17 @@ GraphicalTesting <- R6::R6Class(
       if(hid1 == hid2){
         stopifnot(value == 0)
       }
+
+      if(value < 0 && value > -1e-6){
+        value <- .0
+        warning('A slightly less-than-zero weight value is reset to 0. ')
+      }
+
+      if(value > 1 && value - 1 < 1e-6){
+        warning('A slightly greater-than-1 weight value is reset to 1. ')
+        value <- 1.0
+      }
+
       stopifnot(value >= 0 && value <= 1)
       private$transition[hid1, hid2] <- value
     },
@@ -163,6 +174,7 @@ GraphicalTesting <- R6::R6Class(
             wt <- (self$get_weight(l, m) +
                      self$get_weight(l, hid) * self$get_weight(hid, m)) /
               (1 - self$get_weight(l, hid) * self$get_weight(hid, l))
+
             self$set_weight(l, m, wt)
           }else{
             to_be_zero <- append(to_be_zero, list(list(l = l, m = m)))
@@ -192,6 +204,11 @@ GraphicalTesting <- R6::R6Class(
       if(nrow(stats) == 0){
         message('No hypothesis is given to be tested. ')
         return(invisible(NULL))
+      }
+
+      if(length(unique(stats$order)) != 1){
+        stop('test_hypotheses expect p-values of hypotheses of the same analysis. ',
+             'Debug it. ')
       }
 
       try_again <- TRUE
@@ -313,6 +330,49 @@ GraphicalTesting <- R6::R6Class(
 
       }
 
+      self$get_current_testing_results()
+
+    },
+
+    get_current_testing_results = function(){
+
+      current_results <- self$get_trajectory() %>%
+        group_split(hypothesis) %>%
+        lapply(
+          function(h){
+            max_allocated_alpha <- max(h$alpha)
+            if('reject' %in% h$decision){
+              h <- h %>%
+                dplyr::filter(decision %in% 'reject') %>%
+                distinct()
+              if(nrow(h) > 1){
+                stop('A hypothesis has been rejected more than once. ',
+                     'Debug it. ')
+              }
+            }else{
+              h <- h %>%
+                dplyr::filter(order %in% max(order, na.rm = TRUE)) %>%
+                distinct() %>%
+                arrange(desc(alpha)) %>%
+                head(1)
+            }
+            h$max_allocated_alpha <- max_allocated_alpha
+            return(h)
+          }
+        ) %>%
+        do.call(rbind, .) %>%
+        dplyr::select(hypothesis,
+                      obs_p_value,
+                      max_allocated_alpha,
+                      decision,
+                      stages,
+                      order,
+                      typeOfDesign) %>%
+        arrange(order, stages, desc(max_allocated_alpha), obs_p_value) %>%
+        as.data.frame()
+
+
+      current_results
     },
 
     print = function(graph = TRUE, trajectory = TRUE){
@@ -371,7 +431,7 @@ GraphicalTesting <- R6::R6Class(
 
       stopifnot(all(alpha >= 0))
       stopifnot(sum(alpha) <= 1)
-      stopifnot(all(rowSums(transition) == 1))
+      stopifnot(all(abs(rowSums(transition) - 1)< 1e-6))
 
       stopifnot(all(alpha_spending %in% c('asP', 'asOF', 'asKD', 'asHSD')))
       stopifnot(is.vector(alpha_spending) && is.character(alpha_spending))
