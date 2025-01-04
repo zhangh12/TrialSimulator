@@ -207,31 +207,45 @@ GroupSequentialTest <- R6::R6Class(
     #' returns different values if settings are changed over time.
     get_stage_level = function(){
 
-      if(!private$update_max_info){ # not an over or under running trial
+      if(private$n_stages == 1){
         design <- rpact::getDesignGroupSequential(
           sided = private$sided,
           alpha = private$alpha,
-          informationRates = private$info_fraction,
+          informationRates = c(1e-6, 1.),
           typeOfDesign = self$get_alpha_spending()
         )
+        private$alpha_spent <- 1.
+        design <- design %>%
+          as.data.frame() %>%
+          dplyr::filter(stages %in% 2) %>%
+          mutate(stages = 1)
       }else{
-        stopifnot(self$get_alpha_spending() == 'asUser')
-        design <- rpact::getDesignGroupSequential(
-          sided = private$sided,
-          alpha = private$alpha,
-          informationRates = private$info_fraction,
-          typeOfDesign = self$get_alpha_spending(),
-          userAlphaSpending = private$alpha_spent
-        )
+        if(!private$update_max_info){ # not an over or under running trial
+          design <- rpact::getDesignGroupSequential(
+            sided = private$sided,
+            alpha = private$alpha,
+            informationRates = private$info_fraction,
+            typeOfDesign = self$get_alpha_spending()
+          )
+        }else{
+          stopifnot(self$get_alpha_spending() == 'asUser')
+          design <- rpact::getDesignGroupSequential(
+            sided = private$sided,
+            alpha = private$alpha,
+            informationRates = private$info_fraction,
+            typeOfDesign = self$get_alpha_spending(),
+            userAlphaSpending = private$alpha_spent
+          )
+        }
+
+        ## will be used in next test if max_info is updated at the final stage
+        ## in that case, alpha_spending will be set to 'asUser'
+        private$alpha_spent <- design$alphaSpent
+
+        design <- design %>%
+          as.data.frame() %>%
+          dplyr::filter(stages %in% self$get_stage())
       }
-
-      ## will be used in next test if max_info is updated at the final stage
-      ## in that case, alpha_spending will be set to 'asUser'
-      private$alpha_spent <- design$alphaSpent
-
-      design <- design %>%
-        as.data.frame() %>%
-        dplyr::filter(stages %in% self$get_stage())
 
       level <- design$stageLevels[1]
       attr(level, 'details') <-
@@ -302,7 +316,8 @@ GroupSequentialTest <- R6::R6Class(
       test_result <-
         attr(stage_level, 'details') %>%
         mutate(obs_p_value = p_value) %>%
-        mutate(decision = ifelse(p_value < stage_level, 'reject', 'accept'))
+        mutate(decision = ifelse(p_value < stage_level, 'reject', 'accept')) %>%
+        mutate(hypothesis = private$name)
 
       self$set_trajectory(test_result)
       test_result
