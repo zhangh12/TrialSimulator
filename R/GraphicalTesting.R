@@ -142,7 +142,7 @@ GraphicalTesting <- R6::R6Class(
 
     #' @description
     #' update alpha of a hypothesis
-    #' @param hid an integer
+    #' @param hid integer. Index of a hypothesis
     #' @param value numeric value to be allocated
     set_alpha = function(hid, value){
       self$is_valid_hid(hid)
@@ -152,7 +152,7 @@ GraphicalTesting <- R6::R6Class(
 
 
     #' @description
-        #' return all valid \code{hid}
+    #' return all valid \code{hid}
     get_hypotheses_ids = function(){
       1:nrow(private$transition)
     },
@@ -184,19 +184,23 @@ GraphicalTesting <- R6::R6Class(
     },
 
     #' @description
-        #' determine whether a hypothesis is not yet rejected (in graph).
+    #' determine whether a hypothesis is not yet rejected (in graph).
+    #' @param hid integer. Index of a hypothesis
     is_in_graph = function(hid){
       hid %in% private$hids_in_graph
     },
 
     #' @description
-        #' determine whether a hypothesis has a non-zero alpha allocated.
+    #' determine whether a hypothesis has a non-zero alpha allocated.
+    #' @param hid integer. Index of a hypothesis
     is_testable = function(hid){
       hid %in% self$get_testable_hypotheses()
     },
 
     #' @description
-        #' convert hypothesis's name into (unique) index.
+    #' convert hypothesis's name into (unique) index.
+    #' @param hypothesis character. Name of a hypothesis. It is different from
+    #' \code{hid}, which is an index.
     get_hid = function(hypothesis){
       stopifnot(hypothesis %in% private$hypotheses)
       hid <- which(private$hypotheses %in% hypothesis)
@@ -265,7 +269,8 @@ GraphicalTesting <- R6::R6Class(
     },
 
     #' @description
-        #' save new testing results at current stage
+    #' save new testing results at current stage
+    #' @param result a data frame of specific columns.
     set_trajectory = function(result){
       private$trajectory <- rbind(private$trajectory, result)
     },
@@ -529,6 +534,10 @@ GraphicalTesting <- R6::R6Class(
 
     #' @description
     #' generic function for \code{print}
+    #' @param graph logic. \code{TRUE} if visualizing the current graph,
+    #' which can vary over time.
+    #' @param trajectory logic. \code{TRUE} if print the current data frame of
+    #' trajectory, which can vary over time.
     print = function(graph = TRUE, trajectory = TRUE){
 
       gplot <-
