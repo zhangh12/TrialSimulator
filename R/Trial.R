@@ -91,6 +91,7 @@ Trial <- R6::R6Class(
         private$now <- 0
         private$trial_data <- NULL
         private$locked_data <- list()
+        private$output <- NULL
 
         self$set_enroller(enroller, ...)
 
@@ -862,6 +863,20 @@ Trial <- R6::R6Class(
     },
 
     #' @description
+    #' return event time when triggering a given event
+    #' @param event_name character. Name of event.
+    get_event_time = function(event_name){
+      if(!(event_name %in% names(private$event_time))){
+        stop('Event <', event_name, '> cannot be found. ',
+             'Make sure that this event has be triggered ',
+             'and its time has been saved by calling get_event_time. ',
+             'Usually this function is called automatically while locking a data. ')
+      }
+
+      private$event_time[event_name]
+    },
+
+    #' @description
     #' lock data at specific calendar time.
     #' For time-to-event endpoints, their event indicator *_event should be
     #' updated accordingly. Locked data should be stored separately.
@@ -1114,6 +1129,66 @@ Trial <- R6::R6Class(
       }
 
       private$trial_data <- trial_data
+    },
+
+    #' @description
+    #' save a single value or a one-row data frame to trial's output
+    #' for further analysis/summary later.
+    #' @param value value to be saved. It can be a vector (of length 1) or
+    #' a data frame (of one row).
+    #' @param name character to name the saved object. It will be used to
+    #' name a column in trial's output if \code{value} is a vector.
+    #' If \code{value} is a data frame, \code{name} will be pasted with the
+    #' column name of \code{value} in trial's output. If user want to use
+    #' \code{value}'s column name as is in trial's output, set \code{name}
+    #' to be \code{''} as default.
+    #' @param overwrite logic. \code{TRUE} if overwriting existing entries
+    #' with warning, otherwise, throwing an error and stop.
+    save = function(value, name = '', overwrite = FALSE){
+
+      stopifnot(is.character(name) && length(name) == 1)
+
+      if(is.null(private$output)){
+        private$output <- data.frame(trial = self$get_name())
+      }
+
+      if(!is.vector(value) && !is.data.frame(value)){
+        stop('For now only vector or data.frame can be saved during a trial. ')
+      }
+
+      if(is.vector(value)){
+        if(length(value) > 1){
+          stop('A vector object to be saved can only be of length one. ')
+        }
+        value <- data.frame(col = value)
+        colnames(value) <- name
+      }else{
+        if(nrow(value) > 1){
+          stop('A data frame to be saved can only contain one row. ')
+        }
+        colnames(value) <- paste0(name, colnames(value))
+      }
+
+      for(cname in names(value)){
+        if(cname %in% names(private$output)){
+          if(!overwrite){
+            stop(cname, ' has been used to name something in the output. ',
+                 'Pick another name and try again. ')
+          }else{
+            warning(cname, ' exists in the output and is overwritten. ',
+                    'Set overwrite = FALSE in save() if it is not intended. ')
+          }
+        }
+
+        private$output[, cname] <- value[, cname]
+      }
+
+    },
+
+    #' @description
+    #' return a data frame of all current outputs saved by calling \code{save}.
+    get_output = function(){
+      private$output
     }
 
   ),
@@ -1147,6 +1222,8 @@ Trial <- R6::R6Class(
     locked_data = list(),
 
     event_time = c(),
+
+    output = NULL,
 
     validate_arguments =
       function(name, n_patients, duration, description, seed,

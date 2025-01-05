@@ -17,10 +17,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
-library(TrialSimulator)
-```
-
 `TrialSimulator` maintains a private field, `now`, representing the
 current time in a running trial. This field is initialized to zero.
 Additionally, the package includes a data frame, `trial_data`, which
@@ -29,7 +25,7 @@ stores simulated data of all planned patients given the setting by
 time-to-event) before `now` is considered final and fixed. Because
 `TrialSimulator` aims to conduct simulation for adaptive clinical trial
 design, data of patients recruited after `now` can be refreshed if
-trial's setting is changed.
+trial's setting is changed or adapted.
 
 When trial settings change--such as adding or removing arms (`add_arms`
 or `remove_arms`) or updating the sampling ratio for one or more arms
@@ -59,4 +55,6 @@ this point, the data is "frozen", creating a snapshot of `trial_data` as
 of `now` in `locked_data`. This locked dataset is saved and can be
 accessed by event's name. A locked dataset serves as the basis for
 executing pre-defined action functions of an event, such as dose
-selection, futility analysis, interim analysis or final analysis.
+selection, futility analysis, interim analysis or final analysis. Users
+can customize the action functions, in which a public member function
+`save` can be used to save intermediate results for summary later.
