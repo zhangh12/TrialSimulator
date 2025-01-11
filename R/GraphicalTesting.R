@@ -7,7 +7,68 @@
 #' @importFrom gMCPLite hGraph
 #'
 #' @examples
-#' ## examples
+#' ## initial alpha split to each of the hypotheses
+#' alpha <- c(.01, .01, .004, .0, .0005, .0005)
+#'
+#' ## transition matrix of the initial graph
+#' transition <- matrix(c(
+#'   0, 1, 0, 0, 0, 0,
+#'   0, 0, .5, .5, 0, 0,
+#'   0, 0, 0, 1, 0, 0,
+#'   0, 0, 0, 0, .5, .5,
+#'   0, 0, 0, 0, 0, 1,
+#'   .5, .5, 0, 0, 0, 0
+#' ), nrow = 6, byrow = TRUE)
+#'
+#' ## alpha spending functions per hypothesis
+#' asf <- rep('asOF', 6)
+#'
+#' ## planned maximum number of events per hypothesis
+#' max_info <- c(295, 800, 310, 750, 200, 300)
+#'
+#' ## name of hypotheses
+#' hs <- c('H1: OS sub',
+#'         'H2: OS all',
+#'         'H3: PFS sub',
+#'         'H4: PFS all',
+#'         'H5: ORR sub',
+#'         'H6: ORR all')
+#'
+#' gt <- GraphicalTesting$new(alpha, transition, asf, max_info, hs)
+#'
+#' ## print initial graph
+#' gt
+#'
+#' ## nominal p-values at each stage
+#' ## Note: p-values with same order are calculated with the same locked data
+#' stats <-
+#'   data.frame(order = c(1:3, 1:3, 1:2, 1:2, 1, 1),
+#'              hypotheses = c(rep('H1: OS sub',3), rep('H2: OS all',3),
+#'                             rep('H3: PFS sub',2), rep('H4: PFS all',2),
+#'                             'H5: ORR sub', 'H6: ORR all'),
+#'              p = c(.03, .0001, .000001, .2, .15, .1, .2, .001, .3, .2, .00001, .1),
+#'              info = c(185, 245, 295, 529, 700, 800, 265, 310, 675, 750, 200, 300),
+#'              max_info = c(rep(295, 3), rep(800, 3), rep(310, 2), rep(750, 2), 200, 300)
+#'   )
+#'
+#' ## test the p-values from the first analysis, plot the updated graph
+#' gt$test(stats %>% dplyr::filter(order==1))
+#'
+#' ## test the p-values from the second analysis, plot the updated graph
+#' gt$test(stats %>% dplyr::filter(order==2))
+#'
+#' ## test the p-values from the third analysis, plot the updated graph
+#' ## because no futher test would be done, displayed results are final
+#' gt$test(stats %>% dplyr::filter(order==3))
+#'
+#' ## equivalently, you can call this gt$test(stats) for only once
+#'
+#' ## plot the final status of the graph
+#' print(gt, trajectory = FALSE)
+#'
+#' ## you can get final testing results as follow
+#' gt$get_current_testing_results()
+#'
 #' @export
 #'
 GraphicalTesting <- R6::R6Class(
@@ -551,7 +612,8 @@ GraphicalTesting <- R6::R6Class(
       }
 
       if(trajectory){
-        View(self$get_trajectory())
+        # View(self$get_trajectory())
+        print(self$get_trajectory())
       }
 
     }
