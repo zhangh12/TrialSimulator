@@ -188,7 +188,8 @@ performed on it to support further actions. In this example, an active
 arm can be dropped, and sample ratio of the remaining arms are updated
 accordingly. All not yet enrolled patients' data is then regenerated
 afterward. `Trial` has a public member function `save` for user to save 
-results for analysis or summary later. 
+results for analysis or summary later. Note that `save` will be invoked 
+automatically when an event is triggered to save event time. 
 
 ```{r aotel, class.source="fold-show"}
 #' action function is defined by user. 
@@ -228,7 +229,9 @@ dose_selection_action <- function(trial, event_name){
   ## save results, which can be accessed later using trial$get_output()
   trial$save(value = affected_arm, name = 'removed_arm')
   trial$save(value = z_pfs, name = 'z_futility')
-  trial$save(value = trial$get_event_time(event_name), name = 'futility_time')
+  
+  ## Not necessary because event time is saved automatically
+  # trial$save(value = trial$get_event_time(event_name), name = 'futility_time')
 
   ## return for displaying purpose (print on screen later)
   ## user can return NULL
@@ -387,7 +390,7 @@ listener$add_events(
 )
 
 controller <- Controller$new(trial, listener)
-controller$run()
+controller$run(silent = FALSE)
 ```
 
 In the action functions, user can save results to the `Trial` object using 

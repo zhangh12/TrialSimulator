@@ -11,7 +11,8 @@ Listener <- R6::R6Class(
   'Listener',
 
   private = list(
-    events = list()
+    events = list(),
+    silent = FALSE
   ),
 
   public = list(
@@ -38,7 +39,10 @@ Listener <- R6::R6Class(
                   'Do you want to over-write it? \n')
         }
         private$events[[event$get_name()]] <- event
-        message('An event <', event$get_name(), '> is registered. ')
+
+        if(!private$silent){
+          message('An event <', event$get_name(), '> is registered. ')
+        }
       }
     },
 
@@ -56,6 +60,16 @@ Listener <- R6::R6Class(
     monitor = function(trial){
       for(event in self$get_events()){
         event$trigger_event(trial)
+      }
+    },
+
+    #' @description
+    #' mute all messages (not including warnings)
+    #' @param silent logical.
+    mute = function(silent){
+      private$silent <- silent
+      for(event in self$get_events()){
+        event$mute(private$silent)
       }
     }
   )

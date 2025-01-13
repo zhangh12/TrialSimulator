@@ -205,8 +205,11 @@ Trial <- R6::R6Class(
       private$trial_data <- self$get_trial_data() %>%
         dplyr::filter(enroll_time <= current_time) %>%
         arrange(enroll_time)
-      message('Trial data is rolling back to time = ', current_time, '. \n',
-              'Randomization will be carried out again for unenrolled patients. \n')
+
+      if(!private$silent){
+        message('Trial data is rolling back to time = ', current_time, '. \n',
+                'Randomization will be carried out again for unenrolled patients. \n')
+      }
 
     },
 
@@ -228,12 +231,14 @@ Trial <- R6::R6Class(
         private$arms[[arm_name]] <- NULL
       }
 
-      message('Arm <', paste0(arms_name, collapse = ', '), '> is removed. \n')
+      if(!private$silent){
+        message('Arm <', paste0(arms_name, collapse = ', '), '> is removed. \n')
 
-      message('Sample ratio is updated to be <',
-              paste0(paste0(names(self$get_sample_ratio()),
-                            ': ', self$get_sample_ratio()), collapse = ', '),
-              '>. \n')
+        message('Sample ratio is updated to be <',
+                paste0(paste0(names(self$get_sample_ratio()),
+                              ': ', self$get_sample_ratio()), collapse = ', '),
+                '>. \n')
+      }
 
       ## data of removed arms should be censored at event time
       ## so that number of events of those arms are fixed.
@@ -279,10 +284,13 @@ Trial <- R6::R6Class(
       }
 
       private$sample_ratio[arm_name] <- sample_ratio
-      message('Sample ratio has been udpated to be <',
-              paste0(paste0(names(self$get_sample_ratio()),
-                            ': ', self$get_sample_ratio()), collapse = ', '),
-              '>. ')
+
+      if(!private$silent){
+        message('Sample ratio has been udpated to be <',
+                paste0(paste0(names(self$get_sample_ratio()),
+                              ': ', self$get_sample_ratio()), collapse = ', '),
+                '>. ')
+      }
 
       ## with sample ratio of an arm is updated, unenrolled patient at current
       ## time should be randomized again.
@@ -348,8 +356,10 @@ Trial <- R6::R6Class(
         private$arms[[arm$get_name()]] <- arm
       }
 
-      message('Arm(s) <', paste0(arm_names, collapse = ', '),
-              '> are added to the trial. \n')
+      if(!private$silent){
+        message('Arm(s) <', paste0(arm_names, collapse = ', '),
+                '> are added to the trial. \n')
+      }
 
       names(sample_ratio) <- arm_names
       private$sample_ratio <- c(private$sample_ratio, sample_ratio)
@@ -612,15 +622,17 @@ Trial <- R6::R6Class(
       ## and tte endpoints should be censored at dropout time.
       self$censor_trial_data()
 
-      message('Data of ', n_patients,
-              ' potential patients are generated for the trial with ',
-              self$get_number_arms(), ' arm(s) <',
-              paste0(self$get_arms_name(), collapse = ", "), '>. \n')#,
-              # 'Depending on the scenarios, ',
-              # 'some of those patients may be eventually enrolled \n',
-              # 'and used in data lock, \n',
-              # 'while some will be abandoned and re-generated ',
-              # '(e.g. arm is removed or added). \n')
+      if(!private$silent){
+        message('Data of ', n_patients,
+                ' potential patients are generated for the trial with ',
+                self$get_number_arms(), ' arm(s) <',
+                paste0(self$get_arms_name(), collapse = ", "), '>. \n')#,
+                # 'Depending on the scenarios, ',
+                # 'some of those patients may be eventually enrolled \n',
+                # 'and used in data lock, \n',
+                # 'while some will be abandoned and re-generated ',
+                # '(e.g. arm is removed or added). \n')
+      }
 
     },
 
@@ -933,13 +945,18 @@ Trial <- R6::R6Class(
       private$locked_data[[event_name]] <- locked_data
       self$set_current_time(at_calendar_time)
       self$save_event_time(at_calendar_time, event_name)
-      message('Data is locked at time = ', at_calendar_time, ' for event <',
-              event_name, '>.\n',
-              'Locked data can be accessed in Trial$get_locked_data(\'',
-              event_name, '\'). \n',
-              'Number of events at lock time: \n')
-      print(as.data.frame(attr(at_calendar_time, 'n_events')))
-      cat('\n')
+
+      self$save(at_calendar_time, name = paste0('event_time_<', event_name, '>'))
+
+      if(!private$silent){
+        message('Data is locked at time = ', at_calendar_time, ' for event <',
+                event_name, '>.\n',
+                'Locked data can be accessed in Trial$get_locked_data(\'',
+                event_name, '\'). \n',
+                'Number of events at lock time: \n')
+        print(as.data.frame(attr(at_calendar_time, 'n_events')))
+        cat('\n')
+      }
 
       ## I am not sure about this part yet.
       ## Once data is locked for an event, it is not always necessary to
@@ -1063,7 +1080,9 @@ Trial <- R6::R6Class(
         theme_minimal() +
         theme(legend.position = 'bottom')
 
-      plot(p)
+      if(!private$silent){
+        plot(p)
+      }
 
     },
 
@@ -1146,23 +1165,31 @@ Trial <- R6::R6Class(
     #' with warning, otherwise, throwing an error and stop.
     save = function(value, name = '', overwrite = FALSE){
 
+      is_vector_length1 <- function(x) {
+        length(x) == 1 && is.atomic(unclass(x))
+      }
+
+      is_vector <- function(x) {
+        is.atomic(unclass(x))
+      }
+
       stopifnot(is.character(name) && length(name) == 1)
 
       if(is.null(private$output)){
         private$output <- data.frame(trial = self$get_name())
       }
 
-      if(!is.vector(value) && !is.data.frame(value)){
+      if(!is_vector_length1(value) && !is.data.frame(value)){
         stop('For now only vector or data.frame can be saved during a trial. ')
       }
 
-      if(is.vector(value)){
+      if(is_vector(value)){
         if(length(value) > 1){
           stop('A vector object to be saved can only be of length one. ')
         }
-        value <- data.frame(col = value)
+        value <- data.frame(col = as.vector(value))
         colnames(value) <- name
-      }else{
+      }else{ ## value is a data frame
         if(nrow(value) > 1){
           stop('A data frame to be saved can only contain one row. ')
         }
@@ -1189,6 +1216,25 @@ Trial <- R6::R6Class(
     #' return a data frame of all current outputs saved by calling \code{save}.
     get_output = function(){
       private$output
+    },
+
+    #' @description
+    #' mute all messages (not including warnings)
+    #' @param silent logical.
+    mute = function(silent){
+      private$silent <- silent
+    },
+
+    #' @description
+    #' set a tester, now it can only be an object of class \code{GraphicalTesting}.
+    set_tester = function(tester){
+      private$tester <- tester
+    },
+
+    #' @description
+    #' return a tester
+    get_tester = function(){
+      private$tester
     }
 
   ),
@@ -1222,6 +1268,10 @@ Trial <- R6::R6Class(
     locked_data = list(),
 
     event_time = c(),
+
+    tester = NULL,
+
+    silent = FALSE,
 
     output = NULL,
 
@@ -1284,11 +1334,14 @@ Trial <- R6::R6Class(
 
       arm_names <- names(private$sample_ratio)
       private$randomization_queue <- arm_names[randomization_queue]
-      message('Randomization is done for ', length(randomization_queue),
-              ' potential patients. \n') #,
-              # 'Make sure that you only see this message when initializing a trial, \n',
-              # 'or after adding/removing an arm from the trial. \n',
-              # 'Otherwise it may indicator a potential issue. \n')
+
+      if(!private$silent){
+        message('Randomization is done for ', length(randomization_queue),
+                ' potential patients. \n') #,
+                # 'Make sure that you only see this message when initializing a trial, \n',
+                # 'or after adding/removing an arm from the trial. \n',
+                # 'Otherwise it may indicator a potential issue. \n')
+      }
     }
 
 
