@@ -16,8 +16,9 @@ Event <- R6::R6Class(
     type = NULL,
     trigger_condition = NULL,
     action = NULL,
-    triggered = FALSE ## logical. Whether this event has been triggered
+    triggered = FALSE, ## logical. Whether this event has been triggered
                       ## (to avoid repeated execution)
+    silent = FALSE
   ),
 
   public = list(
@@ -90,8 +91,10 @@ Event <- R6::R6Class(
 
       action <- self$get_action()(trial, self$get_name())
 
-      message('Action for <', self$get_name(), '> is executed: \n')
-      print(action)
+      if(!private$silent){
+        message('Action for <', self$get_name(), '> is executed: \n')
+        print(action)
+      }
 
     },
 
@@ -113,14 +116,18 @@ Event <- R6::R6Class(
     #' @param ... other arguments.
     trigger_event = function(trial, ...){
       if(self$get_trigger_status()){
-        message('Event <', self$get_name(),
-                '> has already been triggered before, thus is skipped. ')
+        if(!private$silent){
+          message('Event <', self$get_name(),
+                  '> has already been triggered before, thus is skipped. ')
+        }
         return(NULL)
       }
 
       ## find time that meets the trigger condition to lock data in trial,
       ## so that action can be executed on it.
-      message('Conditioin of event <', self$get_name(), '> is being checked. \n')
+      if(!private$silent){
+        message('Conditioin of event <', self$get_name(), '> is being checked. \n')
+      }
       data_lock_time <- self$get_trigger_condition()(trial)
 
       ## always lock data after an event and before taking actions
@@ -128,6 +135,13 @@ Event <- R6::R6Class(
 
       self$execute_action(trial)
       private$triggered <- TRUE
+    },
+
+    #' @description
+    #' mute all messages (not including warnings)
+    #' @param silent logical.
+    mute = function(silent){
+      private$silent <- silent
     }
   )
 

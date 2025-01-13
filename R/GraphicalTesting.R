@@ -7,6 +7,8 @@
 #' @importFrom gMCPLite hGraph
 #'
 #' @examples
+#'
+#' if(FALSE){
 #' ## initial alpha split to each of the hypotheses
 #' alpha <- c(.01, .01, .004, .0, .0005, .0005)
 #'
@@ -68,6 +70,8 @@
 #'
 #' ## you can get final testing results as follow
 #' gt$get_current_testing_results()
+#'
+#' }
 #'
 #' @export
 #'
@@ -554,6 +558,10 @@ GraphicalTesting <- R6::R6Class(
     #' - **typeOfDesign**: name of alpha spending functions.
     get_current_testing_results = function(){
 
+      if(is.null(self$get_trajectory())){
+        return(NULL)
+      }
+
       current_results <- self$get_trajectory() %>%
         group_split(hypothesis) %>%
         lapply(
@@ -591,6 +599,35 @@ GraphicalTesting <- R6::R6Class(
 
 
       current_results
+    },
+
+    #' @description
+    #' get current decisions for all hypotheses. Returned value could
+    #' changes over time because it depends on the stages being tested already.
+    #' @return a named vector of values \code{"accept"} or \code{"reject"}.
+    #' Note that if a hypothesis is not yet tested when calling this function,
+    #' the decision for that hypothesis would be \code{"accept"}.
+    get_current_decision = function(){
+
+      hypotheses <- private$hypotheses
+
+      current <- self$get_current_testing_results()
+
+      ret <- rep('accept', length(hypotheses))
+      names(ret) <- hypotheses
+
+      if(is.null(current)){
+        return(ret)
+      }
+
+      stopifnot(all(current$hypothesis %in% hypotheses))
+
+      for(h in current$hypothesis){
+        ret[h] <- current$decision[current$hypothesis %in% h]
+      }
+
+      ret
+
     },
 
     #' @description
