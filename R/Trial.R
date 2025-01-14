@@ -92,6 +92,7 @@ Trial <- R6::R6Class(
         private$trial_data <- NULL
         private$locked_data <- list()
         private$output <- NULL
+        private$custom_data <- list()
 
         self$set_enroller(enroller, ...)
 
@@ -1213,9 +1214,68 @@ Trial <- R6::R6Class(
     },
 
     #' @description
+    #' save arbitrary (number of) objects into a trial so that users can use
+    #' those to control the workflow. Most common use case is to store
+    #' simulation parameters to be used in action functions.
+    #' @param value value to be saved. Any type.
+    #' @param name character. Name of the value to be accessed later.
+    #' @param overwrite logic. \code{TRUE} if overwriting existing entries
+    #' with warning, otherwise, throwing an error and stop.
+    save_custom_data = function(value, name, overwrite = FALSE){
+
+      if(name == ''){
+        stop('name in custom_data cannot be empty. ')
+      }
+
+      if(name %in% names(private$custom_data)){
+        if(!overwrite){
+          stop(name, ' has been used to name something in custom data ',
+               'Pick another name and try again. ')
+        }else{
+          warning(name, ' exists in custom_data and is overwritten. ',
+                  'Set overwrite = FALSE in save_custom_data() ',
+                  'if it is not intended. ')
+        }
+      }
+
+      private$custom_data[[name]] <- value
+    },
+
+    #' @description
+    #' return saved custom data of specified name.
+    #' @param name character. Name of custom data to be accessed.
+    get_custom_data = function(name){
+      if(!(name %in% names(private$custom_data))){
+        stop(name, ' cannot be found in custom_data. ',
+             'Check for bug or typo in data name. ',
+             'Did you really save ', name,
+             'by using Trial$save_custom_data(value, name) before? ')
+      }
+
+      private$custom_data[[name]]
+    },
+
+    #' @description
     #' return a data frame of all current outputs saved by calling \code{save}.
-    get_output = function(){
-      private$output
+    #' @param cols columns to be returned from \code{Trial$output}. If
+    #' \code{NULL}, all columns are returned.
+    #' @param simplify logical. Return value rather than a data frame of one
+    #' column when \code{length(col) == 1} and \code{simplify == TRUE}.
+    get_output = function(cols = NULL, simplify = TRUE){
+      if(is.null(cols)){
+        cols <- colnames(private$output)
+      }
+
+      if(!all(cols %in% names(private$output))){
+        stop('Columns <', paste0(setdiff(cols, names(private$output)), collapse = ', '),
+             '> are not found in trial$output. Check if there is a typo. ')
+      }
+      ret <- private$output[, cols, drop = FALSE]
+      if(simplify && ncol(ret) == 1){
+        return(ret[1, 1])
+      }else{
+        return(ret)
+      }
     },
 
     #' @description
@@ -1274,6 +1334,11 @@ Trial <- R6::R6Class(
     silent = FALSE,
 
     output = NULL,
+
+    ## User can save whatever they want in an unstructured way (list)
+    ## This is useful for simulation to store some setting parameters
+    ## that could be used in action functions.
+    custom_data = list(),
 
     validate_arguments =
       function(name, n_patients, duration, description, seed,
