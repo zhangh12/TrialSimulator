@@ -1287,12 +1287,13 @@ Trial <- R6::R6Class(
 
     #' @description
     #' set a tester, now it can only be an object of class \code{GraphicalTesting}.
+    #' @param tester object of class \code{GraphicalTesting}
     set_tester = function(tester){
       private$tester <- tester
     },
 
     #' @description
-    #' return a tester
+    #' return a tester, now it is a \code{GraphicalTesting} object.
     get_tester = function(){
       private$tester
     }
