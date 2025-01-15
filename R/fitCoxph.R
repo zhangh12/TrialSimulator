@@ -14,7 +14,7 @@
 #'
 #' @export
 #'
-fit_coxph <- function(endpoint, placebo, data, condition = NULL) {
+fitCoxph <- function(endpoint, placebo, data, condition = NULL) {
 
   if(!is.character(endpoint) || length(endpoint) != 1){
     stop("endpoint must be a single character string")
