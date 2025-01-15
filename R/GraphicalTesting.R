@@ -8,7 +8,52 @@
 #'
 #' @examples
 #'
+#' ## Example 1
+#' ## dry-run to study the behavior of a graph
+#' ## without group sequential design
 #' if(FALSE){
+#' eps <- .01
+#' alpha <- c(.01, .04, 0, 0, 0)
+#' transition <- matrix(c(
+#'   0, 0, 0, 0, 1,
+#'   0, 0, .75, 0, .25,
+#'   0, 1/2-eps/2, 0, eps, 1/2-eps/2,
+#'   0, 0, 0, 0, 0,
+#'   0, 1/2, 1/2, 0, 0
+#' ), nrow = 5, byrow = TRUE)
+#'
+#' ## dummy can be anything, we don't actually use it
+#' asf <- rep('asOF', 5)
+#' ## dummy can be anything, we don't actually use it
+#' max_info <- c(300, 1100, 1100, 1100, 500)
+#'
+#' hs <- c('H1: UPCR IgA', 'H2: eGFR GN', 'H3: eGFR GN 10wk', 'H5: 2nd Endpoints', 'H4: eGFR IgA')
+#'
+#' ## initialize an object
+#' gt <- GraphicalTesting$new(alpha, transition, asf, max_info, hs)
+#' print(gt)
+#'
+#' ## reject hypotheses based on customized order
+#' ## to understand the behavior of a testing strategy
+#' ## Any other rejection order is possible
+#' gt$reject_a_hypothesis('H1: UPCR IgA')
+#' print(gt)
+#'
+#' gt$reject_a_hypothesis('H2: eGFR GN')
+#' print(gt)
+#'
+#' gt$reject_a_hypothesis('H4: eGFR IgA')
+#' print(gt)
+#'
+#' gt$reject_a_hypothesis('H3: eGFR GN 10wk')
+#' print(gt)
+#'
+#' gt$reset()
+#' }
+#'
+#' ## Example 2
+#' if(FALSE){
+#' ## Example from https://cran.r-project.org/web/packages/gMCPLite/vignettes/GraphicalMultiplicity.html
 #' ## initial alpha split to each of the hypotheses
 #' alpha <- c(.01, .01, .004, .0, .0005, .0005)
 #'
@@ -85,7 +130,8 @@ GraphicalTesting <- R6::R6Class(
         #' Group sequential design is also supported.
         #' @param alpha initial alpha allocated to each of the hypotheses.
         #' @param transition matrix of transition weights. Its diagonals should
-        #' be all 0s, and row sums should be 1s (for better power).
+        #' be all 0s. The row sums should be 1s (for better power) or
+        #' 0s (if no outbound edge from a node).
         #' @param alpha_spending character vector of same length of \code{alpha}.
         #' Currently it supports \code{'asP'}, \code{'asOF'}, \code{'asKD'},
         #' and \code{'asHSD'}.
@@ -137,6 +183,32 @@ GraphicalTesting <- R6::R6Class(
                 ' hypotheses at FWER = ', sum(private$alpha), '. ')
       }
 
+      private$trajectory <- NULL
+
+      private$original_silent <- private$silent
+      private$original_hypotheses <- private$hypotheses
+      private$original_hids_in_graph <- private$hids_in_graph
+      private$original_transition <- private$transition
+      private$original_alpha <- private$alpha
+      private$original_gst <- private$gst
+      private$original_trajectory <- private$trajectory
+
+    },
+
+    #' @description
+    #' reset an object of class \code{GraphicalTesting} to original status
+    #' so that it can be reused.
+    reset = function(){
+      private$silent <- private$original_silent
+      private$hypotheses <- private$original_hypotheses
+      private$hids_in_graph <- private$original_hids_in_graph
+      private$transition <- private$original_transition
+      private$alpha <- private$original_alpha
+      private$gst <- private$original_gst
+
+      private$trajectory <- private$original_trajectory
+
+      message('GraphicalTesting object has been reset and is ready to use. ')
     },
 
     #' @description
@@ -195,9 +267,9 @@ GraphicalTesting <- R6::R6Class(
     },
 
     #' @description
-        #' return alpha allocated to a hypothesis when calling this function
+        #' return alpha allocated to a hypothesis when calling this function.
         #' Note that a function can be called several time with the graph is
-        #' updated dramatically. Thus, returned alpha can be different even for
+        #' updated dynamically. Thus, returned alpha can be different even for
         #' the same \code{hid}.
         #' @param hid an integer
     get_alpha = function(hid){
@@ -636,14 +708,21 @@ GraphicalTesting <- R6::R6Class(
     #' which can vary over time.
     #' @param trajectory logic. \code{TRUE} if print the current data frame of
     #' trajectory, which can vary over time.
-    print = function(graph = TRUE, trajectory = TRUE){
+    #' @param ... other arguments supported in \code{gMCPLite::hGraph},
+    #' e.g., \code{trhw} and \code{trhh} to control the size of transition box,
+    #' and \code{trdigits} to control the digits displayed for transition
+    #' weights.
+    print = function(graph = TRUE, trajectory = TRUE, ...){
 
       gplot <-
         gMCPLite::hGraph(nHypotheses = self$get_number_hypotheses(),
                          nameHypotheses = private$hypotheses,
                          alphaHypotheses = private$alpha,
                          m = private$transition,
-                         palette = '#56B4E9')
+                         palette = '#56B4E9',
+                         trhw = .15,
+                         trhh = .1125,
+                         trdigits = 3, ...)
       if(graph){
         print(gplot)
       }
@@ -667,6 +746,14 @@ GraphicalTesting <- R6::R6Class(
     trajectory = NULL,
 
     silent = NULL,
+
+    original_silent = NULL,
+    original_hypotheses = NULL,
+    original_hids_in_graph = NULL,
+    original_transition = NULL,
+    original_alpha = NULL,
+    original_gst = NULL,
+    original_trajectory = NULL,
 
     validate_arguments = function(alpha,
                                   transition,
@@ -695,7 +782,9 @@ GraphicalTesting <- R6::R6Class(
 
       stopifnot(all(alpha >= 0))
       stopifnot(sum(alpha) <= 1)
-      stopifnot(all(abs(rowSums(transition) - 1)< 1e-6))
+
+      stopifnot(all(abs(rowSums(transition) - 1)< 1e-6 |
+                      abs(rowSums(transition) - 0)< 1e-6))
 
       stopifnot(all(alpha_spending %in% c('asP', 'asOF', 'asKD', 'asHSD')))
       stopifnot(is.vector(alpha_spending) && is.character(alpha_spending))
