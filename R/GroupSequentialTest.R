@@ -21,53 +21,52 @@
 #' ## Example 1. Generate boundaries for a pre-fix group sequential design
 #' gst <- GroupSequentialTest$new(
 #'   alpha = .025, alpha_spending = 'asOF',
-#'   info_fraction = c(.5, .75, 1), planned_max_info = 387)
+#'   planned_max_info = 387)
 #'
 #' ## without giving p-values, boundaries are returned without actual testing
-#' gst$test_all()
+#' gst$test(observed_info = c(205, 285, 393), is_final = c(FALSE, FALSE, TRUE))
 #' gst
 #'
 #' ## Example 2. Calculate boundaries with observed information at stages
+#' ## No p-values are provided
 #'
 #' ## get an error without resetting an used object
-#' try( gst$test_all(observed_info = c(205, 285, 393)) )
+#' try( gst$test(observed_info = 500, is_final = FALSE) )
 #'
 #' ## reset the object for re-use
 #' gst$reset()
-#' gst$test_all(observed_info = c(205, 285, 393))
+#' gst$test(observed_info = c(205, 285, 393), is_final = c(FALSE, FALSE, TRUE))
 #' gst
 #'
 #' ## Example 3. Test stagewise p-values sequentially
 #' gst$reset()
 #'
-#' gst$test(p_value = .09, observed_info = 205)
-#' gst$test(.006, 285)
+#' gst$test(observed_info = 205, is_final = FALSE, p_values = .09)
+#' gst$test(285, FALSE, .006)
 #'
 #' ## print testing trajectory by now
 #' gst
 #'
-#' gst$test(.002, 393)
+#' gst$test(393, TRUE, 002)
 #'
 #' ## print all testing trajectory
 #' gst
 #'
 #' ## you can also test all stages at once
-#' ## the result is the same as calling test() for each stage
+#' ## the result is the same as calling test() for each of the stages
 #' gst$reset()
-#' gst$test_all(c(.09, .006, .002), c(205, 285, 393))
+#' gst$test(c(205, 285, 393), c(FALSE, FALSE, TRUE), c(.09, .006, .002))
 #' gst
 #'
-#' ## Example 4. You don't have to update observed_info at all stages if
-#' ## a trial runs as planned. For example, for the primary endpoint being
-#' ## used to determine the stage (e.g., perform interim/final analysis when
-#' ## number of events is reached), observed_info can be NULL. However,
-#' ## observed_info is usually needed for other endpoints (e.g., secondary
-#' ## endpoints)
+#' ## Example 4. use user-define alpha spending
+#' gst <- GroupSequentialTest$new(
+#'   alpha = .025, alpha_spending = 'asUser',
+#'   planned_max_info = 387)
 #'
-#' gst$reset()
-#' gst$test(p_value = .09)
-#' gst$test(0.006)
-#' gst$test(0.002, observed_info = 393) # if final information is not as planned
+#' gst$test(
+#'   observed_info = c(205, 285, 393),
+#'   is_final = c(FALSE, FALSE, TRUE),
+#'   alpha_spent = c(.005, .0125, .025))
 #' gst
 #'
 #' @export
@@ -81,16 +80,15 @@ GroupSequentialTest <- R6::R6Class(
     #' initialize a group sequential test. Now only support one-sided test
     #' based on p-values.
     #' @param alpha familywise error rate
-    #' @param alpha_spending alpha spending function
-    #' @param info_fraction a vector of numeric. Cumulative information fraction
+    #' @param alpha_spending alpha spending function. Use \code{"asUser"}
+    #' if custom alpha spending schedule is used.
     #' @param planned_max_info integer. Planned maximum number of patients for
     #' non-tte endpoints or number of events for tte endpoints
     #' @param name character. Name of the hypothesis, e.g. endpoint, subgroup,
-    #' etc.
+    #' etc. Optional.
     initialize =
       function(alpha = .025,
-               alpha_spending = c('asP', 'asOF', 'asKD', 'asHSD'),
-               info_fraction = NULL,
+               alpha_spending = c('asP', 'asOF', 'asUser'),
                planned_max_info,
                name = 'H0'){
 
@@ -98,39 +96,51 @@ GroupSequentialTest <- R6::R6Class(
         stopifnot(is.numeric(alpha) && length(alpha) == 1 &&
                     alpha > 0 && alpha < 1)
 
-        if(!is.null(info_fraction)){
-          stopifnot(is.vector(info_fraction) && all(info_fraction >= 0))
-          if(any(diff(info_fraction) <= 0)){
-            stop('info_fraction should be monotonically increasing. ')
-          }
-        }
-
         stopifnot(is.wholenumber(planned_max_info))
         stopifnot(length(name) == 1 && is.character(name))
 
-        private$info_fraction <- info_fraction
+        private$update_max_info <- FALSE
+        private$info_fraction <- NULL
+        private$observed_info <- NULL
+        private$complete <- FALSE
+        private$stage <- 1
+        private$info_fraction <- NULL
         private$planned_max_info <- planned_max_info
         private$alpha <- alpha
         private$alpha_spending <- match.arg(alpha_spending)
+        private$alpha_spent <- 1e-6
+        private$always_asUser <- ifelse(private$alpha_spending == 'asUser', TRUE, FALSE)
         private$name <- name
         private$sided <- 1 # sided
-
-        private$stage <- 1
-        private$n_stages <- length(private$info_fraction)
-
-        private$update_max_info <- FALSE
-
-        private$original_info_fraction <- info_fraction
         private$original_planned_max_info <- planned_max_info
         private$original_alpha_spending <- match.arg(alpha_spending)
+
+        asf <- c(asOF = "O'Brien & Fleming",
+                 asP = 'Pocock',
+                 asUser = 'custom')
+
+        message('A group sequential design with overall alpha = <',
+                private$alpha, '> and alpha spending function <',
+                asf[private$alpha_spending],
+                '> is initialized for the hypothesis <', private$name, '>. \n',
+                'Call $test() to compute boundaries or test the hypothesis. \n',
+                ifelse(private$alpha_spending %in% 'asUser',
+                       'You need to specifiy alpha_spent to use "asUser". ',
+                       "You don't need to specify alpha_spent. ")
+                )
 
       },
 
     #' @description
-    #' get current stage. \code{GroupSequentialTest} maintains a private field
-    #' for tracking the current stage.
-    get_stage = function(){
-      private$stage
+    #' get name of hypothesis
+    get_name = function(){
+      private$name
+    },
+
+    #' @description
+    #' get overall alpha
+    get_alpha = function(){
+      private$alpha
     },
 
     #' @description
@@ -138,6 +148,7 @@ GroupSequentialTest <- R6::R6Class(
     #' final stage to adjust for an under- or over-running trial.
     #' @param asf character of alpha spending function.
     set_alpha_spending = function(asf){
+      stopifnot(asf %in% c('asP', 'asOF', 'asUser'))
       private$alpha_spending <- asf
     },
 
@@ -166,6 +177,12 @@ GroupSequentialTest <- R6::R6Class(
     },
 
     #' @description
+    #' get current stage.
+    get_stage = function(){
+      private$stage
+    },
+
+    #' @description
     #' an object of class \code{GroupSequentialTest} is designed to be used
     #' sequentially by calling \code{GroupSequentialTest$test}. When all
     #' planned tests are performed, no further analysis could be done. In that
@@ -174,12 +191,15 @@ GroupSequentialTest <- R6::R6Class(
     #' to reset the status to stage 1. See examples. This implementation can
     #' prevent the error that more than the planned number of stages are tested.
     reset = function(){
+      private$info_fraction <- NULL
+      private$observed_info <- NULL
+      private$complete <- FALSE
       private$planned_max_info <- private$original_planned_max_info
-      private$info_fraction <- private$original_info_fraction
+      private$info_fraction <- NULL
       self$set_alpha_spending(private$original_alpha_spending)
+      private$always_asUser <- ifelse(private$original_alpha_spending == 'asUser', TRUE, FALSE)
       private$stage <- 1
-      private$update_max_info <- FALSE
-      private$alpha_spent <- NULL
+      private$alpha_spent <- 1e-6
       private$trajectory <- NULL
       message('GroupSequentialTest object <', private$name,
               '> has been reset and is ready to use. ')
@@ -188,10 +208,13 @@ GroupSequentialTest <- R6::R6Class(
     #' @description
     #' save testing result at current stage
     #' @param result a data frame storing testing result at a stage.
-    set_trajectory = function(result){
-      private$trajectory <- rbind(private$trajectory, result)
-      if(nrow(private$trajectory) == private$n_stages){
-        private$trajectory$informationRates <- private$info_fraction
+    #' @param is_final logical. \code{TRUE} if final test for the hypothesis,
+    #' \code{FALSE} otherwise.
+    set_trajectory = function(result, is_final = FALSE){
+      private$trajectory <- dplyr::bind_rows(private$trajectory, result)
+      if(is_final){
+        ## information fraction is finalized only at the final stage
+        private$trajectory$informationRates <- private$info_fraction[-1]
       }
     },
 
@@ -207,45 +230,32 @@ GroupSequentialTest <- R6::R6Class(
     #' returns different values if settings are changed over time.
     get_stage_level = function(){
 
-      if(private$n_stages == 1){
+      if(!private$always_asUser && self$get_alpha_spending() == 'asUser'){
+        private$alpha_spent <- c(private$alpha_spent, self$get_alpha())
+      }
+
+      suppressWarnings(
         design <- rpact::getDesignGroupSequential(
           sided = private$sided,
           alpha = private$alpha,
-          informationRates = c(1e-6, 1.),
-          typeOfDesign = self$get_alpha_spending()
+          informationRates = private$info_fraction,
+          typeOfDesign = self$get_alpha_spending(),
+          userAlphaSpending = private$alpha_spent
         )
-        private$alpha_spent <- 1.
-        design <- design %>%
-          as.data.frame() %>%
-          dplyr::filter(stages %in% 2) %>%
-          mutate(stages = 1)
-      }else{
-        if(!private$update_max_info){ # not an over or under running trial
-          design <- rpact::getDesignGroupSequential(
-            sided = private$sided,
-            alpha = private$alpha,
-            informationRates = private$info_fraction,
-            typeOfDesign = self$get_alpha_spending()
-          )
-        }else{
-          stopifnot(self$get_alpha_spending() == 'asUser')
-          design <- rpact::getDesignGroupSequential(
-            sided = private$sided,
-            alpha = private$alpha,
-            informationRates = private$info_fraction,
-            typeOfDesign = self$get_alpha_spending(),
-            userAlphaSpending = private$alpha_spent
-          )
-        }
+      )
 
-        ## will be used in next test if max_info is updated at the final stage
-        ## in that case, alpha_spending will be set to 'asUser'
-        private$alpha_spent <- design$alphaSpent
-
-        design <- design %>%
-          as.data.frame() %>%
-          dplyr::filter(stages %in% self$get_stage())
+      if(private$update_max_info){
+        self$set_alpha_spending(private$original_alpha_spending)
       }
+
+      ## will be used in next test if max_info is updated at the final stage
+      ## in that case, alpha_spending will be set to 'asUser'
+      private$alpha_spent <- design$alphaSpent
+
+      design <- design %>%
+        as.data.frame() %>%
+        mutate(stages = row_number() - 1) %>%
+        dplyr::filter(stages %in% self$get_stage())
 
       level <- design$stageLevels[1]
       attr(level, 'details') <-
@@ -260,55 +270,47 @@ GroupSequentialTest <- R6::R6Class(
     #' @description
     #' test a hypothesis with the given p-value at current stage
     #' @param p_value numeric. A p-value.
+    #' @param is_final logical. \code{TRUE} if this test is carried out for
+    #' the final analysis.
     #' @param observed_info integer. Observed information at current stage. It
     #' can be the number of samples (non-tte) or number of events (tte) at test.
     #' If the current stage is final, observed_info will be used to update
     #' planned_max_info, the alpha spending function (\code{typeOfDesign}
     #' in \code{rpact}) will be updated to \code{'asUser'}, and the argument
     #' \code{userAlphaSpending} will be used when calling
-    #' \code{rpact::getDesignGroupSequential}. It can be \code{NULL} if
-    #' \code{info_fraction} and \code{planned_max_info} are not changed.
-    test = function(p_value, observed_info = NULL){
+    #' \code{rpact::getDesignGroupSequential}.
+    #' @param alpha_spent numeric if \code{alpha_spending = "asUser"}. It must
+    #' be between 0 and \code{alpha}, the overall alpha of the test.
+    #' \code{NA_real_} for other alpha spending functions \code{"asOF"} and
+    #' \code{"asP"}.
+    test_one = function(p_value, is_final, observed_info, alpha_spent = NA_real_){
 
       if(missing(p_value)){
         p_value <- NA
         message('p_value is missing so a dummy test is performed by setting it to NA. ')
       }
 
-      if(self$get_stage() > private$n_stages){
-        stop('Group sequential test has been completed. \n',
-             'No further test is available. \n',
-             'Try GroupSequentialTest$reset() before restarting it. ')
-      }
+      private$observed_info <- c(private$observed_info, observed_info)
 
-      stopifnot(is.null(observed_info) ||
-                  (length(observed_info) == 1 &&
-                     is.wholenumber(observed_info) &&
-                     observed_info > 0))
-
-      if(!is.null(observed_info)){
-        if(self$get_stage() == private$n_stages){ # at final stage
-          if(observed_info != self$get_max_info()){ # under or over running a trial
-            private$info_fraction <- private$info_fraction * self$get_max_info() / observed_info
-            self$set_max_info(observed_info)
-            self$set_alpha_spending('asUser')
-            private$update_max_info <- TRUE
-          }
-        }else{
-          if(observed_info >= self$get_max_info()){
-            stop('observed information <',
-                 observed_info, ' is greater than planned_max_info <',
-                 self$get_max_info(),
-                 '>. This can only happened in the final stage. ')
-          }
-          private$update_max_info <- FALSE
+      if(is_final){ # at final stage
+        if(observed_info != self$get_max_info()){ # under or over running a trial
+          self$set_max_info(observed_info)
+          self$set_alpha_spending('asUser')
+          private$update_max_info <- TRUE
         }
-
-        message('Information fraction is updated at stage ', self$get_stage(),
-                ' (', private$info_fraction[self$get_stage()], ' -> ',
-                observed_info/self$get_max_info(), '). ')
-        private$info_fraction[self$get_stage()] <- observed_info/self$get_max_info()
+      }else{
+        if(observed_info >= self$get_max_info()){
+          stop('observed information <',
+               observed_info, '> is greater than planned_max_info <',
+               self$get_max_info(),
+               '>. This can only happened in the final stage. ')
+        }
+        private$update_max_info <- FALSE
       }
+
+      ## set first information fraction to be 1e-6 for easy implementation
+      private$info_fraction <- c(1e-6, private$observed_info / self$get_max_info())
+      private$alpha_spent <- sort(unique(c(private$alpha_spent, alpha_spent)))
 
       stage_level <- self$get_stage_level()
       private$stage <- private$stage + 1
@@ -319,48 +321,103 @@ GroupSequentialTest <- R6::R6Class(
         mutate(decision = ifelse(p_value < stage_level, 'reject', 'accept')) %>%
         mutate(hypothesis = private$name)
 
-      self$set_trajectory(test_result)
+      self$set_trajectory(test_result, is_final)
+
+      if(is_final){
+        private$complete <- TRUE
+      }
+
       test_result
 
     },
 
     #' @description
-    #' similar to \code{GroupSequentialTest$test} if \code{p_value}
-    #' is provided. If \code{p_value} is \code{NULL}, boundary of planned design
-    #' will be returned with updated observed information \code{observed_info}.
-    #' This function can be used to test p-values of all planned stages.
-    #' If you want to test at current stage dynamically, use \code{test}.
+    #' Carry out test based on group sequential design. If \code{p_values}
+    #' is \code{NULL}, dummy values will be use and boundaries are calculated
+    #' for users to review.
+    #' @param observed_info a vector of integers, observed information at stages.
+    #' @param is_final logical vector. \code{TRUE} if the test is for the final
+    #' analysis.
     #' @param p_values a vector of p-values. If specified, its length should
-    #' equal to the number of stages in the \code{GroupSequentialTest} object.
-    #' @param observed_info a vector of integers. If specified, its length
-    #' should equal to the number of stages in the \code{GroupSequentialTest}
-    #' object.
-    test_all = function(p_values = NULL, observed_info = NULL){
+    #' equal to the length of \code{observed_info}.
+    #' @param alpha_spent accumulative alpha spent at observed information.
+    #' It is a numeric vector of values between 0 and 1, and of length that
+    #' equals \code{length(observed_info)} if alpha-spending
+    #' function is not \code{"asUser"}. Otherwise \code{NULL}.
+    test = function(observed_info, is_final, p_values = NULL, alpha_spent = NULL){
+
+      if(private$complete){
+        stop('Group sequential test has been completed. \n',
+             'No further test is available. \n',
+             'Run GroupSequentialTest$reset() and try again. ')
+      }
+
+      if(any(is.na(observed_info))){
+        stop('No NA is allowed in observed_info. ')
+      }
+
+      if(!all(is.wholenumber(observed_info)) || any(observed_info <= 0)){
+        stop('observed_info should be a vector of positive integers. ')
+      }
+
+      if(any(is.na(is_final))){
+        stop('No NA is allowed in logical vector is_final. ')
+      }
+
+      stopifnot(is.logical(is_final))
+      if(length(observed_info) != length(is_final)){
+        stop('observered_info and is_final must of same length. ')
+      }
 
       if(!is.null(p_values)){
-        if(length(p_values) != private$n_stages){
-          stop('p_values should be of length ', private$n_stages, '. ')
+        if(length(p_values) != length(observed_info)){
+          stop('p_values and observed_info should be of same length. ')
         }
       }else{
-        p_values <- rep(NA, private$n_stages)
+        p_values <- rep(NA, length(observed_info))
+        message('No p-values are provided. Only decision boundaries are calculated. ')
       }
 
-      if(!is.null(observed_info)){
-        if(length(observed_info) != private$n_stages){
-          stop('observed_info should be of length ', private$n_stages, '. ')
+      if(private$always_asUser){
+        if(is.null(alpha_spent)){
+          stop('alpha_spent cannot be NULL as custom alpha spending function is in use. ')
         }
-      }else{
-        observed_info <- rep(NA, private$n_stages)
+
+        if(length(alpha_spent) != length(observed_info)){
+          stop('alpha_spent and observed_info should be of same length. ')
+        }
+
+        if(any(alpha_spent <= 0 | alpha_spent > self$get_alpha())){
+          stop('alpha_spent should be of values between 0 and ', self$get_alpha())
+        }
+
+        if(length(alpha_spent) > 1 && any(diff(alpha_spent) <= 0)){
+          stop('alpha_spent should be monotonically increasing. ')
+        }
+
+        for(i in seq_along(alpha_spent)){
+          if(is_final[i] && abs(alpha_spent[i] - self$get_alpha()) > 1e-6){
+            stop('At final test, the accumulated alpha_spent should be ',
+                 self$get_alpha())
+          }
+        }
+
+      }else{ ## asOF, asP
+        if(!is.null(alpha_spent)){
+          stop('alpha_spent should not be specified as alpha spending function is <',
+               self$get_alpha_spending(), '>. ')
+        }
+
+        alpha_spent <- rep(NA_real_, length(observed_info))
       }
+
+
 
       for(i in seq_along(p_values)){
-        if(is.na(observed_info[i])){
-          oi <- NULL
-        }else{
-          oi <- observed_info[i]
-        }
-
-        self$test(p_value = p_values[i], observed_info = oi)
+        self$test_one(p_value = p_values[i],
+                      is_final = is_final[i],
+                      observed_info = observed_info[i],
+                      alpha_spent = alpha_spent[i])
       }
     },
 
@@ -374,22 +431,24 @@ GroupSequentialTest <- R6::R6Class(
   ),
 
   private = list(
-    sided = NULL,
-    alpha = NULL,
-    name = NULL,
-    alpha_spending = NULL,
-    info_fraction = NULL,
-    planned_max_info = NULL,
+    sided = 1, ## always one-sided for now
+    alpha = NULL, ## overall FWER
+    name = 'H0', ## name of hypothesis
+    alpha_spending = NULL, ## 'asOF', 'asP', 'asUser'
+    planned_max_info = NULL, ## integer to be updated at final stage
 
-    original_info_fraction = NULL,
+    always_asUser = NULL,
+    observed_info = NULL,
+    info_fraction = NULL,
+    update_max_info = FALSE,
+
     original_planned_max_info = NULL,
     original_alpha_spending = NULL,
 
-    stage = NULL,
-    n_stages = NULL,
+    stage = 1, ## integer, current stage, change over time
 
-    update_max_info = NULL,
     alpha_spent = NULL,
-    trajectory = NULL
+    trajectory = NULL,
+    complete = FALSE
   )
 )
