@@ -86,11 +86,13 @@ GroupSequentialTest <- R6::R6Class(
     #' non-tte endpoints or number of events for tte endpoints
     #' @param name character. Name of the hypothesis, e.g. endpoint, subgroup,
     #' etc. Optional.
+    #' @param silent \code{TRUE} if muting all messages.
     initialize =
       function(alpha = .025,
                alpha_spending = c('asP', 'asOF', 'asUser'),
                planned_max_info,
-               name = 'H0'){
+               name = 'H0',
+               silent = TRUE){
 
         sided <- 1
         stopifnot(is.numeric(alpha) && length(alpha) == 1 &&
@@ -99,6 +101,8 @@ GroupSequentialTest <- R6::R6Class(
         stopifnot(is.wholenumber(planned_max_info))
         stopifnot(length(name) == 1 && is.character(name))
 
+        stopifnot(is.logical(silent) && length(silent) == 1)
+        private$silent <- silent
         private$update_max_info <- FALSE
         private$info_fraction <- NULL
         private$observed_info <- NULL
@@ -119,15 +123,17 @@ GroupSequentialTest <- R6::R6Class(
                  asP = 'Pocock',
                  asUser = 'custom')
 
-        message('A group sequential design with overall alpha = <',
-                private$alpha, '> and alpha spending function <',
-                asf[private$alpha_spending],
-                '> is initialized for the hypothesis <', private$name, '>. \n',
-                'Call $test() to compute boundaries or test the hypothesis. \n',
-                ifelse(private$alpha_spending %in% 'asUser',
-                       'You need to specifiy alpha_spent to use "asUser". ',
-                       "You don't need to specify alpha_spent. ")
-                )
+        if(!private$silent){
+          message('A group sequential design with overall alpha = <',
+                  private$alpha, '> and alpha spending function <',
+                  asf[private$alpha_spending],
+                  '> is initialized for the hypothesis <', private$name, '>. \n',
+                  'Call $test() to compute boundaries or test the hypothesis. \n',
+                  ifelse(private$alpha_spending %in% 'asUser',
+                         'You need to specifiy alpha_spent to use "asUser". ',
+                         "You don't need to specify alpha_spent. ")
+                  )
+        }
 
       },
 
@@ -172,8 +178,10 @@ GroupSequentialTest <- R6::R6Class(
     set_max_info = function(obs_max_info){
       tmp <- private$planned_max_info
       private$planned_max_info <- obs_max_info
-      message('Maximum information is updated at stage ', self$get_stage(),
-              ' (', tmp, ' -> ', obs_max_info, '). ')
+      if(!private$silent){
+        message('Maximum information is updated at stage ', self$get_stage(),
+                ' (', tmp, ' -> ', obs_max_info, '). ')
+      }
     },
 
     #' @description
@@ -287,7 +295,10 @@ GroupSequentialTest <- R6::R6Class(
 
       if(missing(p_value)){
         p_value <- NA
-        message('p_value is missing so a dummy test is performed by setting it to NA. ')
+
+        if(!private$silent){
+          message('p_value is missing so a dummy test is performed by setting it to NA. ')
+        }
       }
 
       private$observed_info <- c(private$observed_info, observed_info)
@@ -375,7 +386,9 @@ GroupSequentialTest <- R6::R6Class(
         }
       }else{
         p_values <- rep(NA, length(observed_info))
-        message('No p-values are provided. Only decision boundaries are calculated. ')
+        if(!private$silent){
+          message('No p-values are provided. Only decision boundaries are calculated. ')
+        }
       }
 
       if(private$always_asUser){
@@ -436,6 +449,8 @@ GroupSequentialTest <- R6::R6Class(
     name = 'H0', ## name of hypothesis
     alpha_spending = NULL, ## 'asOF', 'asP', 'asUser'
     planned_max_info = NULL, ## integer to be updated at final stage
+
+    silent = TRUE,
 
     always_asUser = NULL,
     observed_info = NULL,

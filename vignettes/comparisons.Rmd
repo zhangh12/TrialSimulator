@@ -52,7 +52,7 @@ alpha <- 0.025
 identical <- NULL
 for (i in 1:100) {
   graph <- random_graph(5)
-  p <- runif(5, 0, alpha)
+  p <- runif(5, 0, 1.5 * alpha)
   
   gmcp <-
     graph_test_shortcut(graph, p, alpha = alpha)$outputs$rejected
@@ -71,9 +71,9 @@ for (i in 1:100) {
   )
   
   stats <- 
-    data.frame(order = rep(1, 5), 
-               hypotheses = paste0('H', 1:5), 
+    data.frame(hypotheses = paste0('H', 1:5), 
                p = p, 
+               is_final = rep(TRUE, 5), 
                ## info should be identical to max_info 
                ## as if we are testing at the final stage
                ## to use all allocated alpha
