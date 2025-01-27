@@ -116,11 +116,10 @@
 #' ## you can get final testing results as follow
 #' gt$get_current_testing_results()
 #'
-#' ## equivalently, you can call gt$test(stats) for only once to get same
-#' results.
+#' ## equivalently, you can call gt$test(stats) for only once to get same results.
 #' gt$reset()
 #' gt$test(stats)
-#' gt$get_current_testing_results()
+#' gt$get_current_decision()
 #' }
 #'
 #' @export
