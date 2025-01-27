@@ -95,6 +95,7 @@
 #'                             'H5: ORR sub', 'H6: ORR all'),
 #'              p = c(.03, .0001, .000001, .2, .15, .1, .2, .001, .3, .2, .00001, .1),
 #'              info = c(185, 245, 295, 529, 700, 800, 265, 310, 675, 750, 200, 300),
+#'              is_final = c(FALSE, FALSE, TRUE, FALSE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, TRUE, TRUE),
 #'              max_info = c(rep(295, 3), rep(800, 3), rep(310, 2), rep(750, 2), 200, 300)
 #'   )
 #'
@@ -108,7 +109,6 @@
 #' ## because no futher test would be done, displayed results are final
 #' gt$test(stats %>% dplyr::filter(order==3))
 #'
-#' ## equivalently, you can call this gt$test(stats) for only once
 #'
 #' ## plot the final status of the graph
 #' print(gt, trajectory = FALSE)
@@ -116,6 +116,11 @@
 #' ## you can get final testing results as follow
 #' gt$get_current_testing_results()
 #'
+#' ## equivalently, you can call gt$test(stats) for only once to get same
+#' results.
+#' gt$reset()
+#' gt$test(stats)
+#' gt$get_current_testing_results()
 #' }
 #'
 #' @export
@@ -173,6 +178,8 @@ GraphicalTesting <- R6::R6Class(
             alpha = private$alpha[i],
             alpha_spending = alpha_spending[i],
             info = NULL,
+            is_final = NULL,
+            p = NULL,
             planned_max_info = planned_max_info[i],
             name = private$hypotheses[i]
           )
@@ -212,24 +219,24 @@ GraphicalTesting <- R6::R6Class(
     },
 
     #' @description
-        #' determine if index of a hypothesis is valid
-        #' @param hid an integer
+    #' determine if index of a hypothesis is valid
+    #' @param hid an integer
     is_valid_hid = function(hid){
       stopifnot(hid > 0 && hid <= nrow(private$transition))
     },
 
     #' @description
-        #' get name of a hypothesis given its index.
-        #' @param hid an integer
+    #' get name of a hypothesis given its index.
+    #' @param hid an integer
     get_hypothesis_name = function(hid){
       self$is_valid_hid(hid)
       private$hypotheses[hid]
     },
 
     #' @description
-        #' return weight between two nodes
-        #' @param hid1 an integer
-        #' @param hid2 an integer
+    #' return weight between two nodes
+    #' @param hid1 an integer
+    #' @param hid2 an integer
     get_weight = function(hid1, hid2){
       self$is_valid_hid(hid1)
       self$is_valid_hid(hid2)
@@ -426,21 +433,22 @@ GraphicalTesting <- R6::R6Class(
         #' base on the current graph. All rows should have the same order
         #' number.
         #' @param stats a data frame. It must contain the following columns:
-        #' - **order**: integer. P-values (among others) of hypotheses that
+        #' \describe{
+        #' \item{\code{order}}{integer. P-values (among others) of hypotheses that
         #' can be tested at the same time (e.g., an interim, or final analysis)
         #' should be labeled with the same order number.
         #' If a hypothesis is not tested at a stage,
-        #' simply don't put it in \code{stats} with that order number.
-        #' - **hypotheses**: character. Name of hypotheses to be tested. They
-        #' should be identical to those when calling
-        #' \code{GraphicalTesting$new}.
-        #' - **p**: nominal p-values.
-        #' - **info**: observed number of events or samples at test. These will
-        #' be used to compute information fractions in group sequential design.
-        #' -- **max_info**: integers. Maximum information at test. At interim,
+        #' simply don't put it in \code{stats} with that order number.}
+        #' \item{\code{hypotheses}}{character. Name of hypotheses to be tested. They
+        #' should be identical to those when calling \code{GraphicalTesting$new}.}
+        #' \item{\code{p}}{nominal p-values.}
+        #' \item{\code{info}}{observed number of events or samples at test. These will
+        #' be used to compute information fractions in group sequential design.}
+        #' \item{\code{max_info}}{integers. Maximum information at test. At interim,
         #' \code{max_info} should be equal to \code{planned_max_info} when
         #' calling \code{GraphicalTesting$new}. At the final stage of a
-        #' hypothesis, one can update it with observed numbers.
+        #' hypothesis, one can update it with observed numbers.}
+        #' }
     test_hypotheses = function(stats){
 
       if(nrow(stats) == 0){
@@ -453,9 +461,14 @@ GraphicalTesting <- R6::R6Class(
              'Debug it. ')
       }
 
-      try_again <- TRUE
-      while(try_again){
-        try_again <- FALSE
+      ## for a given set of hypotheses to be tested together, once a hypothesis
+      ## is rejected, the remaining hypotheses should be tested again with
+      ## updated graph
+      tested <- rep(FALSE, length(stats$hypotheses))
+      names(tested) <- stats$hypotheses
+      test_again <- TRUE
+      while(test_again){
+        test_again <- FALSE
 
         for(h in stats$hypotheses){
 
@@ -469,21 +482,21 @@ GraphicalTesting <- R6::R6Class(
           }
 
           stopifnot(is.null(private$gst[[hid]]$info) || stat$info >= max(private$gst[[hid]]$info))
-          private$gst[[hid]]$info <- sort(unique(c(private$gst[[hid]]$info, stat$info)))
+
+          if(!tested[h]){
+            tested[h] <- TRUE
+            private$gst[[hid]]$info <- c(private$gst[[hid]]$info, stat$info)
+            private$gst[[hid]]$is_final <- c(private$gst[[hid]]$is_final, stat$is_final)
+            private$gst[[hid]]$p <- c(private$gst[[hid]]$p, stat$p)
+          }
+
           stopifnot(private$gst[[hid]]$planned_max_info >= max(private$gst[[hid]]$info))
 
-          private$gst[[hid]]$info_fraction <-
-            private$gst[[hid]]$info / private$gst[[hid]]$planned_max_info
-
-          if(!(1 %in% private$gst[[hid]]$info_fraction)){
-            private$gst[[hid]]$info_fraction <- c(private$gst[[hid]]$info_fraction, 1.)
-          }
           current_stage <- length(private$gst[[hid]]$info)
 
           args <- private$gst[[hid]]
 
           if(self$get_alpha(hid) == 0){
-            private$gst[[hid]]$info_fraction <- NULL
             if(!private$silent){
               message('<', args$name, ', order = ', stat$order,
                       '> cannot be tested with alpha = 0. ')
@@ -493,11 +506,12 @@ GraphicalTesting <- R6::R6Class(
 
           gst <- GroupSequentialTest$new(alpha = self$get_alpha(hid),
                                          alpha_spending = args$alpha_spending,
-                                         info_fraction = args$info_fraction,
                                          planned_max_info = args$planned_max_info,
                                          name = args$name)
 
-          gst$test_all()
+          gst$test(observed_info = args$info,
+                   is_final = args$is_final,
+                   p_values = args$p)
 
           gst <- gst$get_trajectory() %>%
             dplyr::filter(stages == current_stage)
@@ -526,13 +540,13 @@ GraphicalTesting <- R6::R6Class(
           private$gst[[hid]]$info_fraction <- NULL
 
           if(decision_ == 'reject'){
-            try_again <- TRUE
+            test_again <- TRUE
             break
           }
 
         }
 
-        if(!try_again){
+        if(!test_again){
           if(!private$silent){
             message('No further hypothesis can be rejected (order = ',
                     stats$order[1], '). ')
@@ -556,21 +570,25 @@ GraphicalTesting <- R6::R6Class(
     #' test them all in a single pass. In this case, column \code{order} in
     #' \code{stats} can have different values.
     #' @param stats a data frame. It must contain the following columns:
-    #' - **order**: integer. P-values (among others) of hypotheses that
+    #' \describe{
+    #' \item{\code{order}}{integer. P-values (among others) of hypotheses that
     #' can be tested at the same time (e.g., an interim, or final analysis)
     #' should be labeled with the same order number.
     #' If a hypothesis is not tested at a stage,
     #' simply don't put it in \code{stats} with that order number.
-    #' - **hypotheses**: character. Name of hypotheses to be tested. They
+    #' If all p-values in \code{stats} are tested at the same stage, \code{order}
+    #' can be absent.}
+    #' \item{\code{hypotheses}}{character. Name of hypotheses to be tested. They
     #' should be identical to those when calling
-    #' \code{GraphicalTesting$new}.
-    #' - **p**: nominal p-values.
-    #' - **info**: observed number of events or samples at test. These will
-    #' be used to compute information fractions in group sequential design.
-    #' -- **max_info**: integers. Maximum information at test. At interim,
+    #' \code{GraphicalTesting$new}.}
+    #' \item{\code{p}}{nominal p-values.}
+    #' \item{\code{info}}{observed number of events or samples at test. These will
+    #' be used to compute information fractions in group sequential design.}
+    #' \item{\code{max_info}}{integers. Maximum information at test. At interim,
     #' \code{max_info} should be equal to \code{planned_max_info} when
     #' calling \code{GraphicalTesting$new}. At the final stage of a
-    #' hypothesis, one can update it with observed numbers.
+    #' hypothesis, one can update it with observed numbers.}
+    #' }
     #'
     #' @return a data frame returned by \code{get_current_testing_results}.
     #' It contains details of each of the testing steps.
@@ -589,9 +607,10 @@ GraphicalTesting <- R6::R6Class(
         stats$order <- 0
       }
 
-      if(!all(c('hypotheses', 'p', 'info', 'max_info') %in% names(stats))){
+      if(!all(c('hypotheses', 'p', 'info', 'is_final', 'max_info') %in% names(stats))){
         stop('Columns <',
-             paste0(setdiff(c('hypotheses', 'p', 'info', 'max_info'), names(stats)),
+             paste0(setdiff(c('hypotheses', 'p', 'info', 'is_final', 'max_info'),
+                            names(stats)),
                     collapse = ', '),
              '> are missing in stats. ')
       }
@@ -619,15 +638,17 @@ GraphicalTesting <- R6::R6Class(
     #' is called. This function can be called by users by multiple
     #' times, thus the returned value varies over time.
     #' This function is called by \code{GraphicalTesting::test}.
-    #' It contains columns
-    #' - **hypothesis**: name of hypotheses.
-    #' - **obs_p_value**: observed p-values.
-    #' - **max_allocated_alpha**: maximum allocated alpha for the hypothesis.
-    #' - **decision**: \code{'reject'} or \code{'accept'} the hypotheses.
-    #' - **stages**: stage of a hypothesis
-    #' - **order**: order number that this hypothesis is tested for the last time.
-    #' It is different from \code{stages}.
-    #' - **typeOfDesign**: name of alpha spending functions.
+    #' @returns It returns a data frame consisting of columns
+    #' \describe{
+    #' \item{\code{hypothesis}}{name of hypotheses.}
+    #' \item{\code{obs_p_value}}{observed p-values.}
+    #' \item{\code{max_allocated_alpha}}{maximum allocated alpha for the hypothesis.}
+    #' \item{\code{decision}}{\code{'reject'} or \code{'accept'} the hypotheses.}
+    #' \item{\code{stages}}{stage of a hypothesis. }
+    #' \item{\code{order}}{order number that this hypothesis is tested for the last time.
+    #' It is different from \code{stages}.}
+    #' \item{\code{typeOfDesign}}{name of alpha spending functions.}
+    #' }
     get_current_testing_results = function(){
 
       if(is.null(self$get_trajectory())){
