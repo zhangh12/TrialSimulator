@@ -397,6 +397,7 @@ GroupSequentialTest <- R6::R6Class(
         }
 
         if(length(alpha_spent) != length(observed_info)){
+          browser()
           stop('alpha_spent and observed_info should be of same length. ')
         }
 

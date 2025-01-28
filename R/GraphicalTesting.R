@@ -68,10 +68,10 @@
 #' ), nrow = 6, byrow = TRUE)
 #'
 #' ## alpha spending functions per hypothesis
-#' asf <- rep('asOF', 6)
+#' asf <- c('asUser', 'asOF', 'asUser', 'asOF', 'asOF', 'asOF')
 #'
 #' ## planned maximum number of events per hypothesis
-#' max_info <- c(295, 800, 310, 750, 200, 300)
+#' max_info <- c(295, 800, 310, 750, 500, 1100)
 #'
 #' ## name of hypotheses
 #' hs <- c('H1: OS sub',
@@ -88,15 +88,18 @@
 #'
 #' ## nominal p-values at each stage
 #' ## Note: p-values with same order are calculated with the same locked data
+#' ## Note: alpha_spent is only specified for hypotheses using custom alpha
+#' ##       spending function "asUser"
 #' stats <-
 #'   data.frame(order = c(1:3, 1:3, 1:2, 1:2, 1, 1),
 #'              hypotheses = c(rep('H1: OS sub',3), rep('H2: OS all',3),
 #'                             rep('H3: PFS sub',2), rep('H4: PFS all',2),
 #'                             'H5: ORR sub', 'H6: ORR all'),
 #'              p = c(.03, .0001, .000001, .2, .15, .1, .2, .001, .3, .2, .00001, .1),
-#'              info = c(185, 245, 295, 529, 700, 800, 265, 310, 675, 750, 200, 300),
+#'              info = c(185, 245, 295, 529, 700, 800, 265, 310, 675, 750, 490, 990),
 #'              is_final = c(FALSE, FALSE, TRUE, FALSE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, TRUE, TRUE),
-#'              max_info = c(rep(295, 3), rep(800, 3), rep(310, 2), rep(750, 2), 200, 300)
+#'              max_info = c(rep(295, 3), rep(800, 3), rep(310, 2), rep(750, 2), 490, 990),
+#'              alpha_spent = c(c(.1, .4, 1), rep(NA, 3), c(.3, 1), rep(NA, 2), NA, NA)
 #'   )
 #'
 #' ## test the p-values from the first analysis, plot the updated graph
@@ -116,9 +119,16 @@
 #' ## you can get final testing results as follow
 #' gt$get_current_testing_results()
 #'
+#' ## if you want to see step-by-step details
+#' if(FALSE){
+#'   print(gt$get_trajectory())
+#' }
+#'
 #' ## equivalently, you can call gt$test(stats) for only once to get same results.
 #' gt$reset()
 #' gt$test(stats)
+#'
+#' ## if you only want to get the final testing results
 #' gt$get_current_decision()
 #' }
 #'
@@ -137,8 +147,7 @@ GraphicalTesting <- R6::R6Class(
         #' be all 0s. The row sums should be 1s (for better power) or
         #' 0s (if no outbound edge from a node).
         #' @param alpha_spending character vector of same length of \code{alpha}.
-        #' Currently it supports \code{'asP'}, \code{'asOF'}, \code{'asKD'},
-        #' and \code{'asHSD'}.
+        #' Currently it supports \code{'asP'}, \code{'asOF'}, and \code{'asUser'}.
         #' @param planned_max_info vector of integers. Maximum numbers of
         #' events (tte endpoints) or patients (non-tte endpoints) at the final
         #' analysis of each hypothesis when planning a trial. The actual numbers
@@ -180,7 +189,9 @@ GraphicalTesting <- R6::R6Class(
             is_final = NULL,
             p = NULL,
             planned_max_info = planned_max_info[i],
-            name = private$hypotheses[i]
+            name = private$hypotheses[i],
+            alpha_spent = NULL,
+            critical_values = NULL
           )
       }
 
@@ -477,6 +488,13 @@ GraphicalTesting <- R6::R6Class(
           stopifnot(private$gst[[hid]]$name == stat$hypotheses)
 
           if(!is.na(stat$max_info)){
+            if(stat$max_info != private$gst[[hid]]$planned_max_info){
+              message('Planned maximum information for hypothesis <',
+                      private$gst[[hid]]$name,
+                      '> is changed from <',
+                      private$gst[[hid]]$planned_max_info,
+                      '> -> <', stat$max_info, '>. ')
+            }
             private$gst[[hid]]$planned_max_info <- stat$max_info
           }
 
@@ -487,6 +505,32 @@ GraphicalTesting <- R6::R6Class(
             private$gst[[hid]]$info <- c(private$gst[[hid]]$info, stat$info)
             private$gst[[hid]]$is_final <- c(private$gst[[hid]]$is_final, stat$is_final)
             private$gst[[hid]]$p <- c(private$gst[[hid]]$p, stat$p)
+
+            if(private$gst[[hid]]$alpha_spending == 'asUser'){
+              if(is.na(stat$alpha_spent)){
+                stop('alpha_spent cannot be NA as alpha spending function is <asUser> ',
+                     'for hypothesis <', private$gst[[hid]]$name, '>. ')
+              }
+
+              if(stat$alpha_spent <=0 || stat$alpha_spent > 1){
+                stop('alpha_spent for hypothesis <', private$gst[[hid]]$name,
+                     '> is out of range (should be within (0, 1]). ')
+              }
+
+              if(stat$is_final && 1 - stat$alpha_spent > 1e-4){
+                stop('At final stage, alpha_spent for hypothesis <',
+                     private$gst[[hid]]$name,
+                     '> should be 1. ')
+              }
+
+              if(!is.null(private$gst[[hid]]$alpha_spent) &&
+                 stat$alpha_spent <= max(private$gst[[hid]]$alpha_spent)){
+                stop('At final stage, alpha_spent for hypothesis <',
+                     private$gst[[hid]]$name,
+                     '> should be increasing. ')
+              }
+              private$gst[[hid]]$alpha_spent <- c(private$gst[[hid]]$alpha_spent, stat$alpha_spent)
+            }
           }
 
           stopifnot(private$gst[[hid]]$planned_max_info >= max(private$gst[[hid]]$info))
@@ -496,6 +540,10 @@ GraphicalTesting <- R6::R6Class(
           args <- private$gst[[hid]]
 
           if(self$get_alpha(hid) == 0){
+            if(length(private$gst[[hid]]$critical_values) < length(private$gst[[hid]]$info)){
+              private$gst[[hid]]$critical_values <- c(private$gst[[hid]]$critical_values, Inf)
+              stopifnot(length(private$gst[[hid]]$critical_values) == length(private$gst[[hid]]$info))
+            }
             if(!private$silent){
               message('<', args$name, ', order = ', stat$order,
                       '> cannot be tested with alpha = 0. ')
@@ -503,17 +551,67 @@ GraphicalTesting <- R6::R6Class(
             next
           }
 
-          gst <- GroupSequentialTest$new(alpha = self$get_alpha(hid),
-                                         alpha_spending = args$alpha_spending,
-                                         planned_max_info = args$planned_max_info,
-                                         name = args$name)
+          if(length(args$is_final) == 1 && tail(args$is_final, 1)){
+            ## this hypothesis can only be tested once, no final adjustment is needed
+            gst <- GroupSequentialTest$new(alpha = self$get_alpha(hid),
+                                           alpha_spending = args$alpha_spending,
+                                           planned_max_info = args$planned_max_info,
+                                           name = args$name)
+            gst$test(observed_info = args$info,
+                     is_final = args$is_final,
+                     p_values = args$p)
+          }else{
+            if(length(args$is_final) > 1 && tail(args$is_final, 1)){
+              ## this hypothesis can be tested more than once
+              ## and it is the final test
+              ## change alpha_spending to be 'asUser' to make adjustment
+              gst <- GroupSequentialTest$new(alpha = self$get_alpha(hid),
+                                             alpha_spending = 'asUser',
+                                             planned_max_info = args$planned_max_info,
+                                             name = args$name)
 
-          gst$test(observed_info = args$info,
-                   is_final = args$is_final,
-                   p_values = args$p)
+              info_frac_ <- args$info/args$planned_max_info
+              alpha_spent_ <- computeCumulativeAlphaSpent(args$critical_values, info_frac_[-length(info_frac_)])
+              alpha_spent_[alpha_spent_ < 1e-4] <- 1e-4
+
+              gst$test(observed_info = args$info,
+                       is_final = args$is_final,
+                       p_values = args$p,
+                       alpha_spent = c(alpha_spent_, gst$get_alpha()))
+            }else{
+              ## this is not the final test
+              ## alpha_spending should not be changed,
+              ## no adjustment is needed
+              gst <- GroupSequentialTest$new(alpha = self$get_alpha(hid),
+                                             alpha_spending = args$alpha_spending,
+                                             planned_max_info = args$planned_max_info,
+                                             name = args$name)
+              if(args$alpha_spending %in% 'asUser'){
+                ## asUser, so custom alpha_spent * allocated alpha is used
+                gst$test(observed_info = args$info,
+                         is_final = args$is_final,
+                         p_values = args$p,
+                         alpha_spent = args$alpha_spent * self$get_alpha(hid))
+              }else{
+                ## asOF or asP, alpha_spent should not be used
+                gst$test(observed_info = args$info,
+                         is_final = args$is_final,
+                         p_values = args$p)
+              }
+            }
+          }
 
           gst <- gst$get_trajectory() %>%
             dplyr::filter(stages == current_stage)
+
+          if(length(private$gst[[hid]]$critical_values) == length(private$gst[[hid]]$info)){
+            k_ <- length(private$gst[[hid]]$critical_values)
+            private$gst[[hid]]$critical_values[k_] <- gst$criticalValues
+          }else{
+            private$gst[[hid]]$critical_values <- c(private$gst[[hid]]$critical_values, gst$criticalValues)
+            stopifnot(length(private$gst[[hid]]$critical_values) == length(private$gst[[hid]]$info))
+          }
+
 
           decision_ <- ifelse(stat$p < gst$stageLevels, 'reject', 'accept')
 
@@ -587,6 +685,10 @@ GraphicalTesting <- R6::R6Class(
     #' \code{max_info} should be equal to \code{planned_max_info} when
     #' calling \code{GraphicalTesting$new}. At the final stage of a
     #' hypothesis, one can update it with observed numbers.}
+    #' \item{\code{alpha_spent}}{accumulative proportion of allocated alpha
+    #' to be spent if \code{alpha_spending = "asUser"}. Set it to
+    #' \code{NA_real_} otherwise. If no hypothesis uses \code{"asUser"} in
+    #' \code{stats}, this column could be ignored. }
     #' }
     #'
     #' @return a data frame returned by \code{get_current_testing_results}.
@@ -612,6 +714,10 @@ GraphicalTesting <- R6::R6Class(
                             names(stats)),
                     collapse = ', '),
              '> are missing in stats. ')
+      }
+
+      if(is.null(stats$alpha_spent)){
+        stats$alpha_spent <- NA_real_
       }
 
       if(!all(is.wholenumber(stats$order))){
@@ -806,7 +912,7 @@ GraphicalTesting <- R6::R6Class(
       stopifnot(all(abs(rowSums(transition) - 1)< 1e-6 |
                       abs(rowSums(transition) - 0)< 1e-6))
 
-      stopifnot(all(alpha_spending %in% c('asP', 'asOF', 'asKD', 'asHSD')))
+      stopifnot(all(alpha_spending %in% c('asP', 'asOF', 'asUser')))
       stopifnot(is.vector(alpha_spending) && is.character(alpha_spending))
       stopifnot(length(alpha_spending) == nrow(transition))
 
