@@ -817,6 +817,10 @@ Trial <- R6::R6Class(
     #' @param event_name character, event name of which the locked data to be
     #' extracted.
     get_locked_data = function(event_name){
+      if(!(event_name %in% names(private$locked_data))){
+        stop('Locked data for event <', event_name, '> cannot be found. ')
+      }
+
       private$locked_data[[event_name]]
     },
 
@@ -1296,6 +1300,94 @@ Trial <- R6::R6Class(
     #' return a tester, now it is a \code{GraphicalTesting} object.
     get_tester = function(){
       private$tester
+    },
+
+    #' @description
+    #' calculate independent increments from a given set of events
+    #' @param endpoint character. Name of time-to-event endpoint in trial's
+    #' locked data.
+    #' @param placebo character. String of placebo in trial's locked data.
+    #' @param events a character vector of event names in the trial, e.g.,
+    #' \code{listener$get_event_names()}.
+    #' @param planned_info a vector of planned accumulative number of event of
+    #' time-to-event endpoint. Note: \code{planned_info} can also be a character
+    #' \code{"oracle"} so that planned number of events are set to be observed
+    #' number of events, in that case inverse normal z statistics equal to
+    #' one-sided logrank statistics. This is for the purpose of debugging only.
+    #' @param ... subset condition that is compatible with \code{dplyr::filter}.
+    #' \code{survdiff} will be fitted on this subset only to compute one-sided
+    #' logrank statistics. It could be useful when a
+    #' trial consists of more than two arms. By default it is not specified,
+    #' all data will be used to fit the model.
+    #'
+    #' This function returns a data frame with sevens columns:
+    #' \describe{
+    #' \item{\code{p_inverse_normal}}{one-sided p-value for inverse normal test
+    #' based on logrank test (alternative hypothesis: risk is higher in placebo arm). }
+    #' \item{\code{z_inverse_normal}}{z statistics of \code{p_inverse_normal}. }
+    #' \item{\code{p_lr}}{one-sided p-value for logrank test
+    #'  (alternative hypothesis: risk is higher in placebo arm). }
+    #' \item{\code{z_lr}}{z statistics of \code{p_lr}. }
+    #' \item{\code{info}}{observed accumulative number of events. }
+    #' \item{\code{planned_info}}{planned accumulative number of events. }
+    #' \item{\code{wt}}{weights in \code{z_inverse_normal}. }
+    #' }
+    independentIncrement = function(endpoint, placebo, events,
+                                    planned_info, ...){
+
+      if(!identical(planned_info, 'oracle') && length(events) != length(planned_info)){
+        stop('events and planned_info should be of same length. ')
+      }
+
+      info <- c() ## observed accumulated events
+      lr <- c() ## one-sided log rank statistics
+      plan_best_info <- ifelse(identical(planned_info, 'oracle'), TRUE, FALSE)
+      if(plan_best_info){
+        planned_info <- c()
+      }
+
+      for(i in seq_along(events)){
+        lr_fit <- fitLogrank(endpoint, placebo, self$get_locked_data(events[i]), ...)
+        info[i] <- lr_fit$info
+        lr[i] <- lr_fit$z
+        if(plan_best_info){
+          planned_info[i] <- lr_fit$info
+        }
+      }
+
+      planned_info <- planned_info[order(info)]
+      lr <- lr[order(info)]
+      if(any(diff(planned_info) < 0)){
+        stop('events and planned_info should be in the same order. ')
+      }
+
+      info <- sort(info)
+      ii <- c() ## independent increments
+      wt <- c() ## weight in inverse normal statistics
+      inverse_normal <- c() ## inverse normal test statistics
+      for(i in seq_along(info)){
+        if(i == 1){
+          wt[i] <- sqrt(planned_info[i])
+          ii[i] <- lr[i]
+          inverse_normal[i] <- lr[i]
+          next
+        }
+
+        wt[i] <- sqrt(planned_info[i] - planned_info[i - 1])
+        ii[i] <- (sqrt(info[i]) * lr[i] - sqrt(info[i - 1]) * lr[i - 1]) /
+          sqrt(info[i] - info[i - 1])
+        inverse_normal[i] <- sum(wt * ii) / sqrt(sum(wt^2))
+      }
+
+      data.frame(
+        p_inverse_normal = 1 - pnorm(inverse_normal),
+        z_inverse_normal = inverse_normal,
+        p_lr = 1 - pnorm(lr),
+        z_lr = lr,
+        info = info,
+        planned_info = planned_info,
+        wt = wt
+      )
     }
 
   ),

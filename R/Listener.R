@@ -48,8 +48,30 @@ Listener <- R6::R6Class(
 
     #' @description
     #' return registered events
-    get_events = function(){
-      private$events
+    #' @param event_name return \code{Event} object with given name(s).
+    #' If \code{NULL}, all registered events are returned.
+    get_events = function(event_name = NULL){
+      if(is.null(event_name)){
+        return(private$events)
+      }
+
+      if(!(event_name %in% names(private$events))){
+        stop('Event <', event_name, '> is not registered. ')
+      }
+
+      return(private$events[[event_name]])
+    },
+
+    #' @description
+    #' return names of registered events
+    get_event_names = function(){
+
+      names <- NULL
+      for(event in private$events){
+        names <- c(names, event$get_name())
+      }
+      return(names)
+
     },
 
     #' @description

@@ -1,31 +1,29 @@
-#' Fit Cox proportional hazard ratio model
-#'
+#' Carry out log rank test
 #' @description
-#' Fit Cox proportional hazards model on an endpoint.
-#'
-#' @param endpoint Character. Name of the endpoint in \code{data}.
-#' @param placebo Character. String indicating the placebo in \code{data}.
-#' @param data Data frame. Usually it is a locked data set.
-#' @param ... Subset conditions compatible with \code{dplyr::filter}.
-#' \code{coxph} will be fitted on this subset only. This can be useful
-#' when a trial consists of more than two arms. By default, it is not specified,
-#' and all data will be used to fit the model. More than one condition can be
+#' Compute log rank test statistic on an endpoint.
+#' @param endpoint character. Name of endpoint in \code{data}.
+#' @param placebo character. String of placebo in \code{data}.
+#' @param data data frame. Usually it is a locked data.
+#' @param ... subset condition that is compatible with \code{dplyr::filter}.
+#' \code{survival::survdiff} will be fitted on this subset only.
+#' It could be useful when a
+#' trial consists of more than two arms. By default it is not specified,
+#' all data will be used to fit the model. More than one conditions can be
 #' specified in \code{...}, e.g.,
-#' \code{fitCoxph('pfs', 'pbo', data, arm \%in\% c('pbo', 'low dose'), pfs > 0.5)},
-#' which is equivalent to:
-#' \code{fitCoxph('pfs', 'pbo', data, arm \%in\% c('pbo', 'low dose') & pfs > 0.5)}.
-#'
+#' \code{fitLogrank('pfs', 'pbo', data, arm \%in\% c('pbo', 'low dose'), pfs > 0.5)},
+#' which is equivalent to
+#' \code{fitLogrank('pfs', 'pbo', data, arm \%in\% c('pbo', 'low dose') & pfs > 0.5)}.
 #' @returns a data frame with three columns:
 #' \describe{
 #' \item{\code{p}}{one-sided p-value for
-#' log hazard ratio (alternative hypothesis: log hazard ratio > 0). }
+#' log rank test (alternative hypothesis: risk is higher in placebo arm). }
 #' \item{\code{info}}{the number of events of the endpoint in the subset. }
-#' \item{\code{z}}{the z statistics of log hazard ratios. }
+#' \item{\code{z}}{the one-sided logrank statistics. }
 #' }
 #'
 #' @export
 #'
-fitCoxph <- function(endpoint, placebo, data, ...) {
+fitLogrank <- function(endpoint, placebo, data, ...) {
 
   if(!is.character(endpoint) || length(endpoint) != 1){
     stop("endpoint must be a single character string")
@@ -48,7 +46,7 @@ fitCoxph <- function(endpoint, placebo, data, ...) {
          'Please check endpoint\'s name. ')
   }
 
-  # Prepare the data based on condition ...
+  # Prepare the data based on condition in ...
   filtered_data <- if(...length() == 0){
     data
   }else{
@@ -56,7 +54,7 @@ fitCoxph <- function(endpoint, placebo, data, ...) {
       data %>% dplyr::filter(...)
     },
     error = function(e){
-      stop('Error in filtering data for coxph test. ',
+      stop('Error in filtering data for logrank test. ',
            'Please check condition in ..., ',
            'which should be compatible with dplyr::filter. ')
     })
@@ -72,15 +70,18 @@ fitCoxph <- function(endpoint, placebo, data, ...) {
                         ", event = ", endpoint, "_event) ~ ",
                         "I(arm == '", placebo, "')")
 
-  # Fit the Cox model
+  # Fit the Cox model to get direction of effect
   fit <- summary(coxph(as.formula(formula_str), data = filtered_data))$coef
 
-  z <- fit[1, 'coef']/fit[1, 'se(coef)']
+  # calculate log rank statistic
+  lr <- survdiff(as.formula(formula_str), data = filtered_data)
+
+  z <- ifelse(fit[1, 'coef']/fit[1, 'se(coef)'] < 0, -1, 1) * sqrt(lr$chisq)
   p <- 1 - pnorm(z)
   info <- sum(filtered_data[[event]] %in% 1)
 
   ret <- data.frame(p = p, info = info, z = z)
-  class(ret) <- c('fit_coxph', class(ret))
+  class(ret) <- c('fit_logrank', class(ret))
   ret
 }
 
