@@ -636,8 +636,8 @@ GraphicalTesting <- R6::R6Class(
     #' return testing results with details by the time this function
     #' is called. This function can be called by users by multiple
     #' times, thus the returned value varies over time.
-    #' This function is called by \code{GraphicalTesting::test}.
-    #' @returns It returns a data frame consisting of columns
+    #' This function is called by \code{GraphicalTesting::test},
+    #' and returns a data frame consisting of columns
     #' \describe{
     #' \item{\code{hypothesis}}{name of hypotheses.}
     #' \item{\code{obs_p_value}}{observed p-values.}
