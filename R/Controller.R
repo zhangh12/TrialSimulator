@@ -12,7 +12,8 @@ Controller <- R6::R6Class(
   private = list(
     trial = NULL,
     listener = NULL,
-    silent = FALSE
+    silent = FALSE,
+    dry_run = FALSE
   ),
 
   public = list(
@@ -26,6 +27,8 @@ Controller <- R6::R6Class(
       stopifnot(inherits(listener, 'Listener'))
       private$trial <- trial
       private$listener <- listener
+      private$silent <- FALSE
+      private$dry_run <- FALSE
     },
 
     #' @description
@@ -53,12 +56,27 @@ Controller <- R6::R6Class(
     #' @param plot_event create event plot
     #' @param silent logical. \code{TRUE} if muting all messages during a
     #' trial. Note that warning messages are still displayed.
-    run = function(plot_event = TRUE, silent = FALSE){
+    #' @param dry_run \code{TRUE} if action function provided by users is
+    #' ignored and a built-in default action \code{default_action} is called
+    #' instead. This default function only locks data when the event is
+    #' triggered. Event time and number of endpoints' events or sample sizes
+    #' are saved. It is suggested to set \code{dry_run = TRUE} to estimate
+    #' distributions of triggering time and number of events before formally
+    #' using custom action functions if a fixed design is in use.
+    #' This helps determining planned maximum
+    #' information for group sequential design and reasonable time of event
+    #' of interest when planning a trial. Set it to \code{FALSE} for formal
+    #' simulations. However, for an adaptive design where arm(s) could
+    #' possibly be added or removed, setting \code{dry_run} to \code{TRUE}
+    #' is usually not helpful because adaption should be actually applied
+    #' to estimate event time.
+    run = function(plot_event = TRUE, silent = FALSE, dry_run = FALSE){
 
       private$silent <- silent
+      private$dry_run <- dry_run
       self$mute()
 
-      self$get_listener()$monitor(self$get_trial())
+      self$get_listener()$monitor(self$get_trial(), private$dry_run)
       if(plot_event){
         self$get_trial()$event_plot()
       }
