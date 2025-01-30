@@ -18,7 +18,8 @@ Event <- R6::R6Class(
     action = NULL,
     triggered = FALSE, ## logical. Whether this event has been triggered
                       ## (to avoid repeated execution)
-    silent = FALSE
+    silent = FALSE,
+    is_dry_run = FALSE
   ),
 
   public = list(
@@ -58,6 +59,7 @@ Event <- R6::R6Class(
 
       private$action <- action
       private$triggered <- FALSE
+      private$is_dry_run <- FALSE
     },
 
     #' @description
@@ -85,11 +87,22 @@ Event <- R6::R6Class(
     },
 
     #' @description
+    #' set if dry run should be carried out for the event. For more details,
+    #' refer to \code{Controller::run}.
+    set_dry_run = function(dry_run){
+      private$is_dry_run <- dry_run
+    },
+
+    #' @description
     #' execute action function
     #' @param trial a \code{Trial} object.
     execute_action = function(trial){
 
-      action <- self$get_action()(trial, self$get_name())
+      if(private$is_dry_run){
+        action <- default_action()
+      }else{
+        action <- self$get_action()(trial, self$get_name())
+      }
 
       if(!private$silent){
         message('Action for <', self$get_name(), '> is executed: \n')

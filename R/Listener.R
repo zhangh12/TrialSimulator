@@ -79,9 +79,12 @@ Listener <- R6::R6Class(
     #' Events are triggered in the order when calling
     #' \code{Listener$add_events}.
     #' @param trial a \code{Trial} object.
-    monitor = function(trial){
+    #' @param dry_run logical. See \code{Controller::run} for more information.
+    monitor = function(trial, dry_run){
       for(event in self$get_events()){
+        event$set_dry_run(dry_run)
         event$trigger_event(trial)
+        event$set_dry_run(FALSE)
       }
     },
 

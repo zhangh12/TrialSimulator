@@ -79,9 +79,10 @@ Trial <- R6::R6Class(
         private$validate_arguments(
           name, n_patients, duration, description, seed, enroller, dropout, ...)
 
-        if(!is.null(seed)){
-          set.seed(seed)
+        if(is.null(seed)){
+          warning('Seed is not specified. Result may not be replicated later. ')
         }
+        set.seed(seed)
 
         private$arms <- list()
         private$name <- name
@@ -951,7 +952,9 @@ Trial <- R6::R6Class(
       self$set_current_time(at_calendar_time)
       self$save_event_time(at_calendar_time, event_name)
 
-      self$save(at_calendar_time, name = paste0('event_time_<', event_name, '>'))
+      self$save(value = at_calendar_time, name = paste0('event_time_<', event_name, '>'))
+      self$save(value = as.data.frame(attr(at_calendar_time, 'n_events')),
+                name = paste0('n_events_<', event_name, '>'))
 
       if(!private$silent){
         message('Data is locked at time = ', at_calendar_time, ' for event <',
@@ -1162,10 +1165,12 @@ Trial <- R6::R6Class(
     #' a data frame (of one row).
     #' @param name character to name the saved object. It will be used to
     #' name a column in trial's output if \code{value} is a vector.
-    #' If \code{value} is a data frame, \code{name} will be pasted with the
-    #' column name of \code{value} in trial's output. If user want to use
+    #' If \code{value} is a data frame, \code{name} will be the prefix pasted
+    #' with the column name of \code{value} in trial's output.
+    #' If user want to use
     #' \code{value}'s column name as is in trial's output, set \code{name}
-    #' to be \code{''} as default.
+    #' to be \code{''} as default. Otherwise, column name would be, e.g.,
+    #' \code{"{name}_<{names(value)}>"}.
     #' @param overwrite logic. \code{TRUE} if overwriting existing entries
     #' with warning, otherwise, throwing an error and stop.
     save = function(value, name = '', overwrite = FALSE){
@@ -1198,7 +1203,10 @@ Trial <- R6::R6Class(
         if(nrow(value) > 1){
           stop('A data frame to be saved can only contain one row. ')
         }
-        colnames(value) <- paste0(name, colnames(value))
+
+        if(name != ''){
+          colnames(value) <- paste0(name, '_<', colnames(value), '>')
+        }
       }
 
       for(cname in names(value)){

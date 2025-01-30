@@ -319,7 +319,6 @@ pfs_final_action <- function(trial, event_name){
   pfs_final_pval <- runif(1, 0, 0.1)
   os_interim_pval <- runif(1, 0, 0.3)
   
-  trial$save(trial$get_event_time(event_name), paste0('event_time_', event_name))
   trial$save(
     data.frame(pfs_final_pval=pfs_final_pval, os_interim_pval=os_interim_pval)
   )
