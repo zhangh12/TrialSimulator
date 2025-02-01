@@ -89,6 +89,7 @@ Event <- R6::R6Class(
     #' @description
     #' set if dry run should be carried out for the event. For more details,
     #' refer to \code{Controller::run}.
+    #' @param dry_run logical.
     set_dry_run = function(dry_run){
       private$is_dry_run <- dry_run
     },

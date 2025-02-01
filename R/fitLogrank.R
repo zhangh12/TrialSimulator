@@ -79,8 +79,17 @@ fitLogrank <- function(endpoint, placebo, data, ...) {
   z <- ifelse(fit[1, 'coef']/fit[1, 'se(coef)'] < 0, -1, 1) * sqrt(lr$chisq)
   p <- 1 - pnorm(z)
   info <- sum(filtered_data[[event]] %in% 1)
+  info_pbo <- sum(filtered_data[[event]] %in% 1 & filtered_data$arm %in% placebo)
+  info_trt <- info - info_pbo
+  n_pbo <- sum(filtered_data$arm %in% placebo)
+  n_trt <- sum(!(filtered_data$arm %in% placebo))
 
-  ret <- data.frame(p = p, info = info, z = z)
+  ret <- data.frame(p = p, info = info, z = z,
+                    info_pbo = info_pbo, info_trt = info_trt,
+                    n_pbo = n_pbo, n_trt = n_trt,
+                    pbo = placebo,
+                    trt = paste0(setdiff(unique(filtered_data$arm), placebo), collapse = ', ')
+                    )
   class(ret) <- c('fit_logrank', class(ret))
   ret
 }
