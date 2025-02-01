@@ -80,9 +80,9 @@ Trial <- R6::R6Class(
           name, n_patients, duration, description, seed, enroller, dropout, ...)
 
         if(is.null(seed)){
-          warning('Seed is not specified. Result may not be replicated later. ')
+          seed <- sample(.Machine$integer.max, 1)
+          message('Seed is not specified. It is set to ', seed)
         }
-        set.seed(seed)
 
         private$arms <- list()
         private$name <- name
@@ -94,6 +94,10 @@ Trial <- R6::R6Class(
         private$locked_data <- list()
         private$output <- NULL
         private$custom_data <- list()
+
+        private$seed <- seed
+        set.seed(private$seed)
+        self$save(seed, 'seed')
 
         self$set_enroller(enroller, ...)
 
@@ -884,10 +888,12 @@ Trial <- R6::R6Class(
     #' return event time when triggering a given event
     #' @param event_name character. Name of event.
     get_event_time = function(event_name){
-      if(!(event_name %in% names(private$event_time))){
-        stop('Event <', event_name, '> cannot be found. ',
-             'Make sure that this event has be triggered ',
-             'and its time has been saved by calling get_event_time. ',
+      if(!all(event_name %in% names(private$event_time))){
+        stop('Event(s) <',
+             paste0(setdiff(event_name, names(private$event_time)), collapse = ', '),
+             '> cannot be found. ',
+             'Make sure that event(s) have be triggered ',
+             'and their triggering time has been saved by calling get_event_time. ',
              'Usually this function is called automatically while locking a data. ')
       }
 
@@ -1221,6 +1227,7 @@ Trial <- R6::R6Class(
         }
 
         private$output[, cname] <- value[, cname]
+
       }
 
     },
@@ -1328,74 +1335,331 @@ Trial <- R6::R6Class(
     #' trial consists of more than two arms. By default it is not specified,
     #' all data will be used to fit the model.
     #'
-    #' This function returns a data frame with sevens columns:
+    #' @returns
+    #' This function returns a data frame with columns:
     #' \describe{
     #' \item{\code{p_inverse_normal}}{one-sided p-value for inverse normal test
-    #' based on logrank test (alternative hypothesis: risk is higher in placebo arm). }
-    #' \item{\code{z_inverse_normal}}{z statistics of \code{p_inverse_normal}. }
+    #' based on logrank test (alternative hypothesis: risk is higher in placebo arm).
+    #' Accumulative data is used. }
+    #' \item{\code{z_inverse_normal}}{z statistics of \code{p_inverse_normal}.
+    #' Accumulative data is used. }
     #' \item{\code{p_lr}}{one-sided p-value for logrank test
-    #'  (alternative hypothesis: risk is higher in placebo arm). }
-    #' \item{\code{z_lr}}{z statistics of \code{p_lr}. }
+    #'  (alternative hypothesis: risk is higher in placebo arm).
+    #' Accumulative data is used. }
+    #' \item{\code{z_lr}}{z statistics of \code{p_lr}.
+    #' Accumulative data is used. }
     #' \item{\code{info}}{observed accumulative number of events. }
     #' \item{\code{planned_info}}{planned accumulative number of events. }
+    #' \item{\code{info_pbo}}{observed accumulative number of events in placebo. }
+    #' \item{\code{info_trt}}{observed accumulative number of events in treated arm. }
     #' \item{\code{wt}}{weights in \code{z_inverse_normal}. }
     #' }
+    #'
+    #' @examples
+    #'
+    #' if(FALSE){
+    #' trial$independentIncrement('pfs', 'pbo', listener$get_event_names(), 'oracle')
+    #' }
     independentIncrement = function(endpoint, placebo, events,
-                                    planned_info, ...){
+                                    planned_info,
+                                    ...){
 
       if(!identical(planned_info, 'oracle') && length(events) != length(planned_info)){
         stop('events and planned_info should be of same length. ')
       }
 
+      ## by doing this, events in function argument can be in arbitrary order
+      event_time <- sort(self$get_event_time(events))
+      events <- names(event_time)
+
       info <- c() ## observed accumulated events
       lr <- c() ## one-sided log rank statistics
+      info_pbo <- c()
+      info_trt <- c()
       plan_best_info <- ifelse(identical(planned_info, 'oracle'), TRUE, FALSE)
       if(plan_best_info){
         planned_info <- c()
       }
 
+      n_pbo <- c()
+      n_trt <- c()
+      trt_str <- c()
+      event_name <- c()
       for(i in seq_along(events)){
+        event_name[i] <- events[i]
         lr_fit <- fitLogrank(endpoint, placebo, self$get_locked_data(events[i]), ...)
         info[i] <- lr_fit$info
         lr[i] <- lr_fit$z
+        info_pbo[i] <- lr_fit$info_pbo
+        info_trt[i] <- lr_fit$info_trt
+
+        n_pbo[i] <- lr_fit$n_pbo
+        n_trt[i] <- lr_fit$n_trt
+        trt_str[i] <- lr_fit$trt
         if(plan_best_info){
           planned_info[i] <- lr_fit$info
         }
       }
 
-      planned_info <- planned_info[order(info)]
-      lr <- lr[order(info)]
       if(any(diff(planned_info) < 0)){
         stop('events and planned_info should be in the same order. ')
       }
 
-      info <- sort(info)
+      if(any(diff(info) < 0)){
+        stop('Debug this as info should be non-decreasing. ')
+      }
+
       ii <- c() ## independent increments
       wt <- c() ## weight in inverse normal statistics
       inverse_normal <- c() ## inverse normal test statistics
+
+      stage_info <- c()
+      stage_n_pbo <- c()
+      stage_n_trt <- c()
       for(i in seq_along(info)){
         if(i == 1){
           wt[i] <- sqrt(planned_info[i])
           ii[i] <- lr[i]
           inverse_normal[i] <- lr[i]
+
+          stage_info[i] <- info[i]
+          stage_n_pbo[i] <- n_pbo[i]
+          stage_n_trt[i] <- n_trt[i]
+
           next
         }
 
+        stage_info[i] <- info[i] - info[i - 1]
+        stage_n_pbo[i] <- n_pbo[i] - n_pbo[i - 1]
+        stage_n_trt[i] <- n_trt[i] - n_trt[i - 1]
         wt[i] <- sqrt(planned_info[i] - planned_info[i - 1])
-        ii[i] <- (sqrt(info[i]) * lr[i] - sqrt(info[i - 1]) * lr[i - 1]) /
-          sqrt(info[i] - info[i - 1])
+
+        if(stage_n_trt[i] == 0){
+          ## This means this treatment arm has been removed from the trial
+          ## Set z statistic of independent increment to be an extremely value
+          ## so that inverse normal combination test would always accept
+          ## the neutral null hypothesis (p-value is close or equal to 1.0)
+          ii[i] <- -Inf ## 10 * qnorm(.Machine$double.eps) ## about -81
+        }else{
+          ii[i] <- (sqrt(info[i]) * lr[i] - sqrt(info[i - 1]) * lr[i - 1]) /
+            sqrt(stage_info[i])
+        }
         inverse_normal[i] <- sum(wt * ii) / sqrt(sum(wt^2))
       }
 
       data.frame(
+        event = event_name,
+        event_time = unname(event_time),
         p_inverse_normal = 1 - pnorm(inverse_normal),
         z_inverse_normal = inverse_normal,
-        p_lr = 1 - pnorm(lr),
-        z_lr = lr,
+        p_logrank = 1 - pnorm(lr),
+        z_logrank = lr,
         info = info,
         planned_info = planned_info,
-        wt = wt
+        info_pbo = info_pbo,
+        info_trt = info_trt,
+        wt = wt,
+        z_ii = ii, # stage-wise, independent increment
+        n_pbo = n_pbo,
+        n_trt = n_trt,
+        stage_info = stage_info,
+        stage_n_pbo = stage_n_pbo,
+        stage_n_trt = stage_n_trt,
+        trt_str = trt_str
       )
+    },
+
+    #' @description
+    #' carry out closed test based on Dunnett method under group sequential
+    #' design.
+    #' @param endpoint character of an endpoint for Dunnett test.
+    #' @param placebo character. Name of placebo arm.
+    #' @param treatments character vector. Name of treatment arms to be used in
+    #' comparison.
+    #' @param events character vector. Names of triggered events at which either
+    #' adaptation is applied or statistical testing for endpoint is performed.
+    #' Event in \code{events} does not need to be sorted by their triggering time.
+    #' @param planned_info a data frame of planned number of events of
+    #' time-to-event endpoint in each stage and each arm. Event names, i.e.,
+    #' \code{events} are row names of \code{planned_info}, and arm names, i.e.,
+    #' \code{c(placebo, treatments)} are column names.
+    #' Note that it is not the accumulative number of events over time.
+    #' It is usually not easy to determine these numbers in practice, simulation
+    #' may be used to get estimates.
+    #' Note: \code{planned_info} can also be a character
+    #' \code{"default"} so that \code{planned_info} are set to be number
+    #' of patients in the control arm in each of the stages. This assumes that
+    #' event rates are the same across arms and all treatment arms are of the
+    #' same size. It is for the purpose of debugging or rapid implementation
+    #' only. Using simulation to pick \code{planned_info} is recommended.
+    #' @param ... subset condition that is compatible with \code{dplyr::filter}.
+    #' \code{survdiff} will be fitted on this subset only to compute one-sided
+    #' logrank statistics. It could be useful when comparison is made on a
+    #' subset of treatment arms. By default it is not specified,
+    #' all data (placebo plus one treatment arm at a time) in the locked data
+    #' are used to fit the model.
+    #'
+    #' @returns a list with element names like \code{arm_name},
+    #' \code{arm1_name|arm2_name}, \code{arm1_name|arm2_name|arm3_name}, etc.,
+    #' i.e., all possible combination of treatment arms in comparison. Each
+    #' element is a data frame, with its column names self-explained. Specifically,
+    #' the columns \code{p_inverse_normal}, \code{observed_info},
+    #' \code{is_final} can be used with \code{GroupSequentialTest} to perform
+    #' significance test.
+    #'
+    #' @examples
+    #' if(FALSE){
+    #' trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_names(), 'default')
+    #' }
+    #'
+    dunnettTest = function(endpoint, placebo, treatments, events, planned_info, ...){
+
+      if(!identical(planned_info, 'default')){
+        if(!('data.frame' %in% class(planned_info))){
+          stop('planned_info should be a data frame of planned information at each of the stages. ')
+        }
+        if(nrow(planned_info) != length(events)){
+          stop('events and planned_info should be of same length. ')
+        }
+
+        if(ncol(planned_info) != length(treatments) + 1){
+          stop('length(planned_info) should be equal to length(treatments) + 1. ')
+        }
+
+        if(setequal(names(planned_info), c(placebo, treatments))){
+          stop('planned_info should use placebo and treatments\' names for its column names. ')
+        }
+
+        planned_info <- planned_info[, c(placebo, treatments), drop = FALSE]
+
+        if(setequal(rownames(planned_info), events)){
+          stop('planned_info should use event names for its row names. ')
+        }
+
+        planned_info <- planned_info[events, , drop = FALSE]
+      }
+
+      ## by doing this, events in function argument can be in arbitrary order
+      event_time <- sort(self$get_event_time(events))
+      events <- names(event_time)
+
+      ii <- list() ## calculate independent increments for each of treatment arms
+      for(i in seq_along(treatments)){
+        trt_str <- treatments[i]
+
+        ii[[trt_str]] <-
+          self$independentIncrement(endpoint, placebo, events,
+                                    ## it doesn't matter what is used for planned_info
+                                    ## because we only use z_ii in returned object
+                                    ## which is irrelevant to planned_info
+                                    planned_info = 'oracle',
+                                    arm %in% c(placebo, trt_str), ...)
+      }
+
+      all_trt <- names(ii)
+
+      all_combn <-
+        unlist(
+          lapply(seq_along(all_trt),
+                 function(k)
+                   combn(all_trt, k, simplify = FALSE)
+                 ),
+          recursive = FALSE
+        )
+
+      stage_dunnett_pvalue <- list()
+      inverse_normal_dunnett_pvalue <- list()
+      for(comb in all_combn){
+        inverse_normal_dunnett_pvalue[[paste0(comb, collapse = '|')]] <- NULL
+        for(event_name in events){ ## events is already ordered by triggering time
+          z_ii <- NULL
+          ratio_trt <- NULL
+          stage_n_pbo <- NULL
+          available_trt <- NULL
+          if(!identical(planned_info, 'default')){
+            pinfo <- planned_info[event_name, placebo]
+          }
+          for(trt in comb){
+            ii0 <- ii[[trt]] %>% dplyr::filter(event %in% event_name)
+
+            if(!identical(planned_info, 'default')){
+              pinfo <- pinfo + planned_info[event_name, trt]
+            }
+
+            ## we expect stage_n_pbo is a constant vector
+            stage_n_pbo <- c(stage_n_pbo, ii0$stage_n_pbo)
+
+            if(ii0$stage_n_trt != 0){
+              z_ii <- c(z_ii, ii0$z_ii)
+              ratio_trt <- c(ratio_trt,
+                             sqrt(ii0$stage_n_trt / (ii0$stage_n_pbo + ii0$stage_n_trt)))
+
+              available_trt <- c(available_trt, trt)
+            }
+          }
+
+          name1 <- paste0(paste0(sort(comb), collapse = '|'), '@', event_name)
+          if(length(available_trt) > 0){
+            name2 <- paste0(paste0(sort(available_trt), collapse = '|'), '@', event_name)
+            if(!is.null(stage_dunnett_pvalue[[name2]])){
+              stage_dunnett_pvalue[[name1]] <- stage_dunnett_pvalue[[name2]]
+            }else{
+              lower <- rep(-Inf, length(available_trt))
+              upper <- rep(max(z_ii), length(available_trt))
+              corr <- outer(ratio_trt, ratio_trt,
+                            function(x, y) x * y)
+              diag(corr) <- 1.
+
+              if(length(available_trt) > 1){
+                stage_dunnett_pvalue[[name1]] <-
+                  1 - pmvnorm(lower = lower, upper = upper, sigma = corr)
+              }else{
+                stage_dunnett_pvalue[[name1]] <- 1 - pnorm(upper)
+              }
+
+              stage_dunnett_pvalue[[name2]] <- stage_dunnett_pvalue[[name1]]
+            }
+
+          }else{
+            stage_dunnett_pvalue[[name1]] <- 1
+          }
+
+          if(identical(planned_info, 'default')){
+            pinfo <- unique(stage_n_pbo)
+            stopifnot(length(pinfo) == 1)
+          }
+
+          tmp <-
+            data.frame(
+              event = event_name,
+              event_time = unname(event_time[event_name]),
+              p_logrank = ii0$p_logrank,
+              stage_p = stage_dunnett_pvalue[[name1]],
+              stage_planned_info = pinfo)
+
+          inverse_normal_dunnett_pvalue[[paste0(comb, collapse = '|')]] <-
+            rbind(inverse_normal_dunnett_pvalue[[paste0(comb, collapse = '|')]], tmp)
+          rm(tmp)
+
+        }
+
+      }
+
+      for(i in seq_along(inverse_normal_dunnett_pvalue)){
+        tmp <- inverse_normal_dunnett_pvalue[[i]]
+        tmp$wt <- sqrt(tmp$stage_planned_info)
+
+        tmp$z_inverse_normal <- cumsum(tmp$wt * qnorm(1 - tmp$stage_p)) / sqrt(cumsum(tmp$wt^2))
+        tmp$p_inverse_normal <- 1 - pnorm(tmp$z_inverse_normal)
+        tmp$observed_info <- cumsum(tmp$stage_planned_info) ## used as observed_info in GroupSequentialTest
+        tmp$is_final <- FALSE
+        tmp$is_final[nrow(tmp)] <- TRUE
+        inverse_normal_dunnett_pvalue[[i]] <- tmp
+        rm(tmp)
+      }
+
+      inverse_normal_dunnett_pvalue
+
     }
 
   ),
