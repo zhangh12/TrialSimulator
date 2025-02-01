@@ -1681,6 +1681,9 @@ Trial <- R6::R6Class(
     #' \code{"asOF"}. Note that theoretically it can be \code{"asUser"}, but
     #' it is not tested. It may be supported in the future.
     #'
+    #' @returns a data frame of columns \code{arm}, \code{decision},
+    #' \code{event_at_reject}, and \code{reject_time}.
+    #'
     #' @examples
     #' if(FALSE){
     #' trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_names(), 'default')->dt
