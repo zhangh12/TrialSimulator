@@ -1686,7 +1686,7 @@ Trial <- R6::R6Class(
     #'
     #' @examples
     #' if(FALSE){
-    #' trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_names(), 'default')->dt
+    #' dt <- trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_names(), 'default')
     #' trial$closedTest(dt, c('high dose', 'low dose'),
     #'                  c('pfs interim', 'pfs final'),
     #'                  0.025, 'asOF')
@@ -1816,6 +1816,12 @@ Trial <- R6::R6Class(
         }
       }
       ret_
+    },
+
+    #' @description
+    #' return random seed
+    get_seed = function(){
+      private$seed
     }
 
   ),
