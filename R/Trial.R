@@ -1631,6 +1631,7 @@ Trial <- R6::R6Class(
 
           tmp <-
             data.frame(
+              endpoint = endpoint,
               event = event_name,
               event_time = unname(event_time[event_name]),
               p_logrank = ii0$p_logrank,
@@ -1652,14 +1653,166 @@ Trial <- R6::R6Class(
         tmp$z_inverse_normal <- cumsum(tmp$wt * qnorm(1 - tmp$stage_p)) / sqrt(cumsum(tmp$wt^2))
         tmp$p_inverse_normal <- 1 - pnorm(tmp$z_inverse_normal)
         tmp$observed_info <- cumsum(tmp$stage_planned_info) ## used as observed_info in GroupSequentialTest
+        ## the last entry in is_final should be set to TRUE when calling GroupSequentialTest
+        ## However, we don't do this here because not all rows in inverse_normal_dunnett_pvalue
+        ## will be used to test a specific endpoint (e.g., PFS may not be tested
+        ## at all event time). Instead, set the last entry to TRUE before
+        ## performing the significance test
         tmp$is_final <- FALSE
-        tmp$is_final[nrow(tmp)] <- TRUE
         inverse_normal_dunnett_pvalue[[i]] <- tmp
         rm(tmp)
       }
 
+      class(inverse_normal_dunnett_pvalue) <- c('dunnett', class(inverse_normal_dunnett_pvalue))
       inverse_normal_dunnett_pvalue
 
+    },
+
+    #' @description
+    #' perform closed test based on Dunnett test
+    #' @param dunnett_test object returned by \code{Trial$dunnettTest()}.
+    #' @param treatments character vector. Name of treatment arms to be used in
+    #' comparison.
+    #' @param events character vector. Names of triggered events at which
+    #' significance testing for endpoint is performed in closed test.
+    #' Event in \code{events} does not need to be sorted by their triggering time.
+    #' @param alpha numeric. Allocated alpha.
+    #' @param alpha_spending alpha spending function. It can be \code{"asP"} or
+    #' \code{"asOF"}. Note that theoretically it can be \code{"asUser"}, but
+    #' it is not tested. It may be supported in the future.
+    #'
+    #' @examples
+    #' if(FALSE){
+    #' trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_names(), 'default')->dt
+    #' trial$closedTest(dt, c('high dose', 'low dose'),
+    #'                  c('pfs interim', 'pfs final'),
+    #'                  0.025, 'asOF')
+    #' }
+    #'
+    closedTest = function(dunnett_test, treatments, events, alpha, alpha_spending = c('asP', 'asOF')){
+
+      alpha_spending <- match.arg(alpha_spending)
+
+      if(!('dunnett' %in% class(dunnett_test))){
+        stop('dunnett_test must be of class "dunnett". ',
+             'Make sure that it is returned by dunnettTest(). ')
+      }
+
+      all_combn <-
+        unlist(
+          lapply(seq_along(treatments),
+                 function(k)
+                   combn(treatments, k, simplify = FALSE)
+          ),
+          recursive = FALSE
+        )
+
+      for(i in seq_along(dunnett_test)){
+
+          if(all(events %in% dunnett_test[[i]]$event)){
+            dunnett_test[[i]] <- dunnett_test[[i]] %>%
+              dplyr::filter(event %in% events) %>%
+              arrange(event_time) %>%
+              mutate(is_final = FALSE)
+
+            dunnett_test[[i]]$is_final[nrow(dunnett_test[[i]])] <- TRUE
+          }else{
+            stop('Events <',
+                 paste0(setdiff(events, dunnett_test[[i]]$event), collapse = ', '),
+                 '> are not in dunnett_test. ')
+          }
+      }
+
+      for(comb in all_combn){
+        name1 <- paste0(sort(comb), collapse = '|')
+        if(!(name1 %in% names(dunnett_test))){
+          stop('Combination <', comb, '> is not found in dunnett_test. ',
+               'Make sure that <', paste0(treatments, collapse = ', '),
+               ' are all used with dunnettTest() when computing dunnett_test. ')
+        }
+      }
+
+      gst <- list()
+      gst_res <- list()
+      for(i in seq_along(dunnett_test)){
+        comb <- names(dunnett_test)[i]
+        gst[[comb]] <- GroupSequentialTest$new(
+          name = comb,
+          alpha = alpha, alpha_spending = alpha_spending,
+          planned_max_info = max(dunnett_test[[comb]]$observed_info)
+        )
+
+        gst[[comb]]$test(observed_info = dunnett_test[[comb]]$observed_info,
+                      is_final = dunnett_test[[comb]]$is_final,
+                      p_values = dunnett_test[[comb]]$p_inverse_normal)
+
+        gst_res[[comb]] <- gst[[comb]]$get_trajectory() %>%
+          mutate(event = dunnett_test[[comb]]$event) %>%
+          mutate(event_time = dunnett_test[[comb]]$event_time)
+      }
+
+      # print(gst_res)
+
+      tmp0 <-
+        data.frame(
+          arm = NA,
+          comb = NA,
+          reject = FALSE,
+          event_at_reject = NA,
+          reject_time = Inf,
+          stageLevels = NA_real_,
+          obs_p_value = NA_real_
+        )
+
+      ret <- list()
+      for(trt in treatments){
+
+        ret[[trt]] <- NULL
+        for(comb in names(gst_res)){
+          if(!(trt %in% unlist(strsplit(comb, split = '\\|')))){
+            next
+          }
+
+          tmp <- tmp0
+          tmp$arm <- trt
+          tmp$comb <- comb
+          if('reject' %in% gst_res[[comb]]$decision){ ## trial reach the endpoint
+            tmp$reject <- TRUE
+            idx <- which(gst_res[[comb]]$decision %in% 'reject')[1]
+            tmp$event_at_reject <- gst_res[[comb]]$event[idx]
+            tmp$reject_time <- gst_res[[comb]]$event_time[idx]
+            tmp$stageLevels <- gst_res[[comb]]$stageLevels[idx]
+            tmp$obs_p_value <- gst_res[[comb]]$obs_p_value[idx]
+          }
+
+          ret[[trt]] <- rbind(ret[[trt]], tmp)
+          rm(tmp)
+        }
+
+      }
+
+
+      # print(ret)
+      ret_ <- NULL
+      for(trt in names(ret)){
+        if(all(ret[[trt]]$reject)){
+          idx <- which.max(ret[[trt]]$reject_time)[1]
+          ret_ <- rbind(ret_,
+                        data.frame(
+                          arm = trt,
+                          decision = 'reject',
+                          event_at_reject = ret[[trt]]$event_at_reject[idx],
+                          reject_time = ret[[trt]]$reject_time[idx]))
+        }else{
+          ret_ <- rbind(ret_,
+                        data.frame(
+                          arm = trt,
+                          decision = 'accept',
+                          event_at_reject = NA,
+                          reject_time = Inf))
+        }
+      }
+      ret_
     }
 
   ),
