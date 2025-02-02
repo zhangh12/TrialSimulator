@@ -95,14 +95,6 @@ Controller <- R6::R6Class(
           stop(e$message)
         }
       )
-      private$silent <- silent
-      private$dry_run <- dry_run
-      self$mute()
-
-      self$get_listener()$monitor(self$get_trial(), private$dry_run)
-      if(plot_event){
-        self$get_trial()$event_plot()
-      }
 
     }
   )
