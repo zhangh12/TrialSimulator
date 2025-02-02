@@ -98,6 +98,7 @@ Trial <- R6::R6Class(
         private$seed <- seed
         set.seed(private$seed)
         self$save(seed, 'seed')
+        self$save('', 'error_message')
 
         self$set_enroller(enroller, ...)
 
@@ -877,7 +878,7 @@ Trial <- R6::R6Class(
           stop('New event <', event_name, '> (time = ', round(event_time, 2),
                ') happens before events <',
                paste0(en, ' (time = ', round(et, 2), ')', collapse = ', '), '>. \n',
-               'A possible reason is mis-specification of event order or conditions. ')
+               'A possible reason is mis-specification of event order or triggering conditions. ')
         }
       }
 
@@ -1229,6 +1230,12 @@ Trial <- R6::R6Class(
         private$output[, cname] <- value[, cname]
 
       }
+
+      ## move error message to the last column for a better display
+      error_message <- private$output$error_message
+      private$output$error_message <- NULL
+      private$output$error_message <- error_message
+
 
     },
 

@@ -13,7 +13,20 @@ Controller <- R6::R6Class(
     trial = NULL,
     listener = NULL,
     silent = FALSE,
-    dry_run = FALSE
+    dry_run = FALSE,
+
+    run_ = function(plot_event = TRUE, silent = FALSE, dry_run = FALSE){
+
+      private$silent <- silent
+      private$dry_run <- dry_run
+      self$mute()
+
+      self$get_listener()$monitor(self$get_trial(), private$dry_run)
+      if(plot_event){
+        self$get_trial()$event_plot()
+      }
+
+    }
   ),
 
   public = list(
@@ -72,6 +85,16 @@ Controller <- R6::R6Class(
     #' to estimate event time.
     run = function(plot_event = TRUE, silent = FALSE, dry_run = FALSE){
 
+      tryCatch(
+        expr = {
+          private$run_(plot_event, silent, dry_run)
+        },
+
+        error = function(e){
+          self$get_trial()$save(e$message, 'error_message', overwrite = TRUE)
+          stop(e$message)
+        }
+      )
       private$silent <- silent
       private$dry_run <- dry_run
       self$mute()
