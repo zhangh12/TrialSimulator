@@ -142,8 +142,12 @@ Trial <- R6::R6Class(
       }
 
       n_ <- 2
-      enroller_ <- DynamicRNGFunction(
-        func, rng = deparse(substitute(func)), simplify = TRUE, ...)
+
+      suppressWarnings(
+        enroller_ <- DynamicRNGFunction(
+          func, rng = deparse(substitute(func)), simplify = TRUE, ...)
+      )
+
       example_data <- enroller_(n = n_)
       if(!is.vector(example_data)){
         stop('enroller must return a vector.')
@@ -174,8 +178,12 @@ Trial <- R6::R6Class(
       if (length(arg_names) == 0 || arg_names[1] != "n") {
         stop("The first argument of random number generator for dropout time must be 'n'.")
       }
-      dropout_ <- DynamicRNGFunction(func, rng = deparse(substitute(func)),
-                                     simplify = TRUE, ...)
+
+      suppressWarnings(
+        dropout_ <- DynamicRNGFunction(func, rng = deparse(substitute(func)),
+                                       simplify = TRUE, ...)
+      )
+
       n_ <- 2
       example_data <- dropout_(n = n_)
       if(!is.vector(example_data)){
@@ -878,7 +886,8 @@ Trial <- R6::R6Class(
           stop('New event <', event_name, '> (time = ', round(event_time, 2),
                ') happens before events <',
                paste0(en, ' (time = ', round(et, 2), ')', collapse = ', '), '>. \n',
-               'A possible reason is mis-specification of event order or triggering conditions. ')
+               'A possible reason is mis-specification of event order or triggering conditions. \n',
+               'Use seed = <', self$get_seed(), '> to debug it. ')
         }
       }
 
