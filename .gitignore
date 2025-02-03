@@ -3,6 +3,5 @@
 .RData
 .Ruserdata
 *.Rproj
-man/
 .DS_Store
 inst/doc
