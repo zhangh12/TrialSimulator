@@ -1,3 +1,9 @@
+# TrialSimulator 0.33.0
+
+## New Features
+
+- Provide a default action function `do_nothing()` if users have no intent to do anything at a triggered event. This function can be passed to the argument `action` when creating a new event, e.g., `Event$new(name = 'interim', trigger_condition = TriggerByCalendarTime, action = do_nothing, calendar_time = 64)`. 
+
 # TrialSimulator 0.30.0
 
 ## New Features
