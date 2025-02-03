@@ -1413,7 +1413,8 @@ Trial <- R6::R6Class(
         n_trt[i] <- lr_fit$n_trt
         trt_str[i] <- lr_fit$trt
         if(plan_best_info){
-          planned_info[i] <- lr_fit$info
+          # planned_info[i] <- lr_fit$info
+          planned_info[i] <- lr_fit$n_pbo
         }
       }
 
