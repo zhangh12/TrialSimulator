@@ -750,7 +750,8 @@ Trial <- R6::R6Class(
       for(i in seq_along(endpoints)){
         if(max(event_counts[[endpoints[i]]]$n_events) < target_n_events[i]){
           warning('No enough events/samples for endpoint <', endpoints[i],
-               '> to reach the target number <', target_n_events[i], '>. ')
+               '> to reach the target number <', target_n_events[i], '>. ',
+               immediate. = TRUE)
           event_times <- c(event_times, Inf)
         }else{
 
@@ -1232,7 +1233,8 @@ Trial <- R6::R6Class(
                  'Pick another name and try again. ')
           }else{
             warning(cname, ' exists in the output and is overwritten. ',
-                    'Set overwrite = FALSE in save() if it is not intended. ')
+                    'Set overwrite = FALSE in save() if it is not intended. ',
+                    immediate. = TRUE)
           }
         }
 
@@ -1269,7 +1271,8 @@ Trial <- R6::R6Class(
         }else{
           warning(name, ' exists in custom_data and is overwritten. ',
                   'Set overwrite = FALSE in save_custom_data() ',
-                  'if it is not intended. ')
+                  'if it is not intended. ',
+                  immediate. = TRUE)
         }
       }
 
@@ -1345,6 +1348,10 @@ Trial <- R6::R6Class(
     #' \code{"oracle"} so that planned number of events are set to be observed
     #' number of events, in that case inverse normal z statistics equal to
     #' one-sided logrank statistics. This is for the purpose of debugging only.
+    #' In formal simulation, \code{"oracle"} should not be used if adaptation
+    #' is present. Pre-fixed \code{planned_info} should be used to create
+    #' weights in combination test that controls the family-wise error rate
+    #' in the strong sense.
     #' @param ... subset condition that is compatible with \code{dplyr::filter}.
     #' \code{survdiff} will be fitted on this subset only to compute one-sided
     #' logrank statistics. It could be useful when a
@@ -1364,10 +1371,10 @@ Trial <- R6::R6Class(
     #' Accumulative data is used. }
     #' \item{\code{z_lr}}{z statistics of \code{p_lr}.
     #' Accumulative data is used. }
-    #' \item{\code{info}}{observed accumulative number of events. }
-    #' \item{\code{planned_info}}{planned accumulative number of events. }
-    #' \item{\code{info_pbo}}{observed accumulative number of events in placebo. }
-    #' \item{\code{info_trt}}{observed accumulative number of events in treated arm. }
+    #' \item{\code{info}}{observed accumulative event number. }
+    #' \item{\code{planned_info}}{planned accumulative event number. }
+    #' \item{\code{info_pbo}}{observed accumulative event number in placebo. }
+    #' \item{\code{info_trt}}{observed accumulative event number in treatment arm. }
     #' \item{\code{wt}}{weights in \code{z_inverse_normal}. }
     #' }
     #'
@@ -1464,26 +1471,43 @@ Trial <- R6::R6Class(
         inverse_normal[i] <- sum(wt * ii) / sqrt(sum(wt^2))
       }
 
-      data.frame(
-        event = event_name,
-        event_time = unname(event_time),
-        p_inverse_normal = 1 - pnorm(inverse_normal),
-        z_inverse_normal = inverse_normal,
-        p_logrank = 1 - pnorm(lr),
-        z_logrank = lr,
-        info = info,
-        planned_info = planned_info,
-        info_pbo = info_pbo,
-        info_trt = info_trt,
-        wt = wt,
-        z_ii = ii, # stage-wise, independent increment
-        n_pbo = n_pbo,
-        n_trt = n_trt,
-        stage_info = stage_info,
-        stage_n_pbo = stage_n_pbo,
-        stage_n_trt = stage_n_trt,
-        trt_str = trt_str
-      )
+      ret <-
+        data.frame(
+          event = event_name,
+          event_time = unname(event_time),
+          p_inverse_normal = 1 - pnorm(inverse_normal),
+          z_inverse_normal = inverse_normal,
+          p_logrank = 1 - pnorm(lr),
+          z_logrank = lr,
+          info = info,
+          planned_info = planned_info,
+          info_pbo = info_pbo,
+          info_trt = info_trt,
+          wt = wt,
+          z_ii = ii, # stage-wise, independent increment
+          n_pbo = n_pbo,
+          n_trt = n_trt,
+          stage_info = stage_info,
+          stage_n_pbo = stage_n_pbo,
+          stage_n_trt = stage_n_trt,
+          trt_str = trt_str
+        )
+
+      if(any(ret$stage_info < 30)){
+        ret_ <- ret %>%
+          dplyr::filter(stage_info < 30) %>%
+          dplyr::select(event, event_time, planned_info, info, stage_info, stage_n_pbo, stage_n_trt, trt_str)
+
+        warning('In the arm(s) <',
+                paste0(unique(ret_$trt_str), collapse = ', '),
+                '>, stage-wise information (number of events) are lower than 30 (see stage_* below). \n',
+                'Make sure that such a low stage-wise information is sufficient to maintain normality of independent increments of logrank statistics. ',
+                immediate. = TRUE)
+        print(ret_)
+        cat("\033[31m>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\033[0m\n")
+      }
+
+      ret
     },
 
     #' @description
@@ -1620,6 +1644,7 @@ Trial <- R6::R6Class(
                                     ## which is irrelevant to planned_info
                                     planned_info = 'oracle',
                                     arm %in% c(placebo, trt_str), ...)
+
       }
 
       all_trt <- names(ii)

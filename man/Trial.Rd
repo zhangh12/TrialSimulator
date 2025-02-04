@@ -17,10 +17,10 @@ Accumulative data is used. }
 Accumulative data is used. }
 \item{\code{z_lr}}{z statistics of \code{p_lr}.
 Accumulative data is used. }
-\item{\code{info}}{observed accumulative number of events. }
-\item{\code{planned_info}}{planned accumulative number of events. }
-\item{\code{info_pbo}}{observed accumulative number of events in placebo. }
-\item{\code{info_trt}}{observed accumulative number of events in treated arm. }
+\item{\code{info}}{observed accumulative event number. }
+\item{\code{planned_info}}{planned accumulative event number. }
+\item{\code{info_pbo}}{observed accumulative event number in placebo. }
+\item{\code{info_trt}}{observed accumulative event number in treatment arm. }
 \item{\code{wt}}{weights in \code{z_inverse_normal}. }
 }
 
@@ -1023,7 +1023,11 @@ locked data.}
 time-to-event endpoint. Note: \code{planned_info} can also be a character
 \code{"oracle"} so that planned number of events are set to be observed
 number of events, in that case inverse normal z statistics equal to
-one-sided logrank statistics. This is for the purpose of debugging only.}
+one-sided logrank statistics. This is for the purpose of debugging only.
+In formal simulation, \code{"oracle"} should not be used if adaptation
+is present. Pre-fixed \code{planned_info} should be used to create
+weights in combination test that controls the family-wise error rate
+in the strong sense.}
 
 \item{\code{...}}{subset condition that is compatible with \code{dplyr::filter}.
 \code{survdiff} will be fitted on this subset only to compute one-sided
