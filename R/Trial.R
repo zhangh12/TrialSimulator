@@ -1822,6 +1822,11 @@ Trial <- R6::R6Class(
           }
       }
 
+      createArmCombination <- function(comb){
+        ## use sort() to allow user ignore order of treatments in argument
+        paste0(sort(comb), collapse = '|')
+      }
+
       for(comb in all_combn){
         name1 <- createArmCombination(comb)
         if(!(name1 %in% names(dunnett_test))){
