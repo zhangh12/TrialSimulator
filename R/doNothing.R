@@ -19,7 +19,7 @@
 #'
 #' @export
 #'
-do_nothing <- function(trial, event_name){
+doNothing <- function(trial, event_name){
 
   # locked_data <- trial$get_locked_data(event_name)
   invisible(NULL)
