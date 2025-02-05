@@ -1658,10 +1658,15 @@ Trial <- R6::R6Class(
           recursive = FALSE
         )
 
+      createArmCombination <- function(comb){
+        ## use sort() to allow user ignore order of treatments in argument
+        paste0(sort(comb), collapse = '|')
+      }
+
       stage_dunnett_pvalue <- list()
       inverse_normal_dunnett_pvalue <- list()
       for(comb in all_combn){
-        inverse_normal_dunnett_pvalue[[paste0(comb, collapse = '|')]] <- NULL
+        inverse_normal_dunnett_pvalue[[createArmCombination(comb)]] <- NULL
         for(event_name in events){ ## events is already ordered by triggering time
           z_ii <- NULL
           ratio_trt <- NULL
@@ -1689,7 +1694,7 @@ Trial <- R6::R6Class(
             }
           }
 
-          name1 <- paste0(paste0(sort(comb), collapse = '|'), '@', event_name)
+          name1 <- paste0(createArmCombination(comb), '@', event_name)
           if(length(available_trt) > 0){
             name2 <- paste0(paste0(sort(available_trt), collapse = '|'), '@', event_name)
             if(!is.null(stage_dunnett_pvalue[[name2]])){
@@ -1729,8 +1734,8 @@ Trial <- R6::R6Class(
               stage_p = stage_dunnett_pvalue[[name1]],
               stage_planned_info = pinfo)
 
-          inverse_normal_dunnett_pvalue[[paste0(comb, collapse = '|')]] <-
-            rbind(inverse_normal_dunnett_pvalue[[paste0(comb, collapse = '|')]], tmp)
+          inverse_normal_dunnett_pvalue[[createArmCombination(comb)]] <-
+            rbind(inverse_normal_dunnett_pvalue[[createArmCombination(comb)]], tmp)
           rm(tmp)
 
         }
@@ -1818,11 +1823,11 @@ Trial <- R6::R6Class(
       }
 
       for(comb in all_combn){
-        name1 <- paste0(sort(comb), collapse = '|')
+        name1 <- createArmCombination(comb)
         if(!(name1 %in% names(dunnett_test))){
-          stop('Combination <', comb, '> is not found in dunnett_test. ',
+          stop('Combination <', name1, '> is not found in dunnett_test. ',
                'Make sure that <', paste0(treatments, collapse = ', '),
-               ' are all used with dunnettTest() when computing dunnett_test. ')
+               '> are all used with dunnettTest() when computing dunnett_test. ')
         }
       }
 
