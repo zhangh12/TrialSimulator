@@ -1500,21 +1500,60 @@ Trial <- R6::R6Class(
     #' time-to-event endpoint in each stage and each arm. Event names, i.e.,
     #' \code{events} are row names of \code{planned_info}, and arm names, i.e.,
     #' \code{c(placebo, treatments)} are column names.
-    #' Note that it is not the accumulative number of events over time.
+    #' Note that it is not the accumulative but stage-wise event numbers.
     #' It is usually not easy to determine these numbers in practice, simulation
     #' may be used to get estimates.
     #' Note: \code{planned_info} can also be a character
     #' \code{"default"} so that \code{planned_info} are set to be number
-    #' of patients in the control arm in each of the stages. This assumes that
-    #' event rates are the same across arms and all treatment arms are of the
-    #' same size. It is for the purpose of debugging or rapid implementation
-    #' only. Using simulation to pick \code{planned_info} is recommended.
+    #' of newly randomized patients in the control arm in each of the stages.
+    #' This assumes that
+    #' event rate do not change over time and/or sample ratio between placebo
+    #' and a treatment arm does not change as well, which may not be true.
+    #' It is for the purpose of debugging or rapid implementation
+    #' only. Using simulation to pick \code{planned_info} is recommended in
+    #' formal simulation study.
     #' @param ... subset condition that is compatible with \code{dplyr::filter}.
     #' \code{survdiff} will be fitted on this subset only to compute one-sided
     #' logrank statistics. It could be useful when comparison is made on a
     #' subset of treatment arms. By default it is not specified,
     #' all data (placebo plus one treatment arm at a time) in the locked data
     #' are used to fit the model.
+    #'
+    #' @details
+    #' This function computes stage-wise p-values for each of the intersection
+    #' hypotheses based on Dunnett test. If only one treatment arm is present,
+    #' it is equivalent to compute the stage-wise p-values of elemental
+    #' hypotheses. This function also computes inverse normal combination
+    #' test statistics at each of the stages.
+    #' The choice of \code{planned_info} can affect the calculation of
+    #' stage-wise p-values. Specifically, it is used to compute
+    #' the columns \code{observed_info} and \code{p_inverse_normal} in returned
+    #' data frame, which will be used in \code{Trial$closedTest()}.
+    #' The choice of \code{planned_info} can affect the result of
+    #' \code{Trial$closedTest()} so user should chose it with caution.
+    #'
+    #' Note that in \code{Trial$closedTest()},
+    #' \code{observed_info}, which is derived from \code{planned_info}, will
+    #' lead to the same closed testing results up to a constant. This is because
+    #' the closed test uses information fraction
+    #' \code{observed_info/sum(observed_info)}. As a result, setting
+    #' \code{planned_info} to, e.g., \code{10 * planned_info} should give same
+    #' closed test results.
+    #'
+    #' Based on numerical study, setting \code{planned_info = "default"} leads
+    #' to a much higher power (roughly 10\%) than setting \code{planned_info} to
+    #' median of event numbers at stages, which can be determined by simulation.
+    #' I am not sure if regulator would support such practice. For example,
+    #' if an event (e.g., interim analysis) is triggered at a pre-specified
+    #' calendar time, the number of randomized patients is random and is unknown
+    #' when planning the trial. If I understand it correctly, regulator may want
+    #' the information fraction in closed test (combined with Dunnett test) to
+    #' be pre-fixed. In addition, this choice for \code{planned_info} assumes
+    #' that the event rates does not change over time which is obviously not
+    #' true. It is recommended to always use pre-fixed \code{planned_info} for
+    #' restrict control of family-wise error rate. It should be pointed out
+    #' that the choice of pre-fixed \code{planned_info} can affect statistical
+    #' power significantly so fine-tuning may be required.
     #'
     #' @returns a list with element names like \code{arm_name},
     #' \code{arm1_name|arm2_name}, \code{arm1_name|arm2_name|arm3_name}, etc.,
@@ -1543,13 +1582,17 @@ Trial <- R6::R6Class(
           stop('length(planned_info) should be equal to length(treatments) + 1. ')
         }
 
-        if(setequal(names(planned_info), c(placebo, treatments))){
-          stop('planned_info should use placebo and treatments\' names for its column names. ')
+        if(!setequal(names(planned_info), c(placebo, treatments))){
+          stop('planned_info should use placebo and treatments\' names, <',
+               paste0(c(placebo, treatments), collapse = ', '),
+               '>, for its column names. ',
+               paste0(setdiff(names(planned_info), c(placebo, treatments)), collapse = ', '),
+               ' are not accepted. ')
         }
 
         planned_info <- planned_info[, c(placebo, treatments), drop = FALSE]
 
-        if(setequal(rownames(planned_info), events)){
+        if(!setequal(rownames(planned_info), events)){
           stop('planned_info should use event names for its row names. ')
         }
 
