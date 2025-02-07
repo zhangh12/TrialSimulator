@@ -385,6 +385,14 @@ GraphicalTesting <- R6::R6Class(
 
       for(l in private$hids_in_graph){
         alp <- self$get_alpha(l) + self$get_alpha(hid) * self$get_weight(hid, l)
+        stopifnot(alp >= self$get_alpha(l))
+        if(alp > self$get_alpha(l)){
+          if(!private$silent && TRUE){
+            message('alpha of hypothesis <', self$get_hypothesis_name(l),
+                    '> is updated (',
+                    signif(self$get_alpha(l), 2), ' -> ', signif(alp, 2), '). ')
+          }
+        }
         self$set_alpha(l, alp)
       }
 
@@ -557,6 +565,7 @@ GraphicalTesting <- R6::R6Class(
                                            alpha_spending = args$alpha_spending,
                                            planned_max_info = args$planned_max_info,
                                            name = args$name)
+
             gst$test(observed_info = args$info,
                      is_final = args$is_final,
                      p_values = args$p)
@@ -571,7 +580,50 @@ GraphicalTesting <- R6::R6Class(
                                              name = args$name)
 
               info_frac_ <- args$info/args$planned_max_info
-              alpha_spent_ <- computeCumulativeAlphaSpent(args$critical_values, info_frac_[-length(info_frac_)])
+
+              ##################################################################
+              ## a very tricky bug was fixed here
+              ## Note that this function test all hypotheses that have their
+              ## p-values ready for being tested at the same time (stage)
+              ## A hypothesis A can possibly be tested for more than once.
+              ## This could happen when it was accepted first, and then
+              ## another hypothesis, say B, was rejected with its its alpha
+              ## being passed to A. Now A will be tested again, which can
+              ## trigger this bug. Fixed. An example to trigger the bug is
+              ##   order hypotheses            p info is_final max_info
+              ##    1    pfs low 1.000000e+00  188    FALSE      352
+              ##    2    pfs low 1.000000e+00  352     TRUE      352
+              ##    1   pfs high 1.045526e-03  188    FALSE      352
+              ##    2   pfs high 5.721944e-06  352     TRUE      352
+              ##    2     os low 1.000000e+00  352    FALSE      430
+              ##    3     os low 1.000000e+00  430     TRUE      430
+              ##    2    os high 3.211445e-04  352    FALSE      430
+              ##    3    os high 1.142131e-05  430     TRUE      430
+              ## where the graphical testing object is defined as
+              ## alpha <- c(.01/2, .01/2, .015/2, .015/2)
+              ## transition <- matrix(1/3, nrow = 4, ncol = 4)
+              ## diag(transition) <- 0
+              ## asf <- rep('asOF', 4)
+              ## max_info <- c(352, 352, 430, 430)
+              ## hs <- c('pfs low', 'pfs high', 'os low', 'os high')
+              ## gt <- GraphicalTesting$new(alpha, transition, asf, max_info, hs)
+              ## gt$test(graph_stats) ## this line will trigger issues
+
+              ## add this assert to prevent issue like this
+              stopifnot(length(info_frac_) - length(args$critical_values) <= 1)
+
+              ## add this assert to prevent issue like this
+              if(length(info_frac_) == length(args$critical_values)){
+                stopifnot(tested[h])
+              }
+
+              alpha_spent_ <-
+                computeCumulativeAlphaSpent(
+                  args$critical_values[1:(length(info_frac_) - 1)], ## this line fixes the bug
+                  info_frac_[-length(info_frac_)])
+
+              ##################################################################
+
               alpha_spent_[alpha_spent_ < 1e-4] <- 1e-4
 
               gst$test(observed_info = args$info,
@@ -586,6 +638,7 @@ GraphicalTesting <- R6::R6Class(
                                              alpha_spending = args$alpha_spending,
                                              planned_max_info = args$planned_max_info,
                                              name = args$name)
+
               if(args$alpha_spending %in% 'asUser'){
                 ## asUser, so custom alpha_spent * allocated alpha is used
                 gst$test(observed_info = args$info,
