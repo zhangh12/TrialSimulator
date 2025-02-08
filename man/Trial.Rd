@@ -114,7 +114,10 @@ trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_n
 ## ------------------------------------------------
 
 if(FALSE){
-dt <- trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_names(), 'default')
+dt <- trial$dunnettTest(
+  'pfs', 'pbo', c('high dose', 'low dose'),
+  listener$get_event_names(), 'default')
+
 trial$closedTest(dt, c('high dose', 'low dose'),
                  c('pfs interim', 'pfs final'),
                  0.025, 'asOF')
@@ -1186,7 +1189,10 @@ it is not tested. It may be supported in the future.}
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{if(FALSE){
-dt <- trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_names(), 'default')
+dt <- trial$dunnettTest(
+  'pfs', 'pbo', c('high dose', 'low dose'),
+  listener$get_event_names(), 'default')
+
 trial$closedTest(dt, c('high dose', 'low dose'),
                  c('pfs interim', 'pfs final'),
                  0.025, 'asOF')

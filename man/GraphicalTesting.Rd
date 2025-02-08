@@ -93,15 +93,15 @@ gt
 ## Note: alpha_spent is only specified for hypotheses using custom alpha
 ##       spending function "asUser"
 stats <-
-  data.frame(order = c(1:3, 1:3, 1:2, 1:2, 1, 1),
-             hypotheses = c(rep('H1: OS sub',3), rep('H2: OS all',3),
-                            rep('H3: PFS sub',2), rep('H4: PFS all',2),
-                            'H5: ORR sub', 'H6: ORR all'),
-             p = c(.03, .0001, .000001, .2, .15, .1, .2, .001, .3, .2, .00001, .1),
-             info = c(185, 245, 295, 529, 700, 800, 265, 310, 675, 750, 490, 990),
-             is_final = c(FALSE, FALSE, TRUE, FALSE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, TRUE, TRUE),
-             max_info = c(rep(295, 3), rep(800, 3), rep(310, 2), rep(750, 2), 490, 990),
-             alpha_spent = c(c(.1, .4, 1), rep(NA, 3), c(.3, 1), rep(NA, 2), NA, NA)
+  data.frame(
+    order = c(1:3, 1:3, 1:2, 1:2, 1, 1),
+    hypotheses = c(rep('H1: OS sub',3), rep('H2: OS all',3),
+    'H5: ORR sub', 'H6: ORR all'),
+    p = c(.03, .0001, .000001, .2, .15, .1, .2, .001, .3, .2, .00001, .1),
+    info = c(185, 245, 295, 529, 700, 800, 265, 310, 675, 750, 490, 990),
+    is_final = c(F, F, T, F, F, T, F, T, F, T, T, T),
+    max_info = c(rep(295, 3), rep(800, 3), rep(310, 2), rep(750, 2), 490, 990),
+    alpha_spent = c(c(.1, .4, 1), rep(NA, 3), c(.3, 1), rep(NA, 2), NA, NA)
   )
 
 ## test the p-values from the first analysis, plot the updated graph

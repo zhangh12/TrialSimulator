@@ -1,3 +1,26 @@
+# TrialSimulator 0.37.0
+
+## New Features
+
+- Return more informative error message when custom random number generators are used to define endpoints. Specifically, it guides users to return columns for time-to-event endpoints properly. 
+- Update manual for `generator` in `Endpoint`. 
+
+# TrialSimulator 0.36.0
+
+## Bug Fixes
+
+- Fix a bug in `GraphicalTesting` when a hypothesis is tested multiple times at the same stage because more alpha is passed from other rejected hypothesis. 
+
+# TrialSimulator 0.35.0
+
+## New Features
+
+- Warn when incremental information is too low that can affect normality approximation of combination test. 
+
+## Bug Fixes
+
+- Minor bugs fixed. 
+
 # TrialSimulator 0.33.0
 
 ## New Features
