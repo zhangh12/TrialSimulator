@@ -120,9 +120,16 @@ initialize an endpoint
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{name}}{name(s) of endpoint(s)}
+\item{\code{name}}{character vector. Name(s) of endpoint(s)}
 
-\item{\code{type}}{type(s) of endpoint(s)}
+\item{\code{type}}{character vector. Type(s) of endpoint(s). It supports
+\code{"tte"} for time-to-event endpoints, and \code{"continuous"} or
+\code{"binary"}. \code{TrialSimulator} will do some verification if an
+endpoint is of type \code{"tte"}. However, no special
+manipulation is done for non-tte endpoints. Thus, you can specify
+\code{type} to any meaningful string for non-tte endpoints for informative
+purpose. Please note that currently \code{TrialSimulator} does not
+support endpoints of repeated measurement.}
 
 \item{\code{readout}}{numeric vector with name to be the non-tte endpoint(s).
 \code{readout} should be specified for every non-tte endpoint. For
@@ -130,7 +137,24 @@ example, \code{c(endpoint1 = 6, endpoint2 = 3)}.  If all
 endpoints are tte, \code{readout} can be \code{NULL}.}
 
 \item{\code{generator}}{a RNG function. Its first argument must be `n`, number of
-patients. It must return a data frame of `n` rows. It can be optional if}
+patients. It must return a data frame of `n` rows. It support all
+built-in random number generators in \code{stats}, e.g., \code{stats::rnorm},
+\code{stats::rexp}, etc. that with \code{n} as the argument for number of
+observations. \code{generator} could be any custom functions as long as
+(1) its first argument is \code{n}; and (2) it returns a vector of
+length \code{n} or a data frame of \code{n} rows. Custom random number
+generator can return data of more than one endpoint. This is useful
+when users need to simulate correlated endpoints. The column names of
+returned data frame should match to \code{name} exactly. If an endpoint
+is of type \code{"tte"}, the custom \code{generator} should also return
+a column as event indicator. For example, if \code{"pfs"} is \code{"tte"},
+then custom \code{generator} should return at least two columns
+\code{"pfs"} and \code{"pfs_event"}. Usually \code{pfs_event} can be
+all 1s if no censoring. Censoring can be specified later when defining
+the \code{Trial} through argument \code{dropout}. See \code{?Trial}.
+Note that if covariates, e.g., biomarker, subgroup, are needed in
+generating and analyzing trial data, they can be defined as
+\code{Endpoint} as well.}
 
 \item{\code{...}}{optional arguments for \code{generator}.}
 }

@@ -110,8 +110,21 @@ DynamicRNGFunction <- function(fn, ...) {
       tte_cols <- base_cols[duplicated(base_cols)]
       non_tte_cols <- setdiff(base_cols, tte_cols)
       if(!setequal(non_tte_cols, names(readout))){
-        stop('Readout may be missing for some endpoints, ',
-             'or specified for some non-existing endpoints. ')
+        cols1 <- setdiff(non_tte_cols, names(readout))
+        if(length(cols1) > 0){
+          stop('Readout may be missing for endpoints <',
+               paste0(cols1, collapse = ', '),
+               '>. If they are time-to-event endpoints, please add columns <',
+               paste0(paste0(cols1, '_event'), collapse = ', '),
+               '>, the event indicator, in custom random number generator. ')
+        }
+
+        cols2 <- setdiff(names(readout), non_tte_cols)
+        if(length(cols2) > 0){
+          stop('Readout are specified to endpoints <',
+               paste0(cols2, collapse = ', '),
+               '> that are not time-to-event endpoints. ')
+        }
       }
 
       for(col in non_tte_cols){

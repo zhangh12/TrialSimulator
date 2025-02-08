@@ -1782,7 +1782,10 @@ Trial <- R6::R6Class(
     #'
     #' @examples
     #' if(FALSE){
-    #' dt <- trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_names(), 'default')
+    #' dt <- trial$dunnettTest(
+    #'   'pfs', 'pbo', c('high dose', 'low dose'),
+    #'   listener$get_event_names(), 'default')
+    #'
     #' trial$closedTest(dt, c('high dose', 'low dose'),
     #'                  c('pfs interim', 'pfs final'),
     #'                  0.025, 'asOF')
