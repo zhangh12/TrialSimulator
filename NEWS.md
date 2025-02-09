@@ -2,6 +2,12 @@
 
 ## New Features
 
+- Plot stacked area chart for accumulative event numbers of endpoints. 
+
+# TrialSimulator 0.37.0
+
+## New Features
+
 - Return more informative error message when custom random number generators are used to define endpoints. Specifically, it guides users to return columns for time-to-event endpoints properly. 
 - Update manual for `generator` in `Endpoint`. 
 
