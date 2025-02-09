@@ -1014,6 +1014,10 @@ Trial <- R6::R6Class(
     #' plot of cumulative number of events/samples over calendar time.
     event_plot = function(){
 
+      if(private$silent){
+        return(invisible(NULL))
+      }
+
       trial_data <- self$get_trial_data()
 
       event_number <- self$get_event_number()
@@ -1039,10 +1043,10 @@ Trial <- R6::R6Class(
             arrange(calendar_time)
           col_ <- tte_col
 
-          data_list[['1: overall']] <- event_counts %>%
+          data_list[['0: overall']] <- event_counts %>%
             mutate(n_events = cumsum(get(col)))
 
-          idx <- 1
+          idx <- 0
           for(arm_ in sort(unique(trial_data$arm))){
             idx <- idx + 1
             data_list[[paste0(idx, ': ', arm_)]] <- event_counts %>%
@@ -1059,10 +1063,10 @@ Trial <- R6::R6Class(
             arrange(calendar_time)
           col_ <- ep_col
 
-          data_list[['1: overall']] <- event_counts %>%
+          data_list[['0: overall']] <- event_counts %>%
             mutate(n_events = row_number())
 
-          idx <- 1
+          idx <- 0
           for(arm_ in sort(unique(trial_data$arm))){
             idx <- idx + 1
             data_list[[paste0(idx, ': ', arm_)]] <- event_counts %>%
@@ -1084,30 +1088,104 @@ Trial <- R6::R6Class(
 
       }
 
-      p <-
-      ggplot() +
-        geom_line(data = all_data_list,
-                  aes(x = calendar_time, y = n_events,
-                      color = arm, group = arm),
-                  size = 1) +
+      ## no longer use this plot. Use stacked area chart instead. See below
+      # p_ <-
+      #   ggplot() +
+      #     geom_line(data = all_data_list,
+      #               aes(x = calendar_time, y = n_events,
+      #                   color = arm, group = arm),
+      #               size = 1) +
+      #     xlim(0, self$get_duration() * 1.05) +
+      #     geom_vline(
+      #       data = event_number,
+      #       aes(xintercept = lock_time),
+      #       linetype = 'dashed'
+      #     ) +
+      #     labs(
+      #       x = 'Calendar Time',
+      #       y = 'Cumulative N (event/readout)',
+      #       color = ''
+      #     ) +
+      #     facet_wrap(~ endpoint, scales = 'free_x') +
+      #     theme_minimal() +
+      #     theme(legend.position = 'bottom')
+
+      ################################################
+      ## prepare stacked area chart
+      all_data <- all_data_list %>%
+        dplyr::filter(!(arm %in% '0: overall'))
+
+      endpoints <- sort(unique(all_data$endpoint))
+      arms <- sort(unique(all_data$arm))
+      ct <- sort(unique(all_data$calendar_time))
+
+      new_data <- NULL
+      for(col in c(event_cols, readout_cols)){
+        tte_col <- gsub('_event$', '', col)
+        ep_col <- gsub('_readout$', '', col)
+        is_tte <- (ep_col == col)
+        ep <- ifelse(is_tte, tte_col, ep_col)
+
+        for(arm_ in arms){
+          dat <- all_data %>%
+            dplyr::filter(endpoint %in% ep & arm %in% arm_) %>%
+            dplyr::select(c('arm', col, 'calendar_time', 'endpoint')) %>%
+            rename(has_event = !!sym(col))
+
+          if(!is_tte){
+            dat$has_event <- 1
+          }
+
+          time <- sort(setdiff(ct, dat$calendar_time))
+          if(length(time) == 0){
+            new_data <- bind_rows(new_data, dat)
+            next
+          }
+
+          dat <- bind_rows(dat,
+                           data.frame(
+                             arm = arm_,
+                             has_event = 0,
+                             calendar_time = time,
+                             endpoint = ep
+                           ))
+          dat <- dat[!duplicated(dat), ] %>%
+            arrange(calendar_time) %>%
+            mutate(n_events = cumsum(has_event)) %>%
+            dplyr::select(-has_event)
+
+          new_data <- bind_rows(new_data, dat)
+        }
+      }
+
+      new_data$arm <- factor(new_data$arm, levels = arms)
+
+      soft_colors <- function(n) {
+        hcl(h = seq(0, 360 * (n-1)/n, length.out = n), c = 60, l = 70)
+      }
+
+      p <- ggplot(new_data, aes(x = calendar_time, y = n_events, fill = arm)) +
         xlim(0, self$get_duration() * 1.05) +
-        geom_vline(
-          data = event_number,
-          aes(xintercept = lock_time),
-          linetype = 'dashed'
-        ) +
         labs(
           x = 'Calendar Time',
           y = 'Cumulative N',
           color = ''
         ) +
+        geom_area() +
+        scale_fill_manual(
+          values = soft_colors(length(arms)),
+          name = "Arm"
+        ) +
+        geom_vline(
+          data = event_number,
+          aes(xintercept = lock_time),
+          linetype = 'dashed'
+        ) +
         facet_wrap(~ endpoint, scales = 'free_x') +
         theme_minimal() +
         theme(legend.position = 'bottom')
 
-      if(!private$silent){
-        plot(p)
-      }
+      plot(p)
 
     },
 
