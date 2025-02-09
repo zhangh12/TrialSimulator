@@ -1088,28 +1088,6 @@ Trial <- R6::R6Class(
 
       }
 
-      ## no longer use this plot. Use stacked area chart instead. See below
-      # p_ <-
-      #   ggplot() +
-      #     geom_line(data = all_data_list,
-      #               aes(x = calendar_time, y = n_events,
-      #                   color = arm, group = arm),
-      #               size = 1) +
-      #     xlim(0, self$get_duration() * 1.05) +
-      #     geom_vline(
-      #       data = event_number,
-      #       aes(xintercept = lock_time),
-      #       linetype = 'dashed'
-      #     ) +
-      #     labs(
-      #       x = 'Calendar Time',
-      #       y = 'Cumulative N (event/readout)',
-      #       color = ''
-      #     ) +
-      #     facet_wrap(~ endpoint, scales = 'free_x') +
-      #     theme_minimal() +
-      #     theme(legend.position = 'bottom')
-
       ################################################
       ## prepare stacked area chart
       all_data <- all_data_list %>%
