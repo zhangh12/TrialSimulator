@@ -118,6 +118,7 @@ GroupSequentialTest <- R6::R6Class(
         private$sided <- 1 # sided
         private$original_planned_max_info <- planned_max_info
         private$original_alpha_spending <- match.arg(alpha_spending)
+        private$original_silent <- silent
 
         asf <- c(asOF = "O'Brien & Fleming",
                  asP = 'Pocock',
@@ -199,6 +200,8 @@ GroupSequentialTest <- R6::R6Class(
     #' to reset the status to stage 1. See examples. This implementation can
     #' prevent the error that more than the planned number of stages are tested.
     reset = function(){
+
+      private$update_max_info <- FALSE
       private$info_fraction <- NULL
       private$observed_info <- NULL
       private$complete <- FALSE
@@ -209,6 +212,7 @@ GroupSequentialTest <- R6::R6Class(
       private$stage <- 1
       private$alpha_spent <- 1e-6
       private$trajectory <- NULL
+      private$silent <- private$original_silent
       message('GroupSequentialTest object <', private$name,
               '> has been reset and is ready to use. ')
     },
@@ -397,7 +401,6 @@ GroupSequentialTest <- R6::R6Class(
         }
 
         if(length(alpha_spent) != length(observed_info)){
-          browser()
           stop('alpha_spent and observed_info should be of same length. ')
         }
 
@@ -460,6 +463,7 @@ GroupSequentialTest <- R6::R6Class(
 
     original_planned_max_info = NULL,
     original_alpha_spending = NULL,
+    original_silent = NULL,
 
     stage = 1, ## integer, current stage, change over time
 

@@ -1,8 +1,12 @@
-# TrialSimulator 0.37.0
+# TrialSimulator 0.38.1
 
 ## New Features
 
 - Plot stacked area chart for accumulative event numbers of endpoints. 
+
+## Bug Fixes
+
+- Fix a bug when small weight (epsilon) is used in graph in graphical testing. Small weight can be conflict with integral tolerance error. 
 
 # TrialSimulator 0.37.0
 

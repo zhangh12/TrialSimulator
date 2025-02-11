@@ -1,4 +1,7 @@
 
+## Compute cumulative alpha spent on the critical values at information
+## fractions.
+##
 #' @importFrom stats as.formula pnorm
 #' @importFrom mvtnorm pmvnorm
 computeCumulativeAlphaSpent <- function(critical_values, information_fraction){
