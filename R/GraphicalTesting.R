@@ -385,6 +385,9 @@ GraphicalTesting <- R6::R6Class(
 
       for(l in private$hids_in_graph){
         alp <- self$get_alpha(l) + self$get_alpha(hid) * self$get_weight(hid, l)
+        if(alp < 1e-5){
+          alp <- 1e-5 ## numeric rounding error existing when computing integral for spent alpha. try to avoid too small allocated alpha
+        }
         stopifnot(alp >= self$get_alpha(l))
         if(alp > self$get_alpha(l)){
           if(!private$silent && TRUE){
@@ -497,11 +500,13 @@ GraphicalTesting <- R6::R6Class(
 
           if(!is.na(stat$max_info)){
             if(stat$max_info != private$gst[[hid]]$planned_max_info){
-              message('Planned maximum information for hypothesis <',
-                      private$gst[[hid]]$name,
-                      '> is changed from <',
-                      private$gst[[hid]]$planned_max_info,
-                      '> -> <', stat$max_info, '>. ')
+              if(!private$silent){
+                message('Planned maximum information for hypothesis <',
+                        private$gst[[hid]]$name,
+                        '> is changed from <',
+                        private$gst[[hid]]$planned_max_info,
+                        '> -> <', stat$max_info, '>. ')
+              }
             }
             private$gst[[hid]]$planned_max_info <- stat$max_info
           }
@@ -564,7 +569,8 @@ GraphicalTesting <- R6::R6Class(
             gst <- GroupSequentialTest$new(alpha = self$get_alpha(hid),
                                            alpha_spending = args$alpha_spending,
                                            planned_max_info = args$planned_max_info,
-                                           name = args$name)
+                                           name = args$name,
+                                           silent = private$silent)
 
             gst$test(observed_info = args$info,
                      is_final = args$is_final,
@@ -624,7 +630,7 @@ GraphicalTesting <- R6::R6Class(
 
               ##################################################################
 
-              alpha_spent_[alpha_spent_ < 1e-4] <- 1e-4
+              alpha_spent_[alpha_spent_ < min(1e-5, gst$get_alpha())] <- min(1e-5, gst$get_alpha()/2)
 
               gst$test(observed_info = args$info,
                        is_final = args$is_final,
