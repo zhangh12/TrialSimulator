@@ -491,6 +491,8 @@ GraphicalTesting <- R6::R6Class(
       while(test_again){
         test_again <- FALSE
 
+        ## TRUE if at least one hypothesis has alpha > 0
+        at_least_one_testable <- FALSE
         for(h in stats$hypotheses){
 
           hid <- self$get_hid(h)
@@ -562,6 +564,8 @@ GraphicalTesting <- R6::R6Class(
                       '> cannot be tested with alpha = 0. ')
             }
             next
+          }else{
+            at_least_one_testable <- TRUE
           }
 
           if(length(args$is_final) == 1 && tail(args$is_final, 1)){
@@ -700,6 +704,11 @@ GraphicalTesting <- R6::R6Class(
             break
           }
 
+        }
+
+        if(!at_least_one_testable){
+          stop('None of the hypotheses has non-zero alpha at this stage. ',
+               'Check your initial alpha split and transition matrix. ')
         }
 
         if(!test_again){
