@@ -1,3 +1,10 @@
+# TrialSimulator 0.38.2
+
+## Bug Fixes
+
+- Throw error message when none of the hypotheses at test has non-zero alpha in graphical test. 
+- Update vignette. 
+
 # TrialSimulator 0.38.1
 
 ## New Features
