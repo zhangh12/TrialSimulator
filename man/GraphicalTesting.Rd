@@ -55,7 +55,8 @@ gt$reset()
 
 ## Example 2
 if(FALSE){
-## Example from https://cran.r-project.org/web/packages/gMCPLite/vignettes/GraphicalMultiplicity.html
+## Example modified from vignettes in gMCPLite:
+## Graphical testing for group sequential design
 ## initial alpha split to each of the hypotheses
 alpha <- c(.01, .01, .004, .0, .0005, .0005)
 
