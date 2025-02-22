@@ -75,27 +75,27 @@ gst
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-Group Sequential Test-new}{\code{GroupSequentialTest$new()}}
-\item \href{#method-Group Sequential Test-get_name}{\code{GroupSequentialTest$get_name()}}
-\item \href{#method-Group Sequential Test-get_alpha}{\code{GroupSequentialTest$get_alpha()}}
-\item \href{#method-Group Sequential Test-set_alpha_spending}{\code{GroupSequentialTest$set_alpha_spending()}}
-\item \href{#method-Group Sequential Test-get_alpha_spending}{\code{GroupSequentialTest$get_alpha_spending()}}
-\item \href{#method-Group Sequential Test-get_max_info}{\code{GroupSequentialTest$get_max_info()}}
-\item \href{#method-Group Sequential Test-set_max_info}{\code{GroupSequentialTest$set_max_info()}}
-\item \href{#method-Group Sequential Test-get_stage}{\code{GroupSequentialTest$get_stage()}}
-\item \href{#method-Group Sequential Test-reset}{\code{GroupSequentialTest$reset()}}
-\item \href{#method-Group Sequential Test-set_trajectory}{\code{GroupSequentialTest$set_trajectory()}}
-\item \href{#method-Group Sequential Test-get_trajectory}{\code{GroupSequentialTest$get_trajectory()}}
-\item \href{#method-Group Sequential Test-get_stage_level}{\code{GroupSequentialTest$get_stage_level()}}
-\item \href{#method-Group Sequential Test-test_one}{\code{GroupSequentialTest$test_one()}}
-\item \href{#method-Group Sequential Test-test}{\code{GroupSequentialTest$test()}}
-\item \href{#method-Group Sequential Test-print}{\code{GroupSequentialTest$print()}}
-\item \href{#method-Group Sequential Test-clone}{\code{GroupSequentialTest$clone()}}
+\item \href{#method-GroupSequentialTest-new}{\code{GroupSequentialTest$new()}}
+\item \href{#method-GroupSequentialTest-get_name}{\code{GroupSequentialTest$get_name()}}
+\item \href{#method-GroupSequentialTest-get_alpha}{\code{GroupSequentialTest$get_alpha()}}
+\item \href{#method-GroupSequentialTest-set_alpha_spending}{\code{GroupSequentialTest$set_alpha_spending()}}
+\item \href{#method-GroupSequentialTest-get_alpha_spending}{\code{GroupSequentialTest$get_alpha_spending()}}
+\item \href{#method-GroupSequentialTest-get_max_info}{\code{GroupSequentialTest$get_max_info()}}
+\item \href{#method-GroupSequentialTest-set_max_info}{\code{GroupSequentialTest$set_max_info()}}
+\item \href{#method-GroupSequentialTest-get_stage}{\code{GroupSequentialTest$get_stage()}}
+\item \href{#method-GroupSequentialTest-reset}{\code{GroupSequentialTest$reset()}}
+\item \href{#method-GroupSequentialTest-set_trajectory}{\code{GroupSequentialTest$set_trajectory()}}
+\item \href{#method-GroupSequentialTest-get_trajectory}{\code{GroupSequentialTest$get_trajectory()}}
+\item \href{#method-GroupSequentialTest-get_stage_level}{\code{GroupSequentialTest$get_stage_level()}}
+\item \href{#method-GroupSequentialTest-test_one}{\code{GroupSequentialTest$test_one()}}
+\item \href{#method-GroupSequentialTest-test}{\code{GroupSequentialTest$test()}}
+\item \href{#method-GroupSequentialTest-print}{\code{GroupSequentialTest$print()}}
+\item \href{#method-GroupSequentialTest-clone}{\code{GroupSequentialTest$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Group Sequential Test-new"></a>}}
-\if{latex}{\out{\hypertarget{method-Group Sequential Test-new}{}}}
+\if{html}{\out{<a id="method-GroupSequentialTest-new"></a>}}
+\if{latex}{\out{\hypertarget{method-GroupSequentialTest-new}{}}}
 \subsection{Method \code{new()}}{
 initialize a group sequential test. Now only support one-sided test
 based on p-values.
@@ -129,8 +129,8 @@ etc. Optional.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Group Sequential Test-get_name"></a>}}
-\if{latex}{\out{\hypertarget{method-Group Sequential Test-get_name}{}}}
+\if{html}{\out{<a id="method-GroupSequentialTest-get_name"></a>}}
+\if{latex}{\out{\hypertarget{method-GroupSequentialTest-get_name}{}}}
 \subsection{Method \code{get_name()}}{
 get name of hypothesis
 \subsection{Usage}{
@@ -139,8 +139,8 @@ get name of hypothesis
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Group Sequential Test-get_alpha"></a>}}
-\if{latex}{\out{\hypertarget{method-Group Sequential Test-get_alpha}{}}}
+\if{html}{\out{<a id="method-GroupSequentialTest-get_alpha"></a>}}
+\if{latex}{\out{\hypertarget{method-GroupSequentialTest-get_alpha}{}}}
 \subsection{Method \code{get_alpha()}}{
 get overall alpha
 \subsection{Usage}{
@@ -149,8 +149,8 @@ get overall alpha
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Group Sequential Test-set_alpha_spending"></a>}}
-\if{latex}{\out{\hypertarget{method-Group Sequential Test-set_alpha_spending}{}}}
+\if{html}{\out{<a id="method-GroupSequentialTest-set_alpha_spending"></a>}}
+\if{latex}{\out{\hypertarget{method-GroupSequentialTest-set_alpha_spending}{}}}
 \subsection{Method \code{set_alpha_spending()}}{
 set alpha spending function. This is useful when set 'asUser' at the
 final stage to adjust for an under- or over-running trial.
@@ -167,8 +167,8 @@ final stage to adjust for an under- or over-running trial.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Group Sequential Test-get_alpha_spending"></a>}}
-\if{latex}{\out{\hypertarget{method-Group Sequential Test-get_alpha_spending}{}}}
+\if{html}{\out{<a id="method-GroupSequentialTest-get_alpha_spending"></a>}}
+\if{latex}{\out{\hypertarget{method-GroupSequentialTest-get_alpha_spending}{}}}
 \subsection{Method \code{get_alpha_spending()}}{
 return character of alpha spending function
 \subsection{Usage}{
@@ -177,8 +177,8 @@ return character of alpha spending function
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Group Sequential Test-get_max_info"></a>}}
-\if{latex}{\out{\hypertarget{method-Group Sequential Test-get_max_info}{}}}
+\if{html}{\out{<a id="method-GroupSequentialTest-get_max_info"></a>}}
+\if{latex}{\out{\hypertarget{method-GroupSequentialTest-get_max_info}{}}}
 \subsection{Method \code{get_max_info()}}{
 return planned maximum information
 \subsection{Usage}{
@@ -187,8 +187,8 @@ return planned maximum information
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Group Sequential Test-set_max_info"></a>}}
-\if{latex}{\out{\hypertarget{method-Group Sequential Test-set_max_info}{}}}
+\if{html}{\out{<a id="method-GroupSequentialTest-set_max_info"></a>}}
+\if{latex}{\out{\hypertarget{method-GroupSequentialTest-set_max_info}{}}}
 \subsection{Method \code{set_max_info()}}{
 set planned maximum information. This is used at the final stage
 to adjust for an under- or over-running trial.
@@ -206,8 +206,8 @@ observed number of patients or events at the final stage.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Group Sequential Test-get_stage"></a>}}
-\if{latex}{\out{\hypertarget{method-Group Sequential Test-get_stage}{}}}
+\if{html}{\out{<a id="method-GroupSequentialTest-get_stage"></a>}}
+\if{latex}{\out{\hypertarget{method-GroupSequentialTest-get_stage}{}}}
 \subsection{Method \code{get_stage()}}{
 get current stage.
 \subsection{Usage}{
@@ -216,8 +216,8 @@ get current stage.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Group Sequential Test-reset"></a>}}
-\if{latex}{\out{\hypertarget{method-Group Sequential Test-reset}{}}}
+\if{html}{\out{<a id="method-GroupSequentialTest-reset"></a>}}
+\if{latex}{\out{\hypertarget{method-GroupSequentialTest-reset}{}}}
 \subsection{Method \code{reset()}}{
 an object of class \code{GroupSequentialTest} is designed to be used
 sequentially by calling \code{GroupSequentialTest$test}. When all
@@ -232,8 +232,8 @@ prevent the error that more than the planned number of stages are tested.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Group Sequential Test-set_trajectory"></a>}}
-\if{latex}{\out{\hypertarget{method-Group Sequential Test-set_trajectory}{}}}
+\if{html}{\out{<a id="method-GroupSequentialTest-set_trajectory"></a>}}
+\if{latex}{\out{\hypertarget{method-GroupSequentialTest-set_trajectory}{}}}
 \subsection{Method \code{set_trajectory()}}{
 save testing result at current stage
 \subsection{Usage}{
@@ -252,8 +252,8 @@ save testing result at current stage
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Group Sequential Test-get_trajectory"></a>}}
-\if{latex}{\out{\hypertarget{method-Group Sequential Test-get_trajectory}{}}}
+\if{html}{\out{<a id="method-GroupSequentialTest-get_trajectory"></a>}}
+\if{latex}{\out{\hypertarget{method-GroupSequentialTest-get_trajectory}{}}}
 \subsection{Method \code{get_trajectory()}}{
 return testing trajectory until current stage. This function can be
 called at any stage. See examples.
@@ -263,8 +263,8 @@ called at any stage. See examples.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Group Sequential Test-get_stage_level"></a>}}
-\if{latex}{\out{\hypertarget{method-Group Sequential Test-get_stage_level}{}}}
+\if{html}{\out{<a id="method-GroupSequentialTest-get_stage_level"></a>}}
+\if{latex}{\out{\hypertarget{method-GroupSequentialTest-get_stage_level}{}}}
 \subsection{Method \code{get_stage_level()}}{
 compute boundaries given current (potentially updated) settings. It
 returns different values if settings are changed over time.
@@ -274,8 +274,8 @@ returns different values if settings are changed over time.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Group Sequential Test-test_one"></a>}}
-\if{latex}{\out{\hypertarget{method-Group Sequential Test-test_one}{}}}
+\if{html}{\out{<a id="method-GroupSequentialTest-test_one"></a>}}
+\if{latex}{\out{\hypertarget{method-GroupSequentialTest-test_one}{}}}
 \subsection{Method \code{test_one()}}{
 test a hypothesis with the given p-value at current stage
 \subsection{Usage}{
@@ -312,8 +312,8 @@ be between 0 and \code{alpha}, the overall alpha of the test.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Group Sequential Test-test"></a>}}
-\if{latex}{\out{\hypertarget{method-Group Sequential Test-test}{}}}
+\if{html}{\out{<a id="method-GroupSequentialTest-test"></a>}}
+\if{latex}{\out{\hypertarget{method-GroupSequentialTest-test}{}}}
 \subsection{Method \code{test()}}{
 Carry out test based on group sequential design. If \code{p_values}
 is \code{NULL}, dummy values will be use and boundaries are calculated
@@ -347,8 +347,8 @@ function is not \code{"asUser"}. Otherwise \code{NULL}.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Group Sequential Test-print"></a>}}
-\if{latex}{\out{\hypertarget{method-Group Sequential Test-print}{}}}
+\if{html}{\out{<a id="method-GroupSequentialTest-print"></a>}}
+\if{latex}{\out{\hypertarget{method-GroupSequentialTest-print}{}}}
 \subsection{Method \code{print()}}{
 generic function for \code{print}
 \subsection{Usage}{
@@ -357,8 +357,8 @@ generic function for \code{print}
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Group Sequential Test-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-Group Sequential Test-clone}{}}}
+\if{html}{\out{<a id="method-GroupSequentialTest-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-GroupSequentialTest-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

@@ -139,36 +139,36 @@ gt$get_current_decision()
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-Graphical Testing Procedure-new}{\code{GraphicalTesting$new()}}
-\item \href{#method-Graphical Testing Procedure-reset}{\code{GraphicalTesting$reset()}}
-\item \href{#method-Graphical Testing Procedure-is_valid_hid}{\code{GraphicalTesting$is_valid_hid()}}
-\item \href{#method-Graphical Testing Procedure-get_hypothesis_name}{\code{GraphicalTesting$get_hypothesis_name()}}
-\item \href{#method-Graphical Testing Procedure-get_weight}{\code{GraphicalTesting$get_weight()}}
-\item \href{#method-Graphical Testing Procedure-set_weight}{\code{GraphicalTesting$set_weight()}}
-\item \href{#method-Graphical Testing Procedure-get_alpha}{\code{GraphicalTesting$get_alpha()}}
-\item \href{#method-Graphical Testing Procedure-set_alpha}{\code{GraphicalTesting$set_alpha()}}
-\item \href{#method-Graphical Testing Procedure-get_hypotheses_ids}{\code{GraphicalTesting$get_hypotheses_ids()}}
-\item \href{#method-Graphical Testing Procedure-get_number_hypotheses}{\code{GraphicalTesting$get_number_hypotheses()}}
-\item \href{#method-Graphical Testing Procedure-get_hids_not_in_graph}{\code{GraphicalTesting$get_hids_not_in_graph()}}
-\item \href{#method-Graphical Testing Procedure-get_testable_hypotheses}{\code{GraphicalTesting$get_testable_hypotheses()}}
-\item \href{#method-Graphical Testing Procedure-has_testable_hypotheses}{\code{GraphicalTesting$has_testable_hypotheses()}}
-\item \href{#method-Graphical Testing Procedure-is_in_graph}{\code{GraphicalTesting$is_in_graph()}}
-\item \href{#method-Graphical Testing Procedure-is_testable}{\code{GraphicalTesting$is_testable()}}
-\item \href{#method-Graphical Testing Procedure-get_hid}{\code{GraphicalTesting$get_hid()}}
-\item \href{#method-Graphical Testing Procedure-reject_a_hypothesis}{\code{GraphicalTesting$reject_a_hypothesis()}}
-\item \href{#method-Graphical Testing Procedure-set_trajectory}{\code{GraphicalTesting$set_trajectory()}}
-\item \href{#method-Graphical Testing Procedure-get_trajectory}{\code{GraphicalTesting$get_trajectory()}}
-\item \href{#method-Graphical Testing Procedure-test_hypotheses}{\code{GraphicalTesting$test_hypotheses()}}
-\item \href{#method-Graphical Testing Procedure-test}{\code{GraphicalTesting$test()}}
-\item \href{#method-Graphical Testing Procedure-get_current_testing_results}{\code{GraphicalTesting$get_current_testing_results()}}
-\item \href{#method-Graphical Testing Procedure-get_current_decision}{\code{GraphicalTesting$get_current_decision()}}
-\item \href{#method-Graphical Testing Procedure-print}{\code{GraphicalTesting$print()}}
-\item \href{#method-Graphical Testing Procedure-clone}{\code{GraphicalTesting$clone()}}
+\item \href{#method-GraphicalTestingProcedure-new}{\code{GraphicalTesting$new()}}
+\item \href{#method-GraphicalTestingProcedure-reset}{\code{GraphicalTesting$reset()}}
+\item \href{#method-GraphicalTestingProcedure-is_valid_hid}{\code{GraphicalTesting$is_valid_hid()}}
+\item \href{#method-GraphicalTestingProcedure-get_hypothesis_name}{\code{GraphicalTesting$get_hypothesis_name()}}
+\item \href{#method-GraphicalTestingProcedure-get_weight}{\code{GraphicalTesting$get_weight()}}
+\item \href{#method-GraphicalTestingProcedure-set_weight}{\code{GraphicalTesting$set_weight()}}
+\item \href{#method-GraphicalTestingProcedure-get_alpha}{\code{GraphicalTesting$get_alpha()}}
+\item \href{#method-GraphicalTestingProcedure-set_alpha}{\code{GraphicalTesting$set_alpha()}}
+\item \href{#method-GraphicalTestingProcedure-get_hypotheses_ids}{\code{GraphicalTesting$get_hypotheses_ids()}}
+\item \href{#method-GraphicalTestingProcedure-get_number_hypotheses}{\code{GraphicalTesting$get_number_hypotheses()}}
+\item \href{#method-GraphicalTestingProcedure-get_hids_not_in_graph}{\code{GraphicalTesting$get_hids_not_in_graph()}}
+\item \href{#method-GraphicalTestingProcedure-get_testable_hypotheses}{\code{GraphicalTesting$get_testable_hypotheses()}}
+\item \href{#method-GraphicalTestingProcedure-has_testable_hypotheses}{\code{GraphicalTesting$has_testable_hypotheses()}}
+\item \href{#method-GraphicalTestingProcedure-is_in_graph}{\code{GraphicalTesting$is_in_graph()}}
+\item \href{#method-GraphicalTestingProcedure-is_testable}{\code{GraphicalTesting$is_testable()}}
+\item \href{#method-GraphicalTestingProcedure-get_hid}{\code{GraphicalTesting$get_hid()}}
+\item \href{#method-GraphicalTestingProcedure-reject_a_hypothesis}{\code{GraphicalTesting$reject_a_hypothesis()}}
+\item \href{#method-GraphicalTestingProcedure-set_trajectory}{\code{GraphicalTesting$set_trajectory()}}
+\item \href{#method-GraphicalTestingProcedure-get_trajectory}{\code{GraphicalTesting$get_trajectory()}}
+\item \href{#method-GraphicalTestingProcedure-test_hypotheses}{\code{GraphicalTesting$test_hypotheses()}}
+\item \href{#method-GraphicalTestingProcedure-test}{\code{GraphicalTesting$test()}}
+\item \href{#method-GraphicalTestingProcedure-get_current_testing_results}{\code{GraphicalTesting$get_current_testing_results()}}
+\item \href{#method-GraphicalTestingProcedure-get_current_decision}{\code{GraphicalTesting$get_current_decision()}}
+\item \href{#method-GraphicalTestingProcedure-print}{\code{GraphicalTesting$print()}}
+\item \href{#method-GraphicalTestingProcedure-clone}{\code{GraphicalTesting$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-new"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-new}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-new"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-new}{}}}
 \subsection{Method \code{new()}}{
 Initialize an object for graphical testing procedure.
 Group sequential design is also supported.
@@ -209,8 +209,8 @@ plots.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-reset"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-reset}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-reset"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-reset}{}}}
 \subsection{Method \code{reset()}}{
 reset an object of class \code{GraphicalTesting} to original status
 so that it can be reused.
@@ -220,8 +220,8 @@ so that it can be reused.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-is_valid_hid"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-is_valid_hid}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-is_valid_hid"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-is_valid_hid}{}}}
 \subsection{Method \code{is_valid_hid()}}{
 determine if index of a hypothesis is valid
 \subsection{Usage}{
@@ -237,8 +237,8 @@ determine if index of a hypothesis is valid
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-get_hypothesis_name"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-get_hypothesis_name}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-get_hypothesis_name"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-get_hypothesis_name}{}}}
 \subsection{Method \code{get_hypothesis_name()}}{
 get name of a hypothesis given its index.
 \subsection{Usage}{
@@ -254,8 +254,8 @@ get name of a hypothesis given its index.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-get_weight"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-get_weight}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-get_weight"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-get_weight}{}}}
 \subsection{Method \code{get_weight()}}{
 return weight between two nodes
 \subsection{Usage}{
@@ -273,8 +273,8 @@ return weight between two nodes
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-set_weight"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-set_weight}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-set_weight"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-set_weight}{}}}
 \subsection{Method \code{set_weight()}}{
 update weight between two nodes
 \subsection{Usage}{
@@ -294,8 +294,8 @@ update weight between two nodes
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-get_alpha"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-get_alpha}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-get_alpha"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-get_alpha}{}}}
 \subsection{Method \code{get_alpha()}}{
 return alpha allocated to a hypothesis when calling this function.
 Note that a function can be called several time with the graph is
@@ -314,8 +314,8 @@ the same \code{hid}.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-set_alpha"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-set_alpha}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-set_alpha"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-set_alpha}{}}}
 \subsection{Method \code{set_alpha()}}{
 update alpha of a hypothesis
 \subsection{Usage}{
@@ -333,8 +333,8 @@ update alpha of a hypothesis
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-get_hypotheses_ids"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-get_hypotheses_ids}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-get_hypotheses_ids"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-get_hypotheses_ids}{}}}
 \subsection{Method \code{get_hypotheses_ids()}}{
 return all valid \code{hid}
 \subsection{Usage}{
@@ -343,8 +343,8 @@ return all valid \code{hid}
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-get_number_hypotheses"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-get_number_hypotheses}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-get_number_hypotheses"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-get_number_hypotheses}{}}}
 \subsection{Method \code{get_number_hypotheses()}}{
 return number of hypotheses, including those been rejected.
 \subsection{Usage}{
@@ -353,8 +353,8 @@ return number of hypotheses, including those been rejected.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-get_hids_not_in_graph"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-get_hids_not_in_graph}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-get_hids_not_in_graph"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-get_hids_not_in_graph}{}}}
 \subsection{Method \code{get_hids_not_in_graph()}}{
 return index of hypotheses that are rejected.
 \subsection{Usage}{
@@ -363,8 +363,8 @@ return index of hypotheses that are rejected.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-get_testable_hypotheses"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-get_testable_hypotheses}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-get_testable_hypotheses"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-get_testable_hypotheses}{}}}
 \subsection{Method \code{get_testable_hypotheses()}}{
 return index of hypotheses with non-zero alphas, thus can be tested
 at the current stage.
@@ -374,8 +374,8 @@ at the current stage.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-has_testable_hypotheses"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-has_testable_hypotheses}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-has_testable_hypotheses"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-has_testable_hypotheses}{}}}
 \subsection{Method \code{has_testable_hypotheses()}}{
 determine whether at least one hypothesis is testable.
 If return \code{FALSE}, the testing procedure is completed.
@@ -385,8 +385,8 @@ If return \code{FALSE}, the testing procedure is completed.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-is_in_graph"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-is_in_graph}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-is_in_graph"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-is_in_graph}{}}}
 \subsection{Method \code{is_in_graph()}}{
 determine whether a hypothesis is not yet rejected (in graph).
 \subsection{Usage}{
@@ -402,8 +402,8 @@ determine whether a hypothesis is not yet rejected (in graph).
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-is_testable"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-is_testable}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-is_testable"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-is_testable}{}}}
 \subsection{Method \code{is_testable()}}{
 determine whether a hypothesis has a non-zero alpha allocated.
 \subsection{Usage}{
@@ -419,8 +419,8 @@ determine whether a hypothesis has a non-zero alpha allocated.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-get_hid"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-get_hid}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-get_hid"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-get_hid}{}}}
 \subsection{Method \code{get_hid()}}{
 convert hypothesis's name into (unique) index.
 \subsection{Usage}{
@@ -437,8 +437,8 @@ convert hypothesis's name into (unique) index.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-reject_a_hypothesis"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-reject_a_hypothesis}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-reject_a_hypothesis"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-reject_a_hypothesis}{}}}
 \subsection{Method \code{reject_a_hypothesis()}}{
 remove a node from graph when a hypothesis is rejected
 \subsection{Usage}{
@@ -455,8 +455,8 @@ remove a node from graph when a hypothesis is rejected
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-set_trajectory"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-set_trajectory}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-set_trajectory"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-set_trajectory}{}}}
 \subsection{Method \code{set_trajectory()}}{
 save new testing results at current stage
 \subsection{Usage}{
@@ -472,8 +472,8 @@ save new testing results at current stage
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-get_trajectory"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-get_trajectory}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-get_trajectory"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-get_trajectory}{}}}
 \subsection{Method \code{get_trajectory()}}{
 return testing results by the time this function is called.
 Note that graphical test is carried out in a sequential manner.
@@ -485,8 +485,8 @@ by this function can possibly vary over time.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-test_hypotheses"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-test_hypotheses}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-test_hypotheses"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-test_hypotheses}{}}}
 \subsection{Method \code{test_hypotheses()}}{
 test hypotheses using p-values (and other information in \code{stats})
 base on the current graph. All rows should have the same order
@@ -520,8 +520,8 @@ hypothesis, one can update it with observed numbers.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-test"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-test}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-test"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-test}{}}}
 \subsection{Method \code{test()}}{
 test hypotheses using p-values (and other information in \code{stats})
 base on the current graph. Users can call this function multiple times.
@@ -575,8 +575,8 @@ It contains details of each of the testing steps.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-get_current_testing_results"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-get_current_testing_results}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-get_current_testing_results"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-get_current_testing_results}{}}}
 \subsection{Method \code{get_current_testing_results()}}{
 return testing results with details by the time this function
 is called. This function can be called by users by multiple
@@ -599,8 +599,8 @@ It is different from \code{stages}.}
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-get_current_decision"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-get_current_decision}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-get_current_decision"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-get_current_decision}{}}}
 \subsection{Method \code{get_current_decision()}}{
 get current decisions for all hypotheses. Returned value could
 changes over time because it depends on the stages being tested already.
@@ -615,8 +615,8 @@ the decision for that hypothesis would be \code{"accept"}.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-print"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-print}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-print"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-print}{}}}
 \subsection{Method \code{print()}}{
 generic function for \code{print}
 \subsection{Usage}{
@@ -641,8 +641,8 @@ weights.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Graphical Testing Procedure-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-Graphical Testing Procedure-clone}{}}}
+\if{html}{\out{<a id="method-GraphicalTestingProcedure-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-GraphicalTestingProcedure-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

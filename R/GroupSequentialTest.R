@@ -72,7 +72,7 @@
 #' @export
 #'
 GroupSequentialTest <- R6::R6Class(
-  'Group Sequential Test',
+  'GroupSequentialTest',
 
   public = list(
 
