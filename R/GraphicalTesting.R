@@ -136,7 +136,7 @@
 #' @export
 #'
 GraphicalTesting <- R6::R6Class(
-  'Graphical Testing Procedure',
+  'GraphicalTestingProcedure',
 
   public = list(
 

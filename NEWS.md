@@ -1,3 +1,9 @@
+# TrialSimulator 0.39.0
+
+## Bug Fixes
+
+- Remove space in class name to eliminate R CMD check note. 
+
 # TrialSimulator 0.38.2
 
 ## Bug Fixes
