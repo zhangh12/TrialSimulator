@@ -146,6 +146,7 @@ DynamicRNGFunction <- function(fn, ...) {
 # Custom print method for objects of class 'dynamic_rng_function'
 #' @export
 print.dynamic_rng_function <- function(x, ...) {
+  ## use cat/print in print method
   cat(attr(x, 'function_name'), ':\n')
   print(attr(x, 'args'))
 }

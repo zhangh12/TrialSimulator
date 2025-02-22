@@ -1,3 +1,9 @@
+# TrialSimulator 0.40.0
+
+## Bug Fixes
+
+- Revise examples for CRAN submission. 
+
 # TrialSimulator 0.39.0
 
 ## Bug Fixes

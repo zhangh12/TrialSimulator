@@ -980,7 +980,7 @@ Trial <- R6::R6Class(
                 event_name, '\'). \n',
                 'Number of events at lock time: \n')
         print(as.data.frame(attr(at_calendar_time, 'n_events')))
-        cat('\n')
+        message('\n')
       }
 
       ## I am not sure about this part yet.
@@ -1436,7 +1436,7 @@ Trial <- R6::R6Class(
     #'
     #' @examples
     #'
-    #' if(FALSE){
+    #' \dontrun{
     #' trial$independentIncrement('pfs', 'pbo', listener$get_event_names(), 'oracle')
     #' }
     independentIncrement = function(endpoint, placebo, events,
@@ -1560,7 +1560,7 @@ Trial <- R6::R6Class(
                 'Make sure that such a low stage-wise information is sufficient to maintain normality of independent increments of logrank statistics. ',
                 immediate. = TRUE)
         print(ret_)
-        cat("\033[31m>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\033[0m\n")
+        message("\033[31m>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\033[0m\n")
       }
 
       ret
@@ -1644,7 +1644,7 @@ Trial <- R6::R6Class(
     #' significance test.
     #'
     #' @examples
-    #' if(FALSE){
+    #' \dontrun{
     #' trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_names(), 'default')
     #' }
     #'
@@ -1837,7 +1837,7 @@ Trial <- R6::R6Class(
     #' \code{event_at_reject}, and \code{reject_time}.
     #'
     #' @examples
-    #' if(FALSE){
+    #' \dontrun{
     #' dt <- trial$dunnettTest(
     #'   'pfs', 'pbo', c('high dose', 'low dose'),
     #'   listener$get_event_names(), 'default')
