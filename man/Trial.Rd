@@ -96,7 +96,7 @@ trial$add_arms(sample_ratio = c(1, 2), placebo, active)
 ## ------------------------------------------------
 
 
-if(FALSE){
+\dontrun{
 trial$independentIncrement('pfs', 'pbo', listener$get_event_names(), 'oracle')
 }
 
@@ -104,7 +104,7 @@ trial$independentIncrement('pfs', 'pbo', listener$get_event_names(), 'oracle')
 ## Method `Trial$dunnettTest`
 ## ------------------------------------------------
 
-if(FALSE){
+\dontrun{
 trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_names(), 'default')
 }
 
@@ -113,7 +113,7 @@ trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_n
 ## Method `Trial$closedTest`
 ## ------------------------------------------------
 
-if(FALSE){
+\dontrun{
 dt <- trial$dunnettTest(
   'pfs', 'pbo', c('high dose', 'low dose'),
   listener$get_event_names(), 'default')
@@ -1043,7 +1043,7 @@ all data will be used to fit the model.}
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{
-if(FALSE){
+\dontrun{
 trial$independentIncrement('pfs', 'pbo', listener$get_event_names(), 'oracle')
 }
 }
@@ -1141,7 +1141,7 @@ power significantly so fine-tuning may be required.
 
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
-\preformatted{if(FALSE){
+\preformatted{\dontrun{
 trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_names(), 'default')
 }
 
@@ -1188,7 +1188,7 @@ it is not tested. It may be supported in the future.}
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
-\preformatted{if(FALSE){
+\preformatted{\dontrun{
 dt <- trial$dunnettTest(
   'pfs', 'pbo', c('high dose', 'low dose'),
   listener$get_event_names(), 'default')

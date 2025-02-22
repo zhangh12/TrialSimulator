@@ -65,6 +65,7 @@ DynamicTriggerConditionFunction <- function(fn, ...) {
 # Custom print method for objects of class 'dynamic_trigger_condition_function'
 #' @export
 print.dynamic_trigger_condition_function <- function(x, ...) {
+  ## use cat/print in print method
   cat(attr(x, 'trigger_condition_name'), ':\n')
   print(attr(x, 'args'))
 }

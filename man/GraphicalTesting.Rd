@@ -13,7 +13,7 @@ endpoints. See Maurer & Bretz (2013).
 ## Example 1
 ## dry-run to study the behavior of a graph
 ## without group sequential design
-if(FALSE){
+if(interactive()){
 eps <- .01
 alpha <- c(.01, .04, 0, 0, 0)
 transition <- matrix(c(
@@ -54,9 +54,9 @@ gt$reset()
 }
 
 ## Example 2
-if(FALSE){
 ## Example modified from vignettes in gMCPLite:
 ## Graphical testing for group sequential design
+if(interactive()){
 ## initial alpha split to each of the hypotheses
 alpha <- c(.01, .01, .004, .0, .0005, .0005)
 
@@ -123,9 +123,7 @@ print(gt, trajectory = FALSE)
 gt$get_current_testing_results()
 
 ## if you want to see step-by-step details
-if(FALSE){
-  print(gt$get_trajectory())
-}
+print(gt$get_trajectory())
 
 ## equivalently, you can call gt$test(stats) for only once to get same results.
 gt$reset()
