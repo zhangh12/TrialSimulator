@@ -143,6 +143,7 @@ trial$closedTest(dt, c('high dose', 'low dose'),
 \item \href{#method-Trial-get_arms}{\code{Trial$get_arms()}}
 \item \href{#method-Trial-get_arms_name}{\code{Trial$get_arms_name()}}
 \item \href{#method-Trial-get_number_arms}{\code{Trial$get_number_arms()}}
+\item \href{#method-Trial-has_arm}{\code{Trial$has_arm()}}
 \item \href{#method-Trial-get_an_arm}{\code{Trial$get_an_arm()}}
 \item \href{#method-Trial-get_sample_ratio}{\code{Trial$get_sample_ratio()}}
 \item \href{#method-Trial-get_number_patients}{\code{Trial$get_number_patients()}}
@@ -451,6 +452,16 @@ return arms' name of trial
 get number of arms in the trial
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trial$get_number_arms()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trial-has_arm"></a>}}
+\if{latex}{\out{\hypertarget{method-Trial-has_arm}{}}}
+\subsection{Method \code{has_arm()}}{
+check if the trial has any arm. Return \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trial$has_arm()}\if{html}{\out{</div>}}
 }
 
 }

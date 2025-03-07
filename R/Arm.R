@@ -73,6 +73,18 @@ Arm <- R6::R6Class(
     },
 
     #' @description
+    #' return number of endpoints in the arm
+    get_number_endpoints = function(){
+      length(private$endpoints)
+    },
+
+    #' @description
+    #' check if the arm has any endpoint. Return \code{TRUE} or \code{FALSE}.
+    has_endpoint = function(){
+      self$get_number_endpoints() > 0
+    },
+
+    #' @description
     #' return a list of endpoints in the arm
     get_endpoints = function(){
       private$endpoints

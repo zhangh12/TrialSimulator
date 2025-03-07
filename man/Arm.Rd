@@ -38,6 +38,8 @@ placebo$get_endpoints()[[2]]$get_name()
 \item \href{#method-Arm-add_endpoints}{\code{Arm$add_endpoints()}}
 \item \href{#method-Arm-get_name}{\code{Arm$get_name()}}
 \item \href{#method-Arm-get_description}{\code{Arm$get_description()}}
+\item \href{#method-Arm-get_number_endpoints}{\code{Arm$get_number_endpoints()}}
+\item \href{#method-Arm-has_endpoint}{\code{Arm$has_endpoint()}}
 \item \href{#method-Arm-get_endpoints}{\code{Arm$get_endpoints()}}
 \item \href{#method-Arm-clone}{\code{Arm$clone()}}
 }
@@ -95,6 +97,26 @@ return name of arm
 return description of arm
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Arm$get_description()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Arm-get_number_endpoints"></a>}}
+\if{latex}{\out{\hypertarget{method-Arm-get_number_endpoints}{}}}
+\subsection{Method \code{get_number_endpoints()}}{
+return number of endpoints in the arm
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Arm$get_number_endpoints()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Arm-has_endpoint"></a>}}
+\if{latex}{\out{\hypertarget{method-Arm-has_endpoint}{}}}
+\subsection{Method \code{has_endpoint()}}{
+check if the arm has any endpoint. Return \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Arm$has_endpoint()}\if{html}{\out{</div>}}
 }
 
 }
