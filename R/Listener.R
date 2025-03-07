@@ -81,6 +81,11 @@ Listener <- R6::R6Class(
     #' @param trial a \code{Trial} object.
     #' @param dry_run logical. See \code{Controller::run} for more information.
     monitor = function(trial, dry_run){
+
+      if(!trial$has_arm()){
+        stop('No arm is found in the trial. ',
+             'Make sure that Trial$add_arms() has been executed before running the trial. ')
+      }
       for(event in self$get_events()){
         event$set_dry_run(dry_run)
         event$trigger_event(trial)

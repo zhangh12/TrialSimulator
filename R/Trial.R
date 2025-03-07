@@ -359,6 +359,10 @@ Trial <- R6::R6Class(
       for(arm in arm_list){
         stopifnot(inherits(arm, 'Arm'))
 
+        if(!arm$has_endpoint()){
+          stop('No endpoint in the arm <', arm$get_name(), '>. ',
+               'Make sure that Arm$add_endpoints() has been executed before adding this arm into the trial. ')
+        }
         if(arm$get_name() %in% self$get_arms_name()){
           stop('Arm ', arm$get_name(), ' already exists in the trial. ',
                'Do you want to update it instead? ',
@@ -416,6 +420,12 @@ Trial <- R6::R6Class(
     #' get number of arms in the trial
     get_number_arms = function(){
       length(private$arms)
+    },
+
+    #' @description
+    #' check if the trial has any arm. Return \code{TRUE} or \code{FALSE}.
+    has_arm = function(){
+      self$get_number_arms() > 0
     },
 
     #' @description
@@ -1256,7 +1266,12 @@ Trial <- R6::R6Class(
         is.atomic(unclass(x))
       }
 
-      stopifnot(is.character(name) && length(name) == 1)
+      if(!(is.character(name) && length(name) == 1)){
+        stop('The argument `name` should be a character of length 1',
+             ' when calling Trial$save(). You specify it to be <',
+             name, '> however, which is of class <',
+             paste0(class(name), collapse = ', '), '>. ')
+      }
 
       if(is.null(private$output)){
         private$output <- data.frame(trial = self$get_name())
