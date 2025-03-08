@@ -9,13 +9,13 @@ fitLogrank(endpoint, placebo, data, ...)
 \arguments{
 \item{endpoint}{character. Name of endpoint in \code{data}.}
 
-\item{placebo}{character. String of placebo in \code{data}.}
+\item{placebo}{character. String of placebo in \code{data$arm}.}
 
 \item{data}{data frame. Usually it is a locked data.}
 
 \item{...}{subset condition that is compatible with \code{dplyr::filter}.
 \code{survival::survdiff} will be fitted on this subset only.
-It could be useful when a
+This argument could be useful to create a subset of data for analysis when a
 trial consists of more than two arms. By default it is not specified,
 all data will be used to fit the model. More than one conditions can be
 specified in \code{...}, e.g.,
