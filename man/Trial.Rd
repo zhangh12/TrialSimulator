@@ -177,6 +177,7 @@ trial$closedTest(dt, c('high dose', 'low dose'),
 \item \href{#method-Trial-dunnettTest}{\code{Trial$dunnettTest()}}
 \item \href{#method-Trial-closedTest}{\code{Trial$closedTest()}}
 \item \href{#method-Trial-get_seed}{\code{Trial$get_seed()}}
+\item \href{#method-Trial-print}{\code{Trial$print()}}
 \item \href{#method-Trial-clone}{\code{Trial$clone()}}
 }
 }
@@ -1222,6 +1223,16 @@ trial$closedTest(dt, c('high dose', 'low dose'),
 return random seed
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trial$get_seed()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trial-print"></a>}}
+\if{latex}{\out{\hypertarget{method-Trial-print}{}}}
+\subsection{Method \code{print()}}{
+print a trial
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trial$print()}\if{html}{\out{</div>}}
 }
 
 }
