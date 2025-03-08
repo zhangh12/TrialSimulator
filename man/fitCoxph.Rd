@@ -9,14 +9,15 @@ fitCoxph(endpoint, placebo, data, ...)
 \arguments{
 \item{endpoint}{Character. Name of the endpoint in \code{data}.}
 
-\item{placebo}{Character. String indicating the placebo in \code{data}.}
+\item{placebo}{Character. String indicating the placebo in \code{data$arm}.}
 
 \item{data}{Data frame. Usually it is a locked data set.}
 
 \item{...}{Subset conditions compatible with \code{dplyr::filter}.
-\code{coxph} will be fitted on this subset only. This can be useful
-when a trial consists of more than two arms. By default, it is not specified,
-and all data will be used to fit the model. More than one condition can be
+\code{coxph} will be fitted on this subset only. This argument can be useful
+to create a subset of data for analysis when a trial consists of more
+than two arms. By default, it is not specified,
+all data will be used to fit the model. More than one condition can be
 specified in \code{...}, e.g.,
 \code{fitCoxph('pfs', 'pbo', data, arm \%in\% c('pbo', 'low dose'), pfs > 0.5)},
 which is equivalent to:
@@ -32,5 +33,5 @@ log hazard ratio (alternative hypothesis: log hazard ratio > 0). }
 }
 }
 \description{
-Fit Cox proportional hazards model on an endpoint.
+Fit Cox proportional hazards model on an time-to-event endpoint.
 }

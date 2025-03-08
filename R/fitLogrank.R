@@ -2,11 +2,11 @@
 #' @description
 #' Compute log rank test statistic on an endpoint.
 #' @param endpoint character. Name of endpoint in \code{data}.
-#' @param placebo character. String of placebo in \code{data}.
+#' @param placebo character. String of placebo in \code{data$arm}.
 #' @param data data frame. Usually it is a locked data.
 #' @param ... subset condition that is compatible with \code{dplyr::filter}.
 #' \code{survival::survdiff} will be fitted on this subset only.
-#' It could be useful when a
+#' This argument could be useful to create a subset of data for analysis when a
 #' trial consists of more than two arms. By default it is not specified,
 #' all data will be used to fit the model. More than one conditions can be
 #' specified in \code{...}, e.g.,
@@ -65,31 +65,40 @@ fitLogrank <- function(endpoint, placebo, data, ...) {
     stop("No data remaining after applying subset condition. ")
   }
 
-  # Create the formula
-  formula_str <- paste0("Surv(time = ", endpoint,
-                        ", event = ", endpoint, "_event) ~ ",
-                        "I(arm == '", placebo, "')")
+  treatment_arms <- setdiff(unique(filtered_data$arm), placebo)
 
-  # Fit the Cox model to get direction of effect
-  fit <- summary(coxph(as.formula(formula_str), data = filtered_data))$coef
+  ret <- NULL
 
-  # calculate log rank statistic
-  lr <- survdiff(as.formula(formula_str), data = filtered_data)
+  for(trt_arm in treatment_arms){
+    sub_data <- filtered_data %>% dplyr::filter(arm %in% c(placebo, trt_arm))
 
-  z <- ifelse(fit[1, 'coef']/fit[1, 'se(coef)'] < 0, -1, 1) * sqrt(lr$chisq)
-  p <- 1 - pnorm(z)
-  info <- sum(filtered_data[[event]] %in% 1)
-  info_pbo <- sum(filtered_data[[event]] %in% 1 & filtered_data$arm %in% placebo)
-  info_trt <- info - info_pbo
-  n_pbo <- sum(filtered_data$arm %in% placebo)
-  n_trt <- sum(!(filtered_data$arm %in% placebo))
+    # Create the formula
+    formula_str <- paste0("Surv(time = ", endpoint,
+                          ", event = ", endpoint, "_event) ~ ",
+                          "I(arm == '", placebo, "')")
 
-  ret <- data.frame(p = p, info = info, z = z,
-                    info_pbo = info_pbo, info_trt = info_trt,
-                    n_pbo = n_pbo, n_trt = n_trt,
-                    pbo = placebo,
-                    trt = paste0(setdiff(unique(filtered_data$arm), placebo), collapse = ', ')
-                    )
+    # Fit the Cox model to get direction of effect
+    fit <- summary(coxph(as.formula(formula_str), data = sub_data))$coef
+
+    # calculate log rank statistic
+    lr <- survdiff(as.formula(formula_str), data = sub_data)
+
+    z <- ifelse(fit[1, 'coef']/fit[1, 'se(coef)'] < 0, -1, 1) * sqrt(lr$chisq)
+    p <- 1 - pnorm(z)
+    info <- sum(sub_data[[event]] %in% 1)
+    info_pbo <- sum(sub_data[[event]] %in% 1 & sub_data$arm %in% placebo)
+    info_trt <- info - info_pbo
+    n_pbo <- sum(sub_data$arm %in% placebo)
+    n_trt <- sum(!(sub_data$arm %in% placebo))
+
+    ret <- rbind(ret, data.frame(arm = trt_arm, placebo = placebo,
+                                 p = p, info = info, z = z,
+                                 info_pbo = info_pbo, info_trt = info_trt,
+                                 n_pbo = n_pbo, n_trt = n_trt
+                                 )
+                 )
+  }
+
   class(ret) <- c('fit_logrank', class(ret))
   ret
 }
