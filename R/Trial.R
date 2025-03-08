@@ -2004,7 +2004,7 @@ Trial <- R6::R6Class(
     print = function(){
       white_text_blue_bg <- "\033[37;44m"
       reset <- "\033[0m"  # Reset to default color
-      logo <- '⚕⚕'
+      logo <- '\u2695\u2695' ## stringi::stri_escape_unicode('⚕')
 
       cat(white_text_blue_bg, logo, 'Trial Name: ', self$get_name(), reset, '\n')
       cat(white_text_blue_bg, logo, 'Description: ', self$get_description(), reset, '\n')
