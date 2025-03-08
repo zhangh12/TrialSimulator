@@ -1,3 +1,9 @@
+# TrialSimulator 0.42.0
+
+## Minor Updates
+
+- Add a logo. 
+
 # TrialSimulator 0.40.0
 
 ## Bug Fixes
