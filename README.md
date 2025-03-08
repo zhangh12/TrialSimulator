@@ -1,5 +1,5 @@
 
-# TrialSimulator <img src="man/figures/logo.svg" align="right" width="175" />
+# TrialSimulator <img src="man/figures/logo.png" align="right" width="175" />
 
 <!-- badges: start -->
 [![Project Status: Active – The project has reached a stable, usable
