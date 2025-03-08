@@ -70,7 +70,7 @@ Trial <- R6::R6Class(
         n_patients,
         duration,
         description = name,
-        seed,
+        seed = NULL,
         enroller,
         dropout = NULL,
         ...

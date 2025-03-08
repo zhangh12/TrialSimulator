@@ -192,7 +192,7 @@ initialize a trial
   n_patients,
   duration,
   description = name,
-  seed,
+  seed = NULL,
   enroller,
   dropout = NULL,
   ...
