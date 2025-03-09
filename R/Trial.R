@@ -363,16 +363,16 @@ Trial <- R6::R6Class(
           stop('No endpoint in the arm <', arm$get_name(), '>. ',
                'Make sure that Arm$add_endpoints() has been executed before adding this arm into the trial. ')
         }
-        if(arm$get_name() %in% self$get_arms_name()){
-          stop('Arm ', arm$get_name(), ' already exists in the trial. ',
-               'Do you want to update it instead? ',
-               'Currently this is not supported. ')
-        }
-        arm_names <- c(arm_names, arm$get_name())
-      }
 
-      for(arm in arm_list){
+        if(arm$get_name() %in% self$get_arms_name()){
+          stop('Arm <', arm$get_name(), '> already exists in the trial. ',
+               'Do you want to update it instead? \n',
+               'If so you need to revise your code, ',
+               'currently updating an arm is not yet supported. ')
+        }
+
         private$arms[[arm$get_name()]] <- arm
+        arm_names <- c(arm_names, arm$get_name())
       }
 
       if(!private$silent){
