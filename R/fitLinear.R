@@ -1,7 +1,7 @@
-#' Fit logistic regression model
+#' Fit linear regression model
 #'
 #' @description
-#' Fit logistic regression model on an binary endpoint.
+#' Fit linear regression model on a continuous endpoint.
 #'
 #' @param endpoint Character. Name of the endpoint in \code{data}.
 #' @param placebo Character. String indicating the placebo in \code{data$arm}.
@@ -9,31 +9,31 @@
 #' @param alternative a character string specifying the alternative hypothesis,
 #' must be one of \code{"greater"} or \code{"less"}. No default value.
 #' \code{"greater"} means superiority of treatment over placebo is established
-#' by an odds ratio greater than 1 because a
-#' logistic regression model is fitted with \code{endpoint ~ I(arm != placebo)}.
+#' by a greater mean in treated arm because a
+#' linear regression model is fitted with \code{endpoint ~ I(arm != placebo)}.
 #' @param ... Subset conditions compatible with \code{dplyr::filter}.
 #' \code{glm} will be fitted on this subset only. This argument can be useful
 #' to create a subset of data for analysis when a trial consists of more
 #' than two arms. By default, it is not specified,
 #' all data will be used to fit the model. More than one condition can be
 #' specified in \code{...}, e.g.,
-#' \code{fitLogistic('remission', 'pbo', data, arm \%in\% c('pbo', 'low dose'), cfb > 0.5)},
+#' \code{fitLinear('cfb', 'pbo', data, arm \%in\% c('pbo', 'low dose'), cfb > 0.5)},
 #' which is equivalent to:
-#' \code{fitLogistic('remission', 'pbo', data, arm \%in\% c('pbo', 'low dose') & cfb > 0.5)}.
+#' \code{fitLinear('cfb', 'pbo', data, arm \%in\% c('pbo', 'low dose') & cfb > 0.5)}.
 #' Note that if more than one treatment arm are present in the data after
 #' applying filter in \code{...}, models are fitted for placebo verse
 #' each of the treatment arms.
 #'
 #' @returns a data frame with three columns:
 #' \describe{
-#' \item{\code{p}}{one-sided p-value for log odds ratio (treated vs placebo). }
+#' \item{\code{p}}{one-sided p-value for between-arm difference (treated vs placebo). }
 #' \item{\code{info}}{sample size in the subset with \code{NA} being removed. }
-#' \item{\code{z}}{the z statistics of log odds ratio (treated vs placebo). }
+#' \item{\code{z}}{the z statistics of between-arm difference (treated vs placebo). }
 #' }
 #'
 #' @export
 #'
-fitLogistic <- function(endpoint, placebo, data, alternative, ...) {
+fitLinear <- function(endpoint, placebo, data, alternative, ...) {
 
   if(!is.character(endpoint) || length(endpoint) != 1){
     stop("endpoint must be a single character string")
@@ -88,11 +88,11 @@ fitLogistic <- function(endpoint, placebo, data, alternative, ...) {
 
     # Fit the logistic regression model
     fit <- summary(glm(as.formula(formula_str),
-                       family = binomial,
+                       family = gaussian,
                        data = sub_data)
-                   )$coef
+    )$coef
 
-    z <- fit[2, 'z value']
+    z <- fit[2, 't value']
     p <- ifelse(alternative == 'greater', 1 - pnorm(z), pnorm(z))
 
     info <- sum(!is.na(sub_data[[endpoint]]))
@@ -103,7 +103,7 @@ fitLogistic <- function(endpoint, placebo, data, alternative, ...) {
                  )
   }
 
-  class(ret) <- c('fit_logistic', class(ret))
+  class(ret) <- c('fit_linear', class(ret))
   ret
 }
 

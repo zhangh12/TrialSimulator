@@ -1,3 +1,22 @@
+# TrialSimulator 0.45.0
+
+## New Features
+
+- Add function `fitLinear` to fit linear regression model.
+
+# TrialSimulator 0.44.0
+
+## Bug Fixes
+
+- Fix a bug when adding an arm that is already in the trial. 
+
+# TrialSimulator 0.43.0
+
+## New Features
+
+- Add function `fitLogistic` to fit logistic regression model.
+- Support model fitting for multiple treatment arms in logistic regression, Cox PH model, and logrank test. 
+
 # TrialSimulator 0.42.0
 
 ## Minor Updates
