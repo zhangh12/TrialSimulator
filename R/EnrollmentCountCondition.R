@@ -1,25 +1,21 @@
 
 
-EventCountCondition <- R6::R6Class(
-  'EventCountCondition',
+EnrollmentCountCondition <- R6::R6Class(
+  'EnrollmentCountCondition',
 
   inherit = Condition,
 
   public = list(
-    endpoint = NULL,
     n = NULL,
     arms = NULL,
 
-    initialize = function(endpoint, n, arms = NULL){
-      stopifnot(is.character(endpoint))
-      stopifnot(length(endpoint) == 1)
+    initialize = function(n, arms = NULL){
 
       stopifnot(is.wholenumber(n))
       stopifnot(length(n) == 1)
 
       stopifnot(is.null(arms) || is.character(arms))
 
-      self$endpoint <- endpoint
       self$n <- n
       self$arms <- arms
     },
@@ -27,7 +23,7 @@ EventCountCondition <- R6::R6Class(
     get_trigger_time = function(trial){
 
       event_time <- trial$get_data_lock_time_by_event_number(
-        endpoints = self$endpoint,
+        endpoints = 'patient_id',
         arms = self$arms,
         target_n_events = self$n,
         type = 'all'
@@ -37,10 +33,10 @@ EventCountCondition <- R6::R6Class(
     },
 
     print = function(){
-      cat('Number of events (', self$endpoint, ') >= ', self$n, sep = '')
+      cat('Number of randomized patients >= ', self$n)
 
       if(!is.null(self$arms)){
-        cat(' in arms <', paste0(self$arms, collapse = ', '), '>. ', sep = '')
+        cat(' in arms <', paste0(self$arms, collapse = ', '), '>. ')
       }
 
       cat('\n')
@@ -48,5 +44,3 @@ EventCountCondition <- R6::R6Class(
     }
   )
 )
-
-

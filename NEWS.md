@@ -1,8 +1,9 @@
-# TrialSimulator 0.45.0
+# TrialSimulator 0.47.0
 
 ## New Features
 
-- Add function `fitLinear` to fit linear regression model.
+- Support new condition system for event triggering. Built-in functions `enrollment`, `eventNumber` and `calendarTime` can be combined with `&` and `|`. Nested combination is supported by using parentheses. 
+- `TriggerByEventNumbers` and `TriggerByCalendarTime` are therefore deprecated. 
 
 # TrialSimulator 0.44.0
 

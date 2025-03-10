@@ -33,10 +33,14 @@ Event <- R6::R6Class(
     #' trigger. Return TRUE/FALSE.
     #' @param action function to execute when the event triggers.
     #' @param ... arguments for \code{trigger_condition}.
-    initialize = function(name, type, trigger_condition, action = NULL, ...){
+    initialize = function(name, type = name, trigger_condition, action = NULL, ...){
       stopifnot(is.character(name) && (length(name) == 1))
       stopifnot(is.character(type))
-      stopifnot(is.function(trigger_condition))
+      if(!('Condition' %in% class(trigger_condition))){
+        stop('trigger_condition should be created by functions <',
+             'eventNumber, calendarTime, enrollment',
+             '> and their combination using & and |. ')
+      }
       # allow no specified action, for testing purpose.
       stopifnot(is.function(action) || is.null(action))
 
@@ -51,11 +55,7 @@ Event <- R6::R6Class(
       private$name <- name
       private$type <- type
 
-      private$trigger_condition <-
-        DynamicTriggerConditionFunction(
-          trigger_condition,
-          trigger_condition_name = deparse(substitute(generator)),
-          event_name = name, ...)
+      private$trigger_condition <- trigger_condition
 
       private$action <- action
       private$triggered <- FALSE
@@ -142,7 +142,8 @@ Event <- R6::R6Class(
       if(!private$silent){
         message('Conditioin of event <', self$get_name(), '> is being checked. \n')
       }
-      data_lock_time <- self$get_trigger_condition()(trial)
+
+      data_lock_time <- self$get_trigger_condition()$get_trigger_time(trial)
 
       ## always lock data after an event and before taking actions
       trial$lock_data(data_lock_time, self$get_name())

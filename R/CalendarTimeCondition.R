@@ -15,14 +15,15 @@ CalendarTimeCondition <- R6::R6Class(
       stopifnot(length(time) == 1)
       stopifnot(time > 0)
 
-      stopifnot(is.character(arms))
+      stopifnot(is.null(arms) || is.character(arms))
 
       self$time <- time
       self$arms <- arms
     },
 
     get_trigger_time = function(trial){
-      event_time <- get_data_lock_time_by_calendar_time(
+
+      event_time <- trial$get_data_lock_time_by_calendar_time(
         calendar_time = self$time,
         arms = self$arms)
 
@@ -30,8 +31,8 @@ CalendarTimeCondition <- R6::R6Class(
     },
 
     print = function(){
-      cat('Calendar time condition: ',
-          'T >= ', self$time, '\n')
+      cat('Calendar time >= ',
+          self$time, '\n')
 
       invisible(self)
     }
