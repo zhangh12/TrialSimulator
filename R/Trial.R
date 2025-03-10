@@ -701,6 +701,14 @@ Trial <- R6::R6Class(
 
       event_counts <- list()
 
+      ## add event count for patient_id
+      event_counts[['patient_id']] <- trial_data %>%
+        dplyr::select(all_of(c('patient_id', 'arm', 'enroll_time'))) %>%
+        mutate(calendar_time := enroll_time) %>%
+        arrange(calendar_time) %>%
+        mutate(n_events = row_number())
+
+      ## add event counts for time-to-event endpoints
       event_cols <- grep('_event$', names(trial_data), value = TRUE)
       for(event_col in event_cols){
         tte_col <- gsub('_event$', '', event_col)
@@ -712,6 +720,7 @@ Trial <- R6::R6Class(
 
       }
 
+      ## add event counts for non-time-to-event endpoints
       readout_cols <- grep('_readout$', names(trial_data), value = TRUE)
       for(readout_col in readout_cols){
         ep_col <- gsub('_readout$', '', readout_col)
@@ -753,8 +762,18 @@ Trial <- R6::R6Class(
       stopifnot(all(is.wholenumber(target_n_events)))
       stopifnot(length(endpoints) == length(target_n_events))
 
+      if(is.null(arms)){
+        arms <- self$get_arms_name()
+      }
+
       event_counts <- self$get_event_tables(arms)
-      stopifnot(all(endpoints %in% names(event_counts)))
+
+      missed_endpoints <- setdiff(endpoints, names(event_counts))
+      if(length(missed_endpoints) > 0){
+        Stop('Endpoints <',
+             paste0(missed_endpoints, collapse = ', '),
+             '> are missing in event_counts when determining data lock time. ')
+      }
 
       event_times <- NULL
       for(i in seq_along(endpoints)){
@@ -794,6 +813,7 @@ Trial <- R6::R6Class(
                  0)
 
       }
+
       attr(lock_time, 'n_events') <-
         data.frame(attr(lock_time, 'n_events')) %>%
         mutate(arms = paste0('<', paste0(arms, collapse = ', '), '>'))
@@ -816,6 +836,9 @@ Trial <- R6::R6Class(
 
       stopifnot(is.numeric(calendar_time) && length(calendar_time) && calendar_time >= 0)
 
+      if(is.null(arms)){
+        arms <- self$get_arms_name()
+      }
       event_counts <- self$get_event_tables(arms)
 
       lock_time <- calendar_time

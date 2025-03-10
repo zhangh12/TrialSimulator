@@ -84,7 +84,8 @@ median(os$test_generator(1000)$os)
 #' define binary endpoint VRR, with readout time = 2 weeks
 two_weeks <- 2 / 52 * 12
 surrogate <- Endpoint$new(
-  name = 'surrogate', type = 'binary', readout = c(surrogate = two_weeks), 
+  name = 'surrogate', type = 'binary', 
+  readout = c(surrogate = two_weeks), 
   generator = rbinom, size = 1, prob = .02)
 
 head(surrogate$test_generator(1000))
@@ -143,7 +144,8 @@ dropout rate 25% per 12 months. By default, no dropout if users do not
 specify one.
 
 ```{r lagieg, class.source="fold-show"}
-accrual_rate <- data.frame(end_time = c(15, Inf), piecewise_rate = c(20, 25))
+accrual_rate <- data.frame(end_time = c(15, Inf), 
+                           piecewise_rate = c(20, 25))
 trial <- Trial$new(
   name = 'Trial-3415', n_patients = 1000,
   seed = NULL, duration = 50,
@@ -175,7 +177,7 @@ specific calendar time is reached. In this example, four events are
 defined for dose selection, futility, interim and final analysis.
 
 Dose selection and a non-binding futility analysis are planned to be
-done at month 12. A built-in function `TriggerByCalendarTime` is used as
+done at month 12. A built-in function `calendarTime` is used as
 the condition function. Once data is locked, and trial's clock is
 updated. A user-defined action function, `dose_selection_action` will be
 executed by the listener. It is recommended that the user should load
@@ -204,7 +206,8 @@ dose_selection_action <- function(trial, event_name){
 
   ## this is just for illustration
   ## pick an arm to drop
-  removed_arm <- sample(c('high dose', 'low dose', 'none'), size = 1, prob = c(.01, .01, .98))
+  removed_arm <- sample(c('high dose', 'low dose', 'none'), 
+                        size = 1, prob = c(.2, .6, .2))
 
   ## action 1: remove an arm <affected_arm>
   if(removed_arm == 'none'){
@@ -249,14 +252,13 @@ dose_selection_action <- function(trial, event_name){
 
 ## dose selection is carried out at month 12
 dose_selection_event <- Event$new(name = 'dose selection', type = 'dose selection',
-                                  trigger_condition = TriggerByCalendarTime,
-                                  action = dose_selection_action,
-                                  calendar_time = 12 + two_weeks)
+                                  trigger_condition = calendarTime(12 + two_weeks),
+                                  action = dose_selection_action)
 ```
 
 Likewise, we can define events for interim and final analyses of PFS and
 OS. The interim analysis for PFS will be carried out when 150 events are
-observed in remaining arms.
+observed in remaining arms. The triggering condition is set by the built-in function `eventNumber`. 
 
 ```{r}
 #' event to trigger interim analysis for PFS
@@ -293,16 +295,14 @@ pfs_interim_action <- function(trial, event_name){
 
 }
 
-pfs_interim_event <- Event$new(name = 'pfs interim', type = 'interim analysis',
-                            trigger_condition = TriggerByEventNumbers,
-                            action = pfs_interim_action,
-                            endpoints = 'pfs',
-                            target_n_events = 150)
+pfs_interim_event <- Event$new(name = 'pfs interim', type = 'interim analysis', 
+                               trigger_condition = eventNumber('pfs', 150), 
+                               action = pfs_interim_action)
 ```
 
 The final analysis for PFS will be performed with an interim of OS when
 400 events are observed for PFS, or 250 events for OS, whichever comes
-first.
+first. Note that combined triggering condition can be specified using logical operation `&` and/or `|`. In this example, we use `eventNumber('pfs', 400) | eventNumber('os', 250)`. Nested condition combination are also supported. For example, we can require that this event is not triggered until the trial has been run for at least 30 months by `calendarTime(30) & (eventNumber('pfs', 400) | eventNumber('os', 250))`. 
 
 ```{r}
 #'  event to trigger final analysis for PFS and interim analysis for OS
@@ -336,11 +336,10 @@ pfs_final_action <- function(trial, event_name){
 ## when pfs event reaches 400 or os event reaches 250.
 ## if meet = 'all', then final analysis for PFS is carried out only if
 ## both conditions are met.
-pfs_final_event <- Event$new(name = 'pfs final', type = 'pfs final/os interim',
-                               trigger_condition = TriggerByEventNumbers,
-                               action = pfs_final_action,
-                               endpoints = c('pfs', 'os'),
-                               target_n_events = c(400, 250), meet = 'any')
+pfs_final_event <- Event$new(name = 'pfs final', type = 'pfs final/os interim', 
+                             trigger_condition = 
+                               eventNumber('pfs', 400) | eventNumber('os', 250), 
+                             action = pfs_final_action)
 ```
 
 Finally, one more analysis will be done for OS only at month 64.
@@ -370,9 +369,8 @@ os_final_action <- function(trial, event_name){
 }
 
 os_final_event <- Event$new(name = 'os final', type = 'os final analysis',
-                            trigger_condition = TriggerByCalendarTime,
-                            action = os_final_action,
-                            calendar_time = 50)
+                            trigger_condition = calendarTime(50),
+                            action = os_final_action)
 ```
 
 Now we can register the four events with the listener, and launch the
