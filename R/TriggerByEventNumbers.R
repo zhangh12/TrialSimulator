@@ -18,7 +18,7 @@
 #' triggering the event. \code{'any'} if triggering the event when the first
 #' target is met for corresponding endpoint.
 #' @return data lock time (calendar), so that the `Event` class can lock data.
-#' @export
+# @export
 TriggerByEventNumbers <-
   function(trial = NULL, event_name, endpoints, target_n_events,
            arms = NULL, meet = c('all', 'any')){

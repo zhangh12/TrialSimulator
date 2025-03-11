@@ -8,7 +8,7 @@
 #' @param calendar_time numeric. Calendar time to trigger the event.
 #' @param arms a vector of arms' name on which triggering condition is tested.
 #' @return data lock time (calendar), so that the `Event` class can lock data.
-#' @export
+# @export
 TriggerByCalendarTime <-
   function(trial = NULL, event_name, calendar_time, arms = NULL){
 

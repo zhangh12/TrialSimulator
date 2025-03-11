@@ -25,16 +25,29 @@ ConditionCombiner <- R6::R6Class(
 
     get_trigger_time = function(trial){
 
-      trigger_times <- sapply(self$conditions,
+      trigger_times <- lapply(self$conditions,
                               function(condition){
                                 condition$get_trigger_time(trial)
                               })
 
       if(self$operation == 'and'){
-        return(max(times))
+        idx <- which.max(unlist(trigger_times))
       }else{
-        return(min(times))
+        idx <- which.min(unlist(trigger_times))
       }
+
+      time <- trigger_times[[idx]]
+
+      return(time)
+    },
+
+    print = function(){
+      cat('Combined Condition (', self$operation, '):\n', sep = '')
+      for (i in seq_along(self$conditions)) {
+        output <- capture.output(self$conditions[[i]]$print())
+        cat(paste0(output, collapse = '\n    '), '\n', sep = '')
+      }
+      invisible(self)
     }
 
   )

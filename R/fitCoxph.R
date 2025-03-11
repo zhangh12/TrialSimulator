@@ -77,7 +77,7 @@ fitCoxph <- function(endpoint, placebo, data, ...) {
 
   ret <- NULL
   for(trt_arm in treatment_arms){
-    sub_data <- filtered_data %>% dplyr::filter(arm %in% c(placebo, trt_arm))
+    sub_data <- filtered_data %>% dplyr::filter(.data$arm %in% c(placebo, trt_arm))
 
     # Fit the Cox model
     fit <- summary(coxph(as.formula(formula_str), data = sub_data))$coef
