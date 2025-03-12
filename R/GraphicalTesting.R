@@ -384,7 +384,7 @@ GraphicalTesting <- R6::R6Class(
 
       for(l in private$hids_in_graph){
         alp <- self$get_alpha(l) + self$get_alpha(hid) * self$get_weight(hid, l)
-        if(alp < 1e-5){
+        if(alp < 1e-5 && self$get_weight(hid, l) != 0){
           alp <- 1e-5 ## numeric rounding error existing when computing integral for spent alpha. try to avoid too small allocated alpha
         }
         stopifnot(alp >= self$get_alpha(l))
