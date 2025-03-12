@@ -1,3 +1,9 @@
+# TrialSimulator 0.48.0
+
+## Bug Fixes
+
+- Fix a bug when alpha of a node in graph is set to rounding error bound `1e-5` while no alpha should have been propagated. 
+
 # TrialSimulator 0.47.0
 
 ## New Features
