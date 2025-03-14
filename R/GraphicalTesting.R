@@ -705,9 +705,15 @@ GraphicalTesting <- R6::R6Class(
 
         }
 
+        ## Consider to deprecate at_least_one_testable
+        ## This can cause an error when all hypotheses are rejected and
+        ## thus all nodes have alpha = 0. This shouldn't be an issue at all.
+        ## Initially, at_least_one_testable is used to throw an error message
+        ## if the initial graph has no node with alpha > 0. Maybe we can
+        ## check this when initialize a graph.
         if(!at_least_one_testable){
-          stop('None of the hypotheses has non-zero alpha at this stage. ',
-               'Check your initial alpha split and transition matrix. ')
+          # stop('None of the hypotheses has non-zero alpha at this stage. ',
+          #     'Check your initial alpha split and transition matrix. ')
         }
 
         if(!test_again){
