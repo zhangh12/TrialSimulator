@@ -1452,7 +1452,7 @@ Trial <- R6::R6Class(
     #' trial consists of more than two arms. By default it is not specified,
     #' all data will be used to fit the model.
     #'
-    #' @returns
+    #' @return
     #' This function returns a data frame with columns:
     #' \describe{
     #' \item{\code{p_inverse_normal}}{one-sided p-value for inverse normal test
@@ -1673,7 +1673,7 @@ Trial <- R6::R6Class(
     #' that the choice of pre-fixed \code{planned_info} can affect statistical
     #' power significantly so fine-tuning may be required.
     #'
-    #' @returns a list with element names like \code{arm_name},
+    #' @return a list with element names like \code{arm_name},
     #' \code{arm1_name|arm2_name}, \code{arm1_name|arm2_name|arm3_name}, etc.,
     #' i.e., all possible combination of treatment arms in comparison. Each
     #' element is a data frame, with its column names self-explained. Specifically,
@@ -1871,7 +1871,7 @@ Trial <- R6::R6Class(
     #' \code{"asOF"}. Note that theoretically it can be \code{"asUser"}, but
     #' it is not tested. It may be supported in the future.
     #'
-    #' @returns a data frame of columns \code{arm}, \code{decision},
+    #' @return a data frame of columns \code{arm}, \code{decision},
     #' \code{event_at_reject}, and \code{reject_time}.
     #'
     #' @examples
