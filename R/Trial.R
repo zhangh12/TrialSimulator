@@ -13,7 +13,7 @@
 #'           generator = PiecewiseConstantExponentialRNG,
 #'           risk = risk1, endpoint_name = 'pfs')
 #' orr1 <- Endpoint$new(
-#'   name = 'orr', type = 'binary',
+#'   name = 'orr', type = 'non-tte',
 #'   readout = c(orr=1), generator = rbinom,
 #'   size = 1, prob = .4)
 #' placebo <- Arm$new(
@@ -27,7 +27,7 @@
 #'           generator = PiecewiseConstantExponentialRNG,
 #'           risk = risk2, endpoint_name = 'pfs')
 #' orr2 <- Endpoint$new(
-#'   name = 'orr', type = 'binary',
+#'   name = 'orr', type = 'non-tte',
 #'   generator = rbinom, readout = c(orr=3),
 #'   size = 1, prob = .6)
 #' active <- Arm$new(

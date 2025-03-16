@@ -14,7 +14,7 @@
 #' risk = risk, endpoint_name = 'pfs')
 #'
 #' orr <- Endpoint$new(
-#'   name = 'orr', type = 'binary',
+#'   name = 'orr', type = 'non-tte',
 #'   readout = c(orr = 2), generator = rbinom,
 #'   size = 1, prob = .4)
 #'

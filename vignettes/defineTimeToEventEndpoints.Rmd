@@ -1,8 +1,8 @@
 ---
-title: "Define One or More Time-to-Event Endpoints"
+title: "Define Time-to-Event Endpoints in Clinical Trials"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Define One or More Time-to-Event Endpoints}
+  %\VignetteIndexEntry{Define Time-to-Event Endpoints in Clinical Trials}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

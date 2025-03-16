@@ -27,13 +27,13 @@ pfs$get_generator()
 ## Example 2. Generate continuous and binary endpoints using R's built-in
 ## RNG functions, e.g. rnorm, rexp, rbinom, etc.
 ep1 <- Endpoint$new(
-         name = 'cd4', type = 'c', generator = rnorm, readout = c(cd4=1),
+         name = 'cd4', type = 'non-tte', generator = rnorm, readout = c(cd4=1),
          mean = 1.2)
 ep2 <- Endpoint$new(
-         name = 'resp_time', type = 'c', generator = rexp, readout = c(resp_time=0),
+         name = 'resp_time', type = 'non-tte', generator = rexp, readout = c(resp_time=0),
          rate = 4.5)
 ep3 <- Endpoint$new(
-         name = 'orr', type = 'binary', readout = c(orr=3), generator = rbinom,
+         name = 'orr', type = 'non-tte', readout = c(orr=3), generator = rbinom,
          size = 1, prob = .4)
 
 mean(ep1$get_generator()(1e4)[, 1]) # compared to 1.2
@@ -108,13 +108,7 @@ survminer::ggsurvplot(sfit,
 \subsection{Method \code{new()}}{
 initialize an endpoint
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Endpoint$new(
-  name,
-  type = c("tte", "continuous", "binary"),
-  readout = NULL,
-  generator,
-  ...
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Endpoint$new(name, type = c("tte", "non-tte"), readout = NULL, generator, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -123,13 +117,11 @@ initialize an endpoint
 \item{\code{name}}{character vector. Name(s) of endpoint(s)}
 
 \item{\code{type}}{character vector. Type(s) of endpoint(s). It supports
-\code{"tte"} for time-to-event endpoints, and \code{"continuous"} or
-\code{"binary"}. \code{TrialSimulator} will do some verification if an
-endpoint is of type \code{"tte"}. However, no special
-manipulation is done for non-tte endpoints. Thus, you can specify
-\code{type} to any meaningful string for non-tte endpoints for informative
-purpose. Please note that currently \code{TrialSimulator} does not
-support endpoints of repeated measurement.}
+\code{"tte"} for time-to-event endpoints, and \code{"non-tte"} for
+all other types of endpoints (e.g., continous, binary, categorical,
+or repeated measurement. \code{TrialSimulator} will do some verification if
+an endpoint is of type \code{"tte"}. However, no special
+manipulation is done for non-tte endpoints.}
 
 \item{\code{readout}}{numeric vector with name to be the non-tte endpoint(s).
 \code{readout} should be specified for every non-tte endpoint. For

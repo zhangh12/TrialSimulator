@@ -30,13 +30,13 @@
 #' ## Example 2. Generate continuous and binary endpoints using R's built-in
 #' ## RNG functions, e.g. rnorm, rexp, rbinom, etc.
 #' ep1 <- Endpoint$new(
-#'          name = 'cd4', type = 'c', generator = rnorm, readout = c(cd4=1),
+#'          name = 'cd4', type = 'non-tte', generator = rnorm, readout = c(cd4=1),
 #'          mean = 1.2)
 #' ep2 <- Endpoint$new(
-#'          name = 'resp_time', type = 'c', generator = rexp, readout = c(resp_time=0),
+#'          name = 'resp_time', type = 'non-tte', generator = rexp, readout = c(resp_time=0),
 #'          rate = 4.5)
 #' ep3 <- Endpoint$new(
-#'          name = 'orr', type = 'binary', readout = c(orr=3), generator = rbinom,
+#'          name = 'orr', type = 'non-tte', readout = c(orr=3), generator = rbinom,
 #'          size = 1, prob = .4)
 #'
 #' mean(ep1$get_generator()(1e4)[, 1]) # compared to 1.2
@@ -101,13 +101,11 @@ Endpoint <- R6::R6Class(
     #' initialize an endpoint
     #' @param name character vector. Name(s) of endpoint(s)
     #' @param type character vector. Type(s) of endpoint(s). It supports
-    #' \code{"tte"} for time-to-event endpoints, and \code{"continuous"} or
-    #' \code{"binary"}. \code{TrialSimulator} will do some verification if an
-    #' endpoint is of type \code{"tte"}. However, no special
-    #' manipulation is done for non-tte endpoints. Thus, you can specify
-    #' \code{type} to any meaningful string for non-tte endpoints for informative
-    #' purpose. Please note that currently \code{TrialSimulator} does not
-    #' support endpoints of repeated measurement.
+    #' \code{"tte"} for time-to-event endpoints, and \code{"non-tte"} for
+    #' all other types of endpoints (e.g., continous, binary, categorical,
+    #' or repeated measurement. \code{TrialSimulator} will do some verification if
+    #' an endpoint is of type \code{"tte"}. However, no special
+    #' manipulation is done for non-tte endpoints.
     #' @param generator a RNG function. Its first argument must be `n`, number of
     #' patients. It must return a data frame of `n` rows. It support all
     #' built-in random number generators in \code{stats}, e.g., \code{stats::rnorm},
@@ -134,7 +132,7 @@ Endpoint <- R6::R6Class(
     #' @param ... optional arguments for \code{generator}.
     initialize = function(
       name,
-      type = c('tte', 'continuous', 'binary'),
+      type = c('tte', 'non-tte'),
       readout = NULL,
       generator,
       ...
@@ -213,7 +211,7 @@ Endpoint <- R6::R6Class(
     ## \code{name} has length greater than 1.
     ## @field name a character vector for name(s) of endpoint(s), e.g., \code{"pfs"}, \code{"ORR"}.
     ## @field type a character vector for type(s) of endpoint(s), e.g., \code{"tte"},
-    ## \code{"continuous"}, \code{"binary"}. More types may be supported in the future.
+    ## \code{"non-tte"}.
     ## @field generator a user-defined RNG function. Its first argument must be \code{n},
     ## number of patients. It must return a data frame of \code{n} rows. When `generator`
     ## is \code{NULL}, one can create one endpoint at a time, i.e., both \code{name} and \code{type}
@@ -227,7 +225,7 @@ Endpoint <- R6::R6Class(
 
     validate_arguments = function(
       name,
-      type = c('tte', 'continuous', 'binary'),
+      type = c('tte', 'non-tte'),
       readout,
       generator,
       ...
