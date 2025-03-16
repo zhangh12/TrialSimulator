@@ -23,6 +23,7 @@ Suggests:
     graphicalMCP,
     knitr,
     rmarkdown,
+    simdata,
     survminer
 VignetteBuilder: knitr
 URL: https://zhangh12.github.io/TrialSimulator/

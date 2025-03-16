@@ -1,3 +1,9 @@
+# TrialSimulator 0.49.0
+
+## New Features
+
+- Add vignette of time-to-event endpoints. 
+
 # TrialSimulator 0.48.0
 
 ## Bug Fixes

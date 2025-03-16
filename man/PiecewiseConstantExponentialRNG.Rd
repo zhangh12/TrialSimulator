@@ -10,16 +10,11 @@ PiecewiseConstantExponentialRNG(n, risk, endpoint_name)
 \item{n}{number of random numbers}
 
 \item{risk}{a data frame of columns
-end_time:
-    End time for a constant risk in a time window. The start time of
-    the first time window is 0.
-piecewise_risk:
-    A constant risk in a time window, which is absolute risk * relative risk,
-    or (h0 * g) in the link.
-hazard_ratio:
-    An optional column for simulating an active arm. If absent, a column
-    of 1s will be added. Equvalently, user can multiply piecewise_risk
-    by hazard_ratio manually and ignore this column.}
+\itemize{
+\item{\code{end_time}}{ End time for a constant risk in a time window. The start time of the first time window is 0.}
+\item{\code{piecewise_risk}}{ A constant risk in a time window, which is absolute risk * relative risk, or (h0 * g) in the link.}
+\item{\code{hazard_ratio}}{ An optional column for simulating an active arm. If absent, a column of 1s will be added. Equivalently, user can multiply piecewise_risk by hazard_ratio manually and ignore this column.}
+}}
 
 \item{endpoint_name}{name of endpoint}
 }
