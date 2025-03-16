@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.49.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.50.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,7 +41,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
     <li><a class="dropdown-item" href="../articles/comparisons.html">Comparisons with graphicalMCP and gMCP</a></li>
-    <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define One or More Time-to-Event Endpoints</a></li>
+    <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/designDocument.html">Modular Clinical Trial Simulation: Overview of Core Functions and Workflow</a></li>
   </ul>
 </li>
@@ -140,7 +140,7 @@ Once all endpoints are defined, an arm can be defined using class
 <span><span class="co">#' define binary endpoint VRR, with readout time = 2 weeks</span></span>
 <span><span class="va">two_weeks</span> <span class="op">&lt;-</span> <span class="fl">2</span> <span class="op">/</span> <span class="fl">52</span> <span class="op">*</span> <span class="fl">12</span></span>
 <span><span class="va">surrogate</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
-<span>  name <span class="op">=</span> <span class="st">'surrogate'</span>, type <span class="op">=</span> <span class="st">'binary'</span>, </span>
+<span>  name <span class="op">=</span> <span class="st">'surrogate'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, </span>
 <span>  readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>surrogate <span class="op">=</span> <span class="va">two_weeks</span><span class="op">)</span>, </span>
 <span>  generator <span class="op">=</span> <span class="va">rbinom</span>, size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">.02</span><span class="op">)</span></span>
 <span></span>
@@ -170,7 +170,7 @@ arms.</p>
 <span>                    generator <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">/</span><span class="fl">5</span> <span class="op">*</span> <span class="va">hr</span><span class="op">[</span><span class="st">'pfs_low'</span><span class="op">]</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">surrogate</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
-<span>  name <span class="op">=</span> <span class="st">'surrogate'</span>, type <span class="op">=</span> <span class="st">'binary'</span>, readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>surrogate <span class="op">=</span> <span class="va">two_weeks</span><span class="op">)</span>, </span>
+<span>  name <span class="op">=</span> <span class="st">'surrogate'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>surrogate <span class="op">=</span> <span class="va">two_weeks</span><span class="op">)</span>, </span>
 <span>  generator <span class="op">=</span> <span class="va">rbinom</span>, size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">.1</span><span class="op">)</span> <span class="co"># lower probability</span></span>
 <span></span>
 <span><span class="va">os</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'os'</span>, type<span class="op">=</span><span class="st">'tte'</span>, </span>
@@ -184,7 +184,7 @@ arms.</p>
 <span>                    generator <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">/</span><span class="fl">5</span> <span class="op">*</span> <span class="va">hr</span><span class="op">[</span><span class="st">'pfs_high'</span><span class="op">]</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">surrogate</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
-<span>  name <span class="op">=</span> <span class="st">'surrogate'</span>, type <span class="op">=</span> <span class="st">'binary'</span>, readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>surrogate <span class="op">=</span> <span class="va">two_weeks</span><span class="op">)</span>, </span>
+<span>  name <span class="op">=</span> <span class="st">'surrogate'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>surrogate <span class="op">=</span> <span class="va">two_weeks</span><span class="op">)</span>, </span>
 <span>  generator <span class="op">=</span> <span class="va">rbinom</span>, size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">.12</span><span class="op">)</span> <span class="co"># higher probability</span></span>
 <span></span>
 <span><span class="va">os</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'os'</span>, type<span class="op">=</span><span class="st">'tte'</span>, </span>
