@@ -4,8 +4,9 @@ pkgdown_sha: ~
 articles:
   adaptiveDesign: adaptiveDesign.html
   comparisons: comparisons.html
+  defineTimeToEventEndpoints: defineTimeToEventEndpoints.html
   designDocument: designDocument.html
-last_built: 2025-03-14T03:01Z
+last_built: 2025-03-16T04:49Z
 urls:
   reference: https://zhangh12.github.io/TrialSimulator/reference
   article: https://zhangh12.github.io/TrialSimulator/articles
