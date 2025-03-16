@@ -9,7 +9,7 @@ generator."><meta property="og:image" content="https://zhangh12.github.io/TrialS
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.49.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.50.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,7 +22,7 @@ generator."><meta property="og:image" content="https://zhangh12.github.io/TrialS
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
     <li><a class="dropdown-item" href="../articles/comparisons.html">Comparisons with graphicalMCP and gMCP</a></li>
-    <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define One or More Time-to-Event Endpoints</a></li>
+    <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/designDocument.html">Modular Clinical Trial Simulation: Overview of Core Functions and Workflow</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -64,13 +64,7 @@ generator.</p>
 <h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
 <p>initialize an endpoint</p><div class="section">
 <h4 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
-<span>  <span class="va">name</span>,</span>
-<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"tte"</span>, <span class="st">"continuous"</span>, <span class="st">"binary"</span><span class="op">)</span>,</span>
-<span>  readout <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  <span class="va">generator</span>,</span>
-<span>  <span class="va">...</span></span>
-<span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">name</span>, type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"tte"</span>, <span class="st">"non-tte"</span><span class="op">)</span>, readout <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">generator</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -81,13 +75,11 @@ generator.</p>
 
 <dt><code>type</code></dt>
 <dd><p>character vector. Type(s) of endpoint(s). It supports
-<code>"tte"</code> for time-to-event endpoints, and <code>"continuous"</code> or
-<code>"binary"</code>. <code>TrialSimulator</code> will do some verification if an
-endpoint is of type <code>"tte"</code>. However, no special
-manipulation is done for non-tte endpoints. Thus, you can specify
-<code>type</code> to any meaningful string for non-tte endpoints for informative
-purpose. Please note that currently <code>TrialSimulator</code> does not
-support endpoints of repeated measurement.</p></dd>
+<code>"tte"</code> for time-to-event endpoints, and <code>"non-tte"</code> for
+all other types of endpoints (e.g., continous, binary, categorical,
+or repeated measurement. <code>TrialSimulator</code> will do some verification if
+an endpoint is of type <code>"tte"</code>. However, no special
+manipulation is done for non-tte endpoints.</p></dd>
 
 
 <dt><code>readout</code></dt>
@@ -234,13 +226,13 @@ dataset.</p><div class="section">
 <span class="r-in"><span><span class="co">## Example 2. Generate continuous and binary endpoints using R's built-in</span></span></span>
 <span class="r-in"><span><span class="co">## RNG functions, e.g. rnorm, rexp, rbinom, etc.</span></span></span>
 <span class="r-in"><span><span class="va">ep1</span> <span class="op">&lt;-</span> <span class="va">Endpoint</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span></span>
-<span class="r-in"><span>         name <span class="op">=</span> <span class="st">'cd4'</span>, type <span class="op">=</span> <span class="st">'c'</span>, generator <span class="op">=</span> <span class="va">rnorm</span>, readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>cd4<span class="op">=</span><span class="fl">1</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>         name <span class="op">=</span> <span class="st">'cd4'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, generator <span class="op">=</span> <span class="va">rnorm</span>, readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>cd4<span class="op">=</span><span class="fl">1</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>         mean <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">ep2</span> <span class="op">&lt;-</span> <span class="va">Endpoint</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span></span>
-<span class="r-in"><span>         name <span class="op">=</span> <span class="st">'resp_time'</span>, type <span class="op">=</span> <span class="st">'c'</span>, generator <span class="op">=</span> <span class="va">rexp</span>, readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>resp_time<span class="op">=</span><span class="fl">0</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>         name <span class="op">=</span> <span class="st">'resp_time'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, generator <span class="op">=</span> <span class="va">rexp</span>, readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>resp_time<span class="op">=</span><span class="fl">0</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>         rate <span class="op">=</span> <span class="fl">4.5</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">ep3</span> <span class="op">&lt;-</span> <span class="va">Endpoint</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span></span>
-<span class="r-in"><span>         name <span class="op">=</span> <span class="st">'orr'</span>, type <span class="op">=</span> <span class="st">'binary'</span>, readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>orr<span class="op">=</span><span class="fl">3</span><span class="op">)</span>, generator <span class="op">=</span> <span class="va">rbinom</span>,</span></span>
+<span class="r-in"><span>         name <span class="op">=</span> <span class="st">'orr'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>orr<span class="op">=</span><span class="fl">3</span><span class="op">)</span>, generator <span class="op">=</span> <span class="va">rbinom</span>,</span></span>
 <span class="r-in"><span>         size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">.4</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">ep1</span><span class="op">$</span><span class="fu">get_generator</span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fl">1e4</span><span class="op">)</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="co"># compared to 1.2</span></span></span>

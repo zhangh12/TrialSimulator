@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.49.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.50.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,7 +20,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
     <li><a class="dropdown-item" href="../articles/comparisons.html">Comparisons with graphicalMCP and gMCP</a></li>
-    <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define One or More Time-to-Event Endpoints</a></li>
+    <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/designDocument.html">Modular Clinical Trial Simulation: Overview of Core Functions and Workflow</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -43,52 +43,6 @@
     </div>
 
 
-    <div class="section level2">
-    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>This function returns a data frame with columns:</p><dl><dt><code>p_inverse_normal</code></dt>
-<dd><p>one-sided p-value for inverse normal test
-based on logrank test (alternative hypothesis: risk is higher in placebo arm).
-Accumulative data is used.</p></dd>
-
-<dt><code>z_inverse_normal</code></dt>
-<dd><p>z statistics of <code>p_inverse_normal</code>.
-Accumulative data is used.</p></dd>
-
-<dt><code>p_lr</code></dt>
-<dd><p>one-sided p-value for logrank test
- (alternative hypothesis: risk is higher in placebo arm).
-Accumulative data is used.</p></dd>
-
-<dt><code>z_lr</code></dt>
-<dd><p>z statistics of <code>p_lr</code>.
-Accumulative data is used.</p></dd>
-
-<dt><code>info</code></dt>
-<dd><p>observed accumulative event number.</p></dd>
-
-<dt><code>planned_info</code></dt>
-<dd><p>planned accumulative event number.</p></dd>
-
-<dt><code>info_pbo</code></dt>
-<dd><p>observed accumulative event number in placebo.</p></dd>
-
-<dt><code>info_trt</code></dt>
-<dd><p>observed accumulative event number in treatment arm.</p></dd>
-
-<dt><code>wt</code></dt>
-<dd><p>weights in <code>z_inverse_normal</code>.</p></dd>
-
-
-</dl><p>a list with element names like <code>arm_name</code>,
-<code>arm1_name|arm2_name</code>, <code>arm1_name|arm2_name|arm3_name</code>, etc.,
-i.e., all possible combination of treatment arms in comparison. Each
-element is a data frame, with its column names self-explained. Specifically,
-the columns <code>p_inverse_normal</code>, <code>observed_info</code>,
-<code>is_final</code> can be used with <code>GroupSequentialTest</code> to perform
-significance test.</p>
-<p>a data frame of columns <code>arm</code>, <code>decision</code>,
-<code>event_at_reject</code>, and <code>reject_time</code>.</p>
-    </div>
     <div class="section level2">
     <h2 id="methods">Methods<a class="anchor" aria-label="anchor" href="#methods"></a></h2>
 
@@ -1003,6 +957,43 @@ all data will be used to fit the model.</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
+<h4 id="returns-2">Returns<a class="anchor" aria-label="anchor" href="#returns-2"></a></h4>
+<p>This function returns a data frame with columns:</p><dl><dt><code>p_inverse_normal</code></dt>
+<dd><p>one-sided p-value for inverse normal test
+based on logrank test (alternative hypothesis: risk is higher in placebo arm).
+Accumulative data is used.</p></dd>
+
+<dt><code>z_inverse_normal</code></dt>
+<dd><p>z statistics of <code>p_inverse_normal</code>.
+Accumulative data is used.</p></dd>
+
+<dt><code>p_lr</code></dt>
+<dd><p>one-sided p-value for logrank test
+ (alternative hypothesis: risk is higher in placebo arm).
+Accumulative data is used.</p></dd>
+
+<dt><code>z_lr</code></dt>
+<dd><p>z statistics of <code>p_lr</code>.
+Accumulative data is used.</p></dd>
+
+<dt><code>info</code></dt>
+<dd><p>observed accumulative event number.</p></dd>
+
+<dt><code>planned_info</code></dt>
+<dd><p>planned accumulative event number.</p></dd>
+
+<dt><code>info_pbo</code></dt>
+<dd><p>observed accumulative event number in placebo.</p></dd>
+
+<dt><code>info_trt</code></dt>
+<dd><p>observed accumulative event number in treatment arm.</p></dd>
+
+<dt><code>wt</code></dt>
+<dd><p>weights in <code>z_inverse_normal</code>.</p></dd>
+
+
+</dl></div>
+<div class="section">
 <h4 id="examples-2">Examples<a class="anchor" aria-label="anchor" href="#examples-2"></a></h4>
 <p></p><div class="r example copy"><div class="sourceCode"><pre><code>
 \dontrun{
@@ -1108,6 +1099,16 @@ power significantly so fine-tuning may be required.</p>
 </div>
 
 <div class="section">
+<h4 id="returns-3">Returns<a class="anchor" aria-label="anchor" href="#returns-3"></a></h4>
+<p>a list with element names like <code>arm_name</code>,
+<code>arm1_name|arm2_name</code>, <code>arm1_name|arm2_name|arm3_name</code>, etc.,
+i.e., all possible combination of treatment arms in comparison. Each
+element is a data frame, with its column names self-explained. Specifically,
+the columns <code>p_inverse_normal</code>, <code>observed_info</code>,
+<code>is_final</code> can be used with <code>GroupSequentialTest</code> to perform
+significance test.</p>
+</div>
+<div class="section">
 <h4 id="examples-3">Examples<a class="anchor" aria-label="anchor" href="#examples-3"></a></h4>
 <p></p><div class="r example copy"><div class="sourceCode"><pre><code>\dontrun{
 trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_names(), 'default')
@@ -1158,6 +1159,11 @@ it is not tested. It may be supported in the future.</p></dd>
 
 
 </dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-4">Returns<a class="anchor" aria-label="anchor" href="#returns-4"></a></h4>
+<p>a data frame of columns <code>arm</code>, <code>decision</code>,
+<code>event_at_reject</code>, and <code>reject_time</code>.</p>
 </div>
 <div class="section">
 <h4 id="examples-4">Examples<a class="anchor" aria-label="anchor" href="#examples-4"></a></h4>
@@ -1222,7 +1228,7 @@ trial$closedTest(dt, c('high dose', 'low dose'),
 <span class="r-in"><span>          generator <span class="op">=</span> <span class="va">PiecewiseConstantExponentialRNG</span>,</span></span>
 <span class="r-in"><span>          risk <span class="op">=</span> <span class="va">risk1</span>, endpoint_name <span class="op">=</span> <span class="st">'pfs'</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">orr1</span> <span class="op">&lt;-</span> <span class="va"><a href="Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  name <span class="op">=</span> <span class="st">'orr'</span>, type <span class="op">=</span> <span class="st">'binary'</span>,</span></span>
+<span class="r-in"><span>  name <span class="op">=</span> <span class="st">'orr'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>,</span></span>
 <span class="r-in"><span>  readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>orr<span class="op">=</span><span class="fl">1</span><span class="op">)</span>, generator <span class="op">=</span> <span class="va">rbinom</span>,</span></span>
 <span class="r-in"><span>  size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">.4</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">placebo</span> <span class="op">&lt;-</span> <span class="va"><a href="Arm.html">Arm</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span></span>
@@ -1236,7 +1242,7 @@ trial$closedTest(dt, c('high dose', 'low dose'),
 <span class="r-in"><span>          generator <span class="op">=</span> <span class="va">PiecewiseConstantExponentialRNG</span>,</span></span>
 <span class="r-in"><span>          risk <span class="op">=</span> <span class="va">risk2</span>, endpoint_name <span class="op">=</span> <span class="st">'pfs'</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">orr2</span> <span class="op">&lt;-</span> <span class="va"><a href="Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  name <span class="op">=</span> <span class="st">'orr'</span>, type <span class="op">=</span> <span class="st">'binary'</span>,</span></span>
+<span class="r-in"><span>  name <span class="op">=</span> <span class="st">'orr'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>,</span></span>
 <span class="r-in"><span>  generator <span class="op">=</span> <span class="va">rbinom</span>, readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>orr<span class="op">=</span><span class="fl">3</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">.6</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">active</span> <span class="op">&lt;-</span> <span class="va"><a href="Arm.html">Arm</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span></span>
