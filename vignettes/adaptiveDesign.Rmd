@@ -84,7 +84,7 @@ median(os$test_generator(1000)$os)
 #' define binary endpoint VRR, with readout time = 2 weeks
 two_weeks <- 2 / 52 * 12
 surrogate <- Endpoint$new(
-  name = 'surrogate', type = 'binary', 
+  name = 'surrogate', type = 'non-tte', 
   readout = c(surrogate = two_weeks), 
   generator = rbinom, size = 1, prob = .02)
 
@@ -108,7 +108,7 @@ pfs <- Endpoint$new(name = 'pfs', type='tte',
                     generator = rexp, rate = log(2)/5 * hr['pfs_low'])
 
 surrogate <- Endpoint$new(
-  name = 'surrogate', type = 'binary', readout = c(surrogate = two_weeks), 
+  name = 'surrogate', type = 'non-tte', readout = c(surrogate = two_weeks), 
   generator = rbinom, size = 1, prob = .1) # lower probability
 
 os <- Endpoint$new(name = 'os', type='tte', 
@@ -122,7 +122,7 @@ pfs <- Endpoint$new(name = 'pfs', type='tte',
                     generator = rexp, rate = log(2)/5 * hr['pfs_high'])
 
 surrogate <- Endpoint$new(
-  name = 'surrogate', type = 'binary', readout = c(surrogate = two_weeks), 
+  name = 'surrogate', type = 'non-tte', readout = c(surrogate = two_weeks), 
   generator = rbinom, size = 1, prob = .12) # higher probability
 
 os <- Endpoint$new(name = 'os', type='tte', 

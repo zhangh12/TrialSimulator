@@ -4,37 +4,6 @@
 \name{Trial}
 \alias{Trial}
 \title{Class of Trial}
-\value{
-This function returns a data frame with columns:
-\describe{
-\item{\code{p_inverse_normal}}{one-sided p-value for inverse normal test
-based on logrank test (alternative hypothesis: risk is higher in placebo arm).
-Accumulative data is used. }
-\item{\code{z_inverse_normal}}{z statistics of \code{p_inverse_normal}.
-Accumulative data is used. }
-\item{\code{p_lr}}{one-sided p-value for logrank test
- (alternative hypothesis: risk is higher in placebo arm).
-Accumulative data is used. }
-\item{\code{z_lr}}{z statistics of \code{p_lr}.
-Accumulative data is used. }
-\item{\code{info}}{observed accumulative event number. }
-\item{\code{planned_info}}{planned accumulative event number. }
-\item{\code{info_pbo}}{observed accumulative event number in placebo. }
-\item{\code{info_trt}}{observed accumulative event number in treatment arm. }
-\item{\code{wt}}{weights in \code{z_inverse_normal}. }
-}
-
-a list with element names like \code{arm_name},
-\code{arm1_name|arm2_name}, \code{arm1_name|arm2_name|arm3_name}, etc.,
-i.e., all possible combination of treatment arms in comparison. Each
-element is a data frame, with its column names self-explained. Specifically,
-the columns \code{p_inverse_normal}, \code{observed_info},
-\code{is_final} can be used with \code{GroupSequentialTest} to perform
-significance test.
-
-a data frame of columns \code{arm}, \code{decision},
-\code{event_at_reject}, and \code{reject_time}.
-}
 \description{
 Create a class of trial.
 }
@@ -1052,6 +1021,26 @@ all data will be used to fit the model.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+This function returns a data frame with columns:
+\describe{
+\item{\code{p_inverse_normal}}{one-sided p-value for inverse normal test
+based on logrank test (alternative hypothesis: risk is higher in placebo arm).
+Accumulative data is used. }
+\item{\code{z_inverse_normal}}{z statistics of \code{p_inverse_normal}.
+Accumulative data is used. }
+\item{\code{p_lr}}{one-sided p-value for logrank test
+ (alternative hypothesis: risk is higher in placebo arm).
+Accumulative data is used. }
+\item{\code{z_lr}}{z statistics of \code{p_lr}.
+Accumulative data is used. }
+\item{\code{info}}{observed accumulative event number. }
+\item{\code{planned_info}}{planned accumulative event number. }
+\item{\code{info_pbo}}{observed accumulative event number in placebo. }
+\item{\code{info_trt}}{observed accumulative event number in treatment arm. }
+\item{\code{wt}}{weights in \code{z_inverse_normal}. }
+}
+}
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{
@@ -1151,6 +1140,15 @@ that the choice of pre-fixed \code{planned_info} can affect statistical
 power significantly so fine-tuning may be required.
 }
 
+\subsection{Returns}{
+a list with element names like \code{arm_name},
+\code{arm1_name|arm2_name}, \code{arm1_name|arm2_name|arm3_name}, etc.,
+i.e., all possible combination of treatment arms in comparison. Each
+element is a data frame, with its column names self-explained. Specifically,
+the columns \code{p_inverse_normal}, \code{observed_info},
+\code{is_final} can be used with \code{GroupSequentialTest} to perform
+significance test.
+}
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{\dontrun{
@@ -1197,6 +1195,10 @@ Event in \code{events} does not need to be sorted by their triggering time.}
 it is not tested. It may be supported in the future.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+a data frame of columns \code{arm}, \code{decision},
+\code{event_at_reject}, and \code{reject_time}.
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
