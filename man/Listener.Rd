@@ -6,7 +6,8 @@
 \title{Class of Listener}
 \description{
 Create a class of listener. A listener monitors the trial while checking
-condition of pre-defined events. Actions are triggered and executed.
+condition of pre-defined events. Actions are triggered and executed
+automatically.
 }
 \examples{
 ##
