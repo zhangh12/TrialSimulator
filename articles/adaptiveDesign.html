@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.50.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.51.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,6 +41,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
     <li><a class="dropdown-item" href="../articles/comparisons.html">Comparisons with graphicalMCP and gMCP</a></li>
+    <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/designDocument.html">Modular Clinical Trial Simulation: Overview of Core Functions and Workflow</a></li>
   </ul>
@@ -212,7 +213,7 @@ one.</p>
 <span>  enroller <span class="op">=</span> <span class="va">StaggeredRecruiter</span>, accrual_rate <span class="op">=</span> <span class="va">accrual_rate</span>, </span>
 <span>  dropout <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="fl">0.25</span><span class="op">)</span><span class="op">/</span><span class="fl">12</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Seed is not specified. It is set to 634300041</span></span>
+<span><span class="co">#&gt; Seed is not specified. TrialSimulator sets it to 634300041</span></span>
 <span></span>
 <span><span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, <span class="va">low</span>, <span class="va">high</span>, <span class="va">placebo</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Arm(s) &lt;low dose, high dose, pbo&gt; are added to the trial.</span></span>
@@ -455,8 +456,8 @@ trial.</p>
 <span><span class="co">#&gt; Data is locked at time = 12.4615384615385 for event &lt;dose selection&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('dose selection'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
-<span><span class="co">#&gt;   patient_id pfs os surrogate                       arms</span></span>
-<span><span class="co">#&gt; 1        249 109 41       239 &lt;low dose, high dose, pbo&gt;</span></span>
+<span><span class="co">#&gt;   patient pfs os surrogate                       arms</span></span>
+<span><span class="co">#&gt; 1     249 109 41       239 &lt;low dose, high dose, pbo&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Arm &lt;low dose&gt; is removed.</span></span>
 <span><span class="co">#&gt; Sample ratio is updated to be &lt;high dose: 1, pbo: 1&gt;.</span></span>
@@ -483,8 +484,8 @@ trial.</p>
 <span><span class="co">#&gt; Data is locked at time = 19.1230887300753 for event &lt;pfs interim&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('pfs interim'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
-<span><span class="co">#&gt;   patient_id pfs os surrogate             arms</span></span>
-<span><span class="co">#&gt; 1        320 150 71       305 &lt;high dose, pbo&gt;</span></span>
+<span><span class="co">#&gt;   patient pfs os surrogate             arms</span></span>
+<span><span class="co">#&gt; 1     320 150 71       305 &lt;high dose, pbo&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Sample ratio has been udpated to be &lt;high dose: 2, pbo: 1&gt;.</span></span>
 <span><span class="co">#&gt; Trial data is rolling back to time = 19.1230887300753. </span></span>
@@ -504,8 +505,8 @@ trial.</p>
 <span><span class="co">#&gt; Data is locked at time = 32.443070526477 for event &lt;pfs final&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('pfs final'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
-<span><span class="co">#&gt;   patient_id pfs  os surrogate             arms</span></span>
-<span><span class="co">#&gt; 1        653 400 222       633 &lt;high dose, pbo&gt;</span></span>
+<span><span class="co">#&gt;   patient pfs  os surrogate             arms</span></span>
+<span><span class="co">#&gt; 1     653 400 222       633 &lt;high dose, pbo&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Action for &lt;pfs final&gt; is executed:</span></span>
 <span><span class="co">#&gt; [1] "No action. P-values: &lt;pfs final = 0.0084&gt;, &lt;os interim = 0.15&gt;."</span></span>
@@ -513,8 +514,8 @@ trial.</p>
 <span><span class="co">#&gt; Data is locked at time = 50 for event &lt;os final&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('os final'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
-<span><span class="co">#&gt;   patient_id pfs  os surrogate             arms</span></span>
-<span><span class="co">#&gt; 1        917 689 447       904 &lt;high dose, pbo&gt;</span></span>
+<span><span class="co">#&gt;   patient pfs  os surrogate             arms</span></span>
+<span><span class="co">#&gt; 1     917 689 447       904 &lt;high dose, pbo&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Action for &lt;os final&gt; is executed:</span></span>
 <span><span class="co">#&gt; [1] "No action. P-value: &lt;os final = 0.035&gt;. "</span></span></code></pre></div>
