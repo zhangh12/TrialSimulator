@@ -33,7 +33,7 @@ Event <- R6::R6Class(
     #' trigger. Return TRUE/FALSE.
     #' @param action function to execute when the event triggers.
     #' @param ... arguments for \code{trigger_condition}.
-    initialize = function(name, type = name, trigger_condition, action = NULL, ...){
+    initialize = function(name, type = name, trigger_condition, action = doNothing, ...){
       stopifnot(is.character(name) && (length(name) == 1))
       stopifnot(is.character(type))
       if(!('Condition' %in% class(trigger_condition))){
@@ -105,7 +105,7 @@ Event <- R6::R6Class(
         action <- self$get_action()(trial, self$get_name())
       }
 
-      if(!private$silent){
+      if(!private$silent && !is.null(action)){
         message('Action for <', self$get_name(), '> is executed: \n')
         print(action)
       }

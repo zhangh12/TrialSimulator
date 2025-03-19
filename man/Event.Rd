@@ -34,7 +34,7 @@ or stop a trial early.
 \subsection{Method \code{new()}}{
 initialize Event
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Event$new(name, type = name, trigger_condition, action = NULL, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Event$new(name, type = name, trigger_condition, action = doNothing, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

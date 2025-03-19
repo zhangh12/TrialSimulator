@@ -81,7 +81,7 @@ Trial <- R6::R6Class(
 
         if(is.null(seed)){
           seed <- sample(.Machine$integer.max, 1)
-          message('Seed is not specified. It is set to ', seed)
+          message('Seed is not specified. TrialSimulator sets it to ', seed)
         }
 
         private$arms <- list()
@@ -1012,7 +1012,11 @@ Trial <- R6::R6Class(
                 'Locked data can be accessed in Trial$get_locked_data(\'',
                 event_name, '\'). \n',
                 'Number of events at lock time: \n')
-        print(as.data.frame(attr(at_calendar_time, 'n_events')))
+        out <- as.data.frame(attr(at_calendar_time, 'n_events'))
+        if('patient_id' %in% names(out)){
+          colnames(out)[names(out) == 'patient_id'] <- 'patient'
+        }
+        print(out)
         message('\n')
       }
 

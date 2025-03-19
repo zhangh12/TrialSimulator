@@ -1,3 +1,10 @@
+# TrialSimulator 0.51.0
+
+## New Features
+
+- Add vignette of non-time-to-event endpoints. 
+- Add function `weibullDropout` to compute parameters of Weibull distribution when using it for dropout distribution. 
+
 # TrialSimulator 0.49.0
 
 ## New Features
