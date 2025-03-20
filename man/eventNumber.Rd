@@ -19,5 +19,9 @@ trial by the time of calculation.}
 an object of class `Condition`
 }
 \description{
-Define a condition to trigger trial event by the number of events of an endpoint.
+Define a condition to trigger trial event by the number of events of an
+endpoint. The event will be trigger when a trial has observed
+at least the specified number of endpoint events. It can be used combined with
+conditions specified by \link[TrialSimulator]{calendarTime} and
+\link[TrialSimulator]{enrollment}.
 }

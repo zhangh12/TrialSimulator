@@ -13,5 +13,9 @@ enrollment(n)
 an object of class `Condition`
 }
 \description{
-Define a condition to trigger trial event by the number of randomized patients.
+Define a condition to trigger trial event by the number of randomized
+patients. The event will be trigger when a trial has enrolled
+at least the specified number of patients. It can be used combined with
+conditions specified by \link[TrialSimulator]{calendarTime} and
+\link[TrialSimulator]{eventNumber}.
 }

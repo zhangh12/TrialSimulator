@@ -41,6 +41,8 @@ EventCountCondition <- R6::R6Class(
 
       if(!is.null(self$arms)){
         cat(' in arms <', paste0(self$arms, collapse = ', '), '>. ', sep = '')
+      }else{
+        cat(' in all arms in a trial. ')
       }
 
       cat('\n')
