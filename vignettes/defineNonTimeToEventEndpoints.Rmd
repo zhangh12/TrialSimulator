@@ -24,7 +24,7 @@ library(TrialSimulator)
 set.seed(12345)
 ```
 
-`TrialSimulator` provides a flexible framework for defining and simulating a variety of clinical trial endpoints by specifying the `type` parameter in `Endpoint$new`. This vignette covers non-time-to-event (non-TTE) endpoints, demonstrating how they can be defined, integrated into trial arms, and analyzed at pre-specified event triggers. For time-to-event endpoints, please refer to the separate vignette [Define Time-to-Event Endpoints in Clinical Trials](../docs/articles/defineTimeToEventEndpoints.html).
+`TrialSimulator` provides a flexible framework for defining and simulating a variety of clinical trial endpoints by specifying the `type` parameter in `Endpoint$new`. This vignette covers non-time-to-event (non-TTE) endpoints, demonstrating how they can be defined, integrated into trial arms, and analyzed at pre-specified event triggers. For time-to-event endpoints, please refer to the separate vignette [Define Time-to-Event Endpoints in Clinical Trials](articles/defineTimeToEventEndpoints.html).
 
 ## Define endpoints with random number generators
 
