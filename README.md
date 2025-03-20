@@ -32,8 +32,10 @@ remotes::install_github(
 
 See the vignettes
 
-- [Define time-to-event (TTE) endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineTimeToEventEndpoints.html)
-- [Define non-TTE endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineNonTimeToEventEndpoints.html)
+- Define endpoints
+  - [Time-to-event (TTE) endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineTimeToEventEndpoints.html)
+  - [Non-TTE endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineNonTimeToEventEndpoints.html)
+  - Repeated measures
 - [Triggering trial events (for dose selection, futility, interim, etc.)](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html)
 - [Example: adaptive design with dose selection, interim, and multiple endpoints](https://zhangh12.github.io/TrialSimulator/articles/adaptiveDesign.html)
 
