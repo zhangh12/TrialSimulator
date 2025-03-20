@@ -28,4 +28,15 @@ remotes::install_github(
 )
 ```
 
+## Getting Started
+
+See the vignettes
+
+- [Define time-to-event (TTE) endpoints](defineTimeToEventEndpoints.html)
+- [Define non-TTE endpoints](defineNonTimeToEventEndpoints.html)
+- [An example of adaptive design with dose selection](adaptiveDesign.html)
+
+
+
+
 
