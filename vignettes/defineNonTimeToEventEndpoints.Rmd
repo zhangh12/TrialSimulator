@@ -24,17 +24,17 @@ library(TrialSimulator)
 set.seed(12345)
 ```
 
-`TrialSimulator` provides a flexible framework for defining and simulating a variety of clinical trial endpoints by specifying the `type` parameter in `Endpoint$new`. This vignette covers non-time-to-event (non-TTE) endpoints, demonstrating how they can be defined, integrated into trial arms, and analyzed at pre-specified event triggers. For time-to-event endpoints, please refer to the separate vignette [Define Time-to-Event Endpoints in Clinical Trials](\vignette%7BdefineTimeToEventEndpoints%7D).
+`TrialSimulator` provides a flexible framework for defining and simulating a variety of clinical trial endpoints by specifying the `type` parameter in `Endpoint$new`. This vignette covers non-time-to-event (non-TTE) endpoints, demonstrating how they can be defined, integrated into trial arms, and analyzed at pre-specified event triggers. For time-to-event endpoints, please refer to the separate vignette [Define Time-to-Event Endpoints in Clinical Trials](../docs/articles/defineTimeToEventEndpoints.html).
 
-## Define endpoints with random number generators from `stats`
+## Define endpoints with random number generators
 
-Similar to time-to-event endpoints, non-TTE endpoints can be defined using any univariate random number generator that takes `n` (number of observations) as its first argument. The `type` should be set to `"non-tte"`, and the `readout` parameter should be specified as a named numeric vector, indicating the time required for the endpoint to be available for analysis after patient enrollment.
+Similar to time-to-event endpoints, non-TTE endpoints can be defined using any univariate random number generator that takes `n` (number of observations) as its first argument. The `stats` package provides a set of random number generators that can be assigned to `generator` in `Endpoint$new`, where additional arguments required by `generator` can be passed through `...`. When creating non-TTE endpoints, the argument `type` should be set to `"non-tte"`, and the argument `readout` should be specified as a named numeric vector, indicating the time required for the endpoint to be available for analysis after patient enrollment.
 
 In the example below, we define two types of endpoints:
 
-- Continuous endpoint: Tumor size change from baseline (`cfb`), available after 6 months.
+- Continuous endpoint: Tumor size change from baseline (`cfb`), available after 6 months, assuming a normal distribution (`generator = rnorm`) with custom `mean` and `sd`. 
 
-- Binary endpoint: Objective response rate (`orr`), available after 2 months.
+- Binary endpoint: Objective response rate (`orr`), available after 2 months, assuming a binomial distribution (`generator = rbinom`) with `size = 1` and custom `prob`. 
 
 ```{r lljalk}
 ## endpoints in placebo arm
@@ -89,11 +89,11 @@ Using the computed scale parameter $\lambda=$ `r round(dropout_pars['scale'], 3)
 
 ```{r lihoehf}
 accrual_rate <- data.frame(end_time = c(6, Inf), 
-                           piecewise_rate = c(10, 20))
+                           piecewise_rate = c(100, 200))
 
 trial <- Trial$new(
   name = 'Trial-31415', description = 'Example Clinical Trial', 
-  n_patients = 420, duration = 30, 
+  n_patients = 4200, duration = 30, 
   enroller = StaggeredRecruiter, accrual_rate = accrual_rate, 
   dropout = rweibull, scale = 30.636, shape = 1.939
 )
@@ -103,10 +103,12 @@ trial$add_arms(sample_ratio = c(1, 1), trt, pbo)
 trial
 ```
 
+Here `accrual_rate` is an argument of `TrialSimulator::StaggeredRecruiter` controlling how patients are recruited into the trial. Similarly, `scale` and `shape` are arguments of `rweibull`. All these arguments are passed through `...` of `Trial$new`. 
+
 `TrialSimulator` allows defining trial events at specific time points when data is locked for analysis. Here, we define three key events:
 
 1. Interim Analysis: Triggered when `orr` has been observed for 60 patients.
-2. Random Checkpoint: Triggered when the trial has reached at least 10 months, and at least one of the following conditions is met:
+2. Random Checkpoint: For illustration purpose only. Triggered when the trial has reached at least 10 months, and at least one of the following conditions is met:
     - `cfb` has been observed for at least 100 patients, 
     - `orr` has been observed for at least 180 patients. 
 3. Final Analysis: Occurs when the trial reaches 30 months.
@@ -143,12 +145,12 @@ controller <- Controller$new(trial, listener)
 controller$run()
 ```
 
-We can inspect the dataset locked at different event points:
+We can inspect the dataset locked at different event points by calling member function `get_locked_data` with event names. Ideally, this should be done within custom action function, where decision is made based on data locked at the time of an event. 
 
 ```{r ihegea}
-interim_data <- trial$get_locked_data('interim')
-random_data <- trial$get_locked_data('random')
-final_data <- trial$get_locked_data('final')
+interim_data <- trial$get_locked_data(event_name = 'interim')
+random_data <- trial$get_locked_data(event_name = 'random')
+final_data <- trial$get_locked_data(event_name = 'final')
 head(interim_data)
 ```
 

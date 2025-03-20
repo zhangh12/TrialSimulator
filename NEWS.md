@@ -1,3 +1,9 @@
+# TrialSimulator 0.52.0
+
+## Bug Fixes
+
+- Fix a bug that data is not censored correctly at events. This bug does not affect a trial without interims. 
+
 # TrialSimulator 0.51.0
 
 ## New Features
