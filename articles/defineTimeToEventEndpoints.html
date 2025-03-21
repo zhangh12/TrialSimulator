@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.52.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.52.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -193,6 +193,13 @@ all values to 1 (no censoring).</p>
 <span><span class="co">#&gt; 4  8.372652         1 trt</span></span>
 <span><span class="co">#&gt; 5 10.000000         0 pbo</span></span>
 <span><span class="co">#&gt; 6  1.221958         1 pbo</span></span></code></pre></div>
+<p>To add endpoint to an arm,</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">pbo</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Arm.html">Arm</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'placebo'</span><span class="op">)</span></span>
+<span><span class="va">pbo</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">pfs_pbo</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">trt</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Arm.html">Arm</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'treatment'</span><span class="op">)</span></span>
+<span><span class="va">trt</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">pfs_trt</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="define-multiple-endpoints">Define multiple endpoints<a class="anchor" aria-label="anchor" href="#define-multiple-endpoints"></a>
@@ -200,8 +207,8 @@ all values to 1 (no censoring).</p>
 <p>You can define more than one endpoint in a trial. Let’s add overall
 survival (OS) as a second endpoint. We’ll assume the median overall
 survival is 7.2 months in the placebo arm and 8.5 months in the
-treatment arm:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+treatment arm.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">os_pbo</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'OS'</span>, type <span class="op">=</span> <span class="st">'tte'</span>, </span>
 <span>                       generator <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">/</span><span class="fl">7.2</span><span class="op">)</span></span>
 <span><span class="va">os_trt</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'OS'</span>, type <span class="op">=</span> <span class="st">'tte'</span>, </span>
@@ -210,7 +217,11 @@ treatment arm:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">os_pbo</span><span class="op">$</span><span class="fu">test_generator</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1e5</span><span class="op">)</span><span class="op">$</span><span class="va">OS</span><span class="op">)</span> <span class="co">## should be close to 7.2</span></span>
 <span><span class="co">#&gt; [1] 7.160499</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">os_trt</span><span class="op">$</span><span class="fu">test_generator</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1e5</span><span class="op">)</span><span class="op">$</span><span class="va">OS</span><span class="op">)</span> <span class="co">## should be close to 8.5</span></span>
-<span><span class="co">#&gt; [1] 8.532867</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 8.532867</span></span>
+<span></span>
+<span><span class="co">## add endpoint to existing arms</span></span>
+<span><span class="va">pbo</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">os_pbo</span><span class="op">)</span></span>
+<span><span class="va">trt</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">os_trt</span><span class="op">)</span></span></code></pre></div>
 <p>Note that by defining <code>PFS</code> and <code>OS</code> separately
 (i.e., calling <code>Endpoint$new</code> for each endpoint), you are
 implicitly assuming that these endpoints are independent in the
@@ -223,7 +234,7 @@ endpoints<a class="anchor" aria-label="anchor" href="#an-example-of-a-custom-ran
 <p>To define multiple correlated endpoints, you need to create a custom
 generator. In this example, we define one based on the R package
 <code>simdata</code>:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">custom_generator</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n</span>, <span class="va">pfs_rate</span>, <span class="va">os_rate</span>, <span class="va">corr</span><span class="op">)</span><span class="op">{</span></span>
 <span>  </span>
 <span>  <span class="va">dist</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -240,7 +251,7 @@ generator. In this example, we define one based on the R package
 <span><span class="op">}</span></span></code></pre></div>
 <p>Note that for custom generator, you need to add columns of event
 indicator for each of the time-to-event endpoints.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">corr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">.6</span>, <span class="fl">.6</span>, <span class="fl">1</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="va">eps_pbo</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'PFS'</span>, <span class="st">'OS'</span><span class="op">)</span>, type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'tte'</span>, <span class="st">'tte'</span><span class="op">)</span>, </span>
 <span>                              generator <span class="op">=</span> <span class="va">custom_generator</span>, </span>
@@ -269,7 +280,7 @@ indicator for each of the time-to-event endpoints.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> trt    6.38  8.51</span></span></code></pre></div>
 <p>To define arms with these correlated endpoints, simply do the
 following:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pbo</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Arm.html">Arm</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'placebo'</span><span class="op">)</span></span>
 <span><span class="va">pbo</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">eps_pbo</span><span class="op">)</span></span>
 <span></span>
