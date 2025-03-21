@@ -34,7 +34,7 @@ See the vignettes
 
 - [Define time-to-event (TTE) endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineTimeToEventEndpoints.html)
 - [Define non-TTE endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineNonTimeToEventEndpoints.html)
-- [Define event triggering time](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html)
+- [Triggering trial events (for dose selection, futility, interim, etc.)](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html)
 - [Example: adaptive design with dose selection, interim, and multiple endpoints](https://zhangh12.github.io/TrialSimulator/articles/adaptiveDesign.html)
 
 

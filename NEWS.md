@@ -1,3 +1,9 @@
+# TrialSimulator 0.53.0
+
+## New Features
+
+- Add vignette of condition system. 
+
 # TrialSimulator 0.52.0
 
 ## Bug Fixes
