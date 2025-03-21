@@ -32,9 +32,9 @@ remotes::install_github(
 
 See the vignettes
 
-- [Define time-to-event (TTE) endpoints](defineTimeToEventEndpoints.html)
-- [Define non-TTE endpoints](defineNonTimeToEventEndpoints.html)
-- [An example of adaptive design with dose selection](adaptiveDesign.html)
+- [Define time-to-event (TTE) endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineTimeToEventEndpoints.html)
+- [Define non-TTE endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineNonTimeToEventEndpoints.html)
+- [An example of adaptive design with dose selection](https://zhangh12.github.io/TrialSimulator/articles/adaptiveDesign.html)
 
 
 
