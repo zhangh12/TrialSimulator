@@ -1233,12 +1233,12 @@ Trial <- R6::R6Class(
       for(event_col in event_cols){
         tte_col <- gsub('_event$', '', event_col)
         trial_data <- trial_data %>%
-          mutate(!!event_col := ifelse((!!sym(tte_col) > dropout_time) &
+          mutate(!!event_col := ifelse((!!sym(tte_col) + enroll_time > dropout_time) &
                                          (arm %in% selected_arms),
                                        0, !!sym(event_col))) %>%
-          mutate(!!tte_col := ifelse((!!sym(tte_col) > dropout_time) &
+          mutate(!!tte_col := ifelse((!!sym(tte_col) + enroll_time > dropout_time) &
                                        (arm %in% selected_arms),
-                                     dropout_time, !!sym(tte_col))) %>%
+                                     dropout_time - enroll_time, !!sym(tte_col))) %>%
           mutate(calendar_time := enroll_time + !!sym(tte_col)) %>%
           mutate(!!event_col := ifelse((calendar_time > censor_at) &
                                          (arm %in% selected_arms),
@@ -1254,7 +1254,7 @@ Trial <- R6::R6Class(
       for(readout_col in readout_cols){
         ep_col <- gsub('_readout$', '', readout_col)
         trial_data <- trial_data %>%
-          mutate(!!ep_col := ifelse((!!sym(readout_col) > dropout_time) &
+          mutate(!!ep_col := ifelse((!!sym(readout_col) + enroll_time > dropout_time) &
                                       (arm %in% selected_arms),
                                     NA, !!sym(ep_col))) %>%
           mutate(calendar_time := enroll_time + !!sym(readout_col)) %>%
