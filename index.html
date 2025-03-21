@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.53.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.53.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -89,7 +89,16 @@
 <div class="section level2">
 <h2 id="getting-started">Getting Started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
 </h2>
-<p>See the vignettes</p>
+<p><code>TrialSimulator</code> is designed with a modular architecture, allowing users to systematically construct and simulate clinical trials in a structured and flexible manner. The simulation process is broken down into three key steps:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Defining Endpoints</strong>: Specify the treatment endpoints that will be evaluated throughout the trial.</li>
+<li>
+<strong>Specifying Trial Event Triggers</strong>: Establish the conditions under which specific trial events (e.g., interim analysis, futility assessment, or stopping rules) will be triggered.</li>
+<li>
+<strong>Defining Actions for Triggered Events</strong>: Determine the appropriate actions to be taken once a trial event is triggered, such as adjusting enrollment, terminating treatment arms, or conducting statistical analysis.</li>
+</ol>
+<p>To efficiently utilize <code>TrialSimulator</code> for clinical trial simulations, we recommend reading the following vignettes in order:</p>
 <ul>
 <li>Define endpoints
 <ul>
@@ -98,8 +107,37 @@
 <li>Repeated measures</li>
 </ul>
 </li>
-<li><a href="https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html">Triggering trial events (for dose selection, futility, interim, etc.)</a></li>
-<li><a href="https://zhangh12.github.io/TrialSimulator/articles/adaptiveDesign.html">Example: adaptive design with dose selection, interim, and multiple endpoints</a></li>
+<li>Condition system
+<ul>
+<li><a href="https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html">Triggering trial events</a></li>
+</ul>
+</li>
+<li>Define actions at trial events
+<ul>
+<li>[Action function]</li>
+</ul>
+</li>
+<li>Examples: fixed design
+<ul>
+<li>[Fixed design]</li>
+</ul>
+</li>
+<li>Examples: adaptive design
+<ul>
+<li><a href="https://zhangh12.github.io/TrialSimulator/articles/adaptiveDesign.html">Design with dose selection, interim, and multiple endpoints</a></li>
+</ul>
+</li>
+<li>Built-in methods supported in <code>TrialSimulator</code>
+<ul>
+<li>[The logrank test]</li>
+<li>[Cox proportional hazard model]</li>
+<li>[Linear regression model]</li>
+<li>[Logistic regression model]</li>
+<li>[Group sequential test]</li>
+<li>[Graphical testing procedure]</li>
+<li>[Combination test based on independent increment]</li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
