@@ -110,9 +110,18 @@ In this example, `PiecewiseConstantExponentialRNG` adds a column `PFS_event` bec
 head(test_set %>% slice_sample(prop = 1))
 ```
 
+To add endpoint to an arm, 
+```{r eegj}
+pbo <- Arm$new(name = 'placebo')
+pbo$add_endpoints(pfs_pbo)
+
+trt <- Arm$new(name = 'treatment')
+trt$add_endpoints(pfs_trt)
+```
+
 ## Define multiple endpoints
 
-You can define more than one endpoint in a trial. Let's add overall survival (OS) as a second endpoint. We'll assume the median overall survival is 7.2 months in the placebo arm and 8.5 months in the treatment arm:
+You can define more than one endpoint in a trial. Let's add overall survival (OS) as a second endpoint. We'll assume the median overall survival is 7.2 months in the placebo arm and 8.5 months in the treatment arm. 
 
 ```{r laiojb}
 os_pbo <- Endpoint$new(name = 'OS', type = 'tte', 
@@ -122,6 +131,10 @@ os_trt <- Endpoint$new(name = 'OS', type = 'tte',
 
 median(os_pbo$test_generator(n = 1e5)$OS) ## should be close to 7.2
 median(os_trt$test_generator(n = 1e5)$OS) ## should be close to 8.5
+
+## add endpoint to existing arms
+pbo$add_endpoints(os_pbo)
+trt$add_endpoints(os_trt)
 ```
 
 Note that by defining `PFS` and `OS` separately (i.e., calling `Endpoint$new` for each endpoint), you are implicitly assuming that these endpoints are independent in the trial.
