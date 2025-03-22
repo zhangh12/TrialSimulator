@@ -7,7 +7,7 @@ over-running or under-running trial where observed final information is
 greater or lower than the planned maximum information. See
 Wassmer &amp;amp; Brannath, 2016, p78f. The test is based on p-values not z
 statistics because it is easier to not handling direction of alternative
-hypothesis in current implementation. In addition, one one-sided test is
+hypothesis in current implementation. In addition, only one-sided test is
 supported which should be sufficient for common use in clinical design."><meta property="og:description" content="Perform group sequential test for a single endpoint based on sequential
 one-sided p-values at each stages. Selected alpha spending functions,
 including user-defined functions, are supported. Boundaries are calculated
@@ -16,7 +16,7 @@ over-running or under-running trial where observed final information is
 greater or lower than the planned maximum information. See
 Wassmer &amp;amp; Brannath, 2016, p78f. The test is based on p-values not z
 statistics because it is easier to not handling direction of alternative
-hypothesis in current implementation. In addition, one one-sided test is
+hypothesis in current implementation. In addition, only one-sided test is
 supported which should be sufficient for common use in clinical design."><meta property="og:image" content="https://zhangh12.github.io/TrialSimulator/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -25,7 +25,7 @@ supported which should be sufficient for common use in clinical design."><meta p
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.53.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.54.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -67,7 +67,7 @@ over-running or under-running trial where observed final information is
 greater or lower than the planned maximum information. See
 Wassmer &amp; Brannath, 2016, p78f. The test is based on p-values not z
 statistics because it is easier to not handling direction of alternative
-hypothesis in current implementation. In addition, one one-sided test is
+hypothesis in current implementation. In addition, only one-sided test is
 supported which should be sufficient for common use in clinical design.</p>
     </div>
 
@@ -341,7 +341,7 @@ equal to the length of <code>observed_info</code>.</p></dd>
 <dd><p>accumulative alpha spent at observed information.
 It is a numeric vector of values between 0 and 1, and of length that
 equals <code>length(observed_info)</code> if alpha-spending
-function is not <code>"asUser"</code>. Otherwise <code>NULL</code>.</p></dd>
+function is <code>"asUser"</code>. Otherwise <code>NULL</code>.</p></dd>
 
 
 </dl><p></p></div>
