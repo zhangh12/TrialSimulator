@@ -13,7 +13,7 @@ over-running or under-running trial where observed final information is
 greater or lower than the planned maximum information. See
 Wassmer & Brannath, 2016, p78f. The test is based on p-values not z
 statistics because it is easier to not handling direction of alternative
-hypothesis in current implementation. In addition, one one-sided test is
+hypothesis in current implementation. In addition, only one-sided test is
 supported which should be sufficient for common use in clinical design.
 }
 \examples{
@@ -341,7 +341,7 @@ equal to the length of \code{observed_info}.}
 \item{\code{alpha_spent}}{accumulative alpha spent at observed information.
 It is a numeric vector of values between 0 and 1, and of length that
 equals \code{length(observed_info)} if alpha-spending
-function is not \code{"asUser"}. Otherwise \code{NULL}.}
+function is \code{"asUser"}. Otherwise \code{NULL}.}
 }
 \if{html}{\out{</div>}}
 }
