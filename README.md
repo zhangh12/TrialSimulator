@@ -30,14 +30,34 @@ remotes::install_github(
 
 ## Getting Started
 
-See the vignettes
+`TrialSimulator` is designed with a modular architecture, allowing users to systematically construct and simulate clinical trials in a structured and flexible manner. The simulation process is broken down into three key steps:
+
+1. **Defining Endpoints**: Specify the treatment endpoints that will be evaluated throughout the trial.
+2. **Specifying Trial Event Triggers**: Establish the conditions under which specific trial events (e.g., interim analysis, futility assessment, or stopping rules) will be triggered.
+3. **Defining Actions for Triggered Events**: Determine the appropriate actions to be taken once a trial event is triggered, such as adjusting enrollment, terminating treatment arms, or conducting statistical analysis.
+
+To efficiently utilize `TrialSimulator` for clinical trial simulations, we recommend reading the following vignettes in order:
 
 - Define endpoints
   - [Time-to-event (TTE) endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineTimeToEventEndpoints.html)
   - [Non-TTE endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineNonTimeToEventEndpoints.html)
   - Repeated measures
-- [Triggering trial events (for dose selection, futility, interim, etc.)](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html)
-- [Example: adaptive design with dose selection, interim, and multiple endpoints](https://zhangh12.github.io/TrialSimulator/articles/adaptiveDesign.html)
+- Condition system
+  - [Triggering trial events](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html)
+- Define actions at trial events
+  - [Action function]
+- Examples: fixed design
+  - [Fixed design]
+- Examples: adaptive design
+  - [Design with dose selection, interim, and multiple endpoints](https://zhangh12.github.io/TrialSimulator/articles/adaptiveDesign.html)
+- Built-in methods supported in `TrialSimulator`
+  - [The logrank test]
+  - [Cox proportional hazard model]
+  - [Linear regression model]
+  - [Logistic regression model]
+  - [Group sequential test]
+  - [Graphical testing procedure]
+  - [Combination test based on independent increment]
 
 
 
