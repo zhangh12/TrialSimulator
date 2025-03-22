@@ -1,3 +1,9 @@
+# TrialSimulator 0.54.0
+
+## New Features
+
+- Add function `Trial$bind` to row bind data frame in action functions. It is useful to prepare inputs of group sequential or graphical test. 
+
 # TrialSimulator 0.53.0
 
 ## New Features

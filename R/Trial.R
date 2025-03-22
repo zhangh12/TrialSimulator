@@ -1349,6 +1349,60 @@ Trial <- R6::R6Class(
     },
 
     #' @description
+    #' row bind a data frame to existing data frame. If \code{name} is not
+    #' existing in \code{Trial}, then it is equivalent to \code{Trial$save}.
+    #' Extra columns in \code{value} are ignored. Columns in
+    #' \code{Trial$custom_data[[name]]} but not in \code{value} are filled
+    #' with \code{NA}.
+    #' @param value a data frame to be saved. It can consist of one or
+    #' multiple rows.
+    #' @param name character. Name of object to be saved.
+    bind = function(value, name){
+      if(!(is.character(name) && length(name) == 1)){
+        stop('name should be a character of length 1')
+      }
+
+      if(!is.data.frame(value)){
+        stop('value should be a data frame. ')
+      }
+
+      if(is.null(private$custom_data[[name]])){
+        private$custom_data[[name]] <- value
+        return(invisible(NULL))
+      }
+
+      new_cols <- names(value)
+      old_cols <- names(private$custom_data[[name]])
+
+      if(!any(new_cols %in% old_cols)){
+        stop('None of columns in <value> can be found in <', name, '>. ',
+             'Cannot bind data to <', name, '>. \n',
+             'Columns in <value>: \n<', paste0(new_cols, collapse = ', '), '>. \n',
+             'Columns in <', name, '>: \n<', paste0(old_cols, collapse = ', '), '>. ')
+      }
+
+      miss_cols <- setdiff(old_cols, new_cols)
+      extra_cols <- setdiff(new_cols, old_cols)
+
+      if(length(extra_cols) > 0){
+        warning('Extra columns <', paste0(extra_cols, collapse = ', '),
+                '> present in <', name, '>, and are omitted. ')
+        value <- value %>%
+          dplyr::select(-all_of(extra_cols))
+        print(value)
+      }
+
+      if(length(miss_cols) > 0){
+        warning('Columns <', paste0(miss_cols, collapse = ', '),
+                '> are missing when binding to <', name, '>. ',
+                'Entries are filled with NA')
+      }
+
+      private$custom_data[[name]] <- bind_rows(private$custom_data[[name]], value)
+      invisible(NULL)
+    },
+
+    #' @description
     #' save arbitrary (number of) objects into a trial so that users can use
     #' those to control the workflow. Most common use case is to store
     #' simulation parameters to be used in action functions.

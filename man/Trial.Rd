@@ -136,6 +136,7 @@ trial$closedTest(dt, c('high dose', 'low dose'),
 \item \href{#method-Trial-event_plot}{\code{Trial$event_plot()}}
 \item \href{#method-Trial-censor_trial_data}{\code{Trial$censor_trial_data()}}
 \item \href{#method-Trial-save}{\code{Trial$save()}}
+\item \href{#method-Trial-bind}{\code{Trial$bind()}}
 \item \href{#method-Trial-save_custom_data}{\code{Trial$save_custom_data()}}
 \item \href{#method-Trial-get_custom_data}{\code{Trial$get_custom_data()}}
 \item \href{#method-Trial-get_output}{\code{Trial$get_output()}}
@@ -873,6 +874,30 @@ to be \code{''} as default. Otherwise, column name would be, e.g.,
 
 \item{\code{overwrite}}{logic. \code{TRUE} if overwriting existing entries
 with warning, otherwise, throwing an error and stop.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trial-bind"></a>}}
+\if{latex}{\out{\hypertarget{method-Trial-bind}{}}}
+\subsection{Method \code{bind()}}{
+row bind a data frame to existing data frame. If \code{name} is not
+existing in \code{Trial}, then it is equivalent to \code{Trial$save}.
+Extra columns in \code{value} are ignored. Columns in
+\code{Trial$custom_data[[name]]} but not in \code{value} are filled
+with \code{NA}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trial$bind(value, name)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{a data frame to be saved. It can consist of one or
+multiple rows.}
+
+\item{\code{name}}{character. Name of object to be saved.}
 }
 \if{html}{\out{</div>}}
 }

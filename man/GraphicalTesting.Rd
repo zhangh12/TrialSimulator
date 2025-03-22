@@ -96,8 +96,9 @@ gt
 stats <-
   data.frame(
     order = c(1:3, 1:3, 1:2, 1:2, 1, 1),
-    hypotheses = c(rep('H1: OS sub',3), rep('H2: OS all',3),
-    'H5: ORR sub', 'H6: ORR all'),
+    hypotheses = c(rep('H1: OS sub', 3), rep('H2: OS all', 3),
+                   rep('H3: PFS sub', 2), rep('H4: PFS all', 2),
+                   'H5: ORR sub', 'H6: ORR all'),
     p = c(.03, .0001, .000001, .2, .15, .1, .2, .001, .3, .2, .00001, .1),
     info = c(185, 245, 295, 529, 700, 800, 265, 310, 675, 750, 490, 990),
     is_final = c(F, F, T, F, F, T, F, T, F, T, T, T),
