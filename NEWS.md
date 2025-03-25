@@ -1,3 +1,13 @@
+# TrialSimulator 0.55.0
+
+## Bug Fixes
+
+- Fix a bug in `StaggeredRecruiter` to force the enrollment time of the first patient is zero. This is an known issue but I was too lazy to fix it. Earlier version may have overestimated time of events. 
+
+## New Features
+
+- add function `fitFarringtonManning` of Farrington-Manning test for rate difference. 
+
 # TrialSimulator 0.54.0
 
 ## New Features

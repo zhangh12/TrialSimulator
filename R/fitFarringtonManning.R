@@ -1,7 +1,8 @@
-#' Fit linear regression model
+#' @title Farrington-Manning test for rate difference
 #'
 #' @description
-#' Fit linear regression model on a continuous endpoint.
+#' Test rate difference by comparing it to a pre-specified value using the
+#' Farrington-Manning test
 #'
 #' @param endpoint Character. Name of the endpoint in \code{data}.
 #' @param placebo Character. String indicating the placebo in \code{data$arm}.
@@ -9,32 +10,34 @@
 #' @param alternative a character string specifying the alternative hypothesis,
 #' must be one of \code{"greater"} or \code{"less"}. No default value.
 #' \code{"greater"} means superiority of treatment over placebo is established
-#' by a greater mean in treated arm because a
-#' linear regression model is fitted with \code{endpoint ~ I(arm != placebo)}.
+#' by rate difference greater than `delta`.
+#' @param delta the rate difference between a treatment arm and placebo under
+#' the null.
 #' @param ... Subset conditions compatible with \code{dplyr::filter}.
 #' \code{glm} will be fitted on this subset only. This argument can be useful
 #' to create a subset of data for analysis when a trial consists of more
 #' than two arms. By default, it is not specified,
 #' all data will be used to fit the model. More than one condition can be
 #' specified in \code{...}, e.g.,
-#' \code{fitLinear('cfb', 'pbo', data, arm \%in\% c('pbo', 'low dose'), cfb > 0.5)},
+#' \code{fitFarringtonManning('remission', 'pbo', data, delta, arm \%in\% c('pbo', 'low dose'), cfb > 0.5)},
 #' which is equivalent to:
-#' \code{fitLinear('cfb', 'pbo', data, arm \%in\% c('pbo', 'low dose') & cfb > 0.5)}.
+#' \code{fitFarringtonManning('remission', 'pbo', data, delta, arm \%in\% c('pbo', 'low dose') & cfb > 0.5)}.
 #' Note that if more than one treatment arm are present in the data after
 #' applying filter in \code{...}, models are fitted for placebo verse
 #' each of the treatment arms.
 #'
 #' @returns a data frame with three columns:
 #' \describe{
-#' \item{\code{p}}{one-sided p-value for between-arm difference (treated vs placebo). }
+#' \item{\code{p}}{one-sided p-value for log odds ratio (treated vs placebo). }
 #' \item{\code{info}}{sample size in the subset with \code{NA} being removed. }
-#' \item{\code{z}}{the z statistics of between-arm difference (treated vs placebo). }
+#' \item{\code{z}}{the z statistics of log odds ratio (treated vs placebo). }
 #' }
 #'
-#' @importFrom stats glm
+#' @references Farrington, Conor P., and Godfrey Manning. "Test statistics and sample size formulae for comparative binomial trials with null hypothesis of non-zero risk difference or non-unity relative risk." Statistics in medicine 9.12 (1990): 1447-1454.
+#'
 #' @export
 #'
-fitLinear <- function(endpoint, placebo, data, alternative, ...) {
+fitFarringtonManning <- function(endpoint, placebo, data, alternative, delta = 0, ...) {
 
   if(!is.character(endpoint) || length(endpoint) != 1){
     stop("endpoint must be a single character string")
@@ -58,6 +61,10 @@ fitLinear <- function(endpoint, placebo, data, alternative, ...) {
          'Please check endpoint\'s name. ')
   }
 
+  if(delta < -1 || delta > 1){
+    stop('delta should be in [-1, 1]. ')
+  }
+
   # Prepare the data based on condition ...
   filtered_data <- if(...length() == 0){
     data
@@ -66,7 +73,7 @@ fitLinear <- function(endpoint, placebo, data, alternative, ...) {
       data %>% dplyr::filter(...)
     },
     error = function(e){
-      stop('Error in filtering data for fitting a logistic regression model. ',
+      stop('Error in filtering data for fitting Farrington-Manning test. ',
            'Please check condition in ..., ',
            'which should be compatible with dplyr::filter. ')
     })
@@ -77,34 +84,44 @@ fitLinear <- function(endpoint, placebo, data, alternative, ...) {
     stop("No data remaining after applying subset condition. ")
   }
 
-  treatment_arms <- setdiff(unique(filtered_data$arm), placebo) %>% sort()
-
-  # Create the formula
-  formula_str <- paste0(endpoint, " ~ I(arm != '", placebo, "')")
+  treatment_arms <- setdiff(unique(filtered_data$arm), placebo)
 
   ret <- NULL
 
   for(trt_arm in treatment_arms){
-    sub_data <- filtered_data %>% dplyr::filter(.data$arm %in% c(placebo, trt_arm))
+    sub_data <- filtered_data %>%
+      dplyr::filter(.data$arm %in% c(placebo, trt_arm)) %>%
+      dplyr::filter(!is.na(!!endpoint))
 
-    # Fit the logistic regression model
-    fit <- summary(glm(as.formula(formula_str),
-                       family = 'gaussian',
-                       data = sub_data)
-    )$coef
+    p1 <- mean(sub_data[[endpoint]][sub_data$arm %in% trt_arm])
+    p2 <- mean(sub_data[[endpoint]][sub_data$arm %in% placebo])
+    n1 <- sum(sub_data$arm %in% trt_arm)
+    n2 <- sum(sub_data$arm %in% placebo)
+    delta <- 0
 
-    z <- fit[2, 't value']
+    # standard deviation of the rate difference under the null hypothesis (risk difference = -delta)
+    theta <- n2/n1
+    d <- -p1 * delta * (1 + delta)
+    c <- delta^2 + delta * (2 * p1 + theta + 1) + p1 + theta * p2
+    b <- -(1 + theta + p1 + theta * p2 + delta * (theta + 2))
+    a <- 1 + theta
+    v <- b^3/(27*a^3) - b*c/(6*a^2) + d/(2*a)
+    u <- sign(v)*sqrt(b^2/(9*a^2) - c/(3*a))
+    w <- (pi + acos(   max(min(1, v/u^3), 0, na.rm = TRUE)  ))/3
+    p1_null <- 2*u*cos(w) - b/(3*a)
+    p2_null <- p1_null - delta
+    sd_diff_null <- sqrt(p1_null*(1 - p1_null)/n1 + p2_null*(1 - p2_null)/n2)
+
+    z <- (p1 - p2 - delta)/sd_diff_null
     p <- ifelse(alternative == 'greater', 1 - pnorm(z), pnorm(z))
 
-    info <- sum(!is.na(sub_data[[endpoint]]))
+    info <- nrow(sub_data)
 
     ret <- rbind(ret, data.frame(arm = trt_arm, placebo = placebo,
-                                 p = p, info = info, z = z
-                                 )
-                 )
+                                 p = p, info = info, z = z)
+    )
   }
 
-  class(ret) <- c('fit_linear', class(ret))
+  class(ret) <- c('fit_fm', class(ret))
   ret
 }
-
