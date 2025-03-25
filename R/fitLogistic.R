@@ -76,7 +76,7 @@ fitLogistic <- function(endpoint, placebo, data, alternative, ...) {
     stop("No data remaining after applying subset condition. ")
   }
 
-  treatment_arms <- setdiff(unique(filtered_data$arm), placebo)
+  treatment_arms <- setdiff(unique(filtered_data$arm), placebo) %>% sort()
 
   # Create the formula
   formula_str <- paste0(endpoint, " ~ I(arm != '", placebo, "')")

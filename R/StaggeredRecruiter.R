@@ -36,20 +36,27 @@ StaggeredRecruiter <- function(n, accrual_rate){
       ## figure out how many more patients are needed
       ## because accrual rate is flat from now on
       n_ <- n - length(enroll_time)
+      stopifnot(n_ > 0)
       end <- start + 1/rate * n_
     }
 
-    enroll_time <- c(enroll_time,
-                     seq(from = start, to = end,
-                         by = 1/rate)[-1]
-                     )
+    new_time <- seq(from = start, to = end, by = 1/rate)
+    start <- tail(new_time, 1)
+    enroll_time <- c(enroll_time, head(new_time, -1))
+    rm(new_time)
+
     if(length(enroll_time) >= n){
+      if(!all(diff(enroll_time) > 0)){
+        stop('Debug StaggeredRecruiter. ')
+      }
       return(head(enroll_time, n))
     }
 
-    start <- tail(enroll_time, 1)
-
   }
+
+  stop('No sufficient patients can be recruited from the accrual rate. ',
+       'Check your setting or debug StaggeredRecruiter. ')
+
 }
 
 
