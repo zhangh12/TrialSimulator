@@ -11,7 +11,7 @@ or stop a trial early."><meta property="og:image" content="https://zhangh12.gith
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.55.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.56.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,6 +65,7 @@ or stop a trial early.</p>
 <li><p><a href="#method-Event-set_dry_run"><code>Event$set_dry_run()</code></a></p></li>
 <li><p><a href="#method-Event-execute_action"><code>Event$execute_action()</code></a></p></li>
 <li><p><a href="#method-Event-get_trigger_status"><code>Event$get_trigger_status()</code></a></p></li>
+<li><p><a href="#method-Event-reset"><code>Event$reset()</code></a></p></li>
 <li><p><a href="#method-Event-trigger_event"><code>Event$trigger_event()</code></a></p></li>
 <li><p><a href="#method-Event-mute"><code>Event$mute()</code></a></p></li>
 <li><p><a href="#method-Event-clone"><code>Event$clone()</code></a></p></li>
@@ -175,6 +176,16 @@ refer to <code>Controller::run</code>.</p><div class="section">
 </div>
 
 
+</div><p></p><hr><a id="method-Event-reset"></a><div class="section">
+<h3 id="method-reset-">Method <code>reset()</code><a class="anchor" aria-label="anchor" href="#method-reset-"></a></h3>
+<p>reset an event so that it can be triggered again. Usually, this is called
+before the controller of a trial can run additional replicates
+of simulation.</p><div class="section">
+<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Event</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+
 </div><p></p><hr><a id="method-Event-trigger_event"></a><div class="section">
 <h3 id="method-trigger-event-">Method <code>trigger_event()</code><a class="anchor" aria-label="anchor" href="#method-trigger-event-"></a></h3>
 <p>trigger an event (always TRUE) and execute action accordingly. It calls
@@ -184,7 +195,7 @@ found, Trial$get_data_lock_time() will throw an error and stop the
 program. This means that user needs to adjust their trigger_condition
 (e.g., target number of events (target_n_events) is impossible to
 reach).</p><div class="section">
-<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Event</span><span class="op">$</span><span class="fu">trigger_event</span><span class="op">(</span><span class="va">trial</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -204,7 +215,7 @@ reach).</p><div class="section">
 </div><p></p><hr><a id="method-Event-mute"></a><div class="section">
 <h3 id="method-mute-">Method <code>mute()</code><a class="anchor" aria-label="anchor" href="#method-mute-"></a></h3>
 <p>mute all messages (not including warnings)</p><div class="section">
-<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
+<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Event</span><span class="op">$</span><span class="fu">mute</span><span class="op">(</span><span class="va">silent</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -220,7 +231,7 @@ reach).</p><div class="section">
 </div><p></p><hr><a id="method-Event-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
+<h4 id="usage-11">Usage<a class="anchor" aria-label="anchor" href="#usage-11"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Event</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 

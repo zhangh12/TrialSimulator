@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.55.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.56.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -96,13 +96,14 @@
 <li><p><a href="#method-Trial-get_custom_data"><code>Trial$get_custom_data()</code></a></p></li>
 <li><p><a href="#method-Trial-get_output"><code>Trial$get_output()</code></a></p></li>
 <li><p><a href="#method-Trial-mute"><code>Trial$mute()</code></a></p></li>
-<li><p><a href="#method-Trial-set_tester"><code>Trial$set_tester()</code></a></p></li>
-<li><p><a href="#method-Trial-get_tester"><code>Trial$get_tester()</code></a></p></li>
 <li><p><a href="#method-Trial-independentIncrement"><code>Trial$independentIncrement()</code></a></p></li>
 <li><p><a href="#method-Trial-dunnettTest"><code>Trial$dunnettTest()</code></a></p></li>
 <li><p><a href="#method-Trial-closedTest"><code>Trial$closedTest()</code></a></p></li>
 <li><p><a href="#method-Trial-get_seed"><code>Trial$get_seed()</code></a></p></li>
 <li><p><a href="#method-Trial-print"><code>Trial$print()</code></a></p></li>
+<li><p><a href="#method-Trial-get_snapshot_copy"><code>Trial$get_snapshot_copy()</code></a></p></li>
+<li><p><a href="#method-Trial-make_snapshot"><code>Trial$make_snapshot()</code></a></p></li>
+<li><p><a href="#method-Trial-reset"><code>Trial$reset()</code></a></p></li>
 <li><p><a href="#method-Trial-clone"><code>Trial$clone()</code></a></p></li>
 </ul></div><p></p><hr><a id="method-Trial-new"></a><div class="section">
 <h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
@@ -915,39 +916,15 @@ column when <code>length(col) == 1</code> and <code>simplify == TRUE</code>.</p>
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-Trial-set_tester"></a><div class="section">
-<h3 id="method-set-tester-">Method <code>set_tester()</code><a class="anchor" aria-label="anchor" href="#method-set-tester-"></a></h3>
-<p>set a tester, now it can only be an object of class <code>GraphicalTesting</code>.</p><div class="section">
-<h4 id="usage-45">Usage<a class="anchor" aria-label="anchor" href="#usage-45"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">set_tester</span><span class="op">(</span><span class="va">tester</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-27">Arguments<a class="anchor" aria-label="anchor" href="#arguments-27"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>tester</code></dt>
-<dd><p>object of class <code>GraphicalTesting</code></p></dd>
-
-
-</dl><p></p></div>
-</div>
-
-</div><p></p><hr><a id="method-Trial-get_tester"></a><div class="section">
-<h3 id="method-get-tester-">Method <code>get_tester()</code><a class="anchor" aria-label="anchor" href="#method-get-tester-"></a></h3>
-<p>return a tester, now it is a <code>GraphicalTesting</code> object.</p><div class="section">
-<h4 id="usage-46">Usage<a class="anchor" aria-label="anchor" href="#usage-46"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">get_tester</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-
 </div><p></p><hr><a id="method-Trial-independentIncrement"></a><div class="section">
 <h3 id="method-independentincrement-">Method <code>independentIncrement()</code><a class="anchor" aria-label="anchor" href="#method-independentincrement-"></a></h3>
 <p>calculate independent increments from a given set of events</p><div class="section">
-<h4 id="usage-47">Usage<a class="anchor" aria-label="anchor" href="#usage-47"></a></h4>
+<h4 id="usage-45">Usage<a class="anchor" aria-label="anchor" href="#usage-45"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">independentIncrement</span><span class="op">(</span><span class="va">endpoint</span>, <span class="va">placebo</span>, <span class="va">events</span>, <span class="va">planned_info</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-28">Arguments<a class="anchor" aria-label="anchor" href="#arguments-28"></a></h4>
+<h4 id="arguments-27">Arguments<a class="anchor" aria-label="anchor" href="#arguments-27"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>endpoint</code></dt>
 <dd><p>character. Name of time-to-event endpoint in trial's
 locked data.</p></dd>
@@ -1035,12 +1012,12 @@ trial$independentIncrement('pfs', 'pbo', listener$get_event_names(), 'oracle')
 <h3 id="method-dunnetttest-">Method <code>dunnettTest()</code><a class="anchor" aria-label="anchor" href="#method-dunnetttest-"></a></h3>
 <p>carry out closed test based on Dunnett method under group sequential
 design.</p><div class="section">
-<h4 id="usage-48">Usage<a class="anchor" aria-label="anchor" href="#usage-48"></a></h4>
+<h4 id="usage-46">Usage<a class="anchor" aria-label="anchor" href="#usage-46"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">dunnettTest</span><span class="op">(</span><span class="va">endpoint</span>, <span class="va">placebo</span>, <span class="va">treatments</span>, <span class="va">events</span>, <span class="va">planned_info</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-29">Arguments<a class="anchor" aria-label="anchor" href="#arguments-29"></a></h4>
+<h4 id="arguments-28">Arguments<a class="anchor" aria-label="anchor" href="#arguments-28"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>endpoint</code></dt>
 <dd><p>character of an endpoint for Dunnett test.</p></dd>
 
@@ -1149,7 +1126,7 @@ trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_n
 </div><p></p><hr><a id="method-Trial-closedTest"></a><div class="section">
 <h3 id="method-closedtest-">Method <code>closedTest()</code><a class="anchor" aria-label="anchor" href="#method-closedtest-"></a></h3>
 <p>perform closed test based on Dunnett test</p><div class="section">
-<h4 id="usage-49">Usage<a class="anchor" aria-label="anchor" href="#usage-49"></a></h4>
+<h4 id="usage-47">Usage<a class="anchor" aria-label="anchor" href="#usage-47"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span></span>
 <span>  <span class="va">dunnett_test</span>,</span>
 <span>  <span class="va">treatments</span>,</span>
@@ -1160,7 +1137,7 @@ trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_n
 </div>
 
 <div class="section">
-<h4 id="arguments-30">Arguments<a class="anchor" aria-label="anchor" href="#arguments-30"></a></h4>
+<h4 id="arguments-29">Arguments<a class="anchor" aria-label="anchor" href="#arguments-29"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>dunnett_test</code></dt>
 <dd><p>object returned by <code>Trial$dunnettTest()</code>.</p></dd>
 
@@ -1212,7 +1189,7 @@ trial$closedTest(dt, c('high dose', 'low dose'),
 </div><p></p><hr><a id="method-Trial-get_seed"></a><div class="section">
 <h3 id="method-get-seed-">Method <code>get_seed()</code><a class="anchor" aria-label="anchor" href="#method-get-seed-"></a></h3>
 <p>return random seed</p><div class="section">
-<h4 id="usage-50">Usage<a class="anchor" aria-label="anchor" href="#usage-50"></a></h4>
+<h4 id="usage-48">Usage<a class="anchor" aria-label="anchor" href="#usage-48"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">get_seed</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1220,20 +1197,48 @@ trial$closedTest(dt, c('high dose', 'low dose'),
 </div><p></p><hr><a id="method-Trial-print"></a><div class="section">
 <h3 id="method-print-">Method <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code><a class="anchor" aria-label="anchor" href="#method-print-"></a></h3>
 <p>print a trial</p><div class="section">
-<h4 id="usage-51">Usage<a class="anchor" aria-label="anchor" href="#usage-51"></a></h4>
+<h4 id="usage-49">Usage<a class="anchor" aria-label="anchor" href="#usage-49"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">print</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+
+</div><p></p><hr><a id="method-Trial-get_snapshot_copy"></a><div class="section">
+<h3 id="method-get-snapshot-copy-">Method <code>get_snapshot_copy()</code><a class="anchor" aria-label="anchor" href="#method-get-snapshot-copy-"></a></h3>
+<p>return a snapshot of a trial before it is executed.</p><div class="section">
+<h4 id="usage-50">Usage<a class="anchor" aria-label="anchor" href="#usage-50"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">get_snapshot_copy</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+
+</div><p></p><hr><a id="method-Trial-make_snapshot"></a><div class="section">
+<h3 id="method-make-snapshot-">Method <code>make_snapshot()</code><a class="anchor" aria-label="anchor" href="#method-make-snapshot-"></a></h3>
+<p>make a snapshot before running a trial. This can be useful when
+resetting a trial.</p><div class="section">
+<h4 id="usage-51">Usage<a class="anchor" aria-label="anchor" href="#usage-51"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">make_snapshot</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+
+</div><p></p><hr><a id="method-Trial-reset"></a><div class="section">
+<h3 id="method-reset-">Method <code>reset()</code><a class="anchor" aria-label="anchor" href="#method-reset-"></a></h3>
+<p>reset a trial to its snapshot taken before it was executed. Seed will be
+reassigned with a new one. Enrollment time are re-generated. If the trial
+already have arms when this function is called, they are added back to
+recruit patients again.</p><div class="section">
+<h4 id="usage-52">Usage<a class="anchor" aria-label="anchor" href="#usage-52"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 
 </div><p></p><hr><a id="method-Trial-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-52">Usage<a class="anchor" aria-label="anchor" href="#usage-52"></a></h4>
+<h4 id="usage-53">Usage<a class="anchor" aria-label="anchor" href="#usage-53"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-31">Arguments<a class="anchor" aria-label="anchor" href="#arguments-31"></a></h4>
+<h4 id="arguments-30">Arguments<a class="anchor" aria-label="anchor" href="#arguments-30"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 
