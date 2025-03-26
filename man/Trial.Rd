@@ -141,13 +141,14 @@ trial$closedTest(dt, c('high dose', 'low dose'),
 \item \href{#method-Trial-get_custom_data}{\code{Trial$get_custom_data()}}
 \item \href{#method-Trial-get_output}{\code{Trial$get_output()}}
 \item \href{#method-Trial-mute}{\code{Trial$mute()}}
-\item \href{#method-Trial-set_tester}{\code{Trial$set_tester()}}
-\item \href{#method-Trial-get_tester}{\code{Trial$get_tester()}}
 \item \href{#method-Trial-independentIncrement}{\code{Trial$independentIncrement()}}
 \item \href{#method-Trial-dunnettTest}{\code{Trial$dunnettTest()}}
 \item \href{#method-Trial-closedTest}{\code{Trial$closedTest()}}
 \item \href{#method-Trial-get_seed}{\code{Trial$get_seed()}}
 \item \href{#method-Trial-print}{\code{Trial$print()}}
+\item \href{#method-Trial-get_snapshot_copy}{\code{Trial$get_snapshot_copy()}}
+\item \href{#method-Trial-make_snapshot}{\code{Trial$make_snapshot()}}
+\item \href{#method-Trial-reset}{\code{Trial$reset()}}
 \item \href{#method-Trial-clone}{\code{Trial$clone()}}
 }
 }
@@ -982,33 +983,6 @@ mute all messages (not including warnings)
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trial-set_tester"></a>}}
-\if{latex}{\out{\hypertarget{method-Trial-set_tester}{}}}
-\subsection{Method \code{set_tester()}}{
-set a tester, now it can only be an object of class \code{GraphicalTesting}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trial$set_tester(tester)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{tester}}{object of class \code{GraphicalTesting}}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trial-get_tester"></a>}}
-\if{latex}{\out{\hypertarget{method-Trial-get_tester}{}}}
-\subsection{Method \code{get_tester()}}{
-return a tester, now it is a \code{GraphicalTesting} object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trial$get_tester()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Trial-independentIncrement"></a>}}
 \if{latex}{\out{\hypertarget{method-Trial-independentIncrement}{}}}
 \subsection{Method \code{independentIncrement()}}{
@@ -1260,6 +1234,40 @@ return random seed
 print a trial
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trial$print()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trial-get_snapshot_copy"></a>}}
+\if{latex}{\out{\hypertarget{method-Trial-get_snapshot_copy}{}}}
+\subsection{Method \code{get_snapshot_copy()}}{
+return a snapshot of a trial before it is executed.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trial$get_snapshot_copy()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trial-make_snapshot"></a>}}
+\if{latex}{\out{\hypertarget{method-Trial-make_snapshot}{}}}
+\subsection{Method \code{make_snapshot()}}{
+make a snapshot before running a trial. This can be useful when
+resetting a trial.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trial$make_snapshot()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trial-reset"></a>}}
+\if{latex}{\out{\hypertarget{method-Trial-reset}{}}}
+\subsection{Method \code{reset()}}{
+reset a trial to its snapshot taken before it was executed. Seed will be
+reassigned with a new one. Enrollment time are re-generated. If the trial
+already have arms when this function is called, they are added back to
+recruit patients again.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trial$reset()}\if{html}{\out{</div>}}
 }
 
 }
