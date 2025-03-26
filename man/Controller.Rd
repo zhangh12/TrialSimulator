@@ -17,6 +17,8 @@ Create a class of controller to run a trial.
 \item \href{#method-Controller-get_listener}{\code{Controller$get_listener()}}
 \item \href{#method-Controller-get_trial}{\code{Controller$get_trial()}}
 \item \href{#method-Controller-mute}{\code{Controller$mute()}}
+\item \href{#method-Controller-reset}{\code{Controller$reset()}}
+\item \href{#method-Controller-get_output}{\code{Controller$get_output()}}
 \item \href{#method-Controller-run}{\code{Controller$run()}}
 \item \href{#method-Controller-clone}{\code{Controller$clone()}}
 }
@@ -78,17 +80,52 @@ mute all messages (not including warnings)
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Controller-run"></a>}}
-\if{latex}{\out{\hypertarget{method-Controller-run}{}}}
-\subsection{Method \code{run()}}{
-run a trial
+\if{html}{\out{<a id="method-Controller-reset"></a>}}
+\if{latex}{\out{\hypertarget{method-Controller-reset}{}}}
+\subsection{Method \code{reset()}}{
+reset the trial and listener registered to the controller before running
+additional replicate of simulation.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Controller$run(plot_event = TRUE, silent = FALSE, dry_run = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Controller$reset()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Controller-get_output"></a>}}
+\if{latex}{\out{\hypertarget{method-Controller-get_output}{}}}
+\subsection{Method \code{get_output()}}{
+return a data frame of all current outputs saved by calling \code{save}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Controller$get_output(cols = NULL, simplify = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{cols}}{columns to be returned from \code{Controller$output}. If
+\code{NULL}, all columns are returned.}
+
+\item{\code{simplify}}{logical. Return value rather than a data frame of one
+column when \code{length(col) == 1} and \code{simplify == TRUE}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Controller-run"></a>}}
+\if{latex}{\out{\hypertarget{method-Controller-run}{}}}
+\subsection{Method \code{run()}}{
+run a trial
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Controller$run(n = 1, plot_event = TRUE, silent = FALSE, dry_run = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{n}}{number of replicates of simulation. \code{n = 1} by default.
+Simulation results can be accessed by \code{Controller$get_output()}.}
+
 \item{\code{plot_event}}{create event plot}
 
 \item{\code{silent}}{logical. \code{TRUE} if muting all messages during a

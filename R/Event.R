@@ -119,6 +119,14 @@ Event <- R6::R6Class(
     },
 
     #' @description
+    #' reset an event so that it can be triggered again. Usually, this is called
+    #' before the controller of a trial can run additional replicates
+    #' of simulation.
+    reset = function(){
+      private$triggered <- FALSE
+    },
+
+    #' @description
     #' trigger an event (always TRUE) and execute action accordingly. It calls
     #' Trial$get_data_lock_time() to lock data based on conditions implemented
     #' in Event$trigger_condition. If time that meets the condition cannot be
