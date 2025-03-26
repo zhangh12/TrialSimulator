@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.55.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.56.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -55,6 +55,8 @@
 <li><p><a href="#method-Controller-get_listener"><code>Controller$get_listener()</code></a></p></li>
 <li><p><a href="#method-Controller-get_trial"><code>Controller$get_trial()</code></a></p></li>
 <li><p><a href="#method-Controller-mute"><code>Controller$mute()</code></a></p></li>
+<li><p><a href="#method-Controller-reset"><code>Controller$reset()</code></a></p></li>
+<li><p><a href="#method-Controller-get_output"><code>Controller$get_output()</code></a></p></li>
 <li><p><a href="#method-Controller-run"><code>Controller$run()</code></a></p></li>
 <li><p><a href="#method-Controller-clone"><code>Controller$clone()</code></a></p></li>
 </ul></div><p></p><hr><a id="method-Controller-new"></a><div class="section">
@@ -109,16 +111,52 @@
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-Controller-run"></a><div class="section">
-<h3 id="method-run-">Method <code>run()</code><a class="anchor" aria-label="anchor" href="#method-run-"></a></h3>
-<p>run a trial</p><div class="section">
+</div><p></p><hr><a id="method-Controller-reset"></a><div class="section">
+<h3 id="method-reset-">Method <code>reset()</code><a class="anchor" aria-label="anchor" href="#method-reset-"></a></h3>
+<p>reset the trial and listener registered to the controller before running
+additional replicate of simulation.</p><div class="section">
 <h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>plot_event <span class="op">=</span> <span class="cn">TRUE</span>, silent <span class="op">=</span> <span class="cn">FALSE</span>, dry_run <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controller</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+
+</div><p></p><hr><a id="method-Controller-get_output"></a><div class="section">
+<h3 id="method-get-output-">Method <code>get_output()</code><a class="anchor" aria-label="anchor" href="#method-get-output-"></a></h3>
+<p>return a data frame of all current outputs saved by calling <code>save</code>.</p><div class="section">
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controller</span><span class="op">$</span><span class="fu">get_output</span><span class="op">(</span>cols <span class="op">=</span> <span class="cn">NULL</span>, simplify <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>plot_event</code></dt>
+<p></p><div class="arguments"><dl><dt><code>cols</code></dt>
+<dd><p>columns to be returned from <code>Controller$output</code>. If
+<code>NULL</code>, all columns are returned.</p></dd>
+
+
+<dt><code>simplify</code></dt>
+<dd><p>logical. Return value rather than a data frame of one
+column when <code>length(col) == 1</code> and <code>simplify == TRUE</code>.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-Controller-run"></a><div class="section">
+<h3 id="method-run-">Method <code>run()</code><a class="anchor" aria-label="anchor" href="#method-run-"></a></h3>
+<p>run a trial</p><div class="section">
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1</span>, plot_event <span class="op">=</span> <span class="cn">TRUE</span>, silent <span class="op">=</span> <span class="cn">FALSE</span>, dry_run <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>n</code></dt>
+<dd><p>number of replicates of simulation. <code>n = 1</code> by default.
+Simulation results can be accessed by <code>Controller$get_output()</code>.</p></dd>
+
+
+<dt><code>plot_event</code></dt>
 <dd><p>create event plot</p></dd>
 
 
@@ -150,12 +188,12 @@ to estimate event time.</p></dd>
 </div><p></p><hr><a id="method-Controller-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controller</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
+<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

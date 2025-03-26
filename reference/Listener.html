@@ -11,7 +11,7 @@ automatically."><meta property="og:image" content="https://zhangh12.github.io/Tr
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.55.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.56.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,6 +63,7 @@ automatically.</p>
 <li><p><a href="#method-Listener-get_event_names"><code>Listener$get_event_names()</code></a></p></li>
 <li><p><a href="#method-Listener-monitor"><code>Listener$monitor()</code></a></p></li>
 <li><p><a href="#method-Listener-mute"><code>Listener$mute()</code></a></p></li>
+<li><p><a href="#method-Listener-reset"><code>Listener$reset()</code></a></p></li>
 <li><p><a href="#method-Listener-clone"><code>Listener$clone()</code></a></p></li>
 </ul></div><p></p><hr><a id="method-Listener-new"></a><div class="section">
 <h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
@@ -154,10 +155,19 @@ Events are triggered in the order when calling
 </dl><p></p></div>
 </div>
 
+</div><p></p><hr><a id="method-Listener-reset"></a><div class="section">
+<h3 id="method-reset-">Method <code>reset()</code><a class="anchor" aria-label="anchor" href="#method-reset-"></a></h3>
+<p>reset all events registered to the listener. Usually, this is called
+before a controller can run additional replicates of simulation.</p><div class="section">
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Listener</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+
 </div><p></p><hr><a id="method-Listener-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Listener</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
