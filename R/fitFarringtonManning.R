@@ -91,7 +91,7 @@ fitFarringtonManning <- function(endpoint, placebo, data, alternative, delta = 0
   for(trt_arm in treatment_arms){
     sub_data <- filtered_data %>%
       dplyr::filter(.data$arm %in% c(placebo, trt_arm)) %>%
-      dplyr::filter(!is.na(!!endpoint))
+      dplyr::filter(!is.na(.data[[endpoint]]))
 
     p1 <- mean(sub_data[[endpoint]][sub_data$arm %in% trt_arm])
     p2 <- mean(sub_data[[endpoint]][sub_data$arm %in% placebo])
