@@ -23,6 +23,7 @@ or stop a trial early.
 \item \href{#method-Event-set_dry_run}{\code{Event$set_dry_run()}}
 \item \href{#method-Event-execute_action}{\code{Event$execute_action()}}
 \item \href{#method-Event-get_trigger_status}{\code{Event$get_trigger_status()}}
+\item \href{#method-Event-reset}{\code{Event$reset()}}
 \item \href{#method-Event-trigger_event}{\code{Event$trigger_event()}}
 \item \href{#method-Event-mute}{\code{Event$mute()}}
 \item \href{#method-Event-clone}{\code{Event$clone()}}
@@ -137,6 +138,18 @@ execute action function
 return trigger status
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Event$get_trigger_status()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Event-reset"></a>}}
+\if{latex}{\out{\hypertarget{method-Event-reset}{}}}
+\subsection{Method \code{reset()}}{
+reset an event so that it can be triggered again. Usually, this is called
+before the controller of a trial can run additional replicates
+of simulation.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Event$reset()}\if{html}{\out{</div>}}
 }
 
 }

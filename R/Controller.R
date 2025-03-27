@@ -14,6 +14,7 @@ Controller <- R6::R6Class(
     listener = NULL,
     silent = FALSE,
     dry_run = FALSE,
+    output = NULL,
 
     run_ = function(plot_event = TRUE, silent = FALSE, dry_run = FALSE){
 
@@ -65,7 +66,40 @@ Controller <- R6::R6Class(
     },
 
     #' @description
+    #' reset the trial and listener registered to the controller before running
+    #' additional replicate of simulation.
+    reset = function(){
+      self$get_trial()$reset()
+      self$get_listener()$reset()
+    },
+
+    #' @description
+    #' return a data frame of all current outputs saved by calling \code{save}.
+    #' @param cols columns to be returned from \code{Controller$output}. If
+    #' \code{NULL}, all columns are returned.
+    #' @param simplify logical. Return value rather than a data frame of one
+    #' column when \code{length(col) == 1} and \code{simplify == TRUE}.
+    get_output = function(cols = NULL, simplify = TRUE){
+      if(is.null(cols)){
+        cols <- colnames(private$output)
+      }
+
+      if(!all(cols %in% names(private$output))){
+        stop('Columns <', paste0(setdiff(cols, names(private$output)), collapse = ', '),
+             '> are not found in trial$output. Check if there is a typo. ')
+      }
+      ret <- private$output[, cols, drop = FALSE]
+      if(simplify && ncol(ret) == 1){
+        return(ret[1, 1])
+      }else{
+        return(ret)
+      }
+    },
+
+    #' @description
     #' run a trial
+    #' @param n number of replicates of simulation. \code{n = 1} by default.
+    #' Simulation results can be accessed by \code{Controller$get_output()}.
     #' @param plot_event create event plot
     #' @param silent logical. \code{TRUE} if muting all messages during a
     #' trial. Note that warning messages are still displayed.
@@ -83,18 +117,26 @@ Controller <- R6::R6Class(
     #' possibly be added or removed, setting \code{dry_run} to \code{TRUE}
     #' is usually not helpful because adaption should be actually applied
     #' to estimate event time.
-    run = function(plot_event = TRUE, silent = FALSE, dry_run = FALSE){
+    run = function(n = 1, plot_event = TRUE, silent = FALSE, dry_run = FALSE){
 
-      tryCatch(
-        expr = {
-          private$run_(plot_event, silent, dry_run)
-        },
+      for(idx in 1:n){
+        tryCatch(
+          expr = {
+            private$run_(plot_event, silent, dry_run)
+          },
 
-        error = function(e){
-          self$get_trial()$save(e$message, 'error_message', overwrite = TRUE)
-          stop(e$message)
+          error = function(e){
+            self$get_trial()$save(e$message, 'error_message', overwrite = TRUE)
+            stop(e$message)
+          }
+        )
+
+        private$output <- bind_rows(private$output, self$get_trial()$get_output())
+
+        if(idx < n){
+          self$reset()
         }
-      )
+      }
 
     }
   )

@@ -92,25 +92,27 @@ Trial <- R6::R6Class(
         private$now <- 0
         private$trial_data <- NULL
         private$locked_data <- list()
-        private$output <- NULL
+        private$output <- data.frame(trial = self$get_name())
         private$custom_data <- list()
 
         private$seed <- seed
-        set.seed(private$seed)
         self$save(seed, 'seed')
         self$save('', 'error_message')
-
-        self$set_enroller(enroller, ...)
-
-        ## sort enrollment time
-        private$enroll_time <-
-          sort(self$get_enroller()(n = n_patients), decreasing = FALSE)
 
         if(is.null(dropout)){
           self$set_dropout(rconst, value = Inf)
         }else{
           self$set_dropout(dropout, ...)
         }
+
+        self$set_enroller(enroller, ...)
+
+        self$make_snapshot()
+
+        set.seed(private$seed)
+        ## sort enrollment time
+        private$enroll_time <-
+          sort(self$get_enroller()(n = n_patients), decreasing = FALSE)
 
       },
 
@@ -1476,19 +1478,6 @@ Trial <- R6::R6Class(
     },
 
     #' @description
-    #' set a tester, now it can only be an object of class \code{GraphicalTesting}.
-    #' @param tester object of class \code{GraphicalTesting}
-    set_tester = function(tester){
-      private$tester <- tester
-    },
-
-    #' @description
-    #' return a tester, now it is a \code{GraphicalTesting} object.
-    get_tester = function(){
-      private$tester
-    },
-
-    #' @description
     #' calculate independent increments from a given set of events
     #' @param endpoint character. Name of time-to-event endpoint in trial's
     #' locked data.
@@ -2100,6 +2089,65 @@ Trial <- R6::R6Class(
 
       invisible(self)
 
+    },
+
+    #' @description
+    #' return a snapshot of a trial before it is executed.
+    get_snapshot_copy = function(){
+      private$.snapshot
+    },
+
+    #' @description
+    #' make a snapshot before running a trial. This can be useful when
+    #' resetting a trial.
+    make_snapshot = function() {
+
+      private$.snapshot <- list()
+
+      for(field in names(private)){
+        if(field %in% c('.snapshot', 'permuted_block_randomization', 'validate_arguments')){
+          next
+        }
+        private$.snapshot[[field]] <- private[[field]]
+      }
+
+    },
+
+    #' @description
+    #' reset a trial to its snapshot taken before it was executed. Seed will be
+    #' reassigned with a new one. Enrollment time are re-generated. If the trial
+    #' already have arms when this function is called, they are added back to
+    #' recruit patients again.
+    reset = function() {
+
+      arm_names <- self$get_arms_name()
+      arms <- self$get_arms()
+      sample_ratio <- self$get_sample_ratio()
+
+      for (field in names(private$.snapshot)) {
+        private[[field]] <- private$.snapshot[[field]]
+      }
+
+      private$event_time <- c()
+      private$trial_data <- NULL
+      private$enroll_time <- NULL
+      private$randomization_queue <- NULL
+      private$n_enrolled_patients <- NULL
+      private$sample_ratio <- NULL
+      private$arms <- list()
+
+      private$seed <- sample(.Machine$integer.max, 1)
+      private$output$seed <- private$seed
+      set.seed(private$seed)
+
+      private$enroll_time <-
+        sort(self$get_enroller()(n = private$n_patients), decreasing = FALSE)
+
+      if(length(arms) > 0){
+        stopifnot(length(arms) == length(sample_ratio))
+        do.call(self$add_arms, c(list(sample_ratio), arms))
+      }
+
     }
 
   ),
@@ -2133,8 +2181,6 @@ Trial <- R6::R6Class(
     locked_data = list(),
 
     event_time = c(),
-
-    tester = NULL,
 
     silent = FALSE,
 
@@ -2212,8 +2258,11 @@ Trial <- R6::R6Class(
                 # 'or after adding/removing an arm from the trial. \n',
                 # 'Otherwise it may indicator a potential issue. \n')
       }
-    }
+    },
 
+    ##########################
+
+    .snapshot = list()
 
   )
 )

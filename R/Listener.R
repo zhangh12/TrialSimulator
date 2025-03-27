@@ -102,6 +102,16 @@ Listener <- R6::R6Class(
       for(event in self$get_events()){
         event$mute(private$silent)
       }
+    },
+
+    #' @description
+    #' reset all events registered to the listener. Usually, this is called
+    #' before a controller can run additional replicates of simulation.
+    reset = function(){
+      events <- self$get_events()
+      for(event in events){
+        event$reset()
+      }
     }
   )
 
