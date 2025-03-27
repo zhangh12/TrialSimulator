@@ -1,4 +1,15 @@
-
+#' Calculate Parameters of Weibull Distribution as a Dropout Method
+#'
+#' @description
+#' Fit scale and shape parameters of the Weibull distribution to match
+#' dropout rates at two specified time points.
+#'
+#' @param time a numeric vector of two time points at which dropout rates are
+#' specified.
+#' @param dropout_rate a numeric vector of dropout rates at \code{time}.
+#'
+#' @returns a named vector for scale and shape parameters.
+#'
 #' @export
 weibullDropout <- function(time, dropout_rate){
 

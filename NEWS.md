@@ -1,3 +1,9 @@
+# TrialSimulator 0.56.0
+
+## New Features
+
+- `Controller$run` now can specify number of simulation replicates by newly added argument `n`. If `n` is greater than 1, simulation results can be accessed in `Controller$get_output()`.  
+
 # TrialSimulator 0.55.0
 
 ## Bug Fixes

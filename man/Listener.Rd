@@ -21,6 +21,7 @@ automatically.
 \item \href{#method-Listener-get_event_names}{\code{Listener$get_event_names()}}
 \item \href{#method-Listener-monitor}{\code{Listener$monitor()}}
 \item \href{#method-Listener-mute}{\code{Listener$mute()}}
+\item \href{#method-Listener-reset}{\code{Listener$reset()}}
 \item \href{#method-Listener-clone}{\code{Listener$clone()}}
 }
 }
@@ -119,6 +120,17 @@ mute all messages (not including warnings)
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Listener-reset"></a>}}
+\if{latex}{\out{\hypertarget{method-Listener-reset}{}}}
+\subsection{Method \code{reset()}}{
+reset all events registered to the listener. Usually, this is called
+before a controller can run additional replicates of simulation.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Listener$reset()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Listener-clone"></a>}}
