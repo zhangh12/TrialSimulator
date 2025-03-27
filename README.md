@@ -16,7 +16,7 @@ It also provides functions of group sequential design, graphical testing procedu
 
 ## Validation
 
-The validation documents for this R package are hosted [here](https://github.com/zhangh12/TrialSimulatorDocuments) and are continuously being updated.
+The validation documents for this R package are hosted [here](https://github.com/zhangh12/TrialSimulatorDocuments) and are continuously updated.
 
 ## Installation
 
