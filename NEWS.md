@@ -1,3 +1,9 @@
+# TrialSimulator 0.57.0
+
+## Updates
+
+- Move vignette of comparison between `GraphicalTesting` and `graphicalMCP` to repository [TrialSimulatorDocuments](https://github.com/zhangh12/TrialSimulatorDocuments). 
+
 # TrialSimulator 0.56.0
 
 ## New Features
