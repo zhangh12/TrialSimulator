@@ -89,11 +89,11 @@ Using the computed scale parameter $\lambda=$ `r round(dropout_pars['scale'], 3)
 
 ```{r lihoehf}
 accrual_rate <- data.frame(end_time = c(6, Inf), 
-                           piecewise_rate = c(100, 200))
+                           piecewise_rate = c(10, 20))
 
 trial <- Trial$new(
   name = 'Trial-31415', description = 'Example Clinical Trial', 
-  n_patients = 4200, duration = 30, 
+  n_patients = 420, duration = 30, 
   enroller = StaggeredRecruiter, accrual_rate = accrual_rate, 
   dropout = rweibull, scale = 30.636, shape = 1.939
 )

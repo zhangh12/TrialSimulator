@@ -148,6 +148,7 @@ trial$closedTest(dt, c('high dose', 'low dose'),
 \item \href{#method-Trial-print}{\code{Trial$print()}}
 \item \href{#method-Trial-get_snapshot_copy}{\code{Trial$get_snapshot_copy()}}
 \item \href{#method-Trial-make_snapshot}{\code{Trial$make_snapshot()}}
+\item \href{#method-Trial-make_arms_snapshot}{\code{Trial$make_arms_snapshot()}}
 \item \href{#method-Trial-reset}{\code{Trial$reset()}}
 \item \href{#method-Trial-clone}{\code{Trial$clone()}}
 }
@@ -1252,9 +1253,20 @@ return a snapshot of a trial before it is executed.
 \if{latex}{\out{\hypertarget{method-Trial-make_snapshot}{}}}
 \subsection{Method \code{make_snapshot()}}{
 make a snapshot before running a trial. This can be useful when
-resetting a trial.
+resetting a trial. This is only called when initializing a `Trial`
+object, when arms have not been added yet.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trial$make_snapshot()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trial-make_arms_snapshot"></a>}}
+\if{latex}{\out{\hypertarget{method-Trial-make_arms_snapshot}{}}}
+\subsection{Method \code{make_arms_snapshot()}}{
+make a snapshot of arms
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trial$make_arms_snapshot()}\if{html}{\out{</div>}}
 }
 
 }

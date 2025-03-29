@@ -4,10 +4,14 @@
 \alias{enrollment}
 \title{Triggering condition by number of randomized patients}
 \usage{
-enrollment(n)
+enrollment(n, arms = NULL)
 }
 \arguments{
 \item{n}{integer. Number of randomized patients.}
+
+\item{arms}{vector of character. Name of arms on which the number of patients
+is counted. If \code{NULL}, use all arms that are not yet removed from the
+trial by the time of calculation.}
 }
 \value{
 an object of class `Condition`

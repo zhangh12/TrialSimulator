@@ -692,10 +692,10 @@ Trial <- R6::R6Class(
         arms <- self$get_arms_name()
       }
 
-      if(!all(arms %in% self$get_arms_name())){
+      if(!all(arms %in% c(self$get_arms_name(), names(private$.snapshot[['arms']])))){
         stop('Arm(s) <',
              paste0(setdiff(arms, self$get_arms_name()), collapse = ', '),
-             '> cannot be found in the trial, debug Trial$get_event_table. ')
+             '> cannot be found in the trial, debug Trial$get_event_tables. ')
       }
 
       trial_data <- self$get_trial_data() %>%
@@ -1559,7 +1559,7 @@ Trial <- R6::R6Class(
 
         n_pbo[i] <- lr_fit$n_pbo
         n_trt[i] <- lr_fit$n_trt
-        trt_str[i] <- lr_fit$trt
+        trt_str[i] <- lr_fit$arm
         if(plan_best_info){
           # planned_info[i] <- lr_fit$info
           planned_info[i] <- lr_fit$n_pbo
@@ -2099,7 +2099,8 @@ Trial <- R6::R6Class(
 
     #' @description
     #' make a snapshot before running a trial. This can be useful when
-    #' resetting a trial.
+    #' resetting a trial. This is only called when initializing a `Trial`
+    #' object, when arms have not been added yet.
     make_snapshot = function() {
 
       private$.snapshot <- list()
@@ -2114,17 +2115,39 @@ Trial <- R6::R6Class(
     },
 
     #' @description
+    #' make a snapshot of arms
+    make_arms_snapshot = function(){
+      arm_names <- self$get_arms_name()
+      arms <- self$get_arms()
+      sample_ratio <- self$get_sample_ratio()
+      stopifnot(length(arms) == length(sample_ratio))
+      stopifnot(length(arm_names) == length(sample_ratio))
+
+      private$.snapshot$arms <- list()
+      for(arm_name in arm_names){
+        private$.snapshot$arms[[arm_name]] <- arms[[arm_name]]$clone(deep = TRUE)
+      }
+      private$.snapshot$sample_ratio <- sample_ratio
+
+    },
+
+    #' @description
     #' reset a trial to its snapshot taken before it was executed. Seed will be
     #' reassigned with a new one. Enrollment time are re-generated. If the trial
     #' already have arms when this function is called, they are added back to
     #' recruit patients again.
     reset = function() {
 
-      arm_names <- self$get_arms_name()
-      arms <- self$get_arms()
-      sample_ratio <- self$get_sample_ratio()
+      arms <- private$.snapshot[['arms']]
+      sample_ratio <- private$.snapshot[['sample_ratio']]
 
-      for (field in names(private$.snapshot)) {
+      if(is.null(arms) || is.null(sample_ratio)){
+        warning('arms is not found in the snapshot. ',
+                'There is nothing to be reset. ')
+        return(invisible(NULL))
+      }
+
+      for (field in names(private$.snapshot)){
         private[[field]] <- private$.snapshot[[field]]
       }
 
@@ -2143,8 +2166,15 @@ Trial <- R6::R6Class(
       private$enroll_time <-
         sort(self$get_enroller()(n = private$n_patients), decreasing = FALSE)
 
+      arms <- private$.snapshot[['arms']]
+      sample_ratio <- private$.snapshot[['sample_ratio']]
+
       if(length(arms) > 0){
         stopifnot(length(arms) == length(sample_ratio))
+        ## must call add_arms to add arms back to the trial
+        ## because this will generate some data as well.
+        ## set self$arms <- ... does not fulfill the purpose of
+        ## resetting a trial
         do.call(self$add_arms, c(list(sample_ratio), arms))
       }
 

@@ -119,6 +119,8 @@ Controller <- R6::R6Class(
     #' to estimate event time.
     run = function(n = 1, plot_event = TRUE, silent = FALSE, dry_run = FALSE){
 
+      self$get_trial()$make_arms_snapshot()
+
       for(idx in 1:n){
         tryCatch(
           expr = {

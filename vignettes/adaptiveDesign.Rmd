@@ -24,6 +24,7 @@ knitr::opts_chunk$set(
 ```{r setup, echo = FALSE, message = FALSE}
 library(dplyr)
 library(R6)
+library(kableExtra)
 library(rlang)
 library(survival)
 library(survminer)
@@ -32,377 +33,274 @@ library(TrialSimulator)
 ```
 
 In this vignette, we illustrate how to use `TrialSimulator` to simulate
-a trial with seamless adaptive design, where dose selection, futility
-analysis, interim analysis are triggered by user-defined events.
+a trial with seamless adaptive design of multiple endpoints, 
+where dose selection, futility analysis, interim analysis are triggered by 
+user-defined events.
 
-First we define endpoints in the trial. User can define arbitrary number
-of endpoints of class `Endpoint` using the `new` function in `R6`. PFS
-and OS are used as endpoints in this trial. In phase II, a binary
-surrogate is used for dose selection. We consider two active arms (low
-or high dose) and a placebo arm with `1:1:1` randomization. In the
-placebo arm, the median of PFS and OS are 5 and 14 months, respectively.
-The binary endpoint `surrogate` is of a rate 0.02. By default, the
-permuted block randomization is executed.
+## Simulation Settings
 
-```{r ljgai, class.source="fold-show", dpi = 1200}
-#' define endpoints in arm <pbo>
-pfs <- Endpoint$new(name = 'pfs', type='tte', 
-                    generator=rexp, rate = log(2) / 5)
-#' test the random number generator with a method of the class Endpoint
-#' Note that user does not need to run this to set up a trial
-#' This is for illustration purpose only
-pfs_test <- pfs$test_generator(10000)
-head(pfs_test)
-km <- survfit(Surv(pfs, pfs_event) ~ 1, data = pfs_test)
-ggsurvplot(km, data = pfs_test, legend = 'none', ggtheme = theme_minimal())
+- Trial consists of two active arms of high or low dose, and a placebo arm. 
+- Patients are randomized into the trial with ratio `1:1:1`. 
+- 30 patients are randomized per month for the first 10 months, and 50 patients 
+per month after then until 1000 patients. 
+- Dropout rate is 8% at month 12, and 18% at month 18, which is modeled by a 
+Weibull distribution. The scale and shape parameters of the Weibull distribution 
+can be computed using helper function 
+```{r daoif, class.source='fold-show'}
+weibullDropout(time = c(12, 18), dropout_rate = c(.08, .18))
 ```
+- Two time-to-event endpoints (`PFS` and `OS`) and a binary `surrogate` are 
+under consideration, where a higher rate of `surrogate` is better. 
+- `surrogate` has a readout time of 5 weeks. 
+- `surrogate` is used for dose selection using a hypothetical rule. 
+Let $z_h$ (or $z_l$) be the z statistics of `surrogate` between high (or low) 
+dose and placebo. 
+  - low dose arm is selected if $z_l > 1.28$;
+  - high dose arm is selected if $z_h > 1.28 > z_l$;
+  - keep both arms otherwise. 
+- Rates of `surrogate` are 
+  - 0.05 in placebo
+  - 0.12 in low dose arm
+  - 0.13 in high dose arm 
+- Medians of PFS are 
+  - 5 months in placebo
+  - 6.7 months in low dose arm (hazard ratio 0.75)
+  - 7.1 months in high dose arm (hazard ratio 0.70)
+Exponential distribution is assumed. 
+- Medians of OS are 
+  - 14 months in placebo
+  - 17.5 months in low dose arm (hazard ratio 0.80)
+  - 18.2 months high dose arms (hazard ratio 0.77)
+- Dose selection is done when 300 patients are randomized with readout 
+of `surrogate` are ready for analysis. 
+- An interim is set to test `PFS` when 300 `PFS` events are observed. A 
+non-binding futility analysis is also done with a boundary 0.5. 
+- Final analysis is set for `PFS` and `OS` when all planned 1000 patients are 
+randomized and at least 300 `OS` events are observed. Meanwhile, 
+the trial has reached at least 28 months or at least 520 events are 
+observed for `PFS`. 
 
-Similarly, we can define OS and surrogate for placebo. Here built-in
-functions `rexp` and `rbinom` are used. User-defined functions are also
-supported as long as it has the first argument `n`, number of samples to
-be drawn, and returns a data frame of `n` rows. For any time-to-event
-endpoint (e.g., `os`) in the data frame, `TrialSimulator` expects a
-column ending with `_event` (e.g., `os_event`) being present as the
-event indicator. In general, user can define their own generator that
-returns more than one endpoints. For example, correlated endpoints would
-be generated together, using packages i.e., `simstudy`, `gestate`,
-`simdata`, etc. Note that `surrogate` is not a time-to-event endpoint,
-so a readout time (`surrogate_readout`) is also needed when creating the
-endpoint. In this example, the readout time is 2 weeks. Once all
-endpoints are defined, an arm can be defined using class `Arm` and its
-method `new`.
+## Define Three Arms
 
-```{r dfaffageaf, class.source="fold-show"}
-#' define a time-to-event endpoint OS, 
-#' exponential distribution with median 13.71 months
-os <- Endpoint$new(name = 'os', type='tte', 
-                   generator = rexp, rate = log(2)/14)
+```{r ljgai, class.source="fold-show"}
+#' define three arms
+pbo <- Arm$new(name = 'placebo')
+low <- Arm$new(name = 'low dose')
+high <- Arm$new(name = 'high dose')
 
-head(os$test_generator(1000))
-median(os$test_generator(1000)$os)
+#' define endpoints in placebo
+pfs <- Endpoint$new(name = 'pfs', type = 'tte',
+                    generator = rexp, rate = log(2) / 5)
 
-#' define binary endpoint VRR, with readout time = 2 weeks
-two_weeks <- 2 / 52 * 12
-surrogate <- Endpoint$new(
-  name = 'surrogate', type = 'non-tte', 
-  readout = c(surrogate = two_weeks), 
-  generator = rbinom, size = 1, prob = .02)
+os <- Endpoint$new(name = 'os', type = 'tte',
+                   generator = rexp, rate = log(2) / 14)
 
-head(surrogate$test_generator(1000))
-mean(surrogate$test_generator(1000)$surrogate)
+five_weeks <- 5 / 52 * 12 ## convert it in months
+surrogate <- Endpoint$new(name = 'surrogate', type = 'non-tte',
+                          readout = c(surrogate = five_weeks),
+                          generator = rbinom, size = 1, prob = .05)
+pbo$add_endpoints(pfs, os, surrogate)
 
-#' define the placebo arm
-placebo <- Arm$new(name = 'pbo', description = 'placebo')
-#' add endpoints into the arm
-placebo$add_endpoints(pfs, os, surrogate)
-```
+#' define endpoints in low dose arm
+pfs <- Endpoint$new(name = 'pfs', type = 'tte',
+                    generator = rexp, rate = log(2) / 6.7)
 
-Likewise, we can define the three endpoints in the two active arms.
+os <- Endpoint$new(name = 'os', type = 'tte',
+                   generator = rexp, rate = log(2) / 17.5)
 
-```{r}
-#' define endpoints in the low dose arm
-#' hazard ratios 
-hr <- c(pfs_low = 0.7, os_low = 0.8, pfs_high = 0.65, os_high = 0.75)
-
-pfs <- Endpoint$new(name = 'pfs', type='tte', 
-                    generator = rexp, rate = log(2)/5 * hr['pfs_low'])
-
-surrogate <- Endpoint$new(
-  name = 'surrogate', type = 'non-tte', readout = c(surrogate = two_weeks), 
-  generator = rbinom, size = 1, prob = .1) # lower probability
-
-os <- Endpoint$new(name = 'os', type='tte', 
-                   generator=rexp, rate = log(2)/14 * hr['os_low'])
-
-low <- Arm$new(name = 'low dose', description = 'treated with low dose')
+surrogate <- Endpoint$new(name = 'surrogate', type = 'non-tte',
+                          readout = c(surrogate = five_weeks),
+                          generator = rbinom, size = 1, prob = .12)
 low$add_endpoints(pfs, os, surrogate)
 
-#' define endpoints in the high dose arm
-pfs <- Endpoint$new(name = 'pfs', type='tte', 
-                    generator = rexp, rate = log(2)/5 * hr['pfs_high'])
+#' define endpoints in high dose arm
+pfs <- Endpoint$new(name = 'pfs', type = 'tte',
+                    generator = rexp, rate = log(2) / 7.1)
 
-surrogate <- Endpoint$new(
-  name = 'surrogate', type = 'non-tte', readout = c(surrogate = two_weeks), 
-  generator = rbinom, size = 1, prob = .12) # higher probability
+os <- Endpoint$new(name = 'os', type = 'tte',
+                   generator = rexp, rate = log(2) / 18.2)
 
-os <- Endpoint$new(name = 'os', type='tte', 
-                   generator=rexp, rate = log(2)/14 * hr['os_high'])
-
-high <- Arm$new(name = 'high dose', description = 'treated with high dose')
+surrogate <- Endpoint$new(name = 'surrogate', type = 'non-tte',
+                          readout = c(surrogate = five_weeks),
+                          generator = rbinom, size = 1, prob = .13)
 high$add_endpoints(pfs, os, surrogate)
 ```
 
-With three arms, we can define a trial of class `Trial`, where up to
-1000 patients are enrolled. Recruitment curve are specified through
-`enroller` with a built-in function `StaggeredRecruiter` of piecewise
-constant rate: 20 patients per month until 15 months, and then 25
-patients per month until the end of the trial. built-in random number
-functions like `rexp` and user-defined function are also accepted.
-Sample ratio can be specified through `sample_ratio`, which can be
-updated during a trial using method `update_sample_ratio`. We set a
-dropout rate 25% per 12 months. By default, no dropout if users do not
-specify one.
+## Define a Trial
+
+With three arms, we can define a trial of class `Trial`. 
+Recruitment curve are specified through `enroller` with a built-in function 
+`StaggeredRecruiter` of piecewise constant rate. We set `duration` to be an 
+arbitrary large number (50) but controlling the end of trial through 
+pre-defined events later. Note that if `seed = NULL`, `TrialSimulator` will 
+pick a seed for the purpose of reproducibility.  
 
 ```{r lagieg, class.source="fold-show"}
-accrual_rate <- data.frame(end_time = c(15, Inf), 
-                           piecewise_rate = c(20, 25))
+accrual_rate <- data.frame(end_time = c(10, Inf),
+                           piecewise_rate = c(30, 50))
 trial <- Trial$new(
   name = 'Trial-3415', n_patients = 1000,
-  seed = NULL, duration = 50,
-  enroller = StaggeredRecruiter, accrual_rate = accrual_rate, 
-  dropout = rexp, rate = -log(1 - 0.25)/12
+  seed = 1727811904, duration = 40,
+  enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
+  dropout = rweibull, shape = 2.139, scale = 38.343
 )
 
-trial$add_arms(sample_ratio = c(1, 1, 1), low, high, placebo)
+trial$add_arms(sample_ratio = c(1, 1, 1), low, high, pbo)
 ```
 
-The class `Trial` maintains a clock (`trial$get_current_time()`). Data
-of patients who are enrolled before the time point are considered locked
-and cannot be changed. Data of patients who is not yet recruited will be
-regenerated immediately whenever the setting of trial are updated. Note
-that randomization may be re-executed. Trial's setting is considered
-changed if an arm is added (method `add_arms`), removed (method
-`remove_arms`) or the sample ratio of one or multiple arm(s) is updated
-(method `update_sample_ratio`). These methods are usually invoked in
-user-defined action function when pre-specified events are triggered,
-which will be discussed later.
 
-The `Trial` only manages its arms and endpoints. In `TrialSimulator`, a
-`Listener` is used to launch and monitor a trial according to a set of
-`Event` that register to it. An event consists two main parts, one is
-the condition to trigger it, one is the action function defining the
-action to be taken once the condition is met. Usually, a condition is
-met if a pre-specified number of events (or samples) are observed, or a
-specific calendar time is reached. In this example, four events are
-defined for dose selection, futility, interim and final analysis.
+## Define Trial Events and Action Functions
 
-Dose selection and a non-binding futility analysis are planned to be
-done at month 12. A built-in function `calendarTime` is used as
-the condition function. Once data is locked, and trial's clock is
-updated. A user-defined action function, `dose_selection_action` will be
-executed by the listener. It is recommended that the user should load
-the locked data at current time in the action function. Analysis is then
-performed on it to support further actions. In this example, an active
-arm can be dropped, and sample ratio of the remaining arms are updated
-accordingly. All not yet enrolled patients' data is then regenerated
-afterward. `Trial` has a public member function `save` for user to save
-results for analysis or summary later. Note that `save` will be invoked
-automatically when an event is triggered to save event time.
+Next, we define action functions for trial events, i.e.,
+dose selection, interim and final analysis. Note that an action function 
+should always has arguments `trial` of class `Trial` and a character 
+`event_name`. We calculate z statistics of the Farrington-Manning test for 
+binary endpoint `surrogate` using helper function `fitFarringtonManning`, 
+which returns a data frame (see `?fitFarringtonManning`). 
+
+```{r ieaong, class.source='fold-show'}
+action1 <- function(trial, event_name){
+  locked_data <- trial$get_locked_data(event_name)
+  fit <- fitFarringtonManning(endpoint = 'surrogate', placebo = 'placebo',
+                              data = locked_data, alternative = 'greater')
+  # browser() ## if you want to see what does fit look like
+  z_l <- fit$z[fit$arm == 'low dose']
+  z_h <- fit$z[fit$arm == 'high dose']
+  if(z_l > 1.28){
+    trial$remove_arms('high dose')
+    trial$save(value = 'low', name = 'kept_arm')
+  }else if(z_h > 1.28){
+    trial$remove_arms('low dose')
+    trial$save(value = 'high', name = 'kept_arm')
+  }else{
+    trial$save(value = 'both', name = 'kept_arm')
+  }
+
+  invisible(NULL)
+
+}
+```
+
+At the interim, we test `PFS` using the logrank test to carry out a 
+non-binding futility analysis in the following action function. epending on 
+how many arms are carried forward in dose selection, `fit` may 
+consists of testing results of one or two dose arms. Note that a formal test 
+for `PFS` will be done at the end of the trial when we have all p-values. If 
+no futility analysis is planned, we can simply set `action = doNothing` in 
+`Event$new`. 
 
 ```{r aotel, class.source="fold-show"}
-#' action function is defined by user. 
-#' it always take at least two arguments, 
-#' (1) trial: an object of class Trial
-#' (2) event_name: character of event's name
-#' It is recommended that user should always requests for the locked data
-#' at current time when the event is triggered, from which the user can 
-#' carry out various analysis fitting their purpose
-dose_selection_action <- function(trial, event_name){
-
+action2 <- function(trial, event_name){
   locked_data <- trial$get_locked_data(event_name)
-  ## do something with locked_data, e.g. estimate, Dunnett test, etc.,
-  ## to support further actions
-  ## ...
 
-  ## this is just for illustration
-  ## pick an arm to drop
-  removed_arm <- sample(c('high dose', 'low dose', 'none'), 
-                        size = 1, prob = c(.2, .6, .2))
+  fit <- fitLogrank(endpoint = 'pfs', placebo = 'placebo',
+                    data = locked_data)
 
-  ## action 1: remove an arm <affected_arm>
-  if(removed_arm == 'none'){
-    return(NULL)
-  }
-  
-  trial$remove_arms(removed_arm)
-
-  ## action 2: update sample ratio for the remaining arms
-  trial$update_sample_ratio('pbo', 1)
-  if(removed_arm == 'high dose'){
-    ## if low dose arm is kept, increase its ratio
-    trial$update_sample_ratio('low dose', 2)
+  ## futility analysis
+  if(max(fit$z) < .5){
+    trial$save(value = 'negative', name = 'futility')
   }else{
-    ## if high dose arm is kept, reduce its ratio for safety
-    trial$update_sample_ratio('high dose', 1)
+    trial$save(value = 'positive', name = 'futility')
   }
 
-  # action 3: non-binding futility analysis
-  z_pfs <- rnorm(1)
-  
-  ## save results, which can be accessed later using trial$get_output()
-  trial$save(value = removed_arm, name = 'removed_arm')
-  trial$save(value = z_pfs, name = 'z_futility')
-  
-  ## Not necessary because event time is saved automatically when the event is triggered
-  # trial$save(value = trial$get_event_time(event_name), name = 'futility_time')
-
-  ## return for displaying purpose (print on screen later)
-  ## user can return NULL
-  action <- data.frame(
-    order = c(1, 2, 3),
-    type = c('remove', 'update sample ratio', 'non-binding futility'),
-    value = c(removed_arm,
-              ifelse(removed_arm == 'high dose', 'low dose -> 2', 'high dose -> 1'),
-              paste0('z (pfs) = ', round(z_pfs, 2)))
-  )
-
-  action
+  invisible(NULL)
 
 }
-
-## dose selection is carried out at month 12
-dose_selection_event <- Event$new(name = 'dose selection', type = 'dose selection',
-                                  trigger_condition = calendarTime(12 + two_weeks),
-                                  action = dose_selection_action)
 ```
 
-Likewise, we can define events for interim and final analyses of PFS and
-OS. The interim analysis for PFS will be carried out when 150 events are
-observed in remaining arms. The triggering condition is set by the built-in function `eventNumber`. 
-
-```{r}
-#' event to trigger interim analysis for PFS
-pfs_interim_action <- function(trial, event_name){
-
+At final analysis, we conduct a closed test using Dunnett's test for 
+intersection hypotheses. The action function is as follows. 
+```{r alkdae, class.source="fold-show"}
+action3 <- function(trial, event_name){
   locked_data <- trial$get_locked_data(event_name)
 
-  ## this p-value is just for illustration
-  ## it can be calculated from locked_data
-  pfs_interim_pval <- runif(1, 1e-3, .05)
-  
-  trial$save(value = pfs_interim_pval, name = 'pfs_interim_pval')
+  ## test PFS
+  dt_pfs <- trial$dunnettTest(endpoint = 'pfs', placebo = 'placebo',
+                              treatments = c('high dose', 'low dose'),
+                              events = c('dose selection', 'interim', 'final'),
+                              planned_info = 'default')
+  ct_pfs <- trial$closedTest(dt_pfs, treatments = c('high dose', 'low dose'),
+                             events = c('interim', 'final'),
+                             alpha = .005, alpha_spending = 'asOF')
 
-  ## action 1: if pfs is significant, increase its sample ratio
-  ##           and reduce sample ratio of pbo.
-  ##           otherwise no action.
-  action <- paste0('No action. P-value: <pfs interim = ',
-                   signif(pfs_interim_pval, 2), '>. ')
-  if(pfs_interim_pval < .05){
-    active_arm <- setdiff(trial$get_arms_name(), 'pbo')[1]
-    trial$update_sample_ratio(active_arm, 2)
-    trial$update_sample_ratio('pbo', 1)
+  ## test OS
+  dt_os <- trial$dunnettTest(endpoint = 'os', placebo = 'placebo',
+                             treatments = c('high dose', 'low dose'),
+                             events = c('dose selection', 'final'),
+                             planned_info = 'default')
+  ct_os <- trial$closedTest(dt_pfs, treatments = c('high dose', 'low dose'),
+                            events = c('final'),
+                            alpha = .02, alpha_spending = 'asOF')
 
-    ## for displaying purpose, not essential
-    action <- data.frame(
-      order = c(1, 2),
-      type = 'update sample ratio',
-      value = c(paste0(active_arm, ' -> 2'), 'pbo -> 1')
-    )
-  }
-
-  ## return for displaying purpose
-  action
-
+  invisible(NULL)
 }
-
-pfs_interim_event <- Event$new(name = 'pfs interim', type = 'interim analysis', 
-                               trigger_condition = eventNumber('pfs', 150), 
-                               action = pfs_interim_action)
 ```
 
-The final analysis for PFS will be performed with an interim of OS when
-400 events are observed for PFS, or 250 events for OS, whichever comes
-first. Note that combined triggering condition can be specified using logical operation `&` and/or `|`. In this example, we use `eventNumber('pfs', 400) | eventNumber('os', 250)`. Nested condition combination are also supported. For example, we can require that this event is not triggered until the trial has been run for at least 30 months by `calendarTime(30) & (eventNumber('pfs', 400) | eventNumber('os', 250))`. 
-
+Next, we register three trial events to a listener
 ```{r}
-#'  event to trigger final analysis for PFS and interim analysis for OS
-#'  In this example, the triggering condition is defined by number of events 
-#'  of PFS and OS together. See meet = 'any' below.
-pfs_final_action <- function(trial, event_name){
+dose_selection <- Event$new(name = 'dose selection', action = action1,
+                            trigger_condition = eventNumber(endpoint = 'surrogate',
+                                                            n = 300))
 
-  locked_data <- trial$get_locked_data(event_name)
-  ## do something with locked_data, e.g. estimate, test, etc.,
-  ## to support further actions
-  ## ...
+interim <- Event$new(name = 'interim', action = action2,
+                     trigger_condition = eventNumber(endpoint = 'pfs',
+                                                     n = 300))
 
-  ## this is just for illustration
-  pfs_final_pval <- runif(1, 0, 0.1)
-  os_interim_pval <- runif(1, 0, 0.3)
-  
-  trial$save(
-    data.frame(pfs_final_pval=pfs_final_pval, os_interim_pval=os_interim_pval)
-  )
+final <- Event$new(name = 'final', action = action3,
+                   trigger_condition =
+                     enrollment(n = 1000, arms = c('placebo', 'low dose', 'high dose')) &
+                     eventNumber(endpoint = 'os', n = 300) & (
+                       calendarTime(time = 28) |
+                         eventNumber(endpoint = 'pfs', n = 520)
+                     )
+)
 
-  ## only compute p-values for pfs and os, no further action
-  action <- paste0('No action. P-values: <pfs final = ',
-                   signif(pfs_final_pval, 2),
-                   '>, <os interim = ', signif(os_interim_pval, 2), '>.')
-
-  ## return for displaying purpose
-  action
-
-}
-## meet = 'any' means that final analysis for PFS is triggered
-## when pfs event reaches 400 or os event reaches 250.
-## if meet = 'all', then final analysis for PFS is carried out only if
-## both conditions are met.
-pfs_final_event <- Event$new(name = 'pfs final', type = 'pfs final/os interim', 
-                             trigger_condition = 
-                               eventNumber('pfs', 400) | eventNumber('os', 250), 
-                             action = pfs_final_action)
-```
-
-Finally, one more analysis will be done for OS only at month 64.
-
-```{r}
-#'  event to trigger final analysis OS
-#'  triggering condition: month 50
-os_final_action <- function(trial, event_name){
-
-  locked_data <- trial$get_locked_data(event_name)
-  ## do something with locked_data, e.g. estimate, test, etc.,
-  ## to support further actions
-  ## ...
-
-  ## this is just for illustration
-  os_final_pval <- runif(1, 1e-3, .1)
-  
-  trial$save(os_final_pval, 'os_final_pval')
-
-  ## action 1: end the trial, no futher action
-  action <- paste0('No action. P-value: <os final = ',
-                   signif(os_final_pval, 2), '>. ')
-
-  ## return for displaying purpose
-  action
-
-}
-
-os_final_event <- Event$new(name = 'os final', type = 'os final analysis',
-                            trigger_condition = calendarTime(50),
-                            action = os_final_action)
-```
-
-Now we can register the four events with the listener, and launch the
-trial.
-
-```{r aloganl, class.source="fold-show"}
 listener <- Listener$new()
 #' register events with listener
 listener$add_events(
-  dose_selection_event,
-  pfs_interim_event,
-  pfs_final_event,
-  os_final_event
+  dose_selection,
+  interim,
+  final
 )
+```
 
+## Execute a Trial
+
+We can run a trial as follows. By default, `TrialSimulator` generates a plot 
+showing cumulative number of patients or endpoint events over time for each 
+of the arms. We can set it to `FALSE` if a massive number of simulation 
+replicates is run to save time. 
+```{r eiaaf, dpi = 1200}
 controller <- Controller$new(trial, listener)
-controller$run(silent = FALSE)
+controller$run(plot_event = TRUE)
 ```
-
-In the action functions, user can save results to the `Trial` object
-using its public member function `save` or any place they chose so that
-they can summarize the trial later. The package can also summarize
-commonly used metrics by default. For common design, the package can
-carry out standard analysis, e.g., group sequential design with
-combination test or graphical test as well, which would be implemented
-and tested later.
-
+In custom action functions, we can use `Trial$save()` to save intermediate 
+results for summary purpose, which can be accessed by 
 ```{r alojfqoitl, class.source="fold-show"}
-trial$get_output()
+controller$get_output()
 ```
 
-In summary, `TrialSimulator` abstracts the data generation and
+`TrialSimulator` abstracts the data generation and
 management to allow user focus on implementing the statistical analysis.
 It simulates a trial on patient level, and provide flexibility in
 adaptive design.
+
+## Execute Trial Simulation
+
+We can run a massive number of replicates in simulation to study operating 
+characteristics of a trial design by specifying `n` in `Controller$run()`. 
+We can set `plot_event = FALSE` to turn off plotting to save running time. 
+```{r ioeinaf, message=FALSE, warning=FALSE, results='hide'}
+## reset a controller if $run has been executed before
+controller$reset()
+controller$run(n = 10, plot_event = FALSE)
+```
+```{r liefa}
+kable(controller$get_output(), escape = FALSE) %>% 
+  kable_styling(bootstrap_options = "striped", 
+                full_width = FALSE,
+                position = "left") %>%
+  scroll_box(width = "100%")
+```
+
+
