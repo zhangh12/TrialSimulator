@@ -8,12 +8,15 @@
 #' \link[TrialSimulator]{eventNumber}.
 #'
 #' @param n integer. Number of randomized patients.
+#' @param arms vector of character. Name of arms on which the number of patients
+#' is counted. If \code{NULL}, use all arms that are not yet removed from the
+#' trial by the time of calculation.
 #'
 #' @returns an object of class `Condition`
 #'
 #' @export
-enrollment <- function(n){
+enrollment <- function(n, arms = NULL){
 
-  EnrollmentCountCondition$new(n)
+  EnrollmentCountCondition$new(n, arms)
 
 }

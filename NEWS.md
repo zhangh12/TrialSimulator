@@ -1,3 +1,17 @@
+# TrialSimulator 0.58.0
+
+## Updates
+
+- Update vignette of adaptive seamless design. 
+
+## Bug Fixes
+
+- Fix a bug to use `n > 1` in `Controller$run` when an arm can possibly be removed adaptively during a trial. 
+
+## New Features
+
+- Allow specifying arms in `enrollment`. This is useful to count randomized patients of all arms even if some are removed adaptively. 
+
 # TrialSimulator 0.57.0
 
 ## Updates
