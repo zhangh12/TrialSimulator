@@ -3,12 +3,11 @@ pkgdown: 2.1.1
 pkgdown_sha: ~
 articles:
   adaptiveDesign: adaptiveDesign.html
-  comparisons: comparisons.html
   conditionSystem: conditionSystem.html
   defineNonTimeToEventEndpoints: defineNonTimeToEventEndpoints.html
   defineTimeToEventEndpoints: defineTimeToEventEndpoints.html
   designDocument: designDocument.html
-last_built: 2025-03-27T06:25Z
+last_built: 2025-03-28T15:11Z
 urls:
   reference: https://zhangh12.github.io/TrialSimulator/reference
   article: https://zhangh12.github.io/TrialSimulator/articles
