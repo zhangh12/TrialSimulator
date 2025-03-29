@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.57.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.58.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -102,6 +102,7 @@
 <li><p><a href="#method-Trial-print"><code>Trial$print()</code></a></p></li>
 <li><p><a href="#method-Trial-get_snapshot_copy"><code>Trial$get_snapshot_copy()</code></a></p></li>
 <li><p><a href="#method-Trial-make_snapshot"><code>Trial$make_snapshot()</code></a></p></li>
+<li><p><a href="#method-Trial-make_arms_snapshot"><code>Trial$make_arms_snapshot()</code></a></p></li>
 <li><p><a href="#method-Trial-reset"><code>Trial$reset()</code></a></p></li>
 <li><p><a href="#method-Trial-clone"><code>Trial$clone()</code></a></p></li>
 </ul></div><p></p><hr><a id="method-Trial-new"></a><div class="section">
@@ -1212,9 +1213,18 @@ trial$closedTest(dt, c('high dose', 'low dose'),
 </div><p></p><hr><a id="method-Trial-make_snapshot"></a><div class="section">
 <h3 id="method-make-snapshot-">Method <code>make_snapshot()</code><a class="anchor" aria-label="anchor" href="#method-make-snapshot-"></a></h3>
 <p>make a snapshot before running a trial. This can be useful when
-resetting a trial.</p><div class="section">
+resetting a trial. This is only called when initializing a `Trial`
+object, when arms have not been added yet.</p><div class="section">
 <h4 id="usage-51">Usage<a class="anchor" aria-label="anchor" href="#usage-51"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">make_snapshot</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+
+</div><p></p><hr><a id="method-Trial-make_arms_snapshot"></a><div class="section">
+<h3 id="method-make-arms-snapshot-">Method <code>make_arms_snapshot()</code><a class="anchor" aria-label="anchor" href="#method-make-arms-snapshot-"></a></h3>
+<p>make a snapshot of arms</p><div class="section">
+<h4 id="usage-52">Usage<a class="anchor" aria-label="anchor" href="#usage-52"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">make_arms_snapshot</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 
@@ -1224,7 +1234,7 @@ resetting a trial.</p><div class="section">
 reassigned with a new one. Enrollment time are re-generated. If the trial
 already have arms when this function is called, they are added back to
 recruit patients again.</p><div class="section">
-<h4 id="usage-52">Usage<a class="anchor" aria-label="anchor" href="#usage-52"></a></h4>
+<h4 id="usage-53">Usage<a class="anchor" aria-label="anchor" href="#usage-53"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1232,7 +1242,7 @@ recruit patients again.</p><div class="section">
 </div><p></p><hr><a id="method-Trial-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-53">Usage<a class="anchor" aria-label="anchor" href="#usage-53"></a></h4>
+<h4 id="usage-54">Usage<a class="anchor" aria-label="anchor" href="#usage-54"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 

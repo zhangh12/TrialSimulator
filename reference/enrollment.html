@@ -15,7 +15,7 @@ eventNumber."><meta property="og:image" content="https://zhangh12.github.io/Tria
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.57.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.58.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,7 +57,7 @@ conditions specified by <a href="calendarTime.html">calendarTime</a> and
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">enrollment</span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">enrollment</span><span class="op">(</span><span class="va">n</span>, arms <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -66,6 +66,12 @@ conditions specified by <a href="calendarTime.html">calendarTime</a> and
 
 <dl><dt id="arg-n">n<a class="anchor" aria-label="anchor" href="#arg-n"></a></dt>
 <dd><p>integer. Number of randomized patients.</p></dd>
+
+
+<dt id="arg-arms">arms<a class="anchor" aria-label="anchor" href="#arg-arms"></a></dt>
+<dd><p>vector of character. Name of arms on which the number of patients
+is counted. If <code>NULL</code>, use all arms that are not yet removed from the
+trial by the time of calculation.</p></dd>
 
 </dl></div>
     <div class="section level2">
