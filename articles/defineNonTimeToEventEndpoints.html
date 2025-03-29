@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.57.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.58.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -164,11 +164,11 @@ function:</p>
 1.939, we specify the trial setup:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">accrual_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>end_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">6</span>, <span class="cn">Inf</span><span class="op">)</span>, </span>
-<span>                           piecewise_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">200</span><span class="op">)</span><span class="op">)</span></span>
+<span>                           piecewise_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">trial</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Trial.html">Trial</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
 <span>  name <span class="op">=</span> <span class="st">'Trial-31415'</span>, description <span class="op">=</span> <span class="st">'Example Clinical Trial'</span>, </span>
-<span>  n_patients <span class="op">=</span> <span class="fl">4200</span>, duration <span class="op">=</span> <span class="fl">30</span>, </span>
+<span>  n_patients <span class="op">=</span> <span class="fl">420</span>, duration <span class="op">=</span> <span class="fl">30</span>, </span>
 <span>  enroller <span class="op">=</span> <span class="va">StaggeredRecruiter</span>, accrual_rate <span class="op">=</span> <span class="va">accrual_rate</span>, </span>
 <span>  dropout <span class="op">=</span> <span class="va">rweibull</span>, scale <span class="op">=</span> <span class="fl">30.636</span>, shape <span class="op">=</span> <span class="fl">1.939</span></span>
 <span><span class="op">)</span></span>
@@ -177,15 +177,15 @@ function:</p>
 <span><span class="co">## add arms to the trial</span></span>
 <span><span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, <span class="va">trt</span>, <span class="va">pbo</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Arm(s) &lt;treatment, placebo&gt; are added to the trial.</span></span>
-<span><span class="co">#&gt; Randomization is done for 4200 potential patients.</span></span>
-<span><span class="co">#&gt; Data of 4200 potential patients are generated for the trial with 2 arm(s) &lt;treatment, placebo&gt;.</span></span>
+<span><span class="co">#&gt; Randomization is done for 420 potential patients.</span></span>
+<span><span class="co">#&gt; Data of 420 potential patients are generated for the trial with 2 arm(s) &lt;treatment, placebo&gt;.</span></span>
 <span><span class="va">trial</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Trial Name:  Trial-31415 </span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Description:  Example Clinical Trial </span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ # of Arms:  2 </span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Registered Arms:  treatment, placebo </span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Sample Ratio:  1, 1 </span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ # of Patients:  4200 </span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ # of Patients:  420 </span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Planned Duration:  30 </span> </span></span>
 <span><span class="co">#&gt; <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Random Seed:  1012203595 </span></span></span></code></pre></div>
 <p>Here <code>accrual_rate</code> is an argument of
@@ -248,25 +248,25 @@ to monitor and execute the trial.</p>
 <span><span class="va">controller</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Controller.html">Controller</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">trial</span>, <span class="va">listener</span><span class="op">)</span></span>
 <span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Conditioin of event &lt;interim&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 2.59 for event &lt;interim&gt;.</span></span>
+<span><span class="co">#&gt; Data is locked at time = 8.05 for event &lt;interim&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('interim'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   patient cfb orr                 arms</span></span>
-<span><span class="co">#&gt; 1     260   0  60 &lt;treatment, placebo&gt;</span></span>
+<span><span class="co">#&gt; 1     102  18  60 &lt;treatment, placebo&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Conditioin of event &lt;random&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 10 for event &lt;random&gt;.</span></span>
+<span><span class="co">#&gt; Data is locked at time = 14.8 for event &lt;random&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('random'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   patient cfb orr                 arms</span></span>
-<span><span class="co">#&gt; 1    1401 372 960 &lt;treatment, placebo&gt;</span></span>
+<span><span class="co">#&gt; 1     237 100 178 &lt;treatment, placebo&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Conditioin of event &lt;final&gt; is being checked.</span></span>
 <span><span class="co">#&gt; Data is locked at time = 30 for event &lt;final&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('final'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
-<span><span class="co">#&gt;   patient  cfb  orr                 arms</span></span>
-<span><span class="co">#&gt; 1    4200 2749 3167 &lt;treatment, placebo&gt;</span></span>
+<span><span class="co">#&gt;   patient cfb orr                 arms</span></span>
+<span><span class="co">#&gt; 1     420 282 327 &lt;treatment, placebo&gt;</span></span>
 <span><span class="co">#&gt; </span></span></code></pre></div>
 <p><img src="defineNonTimeToEventEndpoints_files/figure-html/ihhf-1.png" width="100%"></p>
 <p>We can inspect the dataset locked at different event points by
@@ -278,13 +278,20 @@ decision is made based on data locked at the time of an event.</p>
 <span><span class="va">random_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span>event_name <span class="op">=</span> <span class="st">'random'</span><span class="op">)</span></span>
 <span><span class="va">final_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span>event_name <span class="op">=</span> <span class="st">'final'</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">interim_data</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   patient_id       arm enroll_time dropout_time cfb cfb_readout orr orr_readout</span></span>
-<span><span class="co">#&gt; 1          1 treatment        0.00    31.591456  NA           6   0           2</span></span>
-<span><span class="co">#&gt; 2          2   placebo        0.01     8.331507  NA           6   0           2</span></span>
-<span><span class="co">#&gt; 3          3   placebo        0.02    49.165649  NA           6   0           2</span></span>
-<span><span class="co">#&gt; 4          4 treatment        0.03    19.559041  NA           6   0           2</span></span>
-<span><span class="co">#&gt; 5          5 treatment        0.04     7.273669  NA           6   0           2</span></span>
-<span><span class="co">#&gt; 6          6   placebo        0.05     8.829854  NA           6   1           2</span></span></code></pre></div>
+<span><span class="co">#&gt;   patient_id       arm enroll_time dropout_time       cfb cfb_readout orr</span></span>
+<span><span class="co">#&gt; 1          1 treatment         0.0    21.180883 -4.434289           6   0</span></span>
+<span><span class="co">#&gt; 2          2   placebo         0.1     2.977640        NA           6   0</span></span>
+<span><span class="co">#&gt; 3          3   placebo         0.2    28.175451 -1.657398           6   1</span></span>
+<span><span class="co">#&gt; 4          4 treatment         0.3    27.254577  1.004898           6   0</span></span>
+<span><span class="co">#&gt; 5          5 treatment         0.4     5.663727        NA           6   0</span></span>
+<span><span class="co">#&gt; 6          6   placebo         0.5    27.379476  6.093597           6   0</span></span>
+<span><span class="co">#&gt;   orr_readout</span></span>
+<span><span class="co">#&gt; 1           2</span></span>
+<span><span class="co">#&gt; 2           2</span></span>
+<span><span class="co">#&gt; 3           2</span></span>
+<span><span class="co">#&gt; 4           2</span></span>
+<span><span class="co">#&gt; 5           2</span></span>
+<span><span class="co">#&gt; 6           2</span></span></code></pre></div>
 <p>Since <code>cfb</code> has a 6-month readout time, at interim
 analysis, some patients’ <code>cfb</code> values are still unavailable,
 appearing as <code>NA</code> in <code>interim_data.</code> However,
@@ -301,23 +308,23 @@ event triggers.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   patient_id       arm enroll_time dropout_time cfb cfb_readout orr orr_readout</span></span>
-<span><span class="co">#&gt; 1         61 treatment        0.60    59.780016  NA           6  NA           2</span></span>
-<span><span class="co">#&gt; 2         63 treatment        0.62     7.547531  NA           6  NA           2</span></span>
-<span><span class="co">#&gt; 3         64   placebo        0.63    58.997601  NA           6  NA           2</span></span>
-<span><span class="co">#&gt; 4         65 treatment        0.64    18.289318  NA           6  NA           2</span></span>
-<span><span class="co">#&gt; 5         66   placebo        0.65    16.860553  NA           6  NA           2</span></span>
-<span><span class="co">#&gt; 6         67   placebo        0.66    21.935312  NA           6  NA           2</span></span>
+<span><span class="co">#&gt; 1         63 treatment        6.10     23.76025  NA           6  NA           2</span></span>
+<span><span class="co">#&gt; 2         64   placebo        6.15     29.50080  NA           6  NA           2</span></span>
+<span><span class="co">#&gt; 3         66   placebo        6.25     26.44169  NA           6  NA           2</span></span>
+<span><span class="co">#&gt; 4         67   placebo        6.30     25.48133  NA           6  NA           2</span></span>
+<span><span class="co">#&gt; 5         69   placebo        6.40     84.56996  NA           6  NA           2</span></span>
+<span><span class="co">#&gt; 6         70 treatment        6.45     31.77506  NA           6  NA           2</span></span>
 <span></span>
 <span><span class="va">random_data</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">patient_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">not_ready_at_interim</span><span class="op">$</span><span class="va">patient_id</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   patient_id       arm enroll_time dropout_time       cfb cfb_readout orr</span></span>
-<span><span class="co">#&gt; 1         61 treatment        0.60    59.780016 -2.241431           6   0</span></span>
-<span><span class="co">#&gt; 2         63 treatment        0.62     7.547531  1.795925           6   0</span></span>
-<span><span class="co">#&gt; 3         64   placebo        0.63    58.997601  3.351833           6   1</span></span>
-<span><span class="co">#&gt; 4         65 treatment        0.64    18.289318 -2.673179           6   1</span></span>
-<span><span class="co">#&gt; 5         66   placebo        0.65    16.860553 12.891415           6   0</span></span>
-<span><span class="co">#&gt; 6         67   placebo        0.66    21.935312  2.065637           6   0</span></span>
+<span><span class="co">#&gt;   patient_id       arm enroll_time dropout_time        cfb cfb_readout orr</span></span>
+<span><span class="co">#&gt; 1         63 treatment        6.10     23.76025 -4.8136091           6   0</span></span>
+<span><span class="co">#&gt; 2         64   placebo        6.15     29.50080  1.5471692           6   0</span></span>
+<span><span class="co">#&gt; 3         66   placebo        6.25     26.44169 -3.1648153           6   0</span></span>
+<span><span class="co">#&gt; 4         67   placebo        6.30     25.48133 -3.9319150           6   0</span></span>
+<span><span class="co">#&gt; 5         69   placebo        6.40     84.56996  1.1369365           6   0</span></span>
+<span><span class="co">#&gt; 6         70 treatment        6.45     31.77506 -0.7169747           6   0</span></span>
 <span><span class="co">#&gt;   orr_readout</span></span>
 <span><span class="co">#&gt; 1           2</span></span>
 <span><span class="co">#&gt; 2           2</span></span>
