@@ -65,18 +65,6 @@ eventNumber(endpoint = 'pfs', n = 340, arms = c('pbo', 'trt'))
 eventNumber(endpoint = 'pfs', n = 340)
 ```
 
-#### Trigger a safety review
-```{r eafho}
-## Trigger a safety review when 10 severe adverse events observed in 2 months, 
-## or 2 deaths in 6 months
-##
-## SAE and OS are both defined as a time-to-event endpoint by
-## Endpoint$new(name = 'SAE', type = 'tte', ...)
-## Endpoint$new(name = 'OS', type = 'tte', ...)
-(eventNumber(endpoint = 'SAE', n = 10) & calendarTime(time = 2)) | 
-  (eventNumber(endpoint = 'OS', n = 5) & calendarTime(time = 6))
-```
-
 #### Other examples
 ```{r eaiggo}
 ## observe at least 200 OS events on at least 500 enrolled patients, or
