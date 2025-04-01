@@ -141,29 +141,9 @@ triggers using these functions, which could be passed to the argument
 <span><span class="co">#&gt; Number of events (pfs) &gt;= 340 in all arms in a trial.</span></span></code></pre></div>
 </div>
 <div class="section level4">
-<h4 id="trigger-a-safety-review">Trigger a safety review<a class="anchor" aria-label="anchor" href="#trigger-a-safety-review"></a>
-</h4>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">## Trigger a safety review when 10 severe adverse events observed in 2 months, </span></span>
-<span><span class="co">## or 2 deaths in 6 months</span></span>
-<span><span class="co">##</span></span>
-<span><span class="co">## SAE and OS are both defined as a time-to-event endpoint by</span></span>
-<span><span class="co">## Endpoint$new(name = 'SAE', type = 'tte', ...)</span></span>
-<span><span class="co">## Endpoint$new(name = 'OS', type = 'tte', ...)</span></span>
-<span><span class="op">(</span><span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'SAE'</span>, n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">&amp;</span> <span class="fu"><a href="../reference/calendarTime.html">calendarTime</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span> <span class="op">|</span> </span>
-<span>  <span class="op">(</span><span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'OS'</span>, n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">&amp;</span> <span class="fu"><a href="../reference/calendarTime.html">calendarTime</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fl">6</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Combined Condition (or):</span></span>
-<span><span class="co">#&gt; Combined Condition (and):</span></span>
-<span><span class="co">#&gt;     Number of events (SAE) &gt;= 10 in all arms in a trial. </span></span>
-<span><span class="co">#&gt;     Calendar time &gt;=  2 </span></span>
-<span><span class="co">#&gt; Combined Condition (and):</span></span>
-<span><span class="co">#&gt;     Number of events (OS) &gt;= 5 in all arms in a trial. </span></span>
-<span><span class="co">#&gt;     Calendar time &gt;=  6</span></span></code></pre></div>
-</div>
-<div class="section level4">
 <h4 id="other-examples">Other examples<a class="anchor" aria-label="anchor" href="#other-examples"></a>
 </h4>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## observe at least 200 OS events on at least 500 enrolled patients, or</span></span>
 <span><span class="co">## the trial has been running for at least 12 months</span></span>
 <span><span class="op">(</span><span class="fu"><a href="../reference/enrollment.html">enrollment</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">500</span><span class="op">)</span> <span class="op">&amp;</span> <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'os'</span>, n <span class="op">=</span> <span class="fl">200</span><span class="op">)</span><span class="op">)</span> <span class="op">|</span> </span>
