@@ -35,7 +35,9 @@ library(TrialSimulator)
 In this vignette, we illustrate how to use `TrialSimulator` to simulate
 a trial with seamless adaptive design of multiple endpoints, 
 where dose selection, futility analysis, interim analysis are triggered by 
-user-defined events.
+user-defined events. Family-wise error rate are controlled by closed test 
+with Dunnett's test, with $\alpha$ split for the endpoints. Please refer to 
+another vignette where graphical testing procedure is adopted instead. 
 
 ## Simulation Settings
 
@@ -79,6 +81,10 @@ non-binding futility analysis is also done with a boundary 0.5.
 randomized and at least 300 `OS` events are observed. Meanwhile, 
 the trial has reached at least 28 months or at least 520 events are 
 observed for `PFS`. 
+- To control the family-wise error rate accounting for `PFS` and `OS`, as well 
+as adaptation of dose-selection, we split $\alpha$ between `PFS` (0.5%) 
+and `OS` (2%), and adopt closed test with Dunnett's test for intersection 
+hypotheses. 
 
 ## Define Three Arms
 
