@@ -240,10 +240,16 @@ action3 <- function(trial, event_name){
   
   ## we only save testing decision here
   ## You can save whatever you want for summarizing things later, e.g. reject time
-  trial$save(ct_pfs$decision[ct_pfs$arm == 'high dose'], name = 'pfs_high_dose_decision')
-  trial$save(ct_pfs$decision[ct_pfs$arm == 'low dose'], name = 'pfs_low_dose_decision')
-  trial$save(ct_os$decision[ct_os$arm == 'high dose'], name = 'os_high_dose_decision')
-  trial$save(ct_os$decision[ct_os$arm == 'low dose'], name = 'os_low_dose_decision')
+  trial$save(value = ct_pfs$decision[ct_pfs$arm == 'high dose'], 
+             name = 'pfs_high_dose_decision')
+  
+  trial$save(value = ct_pfs$decision[ct_pfs$arm == 'low dose'], 
+             name = 'pfs_low_dose_decision')
+  trial$save(value = ct_os$decision[ct_os$arm == 'high dose'], 
+             name = 'os_high_dose_decision')
+  
+  trial$save(value = ct_os$decision[ct_os$arm == 'low dose'], 
+             name = 'os_low_dose_decision')
 
   invisible(NULL)
 }
