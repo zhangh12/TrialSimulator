@@ -77,7 +77,11 @@
 <p>In this vignette, we illustrate how to use
 <code>TrialSimulator</code> to simulate a trial with seamless adaptive
 design of multiple endpoints, where dose selection, futility analysis,
-interim analysis are triggered by user-defined events.</p>
+interim analysis are triggered by user-defined events. Family-wise error
+rate are controlled by closed test with Dunnett’s test, with
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math>
+split for the endpoints. Please refer to another vignette where
+graphical testing procedure is adopted instead.</p>
 <div class="section level2">
 <h2 id="simulation-settings">Simulation Settings<a class="anchor" aria-label="anchor" href="#simulation-settings"></a>
 </h2>
@@ -150,6 +154,12 @@ all planned 1000 patients are randomized and at least 300
 <code>OS</code> events are observed. Meanwhile, the trial has reached at
 least 28 months or at least 520 events are observed for
 <code>PFS</code>.</li>
+<li>To control the family-wise error rate accounting for
+<code>PFS</code> and <code>OS</code>, as well as adaptation of
+dose-selection, we split
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math>
+between <code>PFS</code> (0.5%) and <code>OS</code> (2%), and adopt
+closed test with Dunnett’s test for intersection hypotheses.</li>
 </ul>
 </div>
 <div class="section level2">
