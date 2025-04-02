@@ -313,6 +313,13 @@ intersection hypotheses. The action function is as follows.</p>
 <span>  <span class="va">ct_os</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span><span class="va">dt_pfs</span>, treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
 <span>                            events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                            alpha <span class="op">=</span> <span class="fl">.02</span>, alpha_spending <span class="op">=</span> <span class="st">'asOF'</span><span class="op">)</span></span>
+<span>  </span>
+<span>  <span class="co">## we only save testing decision here</span></span>
+<span>  <span class="co">## You can save whatever you want for summarizing things later, e.g. reject time</span></span>
+<span>  <span class="va">trial</span><span class="op">$</span><span class="fu">save</span><span class="op">(</span><span class="va">ct_pfs</span><span class="op">$</span><span class="va">decision</span><span class="op">[</span><span class="va">ct_pfs</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'high dose'</span><span class="op">]</span>, name <span class="op">=</span> <span class="st">'pfs_high_dose_decision'</span><span class="op">)</span></span>
+<span>  <span class="va">trial</span><span class="op">$</span><span class="fu">save</span><span class="op">(</span><span class="va">ct_pfs</span><span class="op">$</span><span class="va">decision</span><span class="op">[</span><span class="va">ct_pfs</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'low dose'</span><span class="op">]</span>, name <span class="op">=</span> <span class="st">'pfs_low_dose_decision'</span><span class="op">)</span></span>
+<span>  <span class="va">trial</span><span class="op">$</span><span class="fu">save</span><span class="op">(</span><span class="va">ct_os</span><span class="op">$</span><span class="va">decision</span><span class="op">[</span><span class="va">ct_os</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'high dose'</span><span class="op">]</span>, name <span class="op">=</span> <span class="st">'os_high_dose_decision'</span><span class="op">)</span></span>
+<span>  <span class="va">trial</span><span class="op">$</span><span class="fu">save</span><span class="op">(</span><span class="va">ct_os</span><span class="op">$</span><span class="va">decision</span><span class="op">[</span><span class="va">ct_os</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'low dose'</span><span class="op">]</span>, name <span class="op">=</span> <span class="st">'os_low_dose_decision'</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="cn">NULL</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
@@ -386,46 +393,11 @@ replicates is run to save time.</p>
 <span><span class="co">#&gt; </span></span></code></pre></div>
 <p><img src="adaptiveDesign_files/figure-html/eiaaf-1.png" width="100%">
 In custom action functions, we can use <code>Trial$save()</code> to save
-intermediate results for summary purpose, which can be accessed by</p>
+intermediate results for summary purpose, which can be accessed anytime
+and anywhere by</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">controller</span><span class="op">$</span><span class="fu">get_output</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt;        trial       seed event_time_&lt;dose selection&gt;</span></span>
-<span><span class="co">#&gt; 1 Trial-3415 1727811904                    11.31385</span></span>
-<span><span class="co">#&gt;   n_events_&lt;dose selection&gt;_&lt;patient_id&gt; n_events_&lt;dose selection&gt;_&lt;pfs&gt;</span></span>
-<span><span class="co">#&gt; 1                                    366                             142</span></span>
-<span><span class="co">#&gt;   n_events_&lt;dose selection&gt;_&lt;os&gt; n_events_&lt;dose selection&gt;_&lt;surrogate&gt;</span></span>
-<span><span class="co">#&gt; 1                             65                                   300</span></span>
-<span><span class="co">#&gt;   n_events_&lt;dose selection&gt;_&lt;arms&gt; kept_arm event_time_&lt;interim&gt;</span></span>
-<span><span class="co">#&gt; 1   &lt;low dose, high dose, placebo&gt;      low             19.16584</span></span>
-<span><span class="co">#&gt;   n_events_&lt;interim&gt;_&lt;patient_id&gt; n_events_&lt;interim&gt;_&lt;pfs&gt;</span></span>
-<span><span class="co">#&gt; 1                             637                      300</span></span>
-<span><span class="co">#&gt;   n_events_&lt;interim&gt;_&lt;os&gt; n_events_&lt;interim&gt;_&lt;surrogate&gt;</span></span>
-<span><span class="co">#&gt; 1                     146                            534</span></span>
-<span><span class="co">#&gt;   n_events_&lt;interim&gt;_&lt;arms&gt; futility event_time_&lt;final&gt;</span></span>
-<span><span class="co">#&gt; 1       &lt;low dose, placebo&gt; positive           29.44763</span></span>
-<span><span class="co">#&gt;   n_events_&lt;final&gt;_&lt;patient_id&gt; n_events_&lt;final&gt;_&lt;pfs&gt; n_events_&lt;final&gt;_&lt;os&gt;</span></span>
-<span><span class="co">#&gt; 1                           878                    542                   300</span></span>
-<span><span class="co">#&gt;   n_events_&lt;final&gt;_&lt;surrogate&gt; n_events_&lt;final&gt;_&lt;arms&gt; error_message</span></span>
-<span><span class="co">#&gt; 1                          744     &lt;low dose, placebo&gt;</span></span></code></pre></div>
-<p><code>TrialSimulator</code> abstracts the data generation and
-management to allow user focus on implementing the statistical analysis.
-It simulates a trial on patient level, and provide flexibility in
-adaptive design.</p>
-</div>
-<div class="section level2">
-<h2 id="execute-trial-simulation">Execute Trial Simulation<a class="anchor" aria-label="anchor" href="#execute-trial-simulation"></a>
-</h2>
-<p>We can run a massive number of replicates in simulation to study
-operating characteristics of a trial design by specifying <code>n</code>
-in <code>Controller$run()</code>. We can set
-<code>plot_event = FALSE</code> to turn off plotting to save running
-time.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">## reset a controller if $run has been executed before</span></span>
-<span><span class="va">controller</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">10</span>, plot_event <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">kable</span><span class="op">(</span><span class="va">controller</span><span class="op">$</span><span class="fu">get_output</span><span class="op">(</span><span class="op">)</span>, escape <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<code class="sourceCode R"><span><span class="va">controller</span><span class="op">$</span><span class="fu">get_output</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">kable</span><span class="op">(</span>escape <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu">kable_styling</span><span class="op">(</span>bootstrap_options <span class="op">=</span> <span class="st">"striped"</span>, </span>
 <span>                full_width <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>                position <span class="op">=</span> <span class="st">"left"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
@@ -500,6 +472,255 @@ n_events_&lt;final&gt;_&lt;surrogate&gt;
 n_events_&lt;final&gt;_&lt;arms&gt;
 </th>
 <th style="text-align:left;">
+pfs_high_dose_decision
+</th>
+<th style="text-align:left;">
+pfs_low_dose_decision
+</th>
+<th style="text-align:left;">
+os_high_dose_decision
+</th>
+<th style="text-align:left;">
+os_low_dose_decision
+</th>
+<th style="text-align:left;">
+error_message
+</th>
+</tr></thead>
+<tbody><tr>
+<td style="text-align:left;">
+Trial-3415
+</td>
+<td style="text-align:right;">
+1727811904
+</td>
+<td style="text-align:right;">
+11.31385
+</td>
+<td style="text-align:right;">
+366
+</td>
+<td style="text-align:right;">
+142
+</td>
+<td style="text-align:right;">
+65
+</td>
+<td style="text-align:right;">
+300
+</td>
+<td style="text-align:left;">
+&lt;low dose, high dose, placebo&gt;
+</td>
+<td style="text-align:left;">
+low
+</td>
+<td style="text-align:right;">
+19.16584
+</td>
+<td style="text-align:right;">
+637
+</td>
+<td style="text-align:right;">
+300
+</td>
+<td style="text-align:right;">
+146
+</td>
+<td style="text-align:right;">
+534
+</td>
+<td style="text-align:left;">
+&lt;low dose, placebo&gt;
+</td>
+<td style="text-align:left;">
+positive
+</td>
+<td style="text-align:right;">
+29.44763
+</td>
+<td style="text-align:right;">
+878
+</td>
+<td style="text-align:right;">
+542
+</td>
+<td style="text-align:right;">
+300
+</td>
+<td style="text-align:right;">
+744
+</td>
+<td style="text-align:left;">
+&lt;low dose, placebo&gt;
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+</td>
+</tr></tbody>
+</table>
+</div>
+<p>Here we dive into the action function (<code>action3</code>) for the
+final analysis. We can literally execute the function line by line with
+locked data loaded. Note that the member functions
+<code>Trial$dunnettTest</code> and <code>Trial$closedTest</code> can
+make use of locked data at multiple stages (through the
+<code>events</code> argument) automatically, thus, unlike in
+<code>action3</code>, an explicit call of
+<code>Trial$get_locked_data(event_name)</code> is unnecessary.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## test PFS</span></span>
+<span><span class="va">dt_pfs</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">dunnettTest</span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'pfs'</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>,</span>
+<span>                            treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
+<span>                            events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'interim'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
+<span>                            planned_info <span class="op">=</span> <span class="st">'default'</span><span class="op">)</span></span>
+<span><span class="va">ct_pfs</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span><span class="va">dt_pfs</span>, treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
+<span>                           events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'interim'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
+<span>                           alpha <span class="op">=</span> <span class="fl">.005</span>, alpha_spending <span class="op">=</span> <span class="st">'asOF'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## test OS</span></span>
+<span><span class="va">dt_os</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">dunnettTest</span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'os'</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>,</span>
+<span>                           treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
+<span>                           events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
+<span>                           planned_info <span class="op">=</span> <span class="st">'default'</span><span class="op">)</span></span>
+<span><span class="va">ct_os</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span><span class="va">dt_pfs</span>, treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
+<span>                          events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'final'</span><span class="op">)</span>,</span>
+<span>                          alpha <span class="op">=</span> <span class="fl">.02</span>, alpha_spending <span class="op">=</span> <span class="st">'asOF'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ct_pfs</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         arm decision event_at_reject reject_time</span></span>
+<span><span class="co">#&gt; 1 high dose   accept            &lt;NA&gt;         Inf</span></span>
+<span><span class="co">#&gt; 2  low dose   reject           final    29.44763</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ct_os</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         arm decision event_at_reject reject_time</span></span>
+<span><span class="co">#&gt; 1 high dose   accept            &lt;NA&gt;         Inf</span></span>
+<span><span class="co">#&gt; 2  low dose   reject           final    29.44763</span></span></code></pre></div>
+<p>The two null hypotheses of <code>PFS</code> and <code>OS</code> are
+both accepted for the high dose because it is dropped at dose selection.
+Thus, <code>event_at_reject</code> is <code>NA</code>, and the
+<code>reject_time</code> is infinite. In contrast, <code>PFS</code> and
+<code>OS</code> are significant in low does. Note that even if
+<code>PFS</code> are tested at interim and final, one cannot claim its
+significance until the final analysis (<code>event_at_reject</code>).
+The <code>reject_time</code> (29.4476343) can be saved to the output
+using the member function <code>Trial$save</code>.</p>
+<p><code>TrialSimulator</code> abstracts the data generation and
+management to allow user focus on implementing the statistical analysis.
+It simulates a trial on patient level, and provide flexibility in
+adaptive design.</p>
+</div>
+<div class="section level2">
+<h2 id="execute-trial-simulation">Execute Trial Simulation<a class="anchor" aria-label="anchor" href="#execute-trial-simulation"></a>
+</h2>
+<p>We can run a massive number of replicates in simulation to study
+operating characteristics of a trial design by specifying <code>n</code>
+in <code>Controller$run()</code>. We can set
+<code>plot_event = FALSE</code> to turn off plotting to save running
+time.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## reset a controller if $run has been executed before</span></span>
+<span><span class="va">controller</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">10</span>, plot_event <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">controller</span><span class="op">$</span><span class="fu">get_output</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">kable</span><span class="op">(</span>escape <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">kable_styling</span><span class="op">(</span>bootstrap_options <span class="op">=</span> <span class="st">"striped"</span>, </span>
+<span>                full_width <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>                position <span class="op">=</span> <span class="st">"left"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">scroll_box</span><span class="op">(</span>width <span class="op">=</span> <span class="st">"100%"</span><span class="op">)</span></span></code></pre></div>
+<div style="border: 1px solid #ddd; padding: 5px; overflow-x: scroll; width:100%; ">
+<table class="table table table-striped" style="width: auto !important; ">
+<thead><tr>
+<th style="text-align:left;">
+trial
+</th>
+<th style="text-align:right;">
+seed
+</th>
+<th style="text-align:right;">
+event_time_&lt;dose selection&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;dose selection&gt;_&lt;patient_id&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;dose selection&gt;_&lt;pfs&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;dose selection&gt;_&lt;os&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;dose selection&gt;_&lt;surrogate&gt;
+</th>
+<th style="text-align:left;">
+n_events_&lt;dose selection&gt;_&lt;arms&gt;
+</th>
+<th style="text-align:left;">
+kept_arm
+</th>
+<th style="text-align:right;">
+event_time_&lt;interim&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;interim&gt;_&lt;patient_id&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;interim&gt;_&lt;pfs&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;interim&gt;_&lt;os&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;interim&gt;_&lt;surrogate&gt;
+</th>
+<th style="text-align:left;">
+n_events_&lt;interim&gt;_&lt;arms&gt;
+</th>
+<th style="text-align:left;">
+futility
+</th>
+<th style="text-align:right;">
+event_time_&lt;final&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;final&gt;_&lt;patient_id&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;final&gt;_&lt;pfs&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;final&gt;_&lt;os&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;final&gt;_&lt;surrogate&gt;
+</th>
+<th style="text-align:left;">
+n_events_&lt;final&gt;_&lt;arms&gt;
+</th>
+<th style="text-align:left;">
+pfs_high_dose_decision
+</th>
+<th style="text-align:left;">
+pfs_low_dose_decision
+</th>
+<th style="text-align:left;">
+os_high_dose_decision
+</th>
+<th style="text-align:left;">
+os_low_dose_decision
+</th>
+<th style="text-align:left;">
 error_message
 </th>
 </tr></thead>
@@ -572,6 +793,18 @@ positive
 &lt;low dose, placebo&gt;
 </td>
 <td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
 </td>
 </tr>
 <tr>
@@ -640,6 +873,18 @@ positive
 </td>
 <td style="text-align:left;">
 &lt;high dose, placebo&gt;
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+accept
 </td>
 <td style="text-align:left;">
 </td>
@@ -712,6 +957,18 @@ positive
 &lt;low dose, placebo&gt;
 </td>
 <td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
 </td>
 </tr>
 <tr>
@@ -780,6 +1037,18 @@ positive
 </td>
 <td style="text-align:left;">
 &lt;high dose, placebo&gt;
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+accept
 </td>
 <td style="text-align:left;">
 </td>
@@ -852,6 +1121,18 @@ positive
 &lt;low dose, placebo&gt;
 </td>
 <td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
 </td>
 </tr>
 <tr>
@@ -920,6 +1201,18 @@ positive
 </td>
 <td style="text-align:left;">
 &lt;high dose, placebo&gt;
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+accept
 </td>
 <td style="text-align:left;">
 </td>
@@ -992,6 +1285,18 @@ positive
 &lt;high dose, placebo&gt;
 </td>
 <td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
 </td>
 </tr>
 <tr>
@@ -1060,6 +1365,18 @@ positive
 </td>
 <td style="text-align:left;">
 &lt;high dose, placebo&gt;
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+accept
 </td>
 <td style="text-align:left;">
 </td>
@@ -1132,6 +1449,18 @@ positive
 &lt;low dose, high dose, placebo&gt;
 </td>
 <td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
 </td>
 </tr>
 <tr>
@@ -1202,6 +1531,18 @@ positive
 &lt;low dose, placebo&gt;
 </td>
 <td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
 </td>
 </tr>
 <tr>
@@ -1270,6 +1611,18 @@ positive
 </td>
 <td style="text-align:left;">
 &lt;low dose, high dose, placebo&gt;
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+reject
 </td>
 <td style="text-align:left;">
 </td>
