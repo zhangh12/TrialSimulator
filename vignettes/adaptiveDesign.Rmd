@@ -237,6 +237,13 @@ action3 <- function(trial, event_name){
   ct_os <- trial$closedTest(dt_pfs, treatments = c('high dose', 'low dose'),
                             events = c('final'),
                             alpha = .02, alpha_spending = 'asOF')
+  
+  ## we only save testing decision here
+  ## You can save whatever you want for summarizing things later, e.g. reject time
+  trial$save(ct_pfs$decision[ct_pfs$arm == 'high dose'], name = 'pfs_high_dose_decision')
+  trial$save(ct_pfs$decision[ct_pfs$arm == 'low dose'], name = 'pfs_low_dose_decision')
+  trial$save(ct_os$decision[ct_os$arm == 'high dose'], name = 'os_high_dose_decision')
+  trial$save(ct_os$decision[ct_os$arm == 'low dose'], name = 'os_low_dose_decision')
 
   invisible(NULL)
 }
@@ -281,10 +288,53 @@ controller <- Controller$new(trial, listener)
 controller$run(plot_event = TRUE)
 ```
 In custom action functions, we can use `Trial$save()` to save intermediate 
-results for summary purpose, which can be accessed by 
+results for summary purpose, which can be accessed anytime and anywhere by 
 ```{r alojfqoitl, class.source="fold-show"}
-controller$get_output()
+controller$get_output() %>% 
+  kable(escape = FALSE) %>% 
+  kable_styling(bootstrap_options = "striped", 
+                full_width = FALSE,
+                position = "left") %>%
+  scroll_box(width = "100%")
 ```
+
+Here we dive into the action function (`action3`) for the final analysis. We can 
+literally execute the function line by line with locked data loaded. 
+Note that the member functions `Trial$dunnettTest` and `Trial$closedTest` can 
+make use of locked data at multiple stages (through the `events` argument) 
+automatically, thus, unlike in `action3`, an explicit call of 
+`Trial$get_locked_data(event_name)` is unnecessary. 
+
+```{r aief, class.source='fold-show'}
+## test PFS
+dt_pfs <- trial$dunnettTest(endpoint = 'pfs', placebo = 'placebo',
+                            treatments = c('high dose', 'low dose'),
+                            events = c('dose selection', 'interim', 'final'),
+                            planned_info = 'default')
+ct_pfs <- trial$closedTest(dt_pfs, treatments = c('high dose', 'low dose'),
+                           events = c('interim', 'final'),
+                           alpha = .005, alpha_spending = 'asOF')
+
+## test OS
+dt_os <- trial$dunnettTest(endpoint = 'os', placebo = 'placebo',
+                           treatments = c('high dose', 'low dose'),
+                           events = c('dose selection', 'final'),
+                           planned_info = 'default')
+ct_os <- trial$closedTest(dt_pfs, treatments = c('high dose', 'low dose'),
+                          events = c('final'),
+                          alpha = .02, alpha_spending = 'asOF')
+
+print(ct_pfs)
+print(ct_os)
+```
+
+The two null hypotheses of `PFS` and `OS` are both accepted for the high dose 
+because it is dropped at dose selection. Thus, `event_at_reject` is `NA`, 
+and the `reject_time` is infinite. In contrast, `PFS` and `OS` are significant 
+in low does. Note that even if `PFS` are tested at interim and final, one 
+cannot claim its significance until the final analysis (`event_at_reject`). 
+The `reject_time` (`r ct_os$reject_time[2]`) can be saved to the output using 
+the member function `Trial$save`. 
 
 `TrialSimulator` abstracts the data generation and
 management to allow user focus on implementing the statistical analysis.
@@ -302,7 +352,8 @@ controller$reset()
 controller$run(n = 10, plot_event = FALSE)
 ```
 ```{r liefa}
-kable(controller$get_output(), escape = FALSE) %>% 
+controller$get_output() %>% 
+  kable(escape = FALSE) %>% 
   kable_styling(bootstrap_options = "striped", 
                 full_width = FALSE,
                 position = "left") %>%
