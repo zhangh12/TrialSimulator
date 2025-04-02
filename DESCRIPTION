@@ -27,4 +27,5 @@ Suggests:
     simdata,
     survminer
 VignetteBuilder: knitr
-URL: https://zhangh12.github.io/TrialSimulator/
+URL: https://zhangh12.github.io/TrialSimulator/, https://github.com/zhangh12/TrialSimulator
+BugReports: https://github.com/zhangh12/TrialSimulator/issues
