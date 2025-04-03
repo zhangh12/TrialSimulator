@@ -397,10 +397,10 @@ replicates is run to save time.</p>
 <span><span class="co">#&gt;   patient pfs  os surrogate                arms</span></span>
 <span><span class="co">#&gt; 1     878 542 300       744 &lt;low dose, placebo&gt;</span></span>
 <span><span class="co">#&gt; </span></span></code></pre></div>
-<p><img src="adaptiveDesign_files/figure-html/eiaaf-1.png" width="100%">
-In custom action functions, we can use <code>Trial$save()</code> to save
-intermediate results for summary purpose, which can be accessed anytime
-and anywhere by</p>
+<p><img src="adaptiveDesign_files/figure-html/eiaaf-1.png" width="100%"></p>
+<p>In custom action functions, we can use <code>Trial$save()</code> to
+save intermediate results for summary purpose, which can be accessed
+anytime and anywhere by</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">controller</span><span class="op">$</span><span class="fu">get_output</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu">kable</span><span class="op">(</span>escape <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
@@ -637,9 +637,11 @@ time.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## reset a controller if $run has been executed before</span></span>
 <span><span class="va">controller</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">10</span>, plot_event <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1000</span>, plot_event <span class="op">=</span> <span class="cn">FALSE</span>, silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">output</span> <span class="op">&lt;-</span> <span class="va">controller</span><span class="op">$</span><span class="fu">get_output</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">controller</span><span class="op">$</span><span class="fu">get_output</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<code class="sourceCode R"><span><span class="va">output</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu">kable</span><span class="op">(</span>escape <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu">kable_styling</span><span class="op">(</span>bootstrap_options <span class="op">=</span> <span class="st">"striped"</span>, </span>
 <span>                full_width <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -1551,91 +1553,440 @@ reject
 <td style="text-align:left;">
 </td>
 </tr>
+</tbody>
+</table>
+</div>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">output</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">summarise</span><span class="op">(</span></span>
+<span>    time_dose_selection <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`event_time_&lt;dose selection&gt;`</span><span class="op">)</span>, </span>
+<span>    time_interim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`event_time_&lt;interim&gt;`</span><span class="op">)</span>, </span>
+<span>    time_final <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`event_time_&lt;final&gt;`</span><span class="op">)</span>, </span>
+<span>    n_dose_selection <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`n_events_&lt;dose selection&gt;_&lt;patient_id&gt;`</span><span class="op">)</span>, </span>
+<span>    n_interim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`n_events_&lt;interim&gt;_&lt;patient_id&gt;`</span><span class="op">)</span>, </span>
+<span>    n_final <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`n_events_&lt;final&gt;_&lt;patient_id&gt;`</span><span class="op">)</span>, </span>
+<span>    low <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">kept_arm</span> <span class="op">==</span> <span class="st">'low'</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>, </span>
+<span>    high <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">kept_arm</span> <span class="op">==</span> <span class="st">'high'</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>, </span>
+<span>    both <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">kept_arm</span> <span class="op">==</span> <span class="st">'both'</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
+<span>  <span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">kable</span><span class="op">(</span>col.names <span class="op">=</span> <span class="cn">NULL</span>, digits <span class="op">=</span> <span class="fl">1</span>, align <span class="op">=</span> <span class="st">'r'</span>, </span>
+<span>        caption <span class="op">=</span> <span class="st">'Number of Randomized Patients at Stages'</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">add_header_above</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Dose Selection'</span>, <span class="st">'Interim'</span>, <span class="st">'Final'</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>, </span>
+<span>                     <span class="st">'Low Dose'</span>, <span class="st">'High Dose'</span>, <span class="st">'Both'</span><span class="op">)</span>, align <span class="op">=</span> <span class="st">'r'</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">add_header_above</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Time'</span> <span class="op">=</span> <span class="fl">3</span>, <span class="st">'Number of Patients'</span> <span class="op">=</span> <span class="fl">3</span>, <span class="st">'Selected Dose (%)'</span> <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">kable_styling</span><span class="op">(</span>full_width <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<table class="table table" style="margin-left: auto; margin-right: auto;">
+<caption>
+Number of Randomized Patients at Stages
+</caption>
+<thead>
 <tr>
-<td style="text-align:left;">
-Trial-3415
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="3">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Time
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="3">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Number of Patients
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="3">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Selected Dose (%)
+</div>
+</th>
+</tr>
+<tr>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Dose Selection
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Interim
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Final
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Dose Selection
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Interim
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Final
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Low Dose
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+High Dose
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Both
+</div>
+</th>
+</tr>
+<tr>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+</tr>
+</thead>
+<tbody><tr>
+<td style="text-align:right;">
+11.3
 </td>
 <td style="text-align:right;">
-1910683895
+19.1
 </td>
 <td style="text-align:right;">
-11.29385
+28
 </td>
 <td style="text-align:right;">
 365
 </td>
 <td style="text-align:right;">
-147
+647.6
 </td>
 <td style="text-align:right;">
-74
+893.2
 </td>
 <td style="text-align:right;">
-300
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-both
+70.5
 </td>
 <td style="text-align:right;">
-16.95067
+17.3
 </td>
 <td style="text-align:right;">
-648
+12.2
 </td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-156
-</td>
-<td style="text-align:right;">
-543
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-positive
-</td>
-<td style="text-align:right;">
-24.75913
-</td>
-<td style="text-align:right;">
-1000
-</td>
-<td style="text-align:right;">
-537
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-837
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-</tbody>
+</tr></tbody>
 </table>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">output</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">summarise</span><span class="op">(</span></span>
+<span>    n_pfs_dose_selection <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`n_events_&lt;dose selection&gt;_&lt;pfs&gt;`</span><span class="op">)</span>, </span>
+<span>    n_pfs_interim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`n_events_&lt;interim&gt;_&lt;pfs&gt;`</span><span class="op">)</span>,</span>
+<span>    n_pfs_final <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`n_events_&lt;final&gt;_&lt;pfs&gt;`</span><span class="op">)</span>,</span>
+<span>    n_os_dose_selection <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`n_events_&lt;dose selection&gt;_&lt;os&gt;`</span><span class="op">)</span>, </span>
+<span>    n_os_interim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`n_events_&lt;interim&gt;_&lt;os&gt;`</span><span class="op">)</span>,</span>
+<span>    n_os_final <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`n_events_&lt;final&gt;_&lt;os&gt;`</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">kable</span><span class="op">(</span>col.names <span class="op">=</span> <span class="cn">NULL</span>, digits <span class="op">=</span> <span class="fl">1</span>, align <span class="op">=</span> <span class="st">'r'</span>, </span>
+<span>        caption <span class="op">=</span> <span class="st">'Number of Events of PFS and OS at Stages'</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">add_header_above</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Dose Selection'</span>, <span class="st">'Interim'</span>, <span class="st">'Final'</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>, align <span class="op">=</span> <span class="st">'r'</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">add_header_above</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'PFS'</span> <span class="op">=</span> <span class="fl">3</span>, <span class="st">'OS'</span> <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">kable_styling</span><span class="op">(</span>full_width <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<table class="table table" style="margin-left: auto; margin-right: auto;">
+<caption>
+Number of Events of PFS and OS at Stages
+</caption>
+<thead>
+<tr>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="3">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+PFS
 </div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="3">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+OS
+</div>
+</th>
+</tr>
+<tr>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Dose Selection
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Interim
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Final
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Dose Selection
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Interim
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Final
+</div>
+</th>
+</tr>
+<tr>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+</tr>
+</thead>
+<tbody><tr>
+<td style="text-align:right;">
+144.4
+</td>
+<td style="text-align:right;">
+300
+</td>
+<td style="text-align:right;">
+532.8
+</td>
+<td style="text-align:right;">
+67.9
+</td>
+<td style="text-align:right;">
+152.2
+</td>
+<td style="text-align:right;">
+301.9
+</td>
+</tr></tbody>
+</table>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">output</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">summarise</span><span class="op">(</span></span>
+<span>    power_pfs_low <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">pfs_low_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>, </span>
+<span>    power_pfs_high <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">pfs_high_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>, </span>
+<span>    power_pfs_or <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">pfs_low_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span> <span class="op">|</span> <span class="va">pfs_high_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>, </span>
+<span>    power_pfs_and <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">pfs_low_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span> <span class="op">&amp;</span> <span class="va">pfs_high_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>, </span>
+<span>    power_os_low <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">os_low_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>, </span>
+<span>    power_os_high <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">os_high_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>, </span>
+<span>    power_os_or <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">os_low_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span> <span class="op">|</span> <span class="va">os_high_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>,</span>
+<span>    power_os_and <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">os_low_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span> <span class="op">&amp;</span> <span class="va">os_high_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
+<span>  <span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">kable</span><span class="op">(</span>col.names <span class="op">=</span> <span class="cn">NULL</span>, digits <span class="op">=</span> <span class="fl">1</span>, align <span class="op">=</span> <span class="st">'r'</span>, </span>
+<span>        caption <span class="op">=</span> <span class="st">'Power of Testing PFS and OS'</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">add_header_above</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Low Dose'</span>, <span class="st">'High Dose'</span>, <span class="st">'Low or High'</span>, <span class="st">'Low and High'</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>, align <span class="op">=</span> <span class="st">'r'</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">add_header_above</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'PFS (%)'</span> <span class="op">=</span> <span class="fl">4</span>, <span class="st">'OS (%)'</span> <span class="op">=</span> <span class="fl">4</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">kable_styling</span><span class="op">(</span>full_width <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<table class="table table" style="margin-left: auto; margin-right: auto;">
+<caption>
+Power of Testing PFS and OS
+</caption>
+<thead>
+<tr>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="4">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+PFS (%)
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="4">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+OS (%)
+</div>
+</th>
+</tr>
+<tr>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Low Dose
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+High Dose
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Low or High
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Low and High
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Low Dose
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+High Dose
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Low or High
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Low and High
+</div>
+</th>
+</tr>
+<tr>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+</tr>
+</thead>
+<tbody><tr>
+<td style="text-align:right;">
+57.6
+</td>
+<td style="text-align:right;">
+24.6
+</td>
+<td style="text-align:right;">
+75.4
+</td>
+<td style="text-align:right;">
+6.8
+</td>
+<td style="text-align:right;">
+72.1
+</td>
+<td style="text-align:right;">
+27.4
+</td>
+<td style="text-align:right;">
+90.6
+</td>
+<td style="text-align:right;">
+8.9
+</td>
+</tr></tbody>
+</table>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">output</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">summarise</span><span class="op">(</span></span>
+<span>    power_pfs_not_os <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">(</span><span class="va">pfs_low_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span> <span class="op">|</span> <span class="va">pfs_high_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span><span class="op">)</span> <span class="op">&amp;</span> </span>
+<span>                              <span class="va">os_low_dose_decision</span> <span class="op">==</span> <span class="st">'accept'</span> <span class="op">&amp;</span> <span class="va">os_high_dose_decision</span> <span class="op">==</span> <span class="st">'accept'</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>, </span>
+<span>    power_os_not_pfs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">(</span><span class="va">os_low_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span> <span class="op">|</span> <span class="va">os_high_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span><span class="op">)</span> <span class="op">&amp;</span> </span>
+<span>                              <span class="va">pfs_low_dose_decision</span> <span class="op">==</span> <span class="st">'accept'</span> <span class="op">&amp;</span> <span class="va">pfs_high_dose_decision</span> <span class="op">==</span> <span class="st">'accept'</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>, </span>
+<span>    power_pfs_and_os <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">(</span><span class="va">pfs_low_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span> <span class="op">|</span> <span class="va">pfs_high_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span><span class="op">)</span> <span class="op">&amp;</span> </span>
+<span>                              <span class="op">(</span><span class="va">os_low_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span> <span class="op">|</span> <span class="va">os_high_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span><span class="op">)</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>,</span>
+<span>    power_pfs_or_os <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">(</span><span class="va">pfs_low_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span> <span class="op">|</span> <span class="va">pfs_high_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span><span class="op">)</span> <span class="op">|</span> </span>
+<span>                              <span class="op">(</span><span class="va">os_low_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span> <span class="op">|</span> <span class="va">os_high_dose_decision</span> <span class="op">==</span> <span class="st">'reject'</span><span class="op">)</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
+<span>  <span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">kable</span><span class="op">(</span>col.names <span class="op">=</span> <span class="cn">NULL</span>, digits <span class="op">=</span> <span class="fl">1</span>, align <span class="op">=</span> <span class="st">'r'</span>, </span>
+<span>        caption <span class="op">=</span> <span class="st">'Power of Testing PFS and OS (Cont.)'</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">add_header_above</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Reject PFS and Accept OS'</span>, <span class="st">'Accept PFS and Reject OS'</span>, </span>
+<span>                     <span class="st">'Reject PFS and OS'</span>, <span class="st">'Reject PFS or OS'</span><span class="op">)</span>, align <span class="op">=</span> <span class="st">'r'</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">kable_styling</span><span class="op">(</span>full_width <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<table class="table table" style="margin-left: auto; margin-right: auto;">
+<caption>
+Power of Testing PFS and OS (Cont.)
+</caption>
+<thead>
+<tr>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Reject PFS and Accept OS
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Accept PFS and Reject OS
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Reject PFS and OS
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Reject PFS or OS
+</div>
+</th>
+</tr>
+<tr>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+<th style="text-align:right;">
+</th>
+</tr>
+</thead>
+<tbody><tr>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+15.2
+</td>
+<td style="text-align:right;">
+75.4
+</td>
+<td style="text-align:right;">
+90.6
+</td>
+</tr></tbody>
+</table>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
