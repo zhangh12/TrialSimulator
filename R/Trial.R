@@ -521,50 +521,6 @@ Trial <- R6::R6Class(
     },
 
     #' @description
-    #' assign a new patient to an arm based on planned randomization queue
-    #' I may consider make this function deprecated. Instead, I'd like to
-    #' have a function to sample the remaining n patients, with n as an argument.
-    #' Reason: if an action (analysis, add/remove arm, early stop) is triggered
-    #' based on number of event of TTE, we may need to sample ALL patients to
-    #' know the accurate time point. With an enrollment function of more than
-    #' one patient, we can find out the time point and roll back to then, and
-    #' recover randomization queue and enrollment time for the remaining patients.
-    enroll_a_patient = function(){
-
-      if(length(self$get_arms()) == 0){
-        stop('No arm is added in the trial yet. Patient cannot be enrolled. ')
-      }
-
-      if(self$get_number_unenrolled_patients() == 0){
-        stop('Maximum planned sample size has been reached. Patient cannot be enrolled. ')
-      }
-
-      next_enroll_arm <- self$get_randomization_queue(1)
-      ## update randomization_queue after enrolling a new patient.
-      ## randomization_queue only keep randomization queue for future patients
-      private$randomization_queue <- self$get_randomization_queue(-1)
-
-      next_enroll_time <- self$get_enroll_time(1)
-      private$enroll_time <- self$get_enroll_time(-1)
-
-      patient_data <-
-        data.frame(
-          patient_id = self$get_number_enrolled_patients() + 1,
-          arm = next_enroll_arm,
-          enroll_time = next_enroll_time
-        )
-
-      n_ <- 1 # sample data for one patient
-      for(ep in self$get_an_arm(next_enroll_arm)$get_endpoints()){
-        patient_data <- cbind(patient_data, ep$get_generator()(n_))
-      }
-
-      private$trial_data <- bind_rows(private$trial_data, patient_data)
-      private$n_enrolled_patients <- private$n_enrolled_patients + 1
-
-    },
-
-    #' @description
     #' assign new patients to pre-planned randomization queue at pre-specified
     #' enrollment time.
     #' @param n_patients number of new patients to be enrolled. If \code{NULL},
@@ -1127,7 +1083,7 @@ Trial <- R6::R6Class(
 
       }
 
-      ################################################
+
       ## prepare stacked area chart
       all_data <- all_data_list %>%
         dplyr::filter(!(arm %in% '0: overall'))
@@ -2233,7 +2189,9 @@ Trial <- R6::R6Class(
                   (length(n_patients) == 1) &&
                   is.wholenumber(n_patients))
 
-      stopifnot(is.numeric(duration) && (length(duration) == 1))
+      stopifnot(is.numeric(duration) &&
+                  (length(duration) == 1) &&
+                  duration > 0)
 
       stopifnot(is.function(enroller))
       stopifnot(is.null(dropout) || is.function(dropout))
