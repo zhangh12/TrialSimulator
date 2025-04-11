@@ -363,11 +363,15 @@ operating characteristics of a trial design by specifying `n` in
 `Controller$run()`. We can set `plot_event = FALSE` to turn off plotting
 to save running time.
 
-```{r ioeinaf, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
+```{r ioeinaf, eval=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
 ## reset a controller if $run has been executed before
 controller$reset()
 controller$run(n = 1000, plot_event = FALSE, silent = TRUE)
 output <- controller$get_output()
+```
+
+```{r eaiofj, echo=FALSE}
+output <- TrialSimulator:::getAdaptiveDesignOutput()
 ```
 
 ```{r liefa}

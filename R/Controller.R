@@ -120,6 +120,7 @@ Controller <- R6::R6Class(
     run = function(n = 1, plot_event = TRUE, silent = FALSE, dry_run = FALSE){
 
       self$get_trial()$make_arms_snapshot()
+      private$output <- NULL
 
       for(idx in 1:n){
         tryCatch(

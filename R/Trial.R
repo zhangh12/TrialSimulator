@@ -1767,7 +1767,7 @@ Trial <- R6::R6Class(
       ## by doing this, events in function argument can be in arbitrary order
 
       if(!all(events %in% names(private$event_time))){
-        stop('Event(s) <', paste0(setdiff(events, names(private$event_time))),
+        stop('Event(s) <', paste0(setdiff(events, names(private$event_time)), collapse = ', '),
              '> haven\'t been triggered yet, so are unable to be used as "events" in dunnettTest(). ')
       }
 
