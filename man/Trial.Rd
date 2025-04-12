@@ -99,6 +99,7 @@ trial$closedTest(dt, c('high dose', 'low dose'),
 \item \href{#method-Trial-new}{\code{Trial$new()}}
 \item \href{#method-Trial-get_trial_data}{\code{Trial$get_trial_data()}}
 \item \href{#method-Trial-get_duration}{\code{Trial$get_duration()}}
+\item \href{#method-Trial-set_duration}{\code{Trial$set_duration()}}
 \item \href{#method-Trial-set_enroller}{\code{Trial$set_enroller()}}
 \item \href{#method-Trial-get_enroller}{\code{Trial$get_enroller()}}
 \item \href{#method-Trial-set_dropout}{\code{Trial$set_dropout()}}
@@ -120,7 +121,6 @@ trial$closedTest(dt, c('high dose', 'low dose'),
 \item \href{#method-Trial-get_number_unenrolled_patients}{\code{Trial$get_number_unenrolled_patients()}}
 \item \href{#method-Trial-get_randomization_queue}{\code{Trial$get_randomization_queue()}}
 \item \href{#method-Trial-get_enroll_time}{\code{Trial$get_enroll_time()}}
-\item \href{#method-Trial-enroll_a_patient}{\code{Trial$enroll_a_patient()}}
 \item \href{#method-Trial-enroll_patients}{\code{Trial$enroll_patients()}}
 \item \href{#method-Trial-set_current_time}{\code{Trial$set_current_time()}}
 \item \href{#method-Trial-get_current_time}{\code{Trial$get_current_time()}}
@@ -218,6 +218,27 @@ return maximum duration of a trial
 \if{html}{\out{<div class="r">}}\preformatted{Trial$get_duration()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trial-set_duration"></a>}}
+\if{latex}{\out{\hypertarget{method-Trial-set_duration}{}}}
+\subsection{Method \code{set_duration()}}{
+set trial duration in an adaptive designed trial. All patients enrolled
+before resetting the duration are truncated (non-tte endpoints) or
+censored (tte endpoints) at the original duration. Remaining patients
+are re-randomized. Now new duration must be longer than the old one.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trial$set_duration(duration)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{duration}}{new duration of a trial. It must be longer than the
+current duration.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Trial-set_enroller"></a>}}
@@ -542,23 +563,6 @@ for debugging purpose.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trial-enroll_a_patient"></a>}}
-\if{latex}{\out{\hypertarget{method-Trial-enroll_a_patient}{}}}
-\subsection{Method \code{enroll_a_patient()}}{
-assign a new patient to an arm based on planned randomization queue
-I may consider make this function deprecated. Instead, I'd like to
-have a function to sample the remaining n patients, with n as an argument.
-Reason: if an action (analysis, add/remove arm, early stop) is triggered
-based on number of event of TTE, we may need to sample ALL patients to
-know the accurate time point. With an enrollment function of more than
-one patient, we can find out the time point and roll back to then, and
-recover randomization queue and enrollment time for the remaining patients.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trial$enroll_a_patient()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Trial-enroll_patients"></a>}}
 \if{latex}{\out{\hypertarget{method-Trial-enroll_patients}{}}}
 \subsection{Method \code{enroll_patients()}}{
@@ -829,7 +833,11 @@ plot of cumulative number of events/samples over calendar time.
 \subsection{Method \code{censor_trial_data()}}{
 censor trial data at calendar time
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trial$censor_trial_data(censor_at = NULL, selected_arms = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trial$censor_trial_data(
+  censor_at = NULL,
+  selected_arms = NULL,
+  enrolled_before = Inf
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -845,6 +853,13 @@ This is necessary because number of events/sample size in removed arms
 should be fixed unchanged since corresponding event is triggered. In that
 case, one can update trial data by something like
 \code{censor_trial_data(censor_at = event_time, selected_arms = removed_arms)}.}
+
+\item{\code{enrolled_before}}{censoring is applied to patients enrolled before
+specific time. This argument would be used when trial duration is
+updated by \code{set_duration}. Adaptation happens when \code{set_duration}
+is called so we fix duration for patients enrolled before adaptation
+to maintain independent increment. This should work when trial duration
+is updated for multiple times.}
 }
 \if{html}{\out{</div>}}
 }
