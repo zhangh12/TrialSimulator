@@ -57,7 +57,13 @@ Arm <- R6::R6Class(
     #' @description
     #' return number of endpoints in the arm
     get_number_endpoints = function(){
-      length(private$endpoints)
+      sapply(
+        private$endpoints,
+        function(ep){
+          length(ep$get_name())
+        }
+      ) %>%
+        sum()
     },
 
     #' @description
@@ -70,6 +76,35 @@ Arm <- R6::R6Class(
     #' return a list of endpoints in the arm
     get_endpoints = function(){
       private$endpoints
+    },
+
+    #' @description
+    #' return name of endpoints registered to the arm
+    get_endpoints_name = function(){
+      lapply(
+        self$get_endpoints(),
+        function(ep){
+          ep$get_name()
+        }
+      ) %>%
+        unlist()
+    },
+
+    #' @description
+    #' print an arm
+    print = function(){
+      white_text_blue_bg <- "\033[37;44m"
+      reset <- "\033[0m"  # Reset to default color
+      logo <- '\u2695\u2695' ## stringi::stri_escape_unicode('⚕')
+
+      cat(white_text_blue_bg, logo, 'Arm Name: ', self$get_name(), reset, '\n')
+      cat(white_text_blue_bg, logo, 'Description: ', self$get_description(), reset, '\n')
+      cat(white_text_blue_bg, logo, '# of Endpoints: ', self$get_number_endpoints(), reset, '\n')
+      cat(white_text_blue_bg, logo, 'Registered Endpoints: ',
+          paste0(self$get_endpoints_name(), collapse = ', '), reset, '\n')
+
+      invisible(self)
+
     }
   ),
 
