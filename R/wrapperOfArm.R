@@ -5,7 +5,7 @@
 #' the class constructor \code{Arm$new}. Users who are not familiar with
 #' the concept of classes may consider using this wrapper directly.
 #'
-#' @param name name of arm
+#' @param name name of arm, which is the arm's label in generated data
 #' @param description optional. Description of arm
 #'
 #' @examples
