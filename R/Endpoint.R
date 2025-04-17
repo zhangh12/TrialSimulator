@@ -11,86 +11,9 @@
 #' @import ggplot2
 #'
 #' @examples
-#' set.seed(12345)
-#' ## Example 1. Generate a time-to-event endpoint.
-#' ## Two columns are returned, one for time, one for event (1/0, 0 for
-#  ## censoring)
-#' ## A built-in RNG function is used to handle piecewise constant exponential
-#' ## distribution
-#' risk <- data.frame(
-#'   end_time = c(1, 10, 26.0, 52.0),
-#'   piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01)
-#' )
+#' # Instead of using Endpoint$new, please use endpoints(), a user-friendly
+#' # wrapper. See examples in ?endpoints.
 #'
-#' pfs <- Endpoint$new(name = 'pfs', type='tte',
-#' generator = PiecewiseConstantExponentialRNG,
-#' risk = risk, endpoint_name = 'pfs')
-#' pfs$get_generator()
-#'
-#' ## Example 2. Generate continuous and binary endpoints using R's built-in
-#' ## RNG functions, e.g. rnorm, rexp, rbinom, etc.
-#' ep1 <- Endpoint$new(
-#'          name = 'cd4', type = 'non-tte', generator = rnorm, readout = c(cd4=1),
-#'          mean = 1.2)
-#' ep2 <- Endpoint$new(
-#'          name = 'resp_time', type = 'non-tte', generator = rexp, readout = c(resp_time=0),
-#'          rate = 4.5)
-#' ep3 <- Endpoint$new(
-#'          name = 'orr', type = 'non-tte', readout = c(orr=3), generator = rbinom,
-#'          size = 1, prob = .4)
-#'
-#' mean(ep1$get_generator()(1e4)[, 1]) # compared to 1.2
-#' sd(ep1$get_generator()(1e4)[, 1]) # compared to 1.0
-#'
-#' log(2) / median(ep2$get_generator()(1e4)[, 1]) # compared to 4.5
-#'
-#' mean(ep3$get_generator()(1e4)[, 1]) # compared to 0.4
-#'
-#' ## An example of piecewise constant exponential random number generator
-#' ## Baseline hazards are piecewise constant
-#' ## Hazard ratios are piecewise constant, resulting a delayed effect.
-#'
-#' run <- TRUE
-#'
-#' if (!requireNamespace("survminer", quietly = TRUE)) {
-#'   run <- FALSE
-#'   message("Please install 'survminer' to run this example.")
-#' }
-#'
-#' if (!requireNamespace("survival", quietly = TRUE)) {
-#'   run <- FALSE
-#'   message("Please install 'survival' to run this example.")
-#' }
-#'
-#' if(run){
-#' risk1 <- risk
-#' ep1 <- TrialSimulator::Endpoint$new(
-#'   name = 'pfs', type='tte',
-#'   generator = PiecewiseConstantExponentialRNG,
-#'   risk=risk1, endpoint_name = 'pfs')
-#'
-#' risk2 <- risk1
-#' risk2$hazard_ratio <- c(1, 1, .6, .4)
-#' ep2 <- TrialSimulator::Endpoint$new(
-#'   name = 'pfs', type='tte',
-#'   generator = PiecewiseConstantExponentialRNG,
-#'   risk=risk2, endpoint_name = 'pfs')
-#'
-#' n <- 1000
-#' tte <- rbind(ep1$get_generator()(n), ep2$get_generator()(n))
-#' arm <- rep(0:1, each = n)
-#' dat <- data.frame(tte, arm)
-#' sfit <- survival::survfit(
-#'   survival::Surv(time = pfs, event = pfs_event) ~ arm, dat)
-#'
-#' survminer::ggsurvplot(sfit,
-#'            data = dat,
-#'            pval = TRUE,  # Show p-value
-#'            conf.int = TRUE,  # Show confidence intervals
-#'            risk.table = TRUE,  # Add risk table
-#'            palette = c("blue", "red"))
-#'
-#' }
 #' @export
 Endpoint <- R6::R6Class(
   'Endpoint',

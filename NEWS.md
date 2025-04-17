@@ -1,3 +1,9 @@
+# TrialSimulator 0.63.0
+
+## New Features
+
+- Add wrapper functions `endpoints` and `arm` for `Endpoint$new` and `Arm$new`.  
+
 # TrialSimulator 0.62.0
 
 ## New Features

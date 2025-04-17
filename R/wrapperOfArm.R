@@ -1,0 +1,35 @@
+#' Define an Arm
+#' @description
+#' Define an arm of a trial.
+#'
+#' @param name name of arm
+#' @param description optional. Description of arm
+#'
+#' @examples
+#' risk <- data.frame(
+#'   end_time = c(1, 10, 26.0, 52.0),
+#'   piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01)
+#' )
+#'
+#' pfs <- endpoints(name = 'pfs', type='tte',
+#' generator = PiecewiseConstantExponentialRNG,
+#' risk = risk, endpoint_name = 'pfs')
+#'
+#' orr <- endpoints(
+#'   name = 'orr', type = 'non-tte',
+#'   readout = c(orr = 2), generator = rbinom,
+#'   size = 1, prob = .4)
+#'
+#' placebo <- arm(name = 'pbo', description = 'Placebo arm')
+#'
+#' placebo$add_endpoints(pfs, orr)
+#' placebo
+#' placebo$get_endpoints()[[1]]$get_generator()(n = 1e3) |> head()
+#' placebo$get_endpoints()[[2]]$get_name()
+#'
+#' @export
+arm <- function(name, description = name){
+
+  Arm$new(name = name, description = description)
+
+}

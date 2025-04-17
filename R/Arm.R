@@ -34,7 +34,7 @@ Arm <- R6::R6Class(
     #' @description
     #' initialize an arm
     #' @param name name of arm
-    #' @param description description of arm
+    #' @param description optional. Description of arm
     initialize = function(name, description = name){
       stopifnot(is.character(name))
       stopifnot(is.character(description))
