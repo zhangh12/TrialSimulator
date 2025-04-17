@@ -3,28 +3,10 @@
 #' Create a class of arm.
 #'
 #' @docType class
+#'
 #' @examples
-#' risk <- data.frame(
-#'   end_time = c(1, 10, 26.0, 52.0),
-#'   piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01)
-#' )
-#'
-#' pfs <- Endpoint$new(name = 'pfs', type='tte',
-#' generator = PiecewiseConstantExponentialRNG,
-#' risk = risk, endpoint_name = 'pfs')
-#'
-#' orr <- Endpoint$new(
-#'   name = 'orr', type = 'non-tte',
-#'   readout = c(orr = 2), generator = rbinom,
-#'   size = 1, prob = .4)
-#'
-#' placebo <- Arm$new(
-#'   name = 'pbo', description = 'Placebo arm')
-#'
-#' placebo$add_endpoints(pfs, orr)
-#' placebo
-#' placebo$get_endpoints()[[1]]$get_generator()(n = 1e3) |> head()
-#' placebo$get_endpoints()[[2]]$get_name()
+#' # Instead of using Arm$new, please use arm(), a user-friendly
+#' # wrapper. See examples in ?arm
 #'
 #' @export
 Arm <- R6::R6Class(
