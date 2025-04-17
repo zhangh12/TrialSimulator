@@ -19,6 +19,7 @@
 #' patients. Its first argument is the number of enrolled patients.
 #' @param ... arguments of \code{enroller} and \code{dropout}.
 #'
+#' @examples
 #' risk1 <- data.frame(
 #'   end_time = c(1, 10, 26.0, 52.0),
 #'   piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01)
@@ -60,6 +61,8 @@
 #'   seed = 31415926, duration = 100,
 #'   enroller = rexp, rate = log(2) / 5)
 #' trial$add_arms(sample_ratio = c(1, 2), placebo, active)
+#'
+#' trial
 #'
 #' @export
 #'

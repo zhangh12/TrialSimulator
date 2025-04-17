@@ -35,8 +35,14 @@ patients. Its first argument is the number of enrolled patients.}
 \item{dropout}{a function returning a vector of dropout time for
 patients. Its first argument is the number of enrolled patients.}
 
-\item{...}{arguments of \code{enroller} and \code{dropout}.
-
+\item{...}{arguments of \code{enroller} and \code{dropout}.}
+}
+\description{
+Define a trial. This is a user-friendly wrapper for
+the class constructor \code{Trial$new}. Users who are not familiar with
+the concept of classes may consider using this wrapper directly.
+}
+\examples{
 risk1 <- data.frame(
   end_time = c(1, 10, 26.0, 52.0),
   piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01)
@@ -77,10 +83,8 @@ trial <- trial(
   name = 'Trial-3415', n_patients = 100,
   seed = 31415926, duration = 100,
   enroller = rexp, rate = log(2) / 5)
-trial$add_arms(sample_ratio = c(1, 2), placebo, active)}
-}
-\description{
-Define a trial. This is a user-friendly wrapper for
-the class constructor \code{Trial$new}. Users who are not familiar with
-the concept of classes may consider using this wrapper directly.
+trial$add_arms(sample_ratio = c(1, 2), placebo, active)
+
+trial
+
 }
