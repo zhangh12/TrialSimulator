@@ -1,3 +1,15 @@
+# TrialSimulator 0.62.0
+
+## New Features
+
+- Allow extending trial duration with `Trial$set_duration`. 
+
+# TrialSimulator 0.61.0
+
+## Updates
+
+- Deprecate function `enroll_a_patient`. Use `enroll_patients` only. 
+
 # TrialSimulator 0.58.0
 
 ## Updates
