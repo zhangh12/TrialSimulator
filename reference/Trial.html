@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.60.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.62.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,7 +36,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Class of Trial</h1>
-      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/v0.60.0/R/Trial.R" class="external-link"><code>R/Trial.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/R/Trial.R" class="external-link"><code>R/Trial.R</code></a></small>
       <div class="d-none name"><code>Trial.Rd</code></div>
     </div>
 
@@ -54,6 +54,7 @@
 <ul><li><p><a href="#method-Trial-new"><code>Trial$new()</code></a></p></li>
 <li><p><a href="#method-Trial-get_trial_data"><code>Trial$get_trial_data()</code></a></p></li>
 <li><p><a href="#method-Trial-get_duration"><code>Trial$get_duration()</code></a></p></li>
+<li><p><a href="#method-Trial-set_duration"><code>Trial$set_duration()</code></a></p></li>
 <li><p><a href="#method-Trial-set_enroller"><code>Trial$set_enroller()</code></a></p></li>
 <li><p><a href="#method-Trial-get_enroller"><code>Trial$get_enroller()</code></a></p></li>
 <li><p><a href="#method-Trial-set_dropout"><code>Trial$set_dropout()</code></a></p></li>
@@ -75,7 +76,6 @@
 <li><p><a href="#method-Trial-get_number_unenrolled_patients"><code>Trial$get_number_unenrolled_patients()</code></a></p></li>
 <li><p><a href="#method-Trial-get_randomization_queue"><code>Trial$get_randomization_queue()</code></a></p></li>
 <li><p><a href="#method-Trial-get_enroll_time"><code>Trial$get_enroll_time()</code></a></p></li>
-<li><p><a href="#method-Trial-enroll_a_patient"><code>Trial$enroll_a_patient()</code></a></p></li>
 <li><p><a href="#method-Trial-enroll_patients"><code>Trial$enroll_patients()</code></a></p></li>
 <li><p><a href="#method-Trial-set_current_time"><code>Trial$set_current_time()</code></a></p></li>
 <li><p><a href="#method-Trial-get_current_time"><code>Trial$get_current_time()</code></a></p></li>
@@ -181,16 +181,36 @@ function is called</p><div class="section">
 </div>
 
 
-</div><p></p><hr><a id="method-Trial-set_enroller"></a><div class="section">
-<h3 id="method-set-enroller-">Method <code>set_enroller()</code><a class="anchor" aria-label="anchor" href="#method-set-enroller-"></a></h3>
-<p>set recruitment curve when initialize a
-trial.</p><div class="section">
+</div><p></p><hr><a id="method-Trial-set_duration"></a><div class="section">
+<h3 id="method-set-duration-">Method <code>set_duration()</code><a class="anchor" aria-label="anchor" href="#method-set-duration-"></a></h3>
+<p>set trial duration in an adaptive designed trial. All patients enrolled
+before resetting the duration are truncated (non-tte endpoints) or
+censored (tte endpoints) at the original duration. Remaining patients
+are re-randomized. Now new duration must be longer than the old one.</p><div class="section">
 <h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">set_enroller</span><span class="op">(</span><span class="va">func</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">set_duration</span><span class="op">(</span><span class="va">duration</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-1">Arguments<a class="anchor" aria-label="anchor" href="#arguments-1"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>duration</code></dt>
+<dd><p>new duration of a trial. It must be longer than the
+current duration.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-Trial-set_enroller"></a><div class="section">
+<h3 id="method-set-enroller-">Method <code>set_enroller()</code><a class="anchor" aria-label="anchor" href="#method-set-enroller-"></a></h3>
+<p>set recruitment curve when initialize a
+trial.</p><div class="section">
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">set_enroller</span><span class="op">(</span><span class="va">func</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>func</code></dt>
 <dd><p>function to generate enrollment time. It can be built-in
 function like `rexp` or customized functions like `StaggeredRecruiter`.</p></dd>
@@ -206,7 +226,7 @@ function like `rexp` or customized functions like `StaggeredRecruiter`.</p></dd>
 </div><p></p><hr><a id="method-Trial-get_enroller"></a><div class="section">
 <h3 id="method-get-enroller-">Method <code>get_enroller()</code><a class="anchor" aria-label="anchor" href="#method-get-enroller-"></a></h3>
 <p>get function of recruitment curve</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">get_enroller</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -215,12 +235,12 @@ function like `rexp` or customized functions like `StaggeredRecruiter`.</p></dd>
 <h3 id="method-set-dropout-">Method <code>set_dropout()</code><a class="anchor" aria-label="anchor" href="#method-set-dropout-"></a></h3>
 <p>set distribution of drop out time. This can be done when initialize a
 trial, or when updating a trial in adaptive design.</p><div class="section">
-<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">set_dropout</span><span class="op">(</span><span class="va">func</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
+<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>func</code></dt>
 <dd><p>function to generate dropout time. It can be built-in
 function like `rexp` or customized functions.</p></dd>
@@ -236,7 +256,7 @@ function like `rexp` or customized functions.</p></dd>
 </div><p></p><hr><a id="method-Trial-get_dropout"></a><div class="section">
 <h3 id="method-get-dropout-">Method <code>get_dropout()</code><a class="anchor" aria-label="anchor" href="#method-get-dropout-"></a></h3>
 <p>get generator of dropout time</p><div class="section">
-<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">get_dropout</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -247,7 +267,7 @@ function like `rexp` or customized functions.</p></dd>
 <code>Trial$trial_data</code> will be cut at current time, and data after then
 are deleted. However, <code>Trial$enroll_time</code> after current time are
 kept unchanged because that is planned enrollment curve.</p><div class="section">
-<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">roll_back</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -259,12 +279,12 @@ at the end to enroll all remaining patients after
 <code>Trial$get_current_time()</code>. This function may be used with futility
 analysis, dose selection, enrichment analysis (sub-population) or
 interim analysis (early stop for efficacy)</p><div class="section">
-<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">remove_arms</span><span class="op">(</span><span class="va">arms_name</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
+<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>arms_name</code></dt>
 <dd><p>character vector. Name of arms to be removed.</p></dd>
 
@@ -280,12 +300,12 @@ well. This function can only update sample ratio for one arm at a time.
 Once sample ratio is updated, trial data should be rolled back with
 updated randomization queue. Data of unenrolled patients should be
 re-sampled as well.</p><div class="section">
-<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
+<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">update_sample_ratio</span><span class="op">(</span><span class="va">arm_name</span>, <span class="va">sample_ratio</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
+<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>arm_name</code></dt>
 <dd><p>character. Name of an arm of length 1.</p></dd>
 
@@ -307,12 +327,12 @@ scenarios.
 <code>sample_ratio</code> and arms added through <code>...</code> should be of same
 length.
 (2) add arms to a trial already with arm(s)</p><div class="section">
-<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
+<h4 id="usage-11">Usage<a class="anchor" aria-label="anchor" href="#usage-11"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span><span class="va">sample_ratio</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
+<h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>sample_ratio</code></dt>
 <dd><p>integer vector. Sample ratio for permuted block
 randomization. It will be appended to existing sample ratio in the trial.</p></dd>
@@ -340,7 +360,7 @@ of the same distribution.</p></dd>
 </div><p></p><hr><a id="method-Trial-get_name"></a><div class="section">
 <h3 id="method-get-name-">Method <code>get_name()</code><a class="anchor" aria-label="anchor" href="#method-get-name-"></a></h3>
 <p>return name of trial</p><div class="section">
-<h4 id="usage-11">Usage<a class="anchor" aria-label="anchor" href="#usage-11"></a></h4>
+<h4 id="usage-12">Usage<a class="anchor" aria-label="anchor" href="#usage-12"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">get_name</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -348,7 +368,7 @@ of the same distribution.</p></dd>
 </div><p></p><hr><a id="method-Trial-get_description"></a><div class="section">
 <h3 id="method-get-description-">Method <code>get_description()</code><a class="anchor" aria-label="anchor" href="#method-get-description-"></a></h3>
 <p>return description of trial</p><div class="section">
-<h4 id="usage-12">Usage<a class="anchor" aria-label="anchor" href="#usage-12"></a></h4>
+<h4 id="usage-13">Usage<a class="anchor" aria-label="anchor" href="#usage-13"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">get_description</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -356,7 +376,7 @@ of the same distribution.</p></dd>
 </div><p></p><hr><a id="method-Trial-get_arms"></a><div class="section">
 <h3 id="method-get-arms-">Method <code>get_arms()</code><a class="anchor" aria-label="anchor" href="#method-get-arms-"></a></h3>
 <p>return a list of arms in the trial</p><div class="section">
-<h4 id="usage-13">Usage<a class="anchor" aria-label="anchor" href="#usage-13"></a></h4>
+<h4 id="usage-14">Usage<a class="anchor" aria-label="anchor" href="#usage-14"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">get_arms</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -364,7 +384,7 @@ of the same distribution.</p></dd>
 </div><p></p><hr><a id="method-Trial-get_arms_name"></a><div class="section">
 <h3 id="method-get-arms-name-">Method <code>get_arms_name()</code><a class="anchor" aria-label="anchor" href="#method-get-arms-name-"></a></h3>
 <p>return arms' name of trial</p><div class="section">
-<h4 id="usage-14">Usage<a class="anchor" aria-label="anchor" href="#usage-14"></a></h4>
+<h4 id="usage-15">Usage<a class="anchor" aria-label="anchor" href="#usage-15"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">get_arms_name</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -372,7 +392,7 @@ of the same distribution.</p></dd>
 </div><p></p><hr><a id="method-Trial-get_number_arms"></a><div class="section">
 <h3 id="method-get-number-arms-">Method <code>get_number_arms()</code><a class="anchor" aria-label="anchor" href="#method-get-number-arms-"></a></h3>
 <p>get number of arms in the trial</p><div class="section">
-<h4 id="usage-15">Usage<a class="anchor" aria-label="anchor" href="#usage-15"></a></h4>
+<h4 id="usage-16">Usage<a class="anchor" aria-label="anchor" href="#usage-16"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">get_number_arms</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -380,7 +400,7 @@ of the same distribution.</p></dd>
 </div><p></p><hr><a id="method-Trial-has_arm"></a><div class="section">
 <h3 id="method-has-arm-">Method <code>has_arm()</code><a class="anchor" aria-label="anchor" href="#method-has-arm-"></a></h3>
 <p>check if the trial has any arm. Return <code>TRUE</code> or <code>FALSE</code>.</p><div class="section">
-<h4 id="usage-16">Usage<a class="anchor" aria-label="anchor" href="#usage-16"></a></h4>
+<h4 id="usage-17">Usage<a class="anchor" aria-label="anchor" href="#usage-17"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">has_arm</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -388,12 +408,12 @@ of the same distribution.</p></dd>
 </div><p></p><hr><a id="method-Trial-get_an_arm"></a><div class="section">
 <h3 id="method-get-an-arm-">Method <code>get_an_arm()</code><a class="anchor" aria-label="anchor" href="#method-get-an-arm-"></a></h3>
 <p>return an arm</p><div class="section">
-<h4 id="usage-17">Usage<a class="anchor" aria-label="anchor" href="#usage-17"></a></h4>
+<h4 id="usage-18">Usage<a class="anchor" aria-label="anchor" href="#usage-18"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">get_an_arm</span><span class="op">(</span><span class="va">arm_name</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
+<h4 id="arguments-7">Arguments<a class="anchor" aria-label="anchor" href="#arguments-7"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>arm_name</code></dt>
 <dd><p>character, name of arm to be extracted</p></dd>
 
@@ -405,12 +425,12 @@ of the same distribution.</p></dd>
 <h3 id="method-get-sample-ratio-">Method <code>get_sample_ratio()</code><a class="anchor" aria-label="anchor" href="#method-get-sample-ratio-"></a></h3>
 <p>return current sample ratio of the trial. The ratio can probably change
 during the trial (e.g., arm is removed or added)</p><div class="section">
-<h4 id="usage-18">Usage<a class="anchor" aria-label="anchor" href="#usage-18"></a></h4>
+<h4 id="usage-19">Usage<a class="anchor" aria-label="anchor" href="#usage-19"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">get_sample_ratio</span><span class="op">(</span>arm_names <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-7">Arguments<a class="anchor" aria-label="anchor" href="#arguments-7"></a></h4>
+<h4 id="arguments-8">Arguments<a class="anchor" aria-label="anchor" href="#arguments-8"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>arm_names</code></dt>
 <dd><p>character vector of arms.</p></dd>
 
@@ -421,7 +441,7 @@ during the trial (e.g., arm is removed or added)</p><div class="section">
 </div><p></p><hr><a id="method-Trial-get_number_patients"></a><div class="section">
 <h3 id="method-get-number-patients-">Method <code>get_number_patients()</code><a class="anchor" aria-label="anchor" href="#method-get-number-patients-"></a></h3>
 <p>return number of patients when planning the trial</p><div class="section">
-<h4 id="usage-19">Usage<a class="anchor" aria-label="anchor" href="#usage-19"></a></h4>
+<h4 id="usage-20">Usage<a class="anchor" aria-label="anchor" href="#usage-20"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">get_number_patients</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -429,7 +449,7 @@ during the trial (e.g., arm is removed or added)</p><div class="section">
 </div><p></p><hr><a id="method-Trial-get_number_enrolled_patients"></a><div class="section">
 <h3 id="method-get-number-enrolled-patients-">Method <code>get_number_enrolled_patients()</code><a class="anchor" aria-label="anchor" href="#method-get-number-enrolled-patients-"></a></h3>
 <p>return number of enrolled (randomized) patients</p><div class="section">
-<h4 id="usage-20">Usage<a class="anchor" aria-label="anchor" href="#usage-20"></a></h4>
+<h4 id="usage-21">Usage<a class="anchor" aria-label="anchor" href="#usage-21"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">get_number_enrolled_patients</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -437,7 +457,7 @@ during the trial (e.g., arm is removed or added)</p><div class="section">
 </div><p></p><hr><a id="method-Trial-get_number_unenrolled_patients"></a><div class="section">
 <h3 id="method-get-number-unenrolled-patients-">Method <code>get_number_unenrolled_patients()</code><a class="anchor" aria-label="anchor" href="#method-get-number-unenrolled-patients-"></a></h3>
 <p>return number of unenrolled patients</p><div class="section">
-<h4 id="usage-21">Usage<a class="anchor" aria-label="anchor" href="#usage-21"></a></h4>
+<h4 id="usage-22">Usage<a class="anchor" aria-label="anchor" href="#usage-22"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">get_number_unenrolled_patients</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -447,12 +467,12 @@ during the trial (e.g., arm is removed or added)</p><div class="section">
 <p>return randomization queue of planned but not yet enrolled patients.
 This function does not update randomization_queue, just return its value
 for debugging purpose.</p><div class="section">
-<h4 id="usage-22">Usage<a class="anchor" aria-label="anchor" href="#usage-22"></a></h4>
+<h4 id="usage-23">Usage<a class="anchor" aria-label="anchor" href="#usage-23"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">get_randomization_queue</span><span class="op">(</span>index <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-8">Arguments<a class="anchor" aria-label="anchor" href="#arguments-8"></a></h4>
+<h4 id="arguments-9">Arguments<a class="anchor" aria-label="anchor" href="#arguments-9"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>index</code></dt>
 <dd><p>index to be extracted. Return all queue if <code>NULL</code>.</p></dd>
 
@@ -465,33 +485,18 @@ for debugging purpose.</p><div class="section">
 <p>return enrollment time of planned but not yet enrolled patients.
 This function does not update enroll_time, just return its value
 for debugging purpose.</p><div class="section">
-<h4 id="usage-23">Usage<a class="anchor" aria-label="anchor" href="#usage-23"></a></h4>
+<h4 id="usage-24">Usage<a class="anchor" aria-label="anchor" href="#usage-24"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">get_enroll_time</span><span class="op">(</span>index <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-9">Arguments<a class="anchor" aria-label="anchor" href="#arguments-9"></a></h4>
+<h4 id="arguments-10">Arguments<a class="anchor" aria-label="anchor" href="#arguments-10"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>index</code></dt>
 <dd><p>index to extract. Return all enroll time if <code>NULL</code>.</p></dd>
 
 
 </dl><p></p></div>
 </div>
-
-</div><p></p><hr><a id="method-Trial-enroll_a_patient"></a><div class="section">
-<h3 id="method-enroll-a-patient-">Method <code>enroll_a_patient()</code><a class="anchor" aria-label="anchor" href="#method-enroll-a-patient-"></a></h3>
-<p>assign a new patient to an arm based on planned randomization queue
-I may consider make this function deprecated. Instead, I'd like to
-have a function to sample the remaining n patients, with n as an argument.
-Reason: if an action (analysis, add/remove arm, early stop) is triggered
-based on number of event of TTE, we may need to sample ALL patients to
-know the accurate time point. With an enrollment function of more than
-one patient, we can find out the time point and roll back to then, and
-recover randomization queue and enrollment time for the remaining patients.</p><div class="section">
-<h4 id="usage-24">Usage<a class="anchor" aria-label="anchor" href="#usage-24"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">enroll_a_patient</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
 
 </div><p></p><hr><a id="method-Trial-enroll_patients"></a><div class="section">
 <h3 id="method-enroll-patients-">Method <code>enroll_patients()</code><a class="anchor" aria-label="anchor" href="#method-enroll-patients-"></a></h3>
@@ -502,7 +507,7 @@ enrollment time.</p><div class="section">
 </div>
 
 <div class="section">
-<h4 id="arguments-10">Arguments<a class="anchor" aria-label="anchor" href="#arguments-10"></a></h4>
+<h4 id="arguments-11">Arguments<a class="anchor" aria-label="anchor" href="#arguments-11"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>n_patients</code></dt>
 <dd><p>number of new patients to be enrolled. If <code>NULL</code>,
 all remaining patients in plan are enrolled. Error may be triggered if
@@ -523,7 +528,7 @@ removed as a result of an event</p><div class="section">
 </div>
 
 <div class="section">
-<h4 id="arguments-11">Arguments<a class="anchor" aria-label="anchor" href="#arguments-11"></a></h4>
+<h4 id="arguments-12">Arguments<a class="anchor" aria-label="anchor" href="#arguments-12"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>time</code></dt>
 <dd><p>current calendar time of a trial.</p></dd>
 
@@ -548,7 +553,7 @@ calendar time (enroll time + tte for TTE, or enroll time + readout otherwise)</p
 </div>
 
 <div class="section">
-<h4 id="arguments-12">Arguments<a class="anchor" aria-label="anchor" href="#arguments-12"></a></h4>
+<h4 id="arguments-13">Arguments<a class="anchor" aria-label="anchor" href="#arguments-13"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>arms</code></dt>
 <dd><p>a vector of arms' name on which the event tables are created.
 if <code>NULL</code>, all arms in the trial will be used.</p></dd>
@@ -573,7 +578,7 @@ the found data lock time).</p><div class="section">
 </div>
 
 <div class="section">
-<h4 id="arguments-13">Arguments<a class="anchor" aria-label="anchor" href="#arguments-13"></a></h4>
+<h4 id="arguments-14">Arguments<a class="anchor" aria-label="anchor" href="#arguments-14"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>endpoints</code></dt>
 <dd><p>character vector. Data lock time is determined by a set
 of endpoints.</p></dd>
@@ -615,7 +620,7 @@ each of the endpoints.</p><div class="section">
 </div>
 
 <div class="section">
-<h4 id="arguments-14">Arguments<a class="anchor" aria-label="anchor" href="#arguments-14"></a></h4>
+<h4 id="arguments-15">Arguments<a class="anchor" aria-label="anchor" href="#arguments-15"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>calendar_time</code></dt>
 <dd><p>numeric. Calendar time to lock the data</p></dd>
 
@@ -645,7 +650,7 @@ counted.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-15">Arguments<a class="anchor" aria-label="anchor" href="#arguments-15"></a></h4>
+<h4 id="arguments-16">Arguments<a class="anchor" aria-label="anchor" href="#arguments-16"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>event_name</code></dt>
 <dd><p>character, event name of which the locked data to be
 extracted.</p></dd>
@@ -670,7 +675,7 @@ extracted.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-16">Arguments<a class="anchor" aria-label="anchor" href="#arguments-16"></a></h4>
+<h4 id="arguments-17">Arguments<a class="anchor" aria-label="anchor" href="#arguments-17"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>event_name</code></dt>
 <dd><p>names of triggered events. Use all triggered events
 if <code>NULL</code>.</p></dd>
@@ -687,7 +692,7 @@ if <code>NULL</code>.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-17">Arguments<a class="anchor" aria-label="anchor" href="#arguments-17"></a></h4>
+<h4 id="arguments-18">Arguments<a class="anchor" aria-label="anchor" href="#arguments-18"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>event_time</code></dt>
 <dd><p>numeric. Time of new event.</p></dd>
 
@@ -707,7 +712,7 @@ if <code>NULL</code>.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-18">Arguments<a class="anchor" aria-label="anchor" href="#arguments-18"></a></h4>
+<h4 id="arguments-19">Arguments<a class="anchor" aria-label="anchor" href="#arguments-19"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>event_name</code></dt>
 <dd><p>character. Name of event.</p></dd>
 
@@ -729,7 +734,7 @@ later data lock.</p><div class="section">
 </div>
 
 <div class="section">
-<h4 id="arguments-19">Arguments<a class="anchor" aria-label="anchor" href="#arguments-19"></a></h4>
+<h4 id="arguments-20">Arguments<a class="anchor" aria-label="anchor" href="#arguments-20"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>at_calendar_time</code></dt>
 <dd><p>time point to lock trial data</p></dd>
 
@@ -754,11 +759,15 @@ future reference.</p></dd>
 <h3 id="method-censor-trial-data-">Method <code>censor_trial_data()</code><a class="anchor" aria-label="anchor" href="#method-censor-trial-data-"></a></h3>
 <p>censor trial data at calendar time</p><div class="section">
 <h4 id="usage-38">Usage<a class="anchor" aria-label="anchor" href="#usage-38"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">censor_trial_data</span><span class="op">(</span>censor_at <span class="op">=</span> <span class="cn">NULL</span>, selected_arms <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trial</span><span class="op">$</span><span class="fu">censor_trial_data</span><span class="op">(</span></span>
+<span>  censor_at <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  selected_arms <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  enrolled_before <span class="op">=</span> <span class="cn">Inf</span></span>
+<span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-20">Arguments<a class="anchor" aria-label="anchor" href="#arguments-20"></a></h4>
+<h4 id="arguments-21">Arguments<a class="anchor" aria-label="anchor" href="#arguments-21"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>censor_at</code></dt>
 <dd><p>time of censoring. It is set to trial duration if
 <code>NULL</code>.</p></dd>
@@ -774,6 +783,15 @@ case, one can update trial data by something like
 <code>censor_trial_data(censor_at = event_time, selected_arms = removed_arms)</code>.</p></dd>
 
 
+<dt><code>enrolled_before</code></dt>
+<dd><p>censoring is applied to patients enrolled before
+specific time. This argument would be used when trial duration is
+updated by <code>set_duration</code>. Adaptation happens when <code>set_duration</code>
+is called so we fix duration for patients enrolled before adaptation
+to maintain independent increment. This should work when trial duration
+is updated for multiple times.</p></dd>
+
+
 </dl><p></p></div>
 </div>
 
@@ -786,7 +804,7 @@ for further analysis/summary later.</p><div class="section">
 </div>
 
 <div class="section">
-<h4 id="arguments-21">Arguments<a class="anchor" aria-label="anchor" href="#arguments-21"></a></h4>
+<h4 id="arguments-22">Arguments<a class="anchor" aria-label="anchor" href="#arguments-22"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>value</code></dt>
 <dd><p>value to be saved. It can be a vector (of length 1) or
 a data frame (of one row).</p></dd>
@@ -823,7 +841,7 @@ with <code>NA</code>.</p><div class="section">
 </div>
 
 <div class="section">
-<h4 id="arguments-22">Arguments<a class="anchor" aria-label="anchor" href="#arguments-22"></a></h4>
+<h4 id="arguments-23">Arguments<a class="anchor" aria-label="anchor" href="#arguments-23"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>value</code></dt>
 <dd><p>a data frame to be saved. It can consist of one or
 multiple rows.</p></dd>
@@ -846,7 +864,7 @@ simulation parameters to be used in action functions.</p><div class="section">
 </div>
 
 <div class="section">
-<h4 id="arguments-23">Arguments<a class="anchor" aria-label="anchor" href="#arguments-23"></a></h4>
+<h4 id="arguments-24">Arguments<a class="anchor" aria-label="anchor" href="#arguments-24"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>value</code></dt>
 <dd><p>value to be saved. Any type.</p></dd>
 
@@ -871,7 +889,7 @@ with warning, otherwise, throwing an error and stop.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-24">Arguments<a class="anchor" aria-label="anchor" href="#arguments-24"></a></h4>
+<h4 id="arguments-25">Arguments<a class="anchor" aria-label="anchor" href="#arguments-25"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>name</code></dt>
 <dd><p>character. Name of custom data to be accessed.</p></dd>
 
@@ -887,7 +905,7 @@ with warning, otherwise, throwing an error and stop.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-25">Arguments<a class="anchor" aria-label="anchor" href="#arguments-25"></a></h4>
+<h4 id="arguments-26">Arguments<a class="anchor" aria-label="anchor" href="#arguments-26"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>cols</code></dt>
 <dd><p>columns to be returned from <code>Trial$output</code>. If
 <code>NULL</code>, all columns are returned.</p></dd>
@@ -909,7 +927,7 @@ column when <code>length(col) == 1</code> and <code>simplify == TRUE</code>.</p>
 </div>
 
 <div class="section">
-<h4 id="arguments-26">Arguments<a class="anchor" aria-label="anchor" href="#arguments-26"></a></h4>
+<h4 id="arguments-27">Arguments<a class="anchor" aria-label="anchor" href="#arguments-27"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>silent</code></dt>
 <dd><p>logical.</p></dd>
 
@@ -925,7 +943,7 @@ column when <code>length(col) == 1</code> and <code>simplify == TRUE</code>.</p>
 </div>
 
 <div class="section">
-<h4 id="arguments-27">Arguments<a class="anchor" aria-label="anchor" href="#arguments-27"></a></h4>
+<h4 id="arguments-28">Arguments<a class="anchor" aria-label="anchor" href="#arguments-28"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>endpoint</code></dt>
 <dd><p>character. Name of time-to-event endpoint in trial's
 locked data.</p></dd>
@@ -1018,7 +1036,7 @@ design.</p><div class="section">
 </div>
 
 <div class="section">
-<h4 id="arguments-28">Arguments<a class="anchor" aria-label="anchor" href="#arguments-28"></a></h4>
+<h4 id="arguments-29">Arguments<a class="anchor" aria-label="anchor" href="#arguments-29"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>endpoint</code></dt>
 <dd><p>character of an endpoint for Dunnett test.</p></dd>
 
@@ -1138,7 +1156,7 @@ trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_n
 </div>
 
 <div class="section">
-<h4 id="arguments-29">Arguments<a class="anchor" aria-label="anchor" href="#arguments-29"></a></h4>
+<h4 id="arguments-30">Arguments<a class="anchor" aria-label="anchor" href="#arguments-30"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>dunnett_test</code></dt>
 <dd><p>object returned by <code>Trial$dunnettTest()</code>.</p></dd>
 
@@ -1248,7 +1266,7 @@ recruit patients again.</p><div class="section">
 </div>
 
 <div class="section">
-<h4 id="arguments-30">Arguments<a class="anchor" aria-label="anchor" href="#arguments-30"></a></h4>
+<h4 id="arguments-31">Arguments<a class="anchor" aria-label="anchor" href="#arguments-31"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 
