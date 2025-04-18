@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.62.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.63.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -104,7 +104,7 @@ trial.</p></li>
 </ul>
 <p>The following sections illustrate various ways to define event
 triggers using these functions, which could be passed to the argument
-<code>trigger_condition</code> of <code>Event$new()</code>.</p>
+<code>trigger_condition</code> of <code><a href="../reference/Event.html">event()</a></code>.</p>
 <div class="section level4">
 <h4 id="a-trial-has-been-running-for-6-months">A trial has been running for 6 months<a class="anchor" aria-label="anchor" href="#a-trial-has-been-running-for-6-months"></a>
 </h4>
@@ -126,8 +126,8 @@ triggers using these functions, which could be passed to the argument
 </h4>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## condition is based on number of event in the placebo arm</span></span>
-<span><span class="co">## Note: 'pfs' is the name of the endpoint, i.e., Endpoint$new(name = 'pfs', ...)</span></span>
-<span><span class="co">## Note: 'pbo' is the name of the placebo arm, i.e., Arm$new(name = 'pbo', ...)</span></span>
+<span><span class="co">## Note: 'pfs' is the name of the endpoint, i.e., endpoints(name = 'pfs', ...)</span></span>
+<span><span class="co">## Note: 'pbo' is the name of the placebo arm, i.e., arm(name = 'pbo', ...)</span></span>
 <span><span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'pfs'</span>, n <span class="op">=</span> <span class="fl">340</span>, arms <span class="op">=</span> <span class="st">'pbo'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Number of events (pfs) &gt;= 340 in arms &lt;pbo&gt;.</span></span>
 <span></span>

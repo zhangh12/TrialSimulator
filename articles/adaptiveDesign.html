@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.62.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.63.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -167,43 +167,43 @@ closed test with Dunnett’s test for intersection hypotheses.</li>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' define three arms</span></span>
-<span><span class="va">pbo</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Arm.html">Arm</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'placebo'</span><span class="op">)</span></span>
-<span><span class="va">low</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Arm.html">Arm</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'low dose'</span><span class="op">)</span></span>
-<span><span class="va">high</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Arm.html">Arm</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'high dose'</span><span class="op">)</span></span>
+<span><span class="va">pbo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Arm.html">arm</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'placebo'</span><span class="op">)</span></span>
+<span><span class="va">low</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Arm.html">arm</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'low dose'</span><span class="op">)</span></span>
+<span><span class="va">high</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Arm.html">arm</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'high dose'</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">#' define endpoints in placebo</span></span>
-<span><span class="va">pfs</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'pfs'</span>, type <span class="op">=</span> <span class="st">'tte'</span>,</span>
+<span><span class="va">pfs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoints.html">endpoints</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'pfs'</span>, type <span class="op">=</span> <span class="st">'tte'</span>,</span>
 <span>                    generator <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="fl">5</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">os</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'os'</span>, type <span class="op">=</span> <span class="st">'tte'</span>,</span>
+<span><span class="va">os</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoints.html">endpoints</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'os'</span>, type <span class="op">=</span> <span class="st">'tte'</span>,</span>
 <span>                   generator <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="fl">14</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">five_weeks</span> <span class="op">&lt;-</span> <span class="fl">5</span> <span class="op">/</span> <span class="fl">52</span> <span class="op">*</span> <span class="fl">12</span> <span class="co">## convert it in months</span></span>
-<span><span class="va">surrogate</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'surrogate'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>,</span>
+<span><span class="va">surrogate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoints.html">endpoints</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'surrogate'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>,</span>
 <span>                          readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>surrogate <span class="op">=</span> <span class="va">five_weeks</span><span class="op">)</span>,</span>
 <span>                          generator <span class="op">=</span> <span class="va">rbinom</span>, size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">.05</span><span class="op">)</span></span>
 <span><span class="va">pbo</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">pfs</span>, <span class="va">os</span>, <span class="va">surrogate</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">#' define endpoints in low dose arm</span></span>
-<span><span class="va">pfs</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'pfs'</span>, type <span class="op">=</span> <span class="st">'tte'</span>,</span>
+<span><span class="va">pfs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoints.html">endpoints</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'pfs'</span>, type <span class="op">=</span> <span class="st">'tte'</span>,</span>
 <span>                    generator <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="fl">6.7</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">os</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'os'</span>, type <span class="op">=</span> <span class="st">'tte'</span>,</span>
+<span><span class="va">os</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoints.html">endpoints</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'os'</span>, type <span class="op">=</span> <span class="st">'tte'</span>,</span>
 <span>                   generator <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="fl">17.5</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">surrogate</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'surrogate'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>,</span>
+<span><span class="va">surrogate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoints.html">endpoints</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'surrogate'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>,</span>
 <span>                          readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>surrogate <span class="op">=</span> <span class="va">five_weeks</span><span class="op">)</span>,</span>
 <span>                          generator <span class="op">=</span> <span class="va">rbinom</span>, size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">.12</span><span class="op">)</span></span>
 <span><span class="va">low</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">pfs</span>, <span class="va">os</span>, <span class="va">surrogate</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">#' define endpoints in high dose arm</span></span>
-<span><span class="va">pfs</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'pfs'</span>, type <span class="op">=</span> <span class="st">'tte'</span>,</span>
+<span><span class="va">pfs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoints.html">endpoints</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'pfs'</span>, type <span class="op">=</span> <span class="st">'tte'</span>,</span>
 <span>                    generator <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="fl">7.1</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">os</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'os'</span>, type <span class="op">=</span> <span class="st">'tte'</span>,</span>
+<span><span class="va">os</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoints.html">endpoints</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'os'</span>, type <span class="op">=</span> <span class="st">'tte'</span>,</span>
 <span>                   generator <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="fl">18.2</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">surrogate</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Endpoint.html">Endpoint</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'surrogate'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>,</span>
+<span><span class="va">surrogate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoints.html">endpoints</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'surrogate'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>,</span>
 <span>                          readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>surrogate <span class="op">=</span> <span class="va">five_weeks</span><span class="op">)</span>,</span>
 <span>                          generator <span class="op">=</span> <span class="va">rbinom</span>, size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">.13</span><span class="op">)</span></span>
 <span><span class="va">high</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">pfs</span>, <span class="va">os</span>, <span class="va">surrogate</span><span class="op">)</span></span></code></pre></div>
@@ -221,7 +221,7 @@ a seed for the purpose of reproducibility.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">accrual_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>end_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="cn">Inf</span><span class="op">)</span>,</span>
 <span>                           piecewise_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">30</span>, <span class="fl">50</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">trial</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Trial.html">Trial</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
+<span><span class="va">trial</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Trial.html">trial</a></span><span class="op">(</span></span>
 <span>  name <span class="op">=</span> <span class="st">'Trial-3415'</span>, n_patients <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">1727811904</span>, duration <span class="op">=</span> <span class="fl">40</span>,</span>
 <span>  enroller <span class="op">=</span> <span class="va">StaggeredRecruiter</span>, accrual_rate <span class="op">=</span> <span class="va">accrual_rate</span>,</span>
@@ -246,9 +246,12 @@ z statistics of the Farrington-Manning test for binary endpoint
 <code><a href="../reference/fitFarringtonManning.html">?fitFarringtonManning</a></code>).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">action1</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">event_name</span><span class="op">)</span><span class="op">{</span></span>
+<span>  </span>
 <span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">event_name</span><span class="op">)</span></span>
+<span>  </span>
 <span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fitFarringtonManning.html">fitFarringtonManning</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'surrogate'</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>,</span>
 <span>                              data <span class="op">=</span> <span class="va">locked_data</span>, alternative <span class="op">=</span> <span class="st">'greater'</span><span class="op">)</span></span>
+<span>  </span>
 <span>  <span class="co"># browser() ## if you want to see what does fit look like</span></span>
 <span>  <span class="va">z_l</span> <span class="op">&lt;-</span> <span class="va">fit</span><span class="op">$</span><span class="va">z</span><span class="op">[</span><span class="va">fit</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'low dose'</span><span class="op">]</span></span>
 <span>  <span class="va">z_h</span> <span class="op">&lt;-</span> <span class="va">fit</span><span class="op">$</span><span class="va">z</span><span class="op">[</span><span class="va">fit</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'high dose'</span><span class="op">]</span></span>
@@ -272,9 +275,10 @@ selection, <code>fit</code> may consists of testing results of one or
 two dose arms. Note that a formal test for <code>PFS</code> will be done
 at the end of the trial when we have all p-values. If no futility
 analysis is planned, we can simply set <code>action = doNothing</code>
-in <code>Event$new</code>.</p>
+in <code>event</code>.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">action2</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">event_name</span><span class="op">)</span><span class="op">{</span></span>
+<span>  </span>
 <span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">event_name</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fitLogrank.html">fitLogrank</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'pfs'</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>,</span>
@@ -297,6 +301,7 @@ in <code>Event$new</code>.</p>
 intersection hypotheses. The action function is as follows.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">action3</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">event_name</span><span class="op">)</span><span class="op">{</span></span>
+<span>  </span>
 <span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">event_name</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="co">## test PFS</span></span>
@@ -304,6 +309,7 @@ intersection hypotheses. The action function is as follows.</p>
 <span>                              treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
 <span>                              events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'interim'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                              planned_info <span class="op">=</span> <span class="st">'default'</span><span class="op">)</span></span>
+<span>  </span>
 <span>  <span class="va">ct_pfs</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span><span class="va">dt_pfs</span>, treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
 <span>                             events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'interim'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                             alpha <span class="op">=</span> <span class="fl">.005</span>, alpha_spending <span class="op">=</span> <span class="st">'asOF'</span><span class="op">)</span></span>
@@ -313,6 +319,7 @@ intersection hypotheses. The action function is as follows.</p>
 <span>                             treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
 <span>                             events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                             planned_info <span class="op">=</span> <span class="st">'default'</span><span class="op">)</span></span>
+<span>  </span>
 <span>  <span class="va">ct_os</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span><span class="va">dt_pfs</span>, treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
 <span>                            events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                            alpha <span class="op">=</span> <span class="fl">.02</span>, alpha_spending <span class="op">=</span> <span class="st">'asOF'</span><span class="op">)</span></span>
@@ -324,6 +331,7 @@ intersection hypotheses. The action function is as follows.</p>
 <span>  </span>
 <span>  <span class="va">trial</span><span class="op">$</span><span class="fu">save</span><span class="op">(</span>value <span class="op">=</span> <span class="va">ct_pfs</span><span class="op">$</span><span class="va">decision</span><span class="op">[</span><span class="va">ct_pfs</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'low dose'</span><span class="op">]</span>, </span>
 <span>             name <span class="op">=</span> <span class="st">'pfs_low_dose_decision'</span><span class="op">)</span></span>
+<span>  </span>
 <span>  <span class="va">trial</span><span class="op">$</span><span class="fu">save</span><span class="op">(</span>value <span class="op">=</span> <span class="va">ct_os</span><span class="op">$</span><span class="va">decision</span><span class="op">[</span><span class="va">ct_os</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'high dose'</span><span class="op">]</span>, </span>
 <span>             name <span class="op">=</span> <span class="st">'os_high_dose_decision'</span><span class="op">)</span></span>
 <span>  </span>
@@ -334,24 +342,26 @@ intersection hypotheses. The action function is as follows.</p>
 <span><span class="op">}</span></span></code></pre></div>
 <p>Next, we register three trial events to a listener</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dose_selection</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Event.html">Event</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'dose selection'</span>, action <span class="op">=</span> <span class="va">action1</span>,</span>
-<span>                            trigger_condition <span class="op">=</span> <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'surrogate'</span>,</span>
-<span>                                                            n <span class="op">=</span> <span class="fl">300</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">dose_selection</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Event.html">event</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'dose selection'</span>, action <span class="op">=</span> <span class="va">action1</span>, </span>
+<span>                        trigger_condition <span class="op">=</span> </span>
+<span>                          <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'surrogate'</span>, n <span class="op">=</span> <span class="fl">300</span><span class="op">)</span></span>
+<span>                        <span class="op">)</span></span>
 <span></span>
-<span><span class="va">interim</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Event.html">Event</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'interim'</span>, action <span class="op">=</span> <span class="va">action2</span>,</span>
-<span>                     trigger_condition <span class="op">=</span> <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'pfs'</span>,</span>
-<span>                                                     n <span class="op">=</span> <span class="fl">300</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">interim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Event.html">event</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'interim'</span>, action <span class="op">=</span> <span class="va">action2</span>, </span>
+<span>                 trigger_condition <span class="op">=</span> </span>
+<span>                   <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'pfs'</span>, n <span class="op">=</span> <span class="fl">300</span><span class="op">)</span></span>
+<span>                 <span class="op">)</span></span>
 <span></span>
-<span><span class="va">final</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Event.html">Event</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'final'</span>, action <span class="op">=</span> <span class="va">action3</span>,</span>
-<span>                   trigger_condition <span class="op">=</span></span>
+<span><span class="va">final</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Event.html">event</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'final'</span>, action <span class="op">=</span> <span class="va">action3</span>, </span>
+<span>               trigger_condition <span class="op">=</span></span>
 <span>                     <span class="fu"><a href="../reference/enrollment.html">enrollment</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1000</span>, arms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'placebo'</span>, <span class="st">'low dose'</span>, <span class="st">'high dose'</span><span class="op">)</span><span class="op">)</span> <span class="op">&amp;</span></span>
 <span>                     <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'os'</span>, n <span class="op">=</span> <span class="fl">300</span><span class="op">)</span> <span class="op">&amp;</span> <span class="op">(</span></span>
 <span>                       <span class="fu"><a href="../reference/calendarTime.html">calendarTime</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fl">28</span><span class="op">)</span> <span class="op">|</span></span>
 <span>                         <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'pfs'</span>, n <span class="op">=</span> <span class="fl">520</span><span class="op">)</span></span>
 <span>                     <span class="op">)</span></span>
-<span><span class="op">)</span></span>
+<span>               <span class="op">)</span></span>
 <span></span>
-<span><span class="va">listener</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Listener.html">Listener</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">listener</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Listener.html">listener</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#' register events with listener</span></span>
 <span><span class="va">listener</span><span class="op">$</span><span class="fu">add_events</span><span class="op">(</span></span>
 <span>  <span class="va">dose_selection</span>,</span>
@@ -371,7 +381,7 @@ of patients or endpoint events over time for each of the arms. We can
 set it to <code>FALSE</code> if a massive number of simulation
 replicates is run to save time.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">controller</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Controller.html">Controller</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">trial</span>, <span class="va">listener</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">controller</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Controller.html">controller</a></span><span class="op">(</span><span class="va">trial</span>, <span class="va">listener</span><span class="op">)</span></span>
 <span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>plot_event <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Conditioin of event &lt;dose selection&gt; is being checked.</span></span>
 <span><span class="co">#&gt; Data is locked at time = 11.3138461538462 for event &lt;dose selection&gt;.</span></span>
