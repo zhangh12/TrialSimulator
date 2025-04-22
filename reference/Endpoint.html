@@ -121,38 +121,44 @@ generating and analyzing trial data, they can be defined as
 <span class="r-in"><span>  piecewise_risk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1.01</span>, <span class="fl">0.381</span>, <span class="fl">0.150</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">3.01</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">pfs</span> <span class="op">&lt;-</span> <span class="fu">endpoints</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'pfs'</span>, type<span class="op">=</span><span class="st">'tte'</span>,</span></span>
+<span class="r-in"><span><span class="va">pfs</span> <span class="op">&lt;-</span> <span class="fu">endpoint</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'pfs'</span>, type<span class="op">=</span><span class="st">'tte'</span>,</span></span>
 <span class="r-in"><span>generator <span class="op">=</span> <span class="va">PiecewiseConstantExponentialRNG</span>,</span></span>
 <span class="r-in"><span>risk <span class="op">=</span> <span class="va">risk</span>, endpoint_name <span class="op">=</span> <span class="st">'pfs'</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in endpoints(name = "pfs", type = "tte", generator = PiecewiseConstantExponentialRNG,     risk = risk, endpoint_name = "pfs"):</span> could not find function "endpoints"</span>
 <span class="r-in"><span><span class="va">pfs</span><span class="op">$</span><span class="fu">get_generator</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'pfs' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> generator :</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $risk</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   end_time piecewise_risk</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1        1    0.049291679</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       10    0.049784596</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       26    0.018780130</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4       52    0.007393752</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $endpoint_name</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pfs"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Example 2. Generate continuous and binary endpoints using R's built-in</span></span></span>
 <span class="r-in"><span><span class="co">## RNG functions, e.g. rnorm, rexp, rbinom, etc.</span></span></span>
-<span class="r-in"><span><span class="va">ep1</span> <span class="op">&lt;-</span> <span class="fu">endpoints</span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="va">ep1</span> <span class="op">&lt;-</span> <span class="fu">endpoint</span><span class="op">(</span></span></span>
 <span class="r-in"><span>         name <span class="op">=</span> <span class="st">'cd4'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, generator <span class="op">=</span> <span class="va">rnorm</span>, readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>cd4<span class="op">=</span><span class="fl">1</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>         mean <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in endpoints(name = "cd4", type = "non-tte", generator = rnorm,     readout = c(cd4 = 1), mean = 1.2):</span> could not find function "endpoints"</span>
-<span class="r-in"><span><span class="va">ep2</span> <span class="op">&lt;-</span> <span class="fu">endpoints</span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="va">ep2</span> <span class="op">&lt;-</span> <span class="fu">endpoint</span><span class="op">(</span></span></span>
 <span class="r-in"><span>         name <span class="op">=</span> <span class="st">'resp_time'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, generator <span class="op">=</span> <span class="va">rexp</span>, readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>resp_time<span class="op">=</span><span class="fl">0</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>         rate <span class="op">=</span> <span class="fl">4.5</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in endpoints(name = "resp_time", type = "non-tte", generator = rexp,     readout = c(resp_time = 0), rate = 4.5):</span> could not find function "endpoints"</span>
-<span class="r-in"><span><span class="va">ep3</span> <span class="op">&lt;-</span> <span class="fu">endpoints</span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="va">ep3</span> <span class="op">&lt;-</span> <span class="fu">endpoint</span><span class="op">(</span></span></span>
 <span class="r-in"><span>         name <span class="op">=</span> <span class="st">'orr'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>orr<span class="op">=</span><span class="fl">3</span><span class="op">)</span>, generator <span class="op">=</span> <span class="va">rbinom</span>,</span></span>
 <span class="r-in"><span>         size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">.4</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in endpoints(name = "orr", type = "non-tte", readout = c(orr = 3),     generator = rbinom, size = 1, prob = 0.4):</span> could not find function "endpoints"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">ep1</span><span class="op">$</span><span class="fu">get_generator</span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fl">1e4</span><span class="op">)</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="co"># compared to 1.2</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'ep1' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.199141</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">ep1</span><span class="op">$</span><span class="fu">get_generator</span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fl">1e4</span><span class="op">)</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="co"># compared to 1.0</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'ep1' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.9865558</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">ep2</span><span class="op">$</span><span class="fu">get_generator</span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fl">1e4</span><span class="op">)</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="co"># compared to 4.5</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'ep2' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 4.554779</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">ep3</span><span class="op">$</span><span class="fu">get_generator</span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fl">1e4</span><span class="op">)</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="co"># compared to 0.4</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'ep3' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.3961</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## An example of piecewise constant exponential random number generator</span></span></span>
 <span class="r-in"><span><span class="co">## Baseline hazards are piecewise constant</span></span></span>
@@ -172,14 +178,14 @@ generating and analyzing trial data, they can be defined as
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span><span class="op">(</span><span class="va">run</span><span class="op">)</span><span class="op">{</span></span></span>
 <span class="r-in"><span><span class="va">risk1</span> <span class="op">&lt;-</span> <span class="va">risk</span></span></span>
-<span class="r-in"><span><span class="va">ep1</span> <span class="op">&lt;-</span> <span class="fu">endpoints</span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="va">ep1</span> <span class="op">&lt;-</span> <span class="fu">endpoint</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  name <span class="op">=</span> <span class="st">'pfs'</span>, type<span class="op">=</span><span class="st">'tte'</span>,</span></span>
 <span class="r-in"><span>  generator <span class="op">=</span> <span class="va">PiecewiseConstantExponentialRNG</span>,</span></span>
 <span class="r-in"><span>  risk<span class="op">=</span><span class="va">risk1</span>, endpoint_name <span class="op">=</span> <span class="st">'pfs'</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">risk2</span> <span class="op">&lt;-</span> <span class="va">risk1</span></span></span>
 <span class="r-in"><span><span class="va">risk2</span><span class="op">$</span><span class="va">hazard_ratio</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">.6</span>, <span class="fl">.4</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">ep2</span> <span class="op">&lt;-</span> <span class="fu">endpoints</span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="va">ep2</span> <span class="op">&lt;-</span> <span class="fu">endpoint</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  name <span class="op">=</span> <span class="st">'pfs'</span>, type<span class="op">=</span><span class="st">'tte'</span>,</span></span>
 <span class="r-in"><span>  generator <span class="op">=</span> <span class="va">PiecewiseConstantExponentialRNG</span>,</span></span>
 <span class="r-in"><span>  risk<span class="op">=</span><span class="va">risk2</span>, endpoint_name <span class="op">=</span> <span class="st">'pfs'</span><span class="op">)</span></span></span>
@@ -199,7 +205,7 @@ generating and analyzing trial data, they can be defined as
 <span class="r-in"><span>           palette <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"blue"</span>, <span class="st">"red"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in endpoints(name = "pfs", type = "tte", generator = PiecewiseConstantExponentialRNG,     risk = risk1, endpoint_name = "pfs"):</span> could not find function "endpoints"</span>
+<span class="r-plt img"><img src="Endpoint-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
