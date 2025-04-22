@@ -11,7 +11,7 @@ the concept of classes may consider using this wrapper directly."><meta property
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.63.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.64.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,7 +40,7 @@ the concept of classes may consider using this wrapper directly."><meta property
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Define an Arm</h1>
-      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/v0.63.0/R/wrapperOfArm.R" class="external-link"><code>R/wrapperOfArm.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/R/arm.R" class="external-link"><code>R/arm.R</code></a></small>
       <div class="d-none name"><code>Arm.Rd</code></div>
     </div>
 
@@ -75,33 +75,30 @@ the concept of classes may consider using this wrapper directly.</p>
 <span class="r-in"><span>  piecewise_risk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1.01</span>, <span class="fl">0.381</span>, <span class="fl">0.150</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">3.01</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">pfs</span> <span class="op">&lt;-</span> <span class="fu"><a href="endpoints.html">endpoints</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'pfs'</span>, type<span class="op">=</span><span class="st">'tte'</span>,</span></span>
+<span class="r-in"><span><span class="va">pfs</span> <span class="op">&lt;-</span> <span class="fu">endpoints</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'pfs'</span>, type<span class="op">=</span><span class="st">'tte'</span>,</span></span>
 <span class="r-in"><span>generator <span class="op">=</span> <span class="va">PiecewiseConstantExponentialRNG</span>,</span></span>
 <span class="r-in"><span>risk <span class="op">=</span> <span class="va">risk</span>, endpoint_name <span class="op">=</span> <span class="st">'pfs'</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in endpoints(name = "pfs", type = "tte", generator = PiecewiseConstantExponentialRNG,     risk = risk, endpoint_name = "pfs"):</span> could not find function "endpoints"</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">orr</span> <span class="op">&lt;-</span> <span class="fu"><a href="endpoints.html">endpoints</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="va">orr</span> <span class="op">&lt;-</span> <span class="fu">endpoints</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  name <span class="op">=</span> <span class="st">'orr'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>,</span></span>
 <span class="r-in"><span>  readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>orr <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, generator <span class="op">=</span> <span class="va">rbinom</span>,</span></span>
 <span class="r-in"><span>  size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">.4</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in endpoints(name = "orr", type = "non-tte", readout = c(orr = 2),     generator = rbinom, size = 1, prob = 0.4):</span> could not find function "endpoints"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">placebo</span> <span class="op">&lt;-</span> <span class="fu">arm</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'pbo'</span>, description <span class="op">=</span> <span class="st">'Placebo arm'</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">placebo</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">pfs</span>, <span class="va">orr</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'pfs' not found</span>
 <span class="r-in"><span><span class="va">placebo</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Arm Name:  pbo </span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Description:  Placebo arm </span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ # of Endpoints:  2 </span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Registered Endpoints:  pfs, orr </span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ # of Endpoints:  0 </span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Registered Endpoints:   </span> </span>
 <span class="r-in"><span><span class="va">placebo</span><span class="op">$</span><span class="fu">get_endpoints</span><span class="op">(</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="fu">get_generator</span><span class="op">(</span><span class="op">)</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          pfs pfs_event</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  0.1506736         1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 16.9618028         1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 20.1894275         1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  6.8827606         1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 52.0000000         0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 52.0000000         0</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in placebo$get_endpoints()[[1]]:</span> subscript out of bounds</span>
 <span class="r-in"><span><span class="va">placebo</span><span class="op">$</span><span class="fu">get_endpoints</span><span class="op">(</span><span class="op">)</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="fu">get_name</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "orr"</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in placebo$get_endpoints()[[2]]:</span> subscript out of bounds</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

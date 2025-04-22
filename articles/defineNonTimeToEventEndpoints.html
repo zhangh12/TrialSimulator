@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.63.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.64.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -68,7 +68,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Define Non-Time-to-Event Endpoints in Clinical Trials</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/v0.63.0/vignettes/defineNonTimeToEventEndpoints.Rmd" class="external-link"><code>vignettes/defineNonTimeToEventEndpoints.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/vignettes/defineNonTimeToEventEndpoints.Rmd" class="external-link"><code>vignettes/defineNonTimeToEventEndpoints.Rmd</code></a></small>
       <div class="d-none name"><code>defineNonTimeToEventEndpoints.Rmd</code></div>
     </div>
 
@@ -109,24 +109,24 @@ available after 2 months, assuming a binomial distribution
 </ul>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## endpoints in placebo arm</span></span>
-<span><span class="va">tumor_cfb_pbo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoints.html">endpoints</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'cfb'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, </span>
-<span>                              readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>cfb <span class="op">=</span> <span class="fl">6</span><span class="op">)</span>,</span>
-<span>                              generator <span class="op">=</span> <span class="va">rnorm</span>, mean <span class="op">=</span> <span class="fl">.8</span>, sd <span class="op">=</span> <span class="fl">3.2</span><span class="op">)</span></span>
-<span><span class="va">orr_pbo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoints.html">endpoints</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'orr'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, </span>
-<span>                        readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>orr <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
-<span>                        generator <span class="op">=</span> <span class="va">rbinom</span>, size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">.1</span><span class="op">)</span></span>
+<span><span class="va">tumor_cfb_pbo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Endpoint.html">endpoint</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'cfb'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, </span>
+<span>                          readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>cfb <span class="op">=</span> <span class="fl">6</span><span class="op">)</span>,</span>
+<span>                          generator <span class="op">=</span> <span class="va">rnorm</span>, mean <span class="op">=</span> <span class="fl">.8</span>, sd <span class="op">=</span> <span class="fl">3.2</span><span class="op">)</span></span>
+<span><span class="va">orr_pbo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Endpoint.html">endpoint</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'orr'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, </span>
+<span>                    readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>orr <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>                    generator <span class="op">=</span> <span class="va">rbinom</span>, size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">.1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## define the placebo arm</span></span>
 <span><span class="va">pbo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Arm.html">arm</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'placebo'</span><span class="op">)</span></span>
 <span><span class="va">pbo</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">tumor_cfb_pbo</span>, <span class="va">orr_pbo</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## endpoints in treatment arm</span></span>
-<span><span class="va">tumor_cfb_trt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoints.html">endpoints</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'cfb'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, </span>
-<span>                              readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>cfb <span class="op">=</span> <span class="fl">6</span><span class="op">)</span>, </span>
-<span>                              generator <span class="op">=</span> <span class="va">rnorm</span>, mean <span class="op">=</span> <span class="op">-</span><span class="fl">2.3</span>, sd <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span></span>
-<span><span class="va">orr_trt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoints.html">endpoints</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'orr'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, </span>
-<span>                        readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>orr <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, </span>
-<span>                        generator <span class="op">=</span> <span class="va">rbinom</span>, size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">.25</span><span class="op">)</span></span>
+<span><span class="va">tumor_cfb_trt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Endpoint.html">endpoint</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'cfb'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, </span>
+<span>                          readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>cfb <span class="op">=</span> <span class="fl">6</span><span class="op">)</span>, </span>
+<span>                          generator <span class="op">=</span> <span class="va">rnorm</span>, mean <span class="op">=</span> <span class="op">-</span><span class="fl">2.3</span>, sd <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span></span>
+<span><span class="va">orr_trt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Endpoint.html">endpoint</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'orr'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, </span>
+<span>                    readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>orr <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, </span>
+<span>                    generator <span class="op">=</span> <span class="va">rbinom</span>, size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">.25</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## define the treatment arm</span></span>
 <span><span class="va">trt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Arm.html">arm</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'treatment'</span><span class="op">)</span></span>
@@ -215,20 +215,20 @@ conditions is met:
 </ol>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">interim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Event.html">event</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'interim'</span>, </span>
-<span>                     trigger_condition <span class="op">=</span> <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'orr'</span>, n <span class="op">=</span> <span class="fl">60</span><span class="op">)</span>, </span>
-<span>                     action <span class="op">=</span> <span class="va">doNothing</span><span class="op">)</span></span>
+<span>                 trigger_condition <span class="op">=</span> <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'orr'</span>, n <span class="op">=</span> <span class="fl">60</span><span class="op">)</span>, </span>
+<span>                 action <span class="op">=</span> <span class="va">doNothing</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">random</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Event.html">event</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'random'</span>, </span>
-<span>                    trigger_condition <span class="op">=</span> </span>
-<span>                      <span class="fu"><a href="../reference/calendarTime.html">calendarTime</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">&amp;</span> </span>
-<span>                      <span class="op">(</span><span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'cfb'</span>, n <span class="op">=</span> <span class="fl">100</span><span class="op">)</span> <span class="op">|</span> </span>
-<span>                         <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'orr'</span>, n <span class="op">=</span> <span class="fl">180</span><span class="op">)</span></span>
-<span>                      <span class="op">)</span>, </span>
-<span>                    action <span class="op">=</span> <span class="va">doNothing</span><span class="op">)</span></span>
+<span>                trigger_condition <span class="op">=</span> </span>
+<span>                  <span class="fu"><a href="../reference/calendarTime.html">calendarTime</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">&amp;</span> </span>
+<span>                  <span class="op">(</span><span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'cfb'</span>, n <span class="op">=</span> <span class="fl">100</span><span class="op">)</span> <span class="op">|</span> </span>
+<span>                     <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'orr'</span>, n <span class="op">=</span> <span class="fl">180</span><span class="op">)</span></span>
+<span>                   <span class="op">)</span>, </span>
+<span>                action <span class="op">=</span> <span class="va">doNothing</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">final</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Event.html">event</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'final'</span>, </span>
-<span>                   trigger_condition <span class="op">=</span> <span class="fu"><a href="../reference/calendarTime.html">calendarTime</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fl">30</span><span class="op">)</span>, </span>
-<span>                   action <span class="op">=</span> <span class="va">doNothing</span><span class="op">)</span></span></code></pre></div>
+<span>               trigger_condition <span class="op">=</span> <span class="fu"><a href="../reference/calendarTime.html">calendarTime</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fl">30</span><span class="op">)</span>, </span>
+<span>               action <span class="op">=</span> <span class="va">doNothing</span><span class="op">)</span></span></code></pre></div>
 <p>Here <code>action = doNothing</code> in <code>event</code> means we
 don’t expect any action at the time of triggered events. In practice,
 instead of <code>doNothing</code>, custom action function can be adopted
