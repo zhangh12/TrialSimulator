@@ -14,11 +14,11 @@
 #'   piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01)
 #' )
 #'
-#' pfs <- endpoints(name = 'pfs', type='tte',
+#' pfs <- endpoint(name = 'pfs', type='tte',
 #' generator = PiecewiseConstantExponentialRNG,
 #' risk = risk, endpoint_name = 'pfs')
 #'
-#' orr <- endpoints(
+#' orr <- endpoint(
 #'   name = 'orr', type = 'non-tte',
 #'   readout = c(orr = 2), generator = rbinom,
 #'   size = 1, prob = .4)

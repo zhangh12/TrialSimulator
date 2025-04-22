@@ -11,8 +11,8 @@
 #' @import ggplot2
 #'
 #' @examples
-#' # Instead of using Endpoint$new, please use endpoints(), a user-friendly
-#' # wrapper. See examples in ?endpoints.
+#' # Instead of using Endpoint$new, please use endpoint(), a user-friendly
+#' # wrapper. See examples in ?endpoint.
 #'
 #' @export
 Endpoints <- R6::R6Class(
