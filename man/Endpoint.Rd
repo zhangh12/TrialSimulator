@@ -60,20 +60,20 @@ risk <- data.frame(
   piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01)
 )
 
-pfs <- endpoints(name = 'pfs', type='tte',
+pfs <- endpoint(name = 'pfs', type='tte',
 generator = PiecewiseConstantExponentialRNG,
 risk = risk, endpoint_name = 'pfs')
 pfs$get_generator()
 
 ## Example 2. Generate continuous and binary endpoints using R's built-in
 ## RNG functions, e.g. rnorm, rexp, rbinom, etc.
-ep1 <- endpoints(
+ep1 <- endpoint(
          name = 'cd4', type = 'non-tte', generator = rnorm, readout = c(cd4=1),
          mean = 1.2)
-ep2 <- endpoints(
+ep2 <- endpoint(
          name = 'resp_time', type = 'non-tte', generator = rexp, readout = c(resp_time=0),
          rate = 4.5)
-ep3 <- endpoints(
+ep3 <- endpoint(
          name = 'orr', type = 'non-tte', readout = c(orr=3), generator = rbinom,
          size = 1, prob = .4)
 
@@ -102,14 +102,14 @@ if (!requireNamespace("survival", quietly = TRUE)) {
 
 if(run){
 risk1 <- risk
-ep1 <- endpoints(
+ep1 <- endpoint(
   name = 'pfs', type='tte',
   generator = PiecewiseConstantExponentialRNG,
   risk=risk1, endpoint_name = 'pfs')
 
 risk2 <- risk1
 risk2$hazard_ratio <- c(1, 1, .6, .4)
-ep2 <- endpoints(
+ep2 <- endpoint(
   name = 'pfs', type='tte',
   generator = PiecewiseConstantExponentialRNG,
   risk=risk2, endpoint_name = 'pfs')
