@@ -1,3 +1,9 @@
+# TrialSimulator 0.65.0
+
+## New Features
+
+- Add function `solveMixtureExponentialDistribution` to compute median of exponential endpoint of subgroup or the overall population. 
+
 # TrialSimulator 0.63.0
 
 ## New Features
