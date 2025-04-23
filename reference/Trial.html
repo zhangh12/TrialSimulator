@@ -113,40 +113,34 @@ patients. Its first argument is the number of enrolled patients.</p></dd>
 <span class="r-in"><span>  piecewise_risk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1.01</span>, <span class="fl">0.381</span>, <span class="fl">0.150</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">3.01</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">pfs1</span> <span class="op">&lt;-</span> <span class="fu">endpoints</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'pfs'</span>, type<span class="op">=</span><span class="st">'tte'</span>,</span></span>
+<span class="r-in"><span><span class="va">pfs1</span> <span class="op">&lt;-</span> <span class="fu"><a href="Endpoint.html">endpoint</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'pfs'</span>, type<span class="op">=</span><span class="st">'tte'</span>,</span></span>
 <span class="r-in"><span>          generator <span class="op">=</span> <span class="va">PiecewiseConstantExponentialRNG</span>,</span></span>
 <span class="r-in"><span>          risk <span class="op">=</span> <span class="va">risk1</span>, endpoint_name <span class="op">=</span> <span class="st">'pfs'</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in endpoints(name = "pfs", type = "tte", generator = PiecewiseConstantExponentialRNG,     risk = risk1, endpoint_name = "pfs"):</span> could not find function "endpoints"</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">orr1</span> <span class="op">&lt;-</span> <span class="fu">endpoints</span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="va">orr1</span> <span class="op">&lt;-</span> <span class="fu"><a href="Endpoint.html">endpoint</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  name <span class="op">=</span> <span class="st">'orr'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>,</span></span>
 <span class="r-in"><span>  readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>orr<span class="op">=</span><span class="fl">1</span><span class="op">)</span>, generator <span class="op">=</span> <span class="va">rbinom</span>,</span></span>
 <span class="r-in"><span>  size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">.4</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in endpoints(name = "orr", type = "non-tte", readout = c(orr = 1),     generator = rbinom, size = 1, prob = 0.4):</span> could not find function "endpoints"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">placebo</span> <span class="op">&lt;-</span> <span class="fu"><a href="Arm.html">arm</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'pbo'</span>, description <span class="op">=</span> <span class="st">'Placebo arm'</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">placebo</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">pfs1</span>, <span class="va">orr1</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'pfs1' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">risk2</span> <span class="op">&lt;-</span> <span class="va">risk1</span></span></span>
 <span class="r-in"><span><span class="va">risk2</span><span class="op">$</span><span class="va">hazard_ratio</span> <span class="op">&lt;-</span> <span class="fl">.8</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">pfs2</span> <span class="op">&lt;-</span> <span class="fu">endpoints</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'pfs'</span>, type<span class="op">=</span><span class="st">'tte'</span>,</span></span>
+<span class="r-in"><span><span class="va">pfs2</span> <span class="op">&lt;-</span> <span class="fu"><a href="Endpoint.html">endpoint</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'pfs'</span>, type<span class="op">=</span><span class="st">'tte'</span>,</span></span>
 <span class="r-in"><span>          generator <span class="op">=</span> <span class="va">PiecewiseConstantExponentialRNG</span>,</span></span>
 <span class="r-in"><span>          risk <span class="op">=</span> <span class="va">risk2</span>, endpoint_name <span class="op">=</span> <span class="st">'pfs'</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in endpoints(name = "pfs", type = "tte", generator = PiecewiseConstantExponentialRNG,     risk = risk2, endpoint_name = "pfs"):</span> could not find function "endpoints"</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">orr2</span> <span class="op">&lt;-</span> <span class="fu">endpoints</span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="va">orr2</span> <span class="op">&lt;-</span> <span class="fu"><a href="Endpoint.html">endpoint</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  name <span class="op">=</span> <span class="st">'orr'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>,</span></span>
 <span class="r-in"><span>  generator <span class="op">=</span> <span class="va">rbinom</span>, readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>orr<span class="op">=</span><span class="fl">3</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">.6</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in endpoints(name = "orr", type = "non-tte", generator = rbinom,     readout = c(orr = 3), size = 1, prob = 0.6):</span> could not find function "endpoints"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">active</span> <span class="op">&lt;-</span> <span class="fu"><a href="Arm.html">arm</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'ac'</span>, description <span class="op">=</span> <span class="st">'Active arm'</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">active</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">pfs2</span>, <span class="va">orr2</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'pfs2' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Plan a trial, Trial-3415, of up to 100 patients.</span></span></span>
 <span class="r-in"><span><span class="co">## Enrollment time follows an exponential distribution, with median 5</span></span></span>
@@ -155,14 +149,16 @@ patients. Its first argument is the number of enrolled patients.</p></dd>
 <span class="r-in"><span>  seed <span class="op">=</span> <span class="fl">31415926</span>, duration <span class="op">=</span> <span class="fl">100</span>,</span></span>
 <span class="r-in"><span>  enroller <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="fl">5</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, <span class="va">placebo</span>, <span class="va">active</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in trial$add_arms(sample_ratio = c(1, 2), placebo, active):</span> No endpoint in the arm &lt;pbo&gt;. Make sure that Arm$add_endpoints() has been executed before adding this arm into the trial. </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Arm(s) &lt;pbo, ac&gt; are added to the trial. </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Randomization is done for 100 potential patients. </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Data of 100 potential patients are generated for the trial with 2 arm(s) &lt;pbo, ac&gt;. </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">trial</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Trial Name:  Trial-3415 </span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Description:  Trial-3415 </span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ # of Arms:  0 </span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Registered Arms:   </span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Sample Ratio:   </span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ # of Arms:  2 </span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Registered Arms:  pbo, ac </span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Sample Ratio:  1, 2 </span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ # of Patients:  100 </span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Planned Duration:  100 </span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Random Seed:  31415926 </span> </span>
