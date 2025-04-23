@@ -24,11 +24,11 @@ library(TrialSimulator)
 set.seed(12345)
 ```
 
-`TrialSimulator` provides a flexible framework for defining and simulating a variety of clinical trial endpoints by specifying the `type` parameter in `Endpoint$new`. This vignette covers non-time-to-event (non-TTE) endpoints, demonstrating how they can be defined, integrated into trial arms, and analyzed at pre-specified event triggers. For time-to-event endpoints, please refer to the separate vignette [Define Time-to-Event Endpoints in Clinical Trials](defineTimeToEventEndpoints.html).
+`TrialSimulator` provides a flexible framework for defining and simulating a variety of clinical trial endpoints by specifying the `type` parameter in `endpoints`. This vignette covers non-time-to-event (non-TTE) endpoints, demonstrating how they can be defined, integrated into trial arms, and analyzed at pre-specified event triggers. For time-to-event endpoints, please refer to the separate vignette [Define Time-to-Event Endpoints in Clinical Trials](defineTimeToEventEndpoints.html).
 
 ## Define endpoints with random number generators
 
-Similar to time-to-event endpoints, non-TTE endpoints can be defined using any univariate random number generator that takes `n` (number of observations) as its first argument. The `stats` package provides a set of random number generators that can be assigned to `generator` in `Endpoint$new`, where additional arguments required by `generator` can be passed through `...`. When creating non-TTE endpoints, the argument `type` should be set to `"non-tte"`, and the argument `readout` should be specified as a named numeric vector, indicating the time required for the endpoint to be available for analysis after patient enrollment.
+Similar to time-to-event endpoints, non-TTE endpoints can be defined using any univariate random number generator that takes `n` (number of observations) as its first argument. The `stats` package provides a set of random number generators that can be assigned to `generator` in `endpoints`, where additional arguments required by `generator` can be passed through `...`. When creating non-TTE endpoints, the argument `type` should be set to `"non-tte"`, and the argument `readout` should be specified as a named numeric vector, indicating the time required for the endpoint to be available for analysis after patient enrollment.
 
 In the example below, we define two types of endpoints:
 
@@ -38,27 +38,27 @@ In the example below, we define two types of endpoints:
 
 ```{r lljalk}
 ## endpoints in placebo arm
-tumor_cfb_pbo <- Endpoint$new(name = 'cfb', type = 'non-tte', 
-                              readout = c(cfb = 6),
-                              generator = rnorm, mean = .8, sd = 3.2)
-orr_pbo <- Endpoint$new(name = 'orr', type = 'non-tte', 
-                        readout = c(orr = 2),
-                        generator = rbinom, size = 1, prob = .1)
+tumor_cfb_pbo <- endpoint(name = 'cfb', type = 'non-tte', 
+                          readout = c(cfb = 6),
+                          generator = rnorm, mean = .8, sd = 3.2)
+orr_pbo <- endpoint(name = 'orr', type = 'non-tte', 
+                    readout = c(orr = 2),
+                    generator = rbinom, size = 1, prob = .1)
 
 ## define the placebo arm
-pbo <- Arm$new(name = 'placebo')
+pbo <- arm(name = 'placebo')
 pbo$add_endpoints(tumor_cfb_pbo, orr_pbo)
 
 ## endpoints in treatment arm
-tumor_cfb_trt <- Endpoint$new(name = 'cfb', type = 'non-tte', 
-                              readout = c(cfb = 6), 
-                              generator = rnorm, mean = -2.3, sd = 1.5)
-orr_trt <- Endpoint$new(name = 'orr', type = 'non-tte', 
-                        readout = c(orr = 2), 
-                        generator = rbinom, size = 1, prob = .25)
+tumor_cfb_trt <- endpoint(name = 'cfb', type = 'non-tte', 
+                          readout = c(cfb = 6), 
+                          generator = rnorm, mean = -2.3, sd = 1.5)
+orr_trt <- endpoint(name = 'orr', type = 'non-tte', 
+                    readout = c(orr = 2), 
+                    generator = rbinom, size = 1, prob = .25)
 
 ## define the treatment arm
-trt <- Arm$new(name = 'treatment')
+trt <- arm(name = 'treatment')
 trt$add_endpoints(tumor_cfb_trt, orr_trt)
 ```
 With the treatment arms defined, we can proceed to create a trial. Patients are recruited at a piecewise constant rate, with an accrual pattern as follows:
@@ -91,7 +91,7 @@ Using the computed scale parameter $\lambda=$ `r round(dropout_pars['scale'], 3)
 accrual_rate <- data.frame(end_time = c(6, Inf), 
                            piecewise_rate = c(10, 20))
 
-trial <- Trial$new(
+trial <- trial(
   name = 'Trial-31415', description = 'Example Clinical Trial', 
   n_patients = 420, duration = 30, 
   enroller = StaggeredRecruiter, accrual_rate = accrual_rate, 
@@ -103,7 +103,7 @@ trial$add_arms(sample_ratio = c(1, 1), trt, pbo)
 trial
 ```
 
-Here `accrual_rate` is an argument of `TrialSimulator::StaggeredRecruiter` controlling how patients are recruited into the trial. Similarly, `scale` and `shape` are arguments of `rweibull`. All these arguments are passed through `...` of `Trial$new`. 
+Here `accrual_rate` is an argument of `TrialSimulator::StaggeredRecruiter` controlling how patients are recruited into the trial. Similarly, `scale` and `shape` are arguments of `rweibull`. All these arguments are passed through `...` of `trial()`. 
 
 `TrialSimulator` allows defining trial events at specific time points when data is locked for analysis. Here, we define three key events:
 
@@ -114,34 +114,34 @@ Here `accrual_rate` is an argument of `TrialSimulator::StaggeredRecruiter` contr
 3. Final Analysis: Occurs when the trial reaches 30 months.
 
 ```{r llieh}
-interim <- Event$new(name = 'interim', 
-                     trigger_condition = eventNumber(endpoint = 'orr', n = 60), 
-                     action = doNothing)
+interim <- event(name = 'interim', 
+                 trigger_condition = eventNumber(endpoint = 'orr', n = 60), 
+                 action = doNothing)
 
-random <- Event$new(name = 'random', 
-                    trigger_condition = 
-                      calendarTime(time = 10) & 
-                      (eventNumber(endpoint = 'cfb', n = 100) | 
-                         eventNumber(endpoint = 'orr', n = 180)
-                      ), 
-                    action = doNothing)
+random <- event(name = 'random', 
+                trigger_condition = 
+                  calendarTime(time = 10) & 
+                  (eventNumber(endpoint = 'cfb', n = 100) | 
+                     eventNumber(endpoint = 'orr', n = 180)
+                   ), 
+                action = doNothing)
 
-final <- Event$new(name = 'final', 
-                   trigger_condition = calendarTime(time = 30), 
-                   action = doNothing)
+final <- event(name = 'final', 
+               trigger_condition = calendarTime(time = 30), 
+               action = doNothing)
 ```
 
-Here `action = doNothing` in `Event$new` means we don't expect any action at the time of triggered events. In practice, instead of `doNothing`, custom action function can be adopted to add or remove arms (e.g., dose selection), adjust sample ratio per arm, or carry out statistical analysis based on locked data. These advanced setups are covered in other vignettes.
+Here `action = doNothing` in `event` means we don't expect any action at the time of triggered events. In practice, instead of `doNothing`, custom action function can be adopted to add or remove arms (e.g., dose selection), adjust sample ratio per arm, or carry out statistical analysis based on locked data. These advanced setups are covered in other vignettes.
 
 Next, we register the events with a listener and create a controller to monitor and execute the trial.
 
 ```{r ihhf}
 ## register events to the listener
-listener <- Listener$new()
+listener <- listener()
 listener$add_events(interim, random, final)
 
 ## run the trial
-controller <- Controller$new(trial, listener)
+controller <- controller(trial, listener)
 controller$run()
 ```
 

@@ -29,18 +29,18 @@ set.seed(12345)
 
 The first step in simulating a randomized clinical trial using `TrialSimulator` is to define one or more endpoints for each treatment arm. This vignette demonstrates how to use the following key functions:
 
-- `Endpoint$new`: Creates one or more endpoints
+- `endpoints`: Creates one or more endpoints
 - `test_generator`: Generates an example dataset from an Endpoint object
 
-Typically, endpoints follow the same distribution family across arms but with different parameters. Distribution parameters are specified through the `...` arguments in `Endpoint$new`.
+Typically, endpoints follow the same distribution family across arms but with different parameters. Distribution parameters are specified through the `...` arguments in `endpoints`.
 
 ## Define a univariate endpoint with random number generators from `stats`
 
 To define a time-to-event endpoint such as progression-free survival (`PFS`) following an exponential distribution, you need to specify its `name` and `type.` This specification is crucial because `TrialSimulator` ensures all arms have the same set of endpoints and manages endpoint data based on `type`. For example, endpoints of type `"tte"` (time-to-event) automatically receive an additional column `(name)_event` to indicate censoring status.
 
 ```{r lkioie}
-pfs_pbo <- Endpoint$new(name = 'PFS', type = 'tte', 
-                        generator = rexp, rate = log(2)/5.6)
+pfs_pbo <- endpoint(name = 'PFS', type = 'tte', 
+                    generator = rexp, rate = log(2)/5.6)
 ```
 
 Arguments for the generator function (in this case, `rate`) are passed through `...`. You can verify that the generator works as expected by requesting an example dataset:
@@ -56,17 +56,17 @@ Similarly, we can define a `PFS` endpoint for the treatment arm:
 
 ```{r aldj}
 library(TrialSimulator)
-pfs_trt <- Endpoint$new(name = 'PFS', type = 'tte', 
-                        generator = rexp, rate = log(2)/6.4)
+pfs_trt <- endpoint(name = 'PFS', type = 'tte', 
+                    generator = rexp, rate = log(2)/6.4)
 median(pfs_trt$test_generator(n = 1e5)$PFS) ## should be close to 6.4
 ```
 
 Now we can define the placebo and treatment arms by adding the `PFS` endpoints: 
 
 ```{r alfjd}
-pbo <- Arm$new(name = 'placebo')
+pbo <- arm(name = 'placebo')
 pbo$add_endpoints(pfs_pbo)
-trt <- Arm$new(name = 'treatment')
+trt <- arm(name = 'treatment')
 trt$add_endpoints(pfs_trt)
 ```
 
@@ -75,7 +75,7 @@ another vignette.
 
 ## Define a univariate endpoint with custom random number generators
 
-`Endpoint$new` accepts custom random number generators for univariate random variables, as long as the generator's first argument is `n` (number of observations). Additional arguments can be passed through `...` in `Endpoint$new`.
+`endpoints` accepts custom random number generators for univariate random variables, as long as the generator's first argument is `n` (number of observations). Additional arguments can be passed through `...` in `endpoints`.
 
 `TrialSimulator` provides a built-in custom generator, `PiecewiseConstantExponentialRNG`, to generate time-to-event endpoints from piecewise constant exponential distributions. This is particularly useful for simulating lagged or delayed treatment effects. The example below demonstrates a scenario where treatment effect begins at week 2:
 
@@ -85,17 +85,17 @@ risk_pbo <- data.frame(
   piecewise_risk = c(1, 0.48, 0.25) * exp(-1)
 )
 
-pfs_pbo <- Endpoint$new(name = 'PFS', type = 'tte', 
-                        generator = PiecewiseConstantExponentialRNG, 
-                        risk = risk_pbo, 
-                        endpoint_name = 'PFS')
+pfs_pbo <- endpoint(name = 'PFS', type = 'tte', 
+                    generator = PiecewiseConstantExponentialRNG, 
+                    risk = risk_pbo, 
+                    endpoint_name = 'PFS')
 risk_trt <- risk_pbo %>% 
   mutate(hazard_ratio = c(1, .6, .7))
 
-pfs_trt <- Endpoint$new(name = 'PFS', type = 'tte', 
-                        generator = PiecewiseConstantExponentialRNG, 
-                        risk = risk_trt, 
-                        endpoint_name = 'PFS')
+pfs_trt <- endpoint(name = 'PFS', type = 'tte', 
+                    generator = PiecewiseConstantExponentialRNG, 
+                    risk = risk_trt, 
+                    endpoint_name = 'PFS')
 
 test_set <- rbind(pfs_pbo$test_generator(n = 1e4) %>% mutate(arm = 'pbo'), 
                   pfs_trt$test_generator(n = 1e4) %>% mutate(arm = 'trt'))
@@ -112,10 +112,10 @@ head(test_set %>% slice_sample(prop = 1))
 
 To add endpoint to an arm, 
 ```{r eegj}
-pbo <- Arm$new(name = 'placebo')
+pbo <- arm(name = 'placebo')
 pbo$add_endpoints(pfs_pbo)
 
-trt <- Arm$new(name = 'treatment')
+trt <- arm(name = 'treatment')
 trt$add_endpoints(pfs_trt)
 ```
 
@@ -124,10 +124,10 @@ trt$add_endpoints(pfs_trt)
 You can define more than one endpoint in a trial. Let's add overall survival (OS) as a second endpoint. We'll assume the median overall survival is 7.2 months in the placebo arm and 8.5 months in the treatment arm. 
 
 ```{r laiojb}
-os_pbo <- Endpoint$new(name = 'OS', type = 'tte', 
-                       generator = rexp, rate = log(2)/7.2)
-os_trt <- Endpoint$new(name = 'OS', type = 'tte', 
-                       generator = rexp, rate = log(2)/8.5)
+os_pbo <- endpoint(name = 'OS', type = 'tte', 
+                   generator = rexp, rate = log(2)/7.2)
+os_trt <- endpoint(name = 'OS', type = 'tte', 
+                   generator = rexp, rate = log(2)/8.5)
 
 median(os_pbo$test_generator(n = 1e5)$OS) ## should be close to 7.2
 median(os_trt$test_generator(n = 1e5)$OS) ## should be close to 8.5
@@ -137,7 +137,7 @@ pbo$add_endpoints(os_pbo)
 trt$add_endpoints(os_trt)
 ```
 
-Note that by defining `PFS` and `OS` separately (i.e., calling `Endpoint$new` for each endpoint), you are implicitly assuming that these endpoints are independent in the trial.
+Note that by defining `PFS` and `OS` separately (i.e., calling `endpoints` for each endpoint), you are implicitly assuming that these endpoints are independent in the trial.
 
 ## An example of a custom random number generator for correlated endpoints
 
@@ -164,15 +164,15 @@ Note that for custom generator, you need to add columns of event indicator for e
 
 ```{r ojhonln}
 corr <- matrix(c(1, .6, .6, 1), nrow = 2)
-eps_pbo <- Endpoint$new(name = c('PFS', 'OS'), type = c('tte', 'tte'), 
-                              generator = custom_generator, 
-                              pfs_rate = log(2)/5.6, os_rate = log(2)/7.2, 
-                              corr = corr)
+eps_pbo <- endpoint(name = c('PFS', 'OS'), type = c('tte', 'tte'), 
+                    generator = custom_generator, 
+                    pfs_rate = log(2)/5.6, os_rate = log(2)/7.2, 
+                    corr = corr)
 
-eps_trt <- Endpoint$new(name = c('OS', 'PFS'), type = c('tte', 'tte'), 
-                              generator = custom_generator, 
-                              pfs_rate = log(2)/6.4, os_rate = log(2)/8.5, 
-                              corr = corr)
+eps_trt <- endpoint(name = c('OS', 'PFS'), type = c('tte', 'tte'), 
+                    generator = custom_generator, 
+                    pfs_rate = log(2)/6.4, os_rate = log(2)/8.5, 
+                    corr = corr)
 
 test_set <- rbind(eps_pbo$test_generator(n = 1e5) %>% mutate(arm = 'pbo'), 
                   eps_trt$test_generator(n = 1e5) %>% mutate(arm = 'trt'))
@@ -189,10 +189,10 @@ test_set %>%
 To define arms with these correlated endpoints, simply do the following:
 
 ```{r lioe}
-pbo <- Arm$new(name = 'placebo')
+pbo <- arm(name = 'placebo')
 pbo$add_endpoints(eps_pbo)
 
-trt <- Arm$new(name = 'treatment')
+trt <- arm(name = 'treatment')
 trt$add_endpoints(eps_trt)
 ```
 
