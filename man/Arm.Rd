@@ -12,7 +12,9 @@ arm(name, description = name)
 \item{description}{optional. Description of arm}
 }
 \description{
-Define an arm of a trial.
+Define an arm in a trial. This is a user-friendly wrapper for
+the class constructor \code{Arm$new}. Users who are not familiar with
+the concept of classes may consider using this wrapper directly.
 }
 \examples{
 risk <- data.frame(

@@ -2,7 +2,7 @@
 
 ## New Features
 
-- Add wrapper functions `endpoints` and `arm` for `Endpoint$new` and `Arm$new`.  
+- Add wrapper functions `endpoints`, `arm`, `trial` for `Endpoint$new`, `Arm$new`, and `Trial$new`. 
 
 # TrialSimulator 0.62.0
 

@@ -4,44 +4,8 @@
 #'
 #' @docType class
 #' @examples
-#' risk1 <- data.frame(
-#'   end_time = c(1, 10, 26.0, 52.0),
-#'   piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01)
-#' )
-#'
-#' pfs1 <- Endpoint$new(name = 'pfs', type='tte',
-#'           generator = PiecewiseConstantExponentialRNG,
-#'           risk = risk1, endpoint_name = 'pfs')
-#' orr1 <- Endpoint$new(
-#'   name = 'orr', type = 'non-tte',
-#'   readout = c(orr=1), generator = rbinom,
-#'   size = 1, prob = .4)
-#' placebo <- Arm$new(
-#'   name = 'pbo', description = 'Placebo arm')
-#'
-#' placebo$add_endpoints(pfs1, orr1)
-#'
-#' risk2 <- risk1
-#' risk2$hazard_ratio <- .8
-#' pfs2 <- Endpoint$new(name = 'pfs', type='tte',
-#'           generator = PiecewiseConstantExponentialRNG,
-#'           risk = risk2, endpoint_name = 'pfs')
-#' orr2 <- Endpoint$new(
-#'   name = 'orr', type = 'non-tte',
-#'   generator = rbinom, readout = c(orr=3),
-#'   size = 1, prob = .6)
-#' active <- Arm$new(
-#'   name = 'ac', description = 'Active arm')
-#'
-#' active$add_endpoints(pfs2, orr2)
-#'
-#' ## Plan a trial, Trial-3415, of up to 100 patients.
-#' ## Enrollment time follows an exponential distribution, with median 5
-#' trial <- Trial$new(
-#'   name = 'Trial-3415', n_patients = 100,
-#'   seed = 31415926, duration = 100,
-#'   enroller = rexp, rate = log(2) / 5)
-#' trial$add_arms(sample_ratio = c(1, 2), placebo, active)
+#' # Instead of using Trial$new, please use trial(), a user-friendly
+#' # wrapper. See examples in ?trial.
 #'
 #' @export
 Trial <- R6::R6Class(

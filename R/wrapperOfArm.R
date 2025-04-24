@@ -1,6 +1,9 @@
 #' Define an Arm
+#'
 #' @description
-#' Define an arm of a trial.
+#' Define an arm in a trial. This is a user-friendly wrapper for
+#' the class constructor \code{Arm$new}. Users who are not familiar with
+#' the concept of classes may consider using this wrapper directly.
 #'
 #' @param name name of arm
 #' @param description optional. Description of arm
