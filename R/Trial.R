@@ -130,6 +130,44 @@ Trial <- R6::R6Class(
     },
 
     #' @description
+    #' set trial duration in an adaptive designed trial. All patients enrolled
+    #' before resetting the duration are truncated (non-tte endpoints) or
+    #' censored (tte endpoints) at the original duration. Remaining patients
+    #' are re-randomized. Now new duration must be longer than the old one.
+    #' @param duration new duration of a trial. It must be longer than the
+    #' current duration.
+    set_duration = function(duration){
+
+      if(duration <= self$get_duration()){
+        stop('Trial duration can only be set to be longer. <', duration,
+             ' is shorter than <', self$get_duration(), '>. ')
+      }
+
+      old_duration <- self$get_duration()
+
+      ## update the duration
+      private$duration <- duration
+
+      if(!private$silent){
+        message('Trial duration is updated <', old_duration,
+                ' -> ', self$get_duration(), '>. ')
+      }
+
+      ## all patients enrolled before current event should be censored
+      ## or truncated at old duration
+      self$censor_trial_data(censor_at = old_duration,
+                             enrolled_before = self$get_current_time())
+
+      ## with trial duration is extended, unenrolled patient at current time
+      ## should be randomized again.
+      self$roll_back()
+
+      ## update data for unrolled patients based on new trial duration
+      self$enroll_patients()
+
+    },
+
+    #' @description
     #' set recruitment curve when initialize a
     #' trial.
     #' @param func function to generate enrollment time. It can be built-in
@@ -518,50 +556,6 @@ Trial <- R6::R6Class(
       stopifnot(max(abs(index)) <= length(private$enroll_time))
 
       private$enroll_time[index]
-    },
-
-    #' @description
-    #' assign a new patient to an arm based on planned randomization queue
-    #' I may consider make this function deprecated. Instead, I'd like to
-    #' have a function to sample the remaining n patients, with n as an argument.
-    #' Reason: if an action (analysis, add/remove arm, early stop) is triggered
-    #' based on number of event of TTE, we may need to sample ALL patients to
-    #' know the accurate time point. With an enrollment function of more than
-    #' one patient, we can find out the time point and roll back to then, and
-    #' recover randomization queue and enrollment time for the remaining patients.
-    enroll_a_patient = function(){
-
-      if(length(self$get_arms()) == 0){
-        stop('No arm is added in the trial yet. Patient cannot be enrolled. ')
-      }
-
-      if(self$get_number_unenrolled_patients() == 0){
-        stop('Maximum planned sample size has been reached. Patient cannot be enrolled. ')
-      }
-
-      next_enroll_arm <- self$get_randomization_queue(1)
-      ## update randomization_queue after enrolling a new patient.
-      ## randomization_queue only keep randomization queue for future patients
-      private$randomization_queue <- self$get_randomization_queue(-1)
-
-      next_enroll_time <- self$get_enroll_time(1)
-      private$enroll_time <- self$get_enroll_time(-1)
-
-      patient_data <-
-        data.frame(
-          patient_id = self$get_number_enrolled_patients() + 1,
-          arm = next_enroll_arm,
-          enroll_time = next_enroll_time
-        )
-
-      n_ <- 1 # sample data for one patient
-      for(ep in self$get_an_arm(next_enroll_arm)$get_endpoints()){
-        patient_data <- cbind(patient_data, ep$get_generator()(n_))
-      }
-
-      private$trial_data <- bind_rows(private$trial_data, patient_data)
-      private$n_enrolled_patients <- private$n_enrolled_patients + 1
-
     },
 
     #' @description
@@ -1127,7 +1121,7 @@ Trial <- R6::R6Class(
 
       }
 
-      ################################################
+
       ## prepare stacked area chart
       all_data <- all_data_list %>%
         dplyr::filter(!(arm %in% '0: overall'))
@@ -1217,7 +1211,13 @@ Trial <- R6::R6Class(
     #' should be fixed unchanged since corresponding event is triggered. In that
     #' case, one can update trial data by something like
     #' \code{censor_trial_data(censor_at = event_time, selected_arms = removed_arms)}.
-    censor_trial_data = function(censor_at = NULL, selected_arms = NULL){
+    #' @param enrolled_before censoring is applied to patients enrolled before
+    #' specific time. This argument would be used when trial duration is
+    #' updated by \code{set_duration}. Adaptation happens when \code{set_duration}
+    #' is called so we fix duration for patients enrolled before adaptation
+    #' to maintain independent increment. This should work when trial duration
+    #' is updated for multiple times.
+    censor_trial_data = function(censor_at = NULL, selected_arms = NULL, enrolled_before = Inf){
 
       if(is.null(censor_at)){
         censor_at <- self$get_duration()
@@ -1236,17 +1236,21 @@ Trial <- R6::R6Class(
         tte_col <- gsub('_event$', '', event_col)
         trial_data <- trial_data %>%
           mutate(!!event_col := ifelse((!!sym(tte_col) + enroll_time > dropout_time) &
-                                         (arm %in% selected_arms),
+                                         (arm %in% selected_arms) &
+                                         (enroll_time <= enrolled_before),
                                        0, !!sym(event_col))) %>%
           mutate(!!tte_col := ifelse((!!sym(tte_col) + enroll_time > dropout_time) &
-                                       (arm %in% selected_arms),
+                                       (arm %in% selected_arms) &
+                                       (enroll_time <= enrolled_before),
                                      dropout_time - enroll_time, !!sym(tte_col))) %>%
           mutate(calendar_time := enroll_time + !!sym(tte_col)) %>%
           mutate(!!event_col := ifelse((calendar_time > censor_at) &
-                                         (arm %in% selected_arms),
+                                         (arm %in% selected_arms) &
+                                         (enroll_time <= enrolled_before),
                                        0, !!sym(event_col))) %>%
           mutate(!!tte_col := ifelse((calendar_time > censor_at) &
-                                       (arm %in% selected_arms),
+                                       (arm %in% selected_arms) &
+                                       (enroll_time <= enrolled_before),
                                      censor_at - enroll_time, !!sym(tte_col))) %>%
           mutate(!!tte_col := ifelse(!!sym(tte_col) < 0, 0, !!sym(tte_col))) %>%
           dplyr::select(-calendar_time) %>%
@@ -1257,11 +1261,13 @@ Trial <- R6::R6Class(
         ep_col <- gsub('_readout$', '', readout_col)
         trial_data <- trial_data %>%
           mutate(!!ep_col := ifelse((!!sym(readout_col) + enroll_time > dropout_time) &
-                                      (arm %in% selected_arms),
+                                      (arm %in% selected_arms) &
+                                      (enroll_time <= enrolled_before),
                                     NA, !!sym(ep_col))) %>%
           mutate(calendar_time := enroll_time + !!sym(readout_col)) %>%
           mutate(!!ep_col := ifelse((calendar_time > censor_at) &
-                                      (arm %in% selected_arms),
+                                      (arm %in% selected_arms) &
+                                      (enroll_time <= enrolled_before),
                                     NA, !!sym(ep_col))) %>%
           dplyr::select(-calendar_time) %>%
           arrange(enroll_time)
@@ -2233,7 +2239,9 @@ Trial <- R6::R6Class(
                   (length(n_patients) == 1) &&
                   is.wholenumber(n_patients))
 
-      stopifnot(is.numeric(duration) && (length(duration) == 1))
+      stopifnot(is.numeric(duration) &&
+                  (length(duration) == 1) &&
+                  duration > 0)
 
       stopifnot(is.function(enroller))
       stopifnot(is.null(dropout) || is.function(dropout))
@@ -2289,8 +2297,6 @@ Trial <- R6::R6Class(
                 # 'Otherwise it may indicator a potential issue. \n')
       }
     },
-
-    ##########################
 
     .snapshot = list()
 
