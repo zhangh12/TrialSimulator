@@ -130,6 +130,44 @@ Trial <- R6::R6Class(
     },
 
     #' @description
+    #' set trial duration in an adaptive designed trial. All patients enrolled
+    #' before resetting the duration are truncated (non-tte endpoints) or
+    #' censored (tte endpoints) at the original duration. Remaining patients
+    #' are re-randomized. Now new duration must be longer than the old one.
+    #' @param duration new duration of a trial. It must be longer than the
+    #' current duration.
+    set_duration = function(duration){
+
+      if(duration <= self$get_duration()){
+        stop('Trial duration can only be set to be longer. <', duration,
+             ' is shorter than <', self$get_duration(), '>. ')
+      }
+
+      old_duration <- self$get_duration()
+
+      ## update the duration
+      private$duration <- duration
+
+      if(!private$silent){
+        message('Trial duration is updated <', old_duration,
+                ' -> ', self$get_duration(), '>. ')
+      }
+
+      ## all patients enrolled before current event should be censored
+      ## or truncated at old duration
+      self$censor_trial_data(censor_at = old_duration,
+                             enrolled_before = self$get_current_time())
+
+      ## with trial duration is extended, unenrolled patient at current time
+      ## should be randomized again.
+      self$roll_back()
+
+      ## update data for unrolled patients based on new trial duration
+      self$enroll_patients()
+
+    },
+
+    #' @description
     #' set recruitment curve when initialize a
     #' trial.
     #' @param func function to generate enrollment time. It can be built-in
@@ -1173,7 +1211,13 @@ Trial <- R6::R6Class(
     #' should be fixed unchanged since corresponding event is triggered. In that
     #' case, one can update trial data by something like
     #' \code{censor_trial_data(censor_at = event_time, selected_arms = removed_arms)}.
-    censor_trial_data = function(censor_at = NULL, selected_arms = NULL){
+    #' @param enrolled_before censoring is applied to patients enrolled before
+    #' specific time. This argument would be used when trial duration is
+    #' updated by \code{set_duration}. Adaptation happens when \code{set_duration}
+    #' is called so we fix duration for patients enrolled before adaptation
+    #' to maintain independent increment. This should work when trial duration
+    #' is updated for multiple times.
+    censor_trial_data = function(censor_at = NULL, selected_arms = NULL, enrolled_before = Inf){
 
       if(is.null(censor_at)){
         censor_at <- self$get_duration()
@@ -1192,17 +1236,21 @@ Trial <- R6::R6Class(
         tte_col <- gsub('_event$', '', event_col)
         trial_data <- trial_data %>%
           mutate(!!event_col := ifelse((!!sym(tte_col) + enroll_time > dropout_time) &
-                                         (arm %in% selected_arms),
+                                         (arm %in% selected_arms) &
+                                         (enroll_time <= enrolled_before),
                                        0, !!sym(event_col))) %>%
           mutate(!!tte_col := ifelse((!!sym(tte_col) + enroll_time > dropout_time) &
-                                       (arm %in% selected_arms),
+                                       (arm %in% selected_arms) &
+                                       (enroll_time <= enrolled_before),
                                      dropout_time - enroll_time, !!sym(tte_col))) %>%
           mutate(calendar_time := enroll_time + !!sym(tte_col)) %>%
           mutate(!!event_col := ifelse((calendar_time > censor_at) &
-                                         (arm %in% selected_arms),
+                                         (arm %in% selected_arms) &
+                                         (enroll_time <= enrolled_before),
                                        0, !!sym(event_col))) %>%
           mutate(!!tte_col := ifelse((calendar_time > censor_at) &
-                                       (arm %in% selected_arms),
+                                       (arm %in% selected_arms) &
+                                       (enroll_time <= enrolled_before),
                                      censor_at - enroll_time, !!sym(tte_col))) %>%
           mutate(!!tte_col := ifelse(!!sym(tte_col) < 0, 0, !!sym(tte_col))) %>%
           dplyr::select(-calendar_time) %>%
@@ -1213,11 +1261,13 @@ Trial <- R6::R6Class(
         ep_col <- gsub('_readout$', '', readout_col)
         trial_data <- trial_data %>%
           mutate(!!ep_col := ifelse((!!sym(readout_col) + enroll_time > dropout_time) &
-                                      (arm %in% selected_arms),
+                                      (arm %in% selected_arms) &
+                                      (enroll_time <= enrolled_before),
                                     NA, !!sym(ep_col))) %>%
           mutate(calendar_time := enroll_time + !!sym(readout_col)) %>%
           mutate(!!ep_col := ifelse((calendar_time > censor_at) &
-                                      (arm %in% selected_arms),
+                                      (arm %in% selected_arms) &
+                                      (enroll_time <= enrolled_before),
                                     NA, !!sym(ep_col))) %>%
           dplyr::select(-calendar_time) %>%
           arrange(enroll_time)
@@ -2247,8 +2297,6 @@ Trial <- R6::R6Class(
                 # 'Otherwise it may indicator a potential issue. \n')
       }
     },
-
-    ##########################
 
     .snapshot = list()
 
