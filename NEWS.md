@@ -4,6 +4,24 @@
 
 - Add function `solveMixtureExponentialDistribution` to compute median of exponential endpoint of subgroup or the overall population. 
 
+# TrialSimulator 0.63.0
+
+## New Features
+
+- Add wrapper functions `endpoints`, `arm`, `trial`, `event`, `listener` and `controller` for `Endpoint$new`, `Arm$new`, `Trial$new`, `Event$new`, `Listener$new` and `Controller$new`.   
+
+# TrialSimulator 0.62.0
+
+## New Features
+
+- Allow extending trial duration with `Trial$set_duration`. 
+
+# TrialSimulator 0.61.0
+
+## Updates
+
+- Deprecate function `enroll_a_patient`. Use `enroll_patients` only. 
+
 # TrialSimulator 0.58.0
 
 ## Updates
