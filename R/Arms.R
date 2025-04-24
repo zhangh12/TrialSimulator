@@ -57,11 +57,15 @@ Arms <- R6::R6Class(
     #' @description
     #' return number of endpoints in the arm
     get_number_endpoints = function(){
+
+      if(length(private$endpoints) == 0){
+        return(0)
+      }
+
       sapply(
         private$endpoints,
         function(ep){
-          ifelse(inherits(ep, 'Endpoints'),
-                 length(ep$get_name()), 0)
+          length(ep$get_name())
         }
       ) %>%
         sum()

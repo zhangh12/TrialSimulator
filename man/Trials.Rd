@@ -1071,7 +1071,10 @@ event rate do not change over time and/or sample ratio between placebo
 and a treatment arm does not change as well, which may not be true.
 It is for the purpose of debugging or rapid implementation
 only. Using simulation to pick \code{planned_info} is recommended in
-formal simulation study.}
+formal simulation study. Another issue with \code{planned_info} set to
+be \code{"default"} is that it is possible patient recruitment is done
+before a specific stage, as a result, \code{planned_info} is zero which
+can crash the program.}
 
 \item{\code{...}}{subset condition that is compatible with \code{dplyr::filter}.
 \code{survdiff} will be fitted on this subset only to compute one-sided
