@@ -208,6 +208,9 @@ action2 <- function(trial, event_name){
   ## futility analysis
   if(max(fit$z) < .5){
     trial$save(value = 'negative', name = 'futility')
+    
+    ## extend duration
+    ## trial$set_duration(45)
   }else{
     trial$save(value = 'positive', name = 'futility')
   }
