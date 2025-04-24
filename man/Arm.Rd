@@ -7,7 +7,7 @@
 arm(name, description = name)
 }
 \arguments{
-\item{name}{name of arm}
+\item{name}{name of arm, which is the arm's label in generated data}
 
 \item{description}{optional. Description of arm}
 }
