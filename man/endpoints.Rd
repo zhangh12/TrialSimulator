@@ -9,8 +9,8 @@ Create a class of endpoint to specify its name, type and assign a random number
 generator.
 }
 \examples{
-# Instead of using Endpoint$new, please use endpoints(), a user-friendly
-# wrapper. See examples in ?endpoints.
+# Instead of using Endpoint$new, please use endpoint(), a user-friendly
+# wrapper. See examples in ?endpoint.
 
 }
 \section{Methods}{

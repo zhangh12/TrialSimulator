@@ -48,11 +48,11 @@ risk1 <- data.frame(
   piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01)
 )
 
-pfs1 <- endpoints(name = 'pfs', type='tte',
+pfs1 <- endpoint(name = 'pfs', type='tte',
           generator = PiecewiseConstantExponentialRNG,
           risk = risk1, endpoint_name = 'pfs')
 
-orr1 <- endpoints(
+orr1 <- endpoint(
   name = 'orr', type = 'non-tte',
   readout = c(orr=1), generator = rbinom,
   size = 1, prob = .4)
@@ -64,11 +64,11 @@ placebo$add_endpoints(pfs1, orr1)
 risk2 <- risk1
 risk2$hazard_ratio <- .8
 
-pfs2 <- endpoints(name = 'pfs', type='tte',
+pfs2 <- endpoint(name = 'pfs', type='tte',
           generator = PiecewiseConstantExponentialRNG,
           risk = risk2, endpoint_name = 'pfs')
 
-orr2 <- endpoints(
+orr2 <- endpoint(
   name = 'orr', type = 'non-tte',
   generator = rbinom, readout = c(orr=3),
   size = 1, prob = .6)
