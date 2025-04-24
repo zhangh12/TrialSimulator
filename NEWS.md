@@ -2,7 +2,7 @@
 
 ## New Features
 
-- Add wrapper functions `endpoints`, `arm`, `trial`, `listener` for `Endpoint$new`, `Arm$new`, `Trial$new`, `Listener$new`.  
+- Add wrapper functions `endpoints`, `arm`, `trial`, `event`, `listener` and `controller` for `Endpoint$new`, `Arm$new`, `Trial$new`, `Event$new`, `Listener$new` and `Controller$new`.   
 
 # TrialSimulator 0.62.0
 

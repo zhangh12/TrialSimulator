@@ -94,43 +94,43 @@ weibullDropout(time = c(12, 18), dropout_rate = c(.08, .18))
 
 ```{r ljgai, class.source="fold-show"}
 #' define three arms
-pbo <- Arm$new(name = 'placebo')
-low <- Arm$new(name = 'low dose')
-high <- Arm$new(name = 'high dose')
+pbo <- arm(name = 'placebo')
+low <- arm(name = 'low dose')
+high <- arm(name = 'high dose')
 
 #' define endpoints in placebo
-pfs <- Endpoint$new(name = 'pfs', type = 'tte',
+pfs <- endpoints(name = 'pfs', type = 'tte',
                     generator = rexp, rate = log(2) / 5)
 
-os <- Endpoint$new(name = 'os', type = 'tte',
+os <- endpoints(name = 'os', type = 'tte',
                    generator = rexp, rate = log(2) / 14)
 
 five_weeks <- 5 / 52 * 12 ## convert it in months
-surrogate <- Endpoint$new(name = 'surrogate', type = 'non-tte',
+surrogate <- endpoints(name = 'surrogate', type = 'non-tte',
                           readout = c(surrogate = five_weeks),
                           generator = rbinom, size = 1, prob = .05)
 pbo$add_endpoints(pfs, os, surrogate)
 
 #' define endpoints in low dose arm
-pfs <- Endpoint$new(name = 'pfs', type = 'tte',
+pfs <- endpoints(name = 'pfs', type = 'tte',
                     generator = rexp, rate = log(2) / 6.7)
 
-os <- Endpoint$new(name = 'os', type = 'tte',
+os <- endpoints(name = 'os', type = 'tte',
                    generator = rexp, rate = log(2) / 17.5)
 
-surrogate <- Endpoint$new(name = 'surrogate', type = 'non-tte',
+surrogate <- endpoints(name = 'surrogate', type = 'non-tte',
                           readout = c(surrogate = five_weeks),
                           generator = rbinom, size = 1, prob = .12)
 low$add_endpoints(pfs, os, surrogate)
 
 #' define endpoints in high dose arm
-pfs <- Endpoint$new(name = 'pfs', type = 'tte',
+pfs <- endpoints(name = 'pfs', type = 'tte',
                     generator = rexp, rate = log(2) / 7.1)
 
-os <- Endpoint$new(name = 'os', type = 'tte',
+os <- endpoints(name = 'os', type = 'tte',
                    generator = rexp, rate = log(2) / 18.2)
 
-surrogate <- Endpoint$new(name = 'surrogate', type = 'non-tte',
+surrogate <- endpoints(name = 'surrogate', type = 'non-tte',
                           readout = c(surrogate = five_weeks),
                           generator = rbinom, size = 1, prob = .13)
 high$add_endpoints(pfs, os, surrogate)
@@ -148,7 +148,7 @@ will pick a seed for the purpose of reproducibility.
 ```{r lagieg, class.source="fold-show"}
 accrual_rate <- data.frame(end_time = c(10, Inf),
                            piecewise_rate = c(30, 50))
-trial <- Trial$new(
+trial <- trial(
   name = 'Trial-3415', n_patients = 1000,
   seed = 1727811904, duration = 40,
   enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
@@ -169,9 +169,12 @@ returns a data frame (see `?fitFarringtonManning`).
 
 ```{r ieaong, class.source='fold-show'}
 action1 <- function(trial, event_name){
+  
   locked_data <- trial$get_locked_data(event_name)
+  
   fit <- fitFarringtonManning(endpoint = 'surrogate', placebo = 'placebo',
                               data = locked_data, alternative = 'greater')
+  
   # browser() ## if you want to see what does fit look like
   z_l <- fit$z[fit$arm == 'low dose']
   z_h <- fit$z[fit$arm == 'high dose']
@@ -196,10 +199,11 @@ on how many arms are carried forward in dose selection, `fit` may
 consists of testing results of one or two dose arms. Note that a formal
 test for `PFS` will be done at the end of the trial when we have all
 p-values. If no futility analysis is planned, we can simply set
-`action = doNothing` in `Event$new`.
+`action = doNothing` in `event`.
 
 ```{r aotel, class.source="fold-show"}
 action2 <- function(trial, event_name){
+  
   locked_data <- trial$get_locked_data(event_name)
 
   fit <- fitLogrank(endpoint = 'pfs', placebo = 'placebo',
@@ -225,6 +229,7 @@ intersection hypotheses. The action function is as follows.
 
 ```{r alkdae, class.source="fold-show"}
 action3 <- function(trial, event_name){
+  
   locked_data <- trial$get_locked_data(event_name)
 
   ## test PFS
@@ -232,6 +237,7 @@ action3 <- function(trial, event_name){
                               treatments = c('high dose', 'low dose'),
                               events = c('dose selection', 'interim', 'final'),
                               planned_info = 'default')
+  
   ct_pfs <- trial$closedTest(dt_pfs, treatments = c('high dose', 'low dose'),
                              events = c('interim', 'final'),
                              alpha = .005, alpha_spending = 'asOF')
@@ -241,6 +247,7 @@ action3 <- function(trial, event_name){
                              treatments = c('high dose', 'low dose'),
                              events = c('dose selection', 'final'),
                              planned_info = 'default')
+  
   ct_os <- trial$closedTest(dt_pfs, treatments = c('high dose', 'low dose'),
                             events = c('final'),
                             alpha = .02, alpha_spending = 'asOF')
@@ -252,6 +259,7 @@ action3 <- function(trial, event_name){
   
   trial$save(value = ct_pfs$decision[ct_pfs$arm == 'low dose'], 
              name = 'pfs_low_dose_decision')
+  
   trial$save(value = ct_os$decision[ct_os$arm == 'high dose'], 
              name = 'os_high_dose_decision')
   
@@ -265,24 +273,26 @@ action3 <- function(trial, event_name){
 Next, we register three trial events to a listener
 
 ```{r}
-dose_selection <- Event$new(name = 'dose selection', action = action1,
-                            trigger_condition = eventNumber(endpoint = 'surrogate',
-                                                            n = 300))
+dose_selection <- event(name = 'dose selection', action = action1, 
+                        trigger_condition = 
+                          eventNumber(endpoint = 'surrogate', n = 300)
+                        )
 
-interim <- Event$new(name = 'interim', action = action2,
-                     trigger_condition = eventNumber(endpoint = 'pfs',
-                                                     n = 300))
+interim <- event(name = 'interim', action = action2, 
+                 trigger_condition = 
+                   eventNumber(endpoint = 'pfs', n = 300)
+                 )
 
-final <- Event$new(name = 'final', action = action3,
-                   trigger_condition =
+final <- event(name = 'final', action = action3, 
+               trigger_condition =
                      enrollment(n = 1000, arms = c('placebo', 'low dose', 'high dose')) &
                      eventNumber(endpoint = 'os', n = 300) & (
                        calendarTime(time = 28) |
                          eventNumber(endpoint = 'pfs', n = 520)
                      )
-)
+               )
 
-listener <- Listener$new()
+listener <- listener()
 #' register events with listener
 listener$add_events(
   dose_selection,
@@ -299,7 +309,7 @@ for each of the arms. We can set it to `FALSE` if a massive number of
 simulation replicates is run to save time.
 
 ```{r eiaaf, dpi = 1200}
-controller <- Controller$new(trial, listener)
+controller <- controller(trial, listener)
 controller$run(plot_event = TRUE)
 ```
 
