@@ -15,7 +15,7 @@ Arm <- R6::R6Class(
   public = list(
     #' @description
     #' initialize an arm
-    #' @param name name of arm
+    #' @param name name of arm, which is the arm's label in generated data
     #' @param description optional. Description of arm
     initialize = function(name, description = name){
       stopifnot(is.character(name))
