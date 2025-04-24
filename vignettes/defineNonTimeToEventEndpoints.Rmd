@@ -38,24 +38,24 @@ In the example below, we define two types of endpoints:
 
 ```{r lljalk}
 ## endpoints in placebo arm
-tumor_cfb_pbo <- endpoints(name = 'cfb', type = 'non-tte', 
-                              readout = c(cfb = 6),
-                              generator = rnorm, mean = .8, sd = 3.2)
-orr_pbo <- endpoints(name = 'orr', type = 'non-tte', 
-                        readout = c(orr = 2),
-                        generator = rbinom, size = 1, prob = .1)
+tumor_cfb_pbo <- endpoint(name = 'cfb', type = 'non-tte', 
+                          readout = c(cfb = 6),
+                          generator = rnorm, mean = .8, sd = 3.2)
+orr_pbo <- endpoint(name = 'orr', type = 'non-tte', 
+                    readout = c(orr = 2),
+                    generator = rbinom, size = 1, prob = .1)
 
 ## define the placebo arm
 pbo <- arm(name = 'placebo')
 pbo$add_endpoints(tumor_cfb_pbo, orr_pbo)
 
 ## endpoints in treatment arm
-tumor_cfb_trt <- endpoints(name = 'cfb', type = 'non-tte', 
-                              readout = c(cfb = 6), 
-                              generator = rnorm, mean = -2.3, sd = 1.5)
-orr_trt <- endpoints(name = 'orr', type = 'non-tte', 
-                        readout = c(orr = 2), 
-                        generator = rbinom, size = 1, prob = .25)
+tumor_cfb_trt <- endpoint(name = 'cfb', type = 'non-tte', 
+                          readout = c(cfb = 6), 
+                          generator = rnorm, mean = -2.3, sd = 1.5)
+orr_trt <- endpoint(name = 'orr', type = 'non-tte', 
+                    readout = c(orr = 2), 
+                    generator = rbinom, size = 1, prob = .25)
 
 ## define the treatment arm
 trt <- arm(name = 'treatment')
@@ -115,20 +115,20 @@ Here `accrual_rate` is an argument of `TrialSimulator::StaggeredRecruiter` contr
 
 ```{r llieh}
 interim <- event(name = 'interim', 
-                     trigger_condition = eventNumber(endpoint = 'orr', n = 60), 
-                     action = doNothing)
+                 trigger_condition = eventNumber(endpoint = 'orr', n = 60), 
+                 action = doNothing)
 
 random <- event(name = 'random', 
-                    trigger_condition = 
-                      calendarTime(time = 10) & 
-                      (eventNumber(endpoint = 'cfb', n = 100) | 
-                         eventNumber(endpoint = 'orr', n = 180)
-                      ), 
-                    action = doNothing)
+                trigger_condition = 
+                  calendarTime(time = 10) & 
+                  (eventNumber(endpoint = 'cfb', n = 100) | 
+                     eventNumber(endpoint = 'orr', n = 180)
+                   ), 
+                action = doNothing)
 
 final <- event(name = 'final', 
-                   trigger_condition = calendarTime(time = 30), 
-                   action = doNothing)
+               trigger_condition = calendarTime(time = 30), 
+               action = doNothing)
 ```
 
 Here `action = doNothing` in `event` means we don't expect any action at the time of triggered events. In practice, instead of `doNothing`, custom action function can be adopted to add or remove arms (e.g., dose selection), adjust sample ratio per arm, or carry out statistical analysis based on locked data. These advanced setups are covered in other vignettes.

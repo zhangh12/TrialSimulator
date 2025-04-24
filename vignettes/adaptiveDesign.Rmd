@@ -99,40 +99,40 @@ low <- arm(name = 'low dose')
 high <- arm(name = 'high dose')
 
 #' define endpoints in placebo
-pfs <- endpoints(name = 'pfs', type = 'tte',
-                    generator = rexp, rate = log(2) / 5)
+pfs <- endpoint(name = 'pfs', type = 'tte',
+                generator = rexp, rate = log(2) / 5)
 
-os <- endpoints(name = 'os', type = 'tte',
-                   generator = rexp, rate = log(2) / 14)
+os <- endpoint(name = 'os', type = 'tte',
+               generator = rexp, rate = log(2) / 14)
 
 five_weeks <- 5 / 52 * 12 ## convert it in months
-surrogate <- endpoints(name = 'surrogate', type = 'non-tte',
-                          readout = c(surrogate = five_weeks),
-                          generator = rbinom, size = 1, prob = .05)
+surrogate <- endpoint(name = 'surrogate', type = 'non-tte',
+                      readout = c(surrogate = five_weeks),
+                      generator = rbinom, size = 1, prob = .05)
 pbo$add_endpoints(pfs, os, surrogate)
 
 #' define endpoints in low dose arm
-pfs <- endpoints(name = 'pfs', type = 'tte',
-                    generator = rexp, rate = log(2) / 6.7)
+pfs <- endpoint(name = 'pfs', type = 'tte',
+                generator = rexp, rate = log(2) / 6.7)
 
-os <- endpoints(name = 'os', type = 'tte',
-                   generator = rexp, rate = log(2) / 17.5)
+os <- endpoint(name = 'os', type = 'tte',
+               generator = rexp, rate = log(2) / 17.5)
 
-surrogate <- endpoints(name = 'surrogate', type = 'non-tte',
-                          readout = c(surrogate = five_weeks),
-                          generator = rbinom, size = 1, prob = .12)
+surrogate <- endpoint(name = 'surrogate', type = 'non-tte',
+                      readout = c(surrogate = five_weeks),
+                      generator = rbinom, size = 1, prob = .12)
 low$add_endpoints(pfs, os, surrogate)
 
 #' define endpoints in high dose arm
-pfs <- endpoints(name = 'pfs', type = 'tte',
-                    generator = rexp, rate = log(2) / 7.1)
+pfs <- endpoint(name = 'pfs', type = 'tte',
+                generator = rexp, rate = log(2) / 7.1)
 
-os <- endpoints(name = 'os', type = 'tte',
-                   generator = rexp, rate = log(2) / 18.2)
+os <- endpoint(name = 'os', type = 'tte',
+               generator = rexp, rate = log(2) / 18.2)
 
-surrogate <- endpoints(name = 'surrogate', type = 'non-tte',
-                          readout = c(surrogate = five_weeks),
-                          generator = rbinom, size = 1, prob = .13)
+surrogate <- endpoint(name = 'surrogate', type = 'non-tte',
+                      readout = c(surrogate = five_weeks),
+                      generator = rbinom, size = 1, prob = .13)
 high$add_endpoints(pfs, os, surrogate)
 ```
 
