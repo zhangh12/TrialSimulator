@@ -25,9 +25,11 @@ Suggests:
     knitr,
     rmarkdown,
     simdata,
-    survminer
+    survminer,
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
 URL: https://zhangh12.github.io/TrialSimulator/
 BugReports: https://github.com/zhangh12/TrialSimulator/issues
 Depends: 
     R (>= 3.5)
+Config/testthat/edition: 3
