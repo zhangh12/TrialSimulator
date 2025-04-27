@@ -38,6 +38,9 @@ distributions with medians \code{median1} (\eqn{m_1}) and
 This function computes \eqn{m_2} or \eqn{m} given \eqn{p_1} and \eqn{m_1}.
 }
 \examples{
+
+library(dplyr)
+
 median2 <-
   solveMixtureExponentialDistribution(
     weight1 = .3,

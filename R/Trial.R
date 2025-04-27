@@ -17,6 +17,7 @@
 #' patients. Its first argument is the number of enrolled patients.
 #' @param dropout a function returning a vector of dropout time for
 #' patients. Its first argument is the number of enrolled patients.
+#' @param silent logical. \code{TRUE} to mute messages.
 #' @param ... arguments of \code{enroller} and \code{dropout}.
 #'
 #' @examples
@@ -75,6 +76,7 @@ trial =
     seed = NULL,
     enroller,
     dropout = NULL,
+    silent = FALSE,
     ...
   ){
 
@@ -86,6 +88,7 @@ trial =
       seed = seed,
       enroller = enroller,
       dropout = dropout,
+      silent = silent,
       ...
     )
 
