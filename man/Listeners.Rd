@@ -31,9 +31,16 @@ automatically.
 \subsection{Method \code{new()}}{
 initialize a listener
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Listeners$new()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Listeners$new(silent = FALSE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{silent}}{logical. \code{TRUE} to mute messages.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Listeners-add_events"></a>}}

@@ -4,7 +4,10 @@
 \alias{listener}
 \title{Define a Listener}
 \usage{
-listener()
+listener(silent = FALSE)
+}
+\arguments{
+\item{silent}{logical. \code{TRUE} to mute messages.}
 }
 \description{
 Define a listener. This is a user-friendly wrapper for

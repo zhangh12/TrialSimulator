@@ -12,6 +12,7 @@ trial(
   seed = NULL,
   enroller,
   dropout = NULL,
+  silent = FALSE,
   ...
 )
 }
@@ -34,6 +35,8 @@ patients. Its first argument is the number of enrolled patients.}
 
 \item{dropout}{a function returning a vector of dropout time for
 patients. Its first argument is the number of enrolled patients.}
+
+\item{silent}{logical. \code{TRUE} to mute messages.}
 
 \item{...}{arguments of \code{enroller} and \code{dropout}.}
 }
