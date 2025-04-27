@@ -1,3 +1,9 @@
+# TrialSimulator 0.66.0
+
+## Updates
+
+- Add cases for unit test. 
+
 # TrialSimulator 0.65.0
 
 ## New Features
