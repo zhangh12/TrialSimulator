@@ -27,6 +27,7 @@ Trials <- R6::R6Class(
     #' patients. Its first argument is the number of enrolled patients.
     #' @param dropout a function returning a vector of dropout time for
     #' patients. Its first argument is the number of enrolled patients.
+    #' @param silent logical. \code{TRUE} to mute messages.
     #' @param ... arguments of \code{enroller} and \code{dropout}.
     initialize =
       function(
@@ -37,15 +38,20 @@ Trials <- R6::R6Class(
         seed = NULL,
         enroller,
         dropout = NULL,
+        silent = FALSE,
         ...
       ){
 
         private$validate_arguments(
-          name, n_patients, duration, description, seed, enroller, dropout, ...)
+          name, n_patients, duration, description, seed, enroller, dropout, silent, ...)
+
+        private$silent <- silent
 
         if(is.null(seed)){
           seed <- sample(.Machine$integer.max, 1)
-          message('Seed is not specified. TrialSimulator sets it to ', seed)
+          if(!private$silent){
+            message('Seed is not specified. TrialSimulator sets it to ', seed)
+          }
         }
 
         private$arms <- list()
@@ -104,7 +110,7 @@ Trials <- R6::R6Class(
 
       if(duration <= self$get_duration()){
         stop('Trial duration can only be set to be longer. <', duration,
-             ' is shorter than <', self$get_duration(), '>. ')
+             '> is shorter than <', self$get_duration(), '>. ')
       }
 
       old_duration <- self$get_duration()
@@ -114,7 +120,7 @@ Trials <- R6::R6Class(
 
       if(!private$silent){
         message('Trial duration is updated <', old_duration,
-                ' -> ', self$get_duration(), '>. ')
+                '> -> <', self$get_duration(), '>. ')
       }
 
       ## all patients enrolled before current event should be censored
@@ -2196,7 +2202,7 @@ Trials <- R6::R6Class(
 
     validate_arguments =
       function(name, n_patients, duration, description, seed,
-               enroller, dropout, ...){
+               enroller, dropout, silent, ...){
 
       stopifnot(is.null(seed) || is.wholenumber(seed))
       stopifnot(is.character(name))
@@ -2212,6 +2218,8 @@ Trials <- R6::R6Class(
 
       stopifnot(is.function(enroller))
       stopifnot(is.null(dropout) || is.function(dropout))
+
+      stopifnot(is.logical(silent))
 
     },
 

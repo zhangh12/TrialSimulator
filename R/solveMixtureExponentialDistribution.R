@@ -21,7 +21,12 @@
 #'
 #' @returns a named vector of \code{median2} or \code{overall_median}.
 #'
+#' @importFrom stats uniroot
+#'
 #' @examples
+#'
+#' library(dplyr)
+#'
 #' median2 <-
 #'   solveMixtureExponentialDistribution(
 #'     weight1 = .3,

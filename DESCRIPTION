@@ -1,7 +1,7 @@
 Package: TrialSimulator
 Type: Package
 Title: Clinical Trial Simulator
-Version: 0.65.0
+Version: 0.66.0
 Description: Simulate phase II and/or phase III clinical trials. It supports various types of endpoints and adaptive strategies. Tools for carrying out graphical testing procedure and combination test under group sequential design are also provided. 
 License: MIT + file LICENSE
 Encoding: UTF-8
@@ -25,9 +25,11 @@ Suggests:
     knitr,
     rmarkdown,
     simdata,
-    survminer
+    survminer,
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
 URL: https://zhangh12.github.io/TrialSimulator/
 BugReports: https://github.com/zhangh12/TrialSimulator/issues
 Depends: 
     R (>= 3.5)
+Config/testthat/edition: 3

@@ -131,6 +131,7 @@ initialize a trial
   seed = NULL,
   enroller,
   dropout = NULL,
+  silent = FALSE,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -156,6 +157,8 @@ patients. Its first argument is the number of enrolled patients.}
 
 \item{\code{dropout}}{a function returning a vector of dropout time for
 patients. Its first argument is the number of enrolled patients.}
+
+\item{\code{silent}}{logical. \code{TRUE} to mute messages.}
 
 \item{\code{...}}{arguments of \code{enroller} and \code{dropout}.}
 }
