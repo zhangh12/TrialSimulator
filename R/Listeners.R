@@ -20,7 +20,10 @@ Listeners <- R6::R6Class(
 
     #' @description
     #' initialize a listener
-    initialize = function(){
+    #' @param silent logical. \code{TRUE} to mute messages.
+    initialize = function(silent = FALSE){
+      stopifnot(is.logical(silent))
+      private$silent <- silent
       private$events <- list()
     },
 
