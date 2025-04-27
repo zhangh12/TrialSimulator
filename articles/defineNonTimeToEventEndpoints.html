@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.65.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.66.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -109,27 +109,27 @@ available after 2 months, assuming a binomial distribution
 </ul>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## endpoints in placebo arm</span></span>
-<span><span class="va">tumor_cfb_pbo</span> <span class="op">&lt;-</span> <span class="fu">endpoint</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'cfb'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, </span>
+<span><span class="va">tumor_cfb_pbo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoint.html">endpoint</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'cfb'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, </span>
 <span>                          readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>cfb <span class="op">=</span> <span class="fl">6</span><span class="op">)</span>,</span>
 <span>                          generator <span class="op">=</span> <span class="va">rnorm</span>, mean <span class="op">=</span> <span class="fl">.8</span>, sd <span class="op">=</span> <span class="fl">3.2</span><span class="op">)</span></span>
-<span><span class="va">orr_pbo</span> <span class="op">&lt;-</span> <span class="fu">endpoint</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'orr'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, </span>
+<span><span class="va">orr_pbo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoint.html">endpoint</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'orr'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, </span>
 <span>                    readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>orr <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>                    generator <span class="op">=</span> <span class="va">rbinom</span>, size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">.1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## define the placebo arm</span></span>
-<span><span class="va">pbo</span> <span class="op">&lt;-</span> <span class="fu">arm</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'placebo'</span><span class="op">)</span></span>
+<span><span class="va">pbo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/arm.html">arm</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'placebo'</span><span class="op">)</span></span>
 <span><span class="va">pbo</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">tumor_cfb_pbo</span>, <span class="va">orr_pbo</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## endpoints in treatment arm</span></span>
-<span><span class="va">tumor_cfb_trt</span> <span class="op">&lt;-</span> <span class="fu">endpoint</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'cfb'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, </span>
+<span><span class="va">tumor_cfb_trt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoint.html">endpoint</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'cfb'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, </span>
 <span>                          readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>cfb <span class="op">=</span> <span class="fl">6</span><span class="op">)</span>, </span>
 <span>                          generator <span class="op">=</span> <span class="va">rnorm</span>, mean <span class="op">=</span> <span class="op">-</span><span class="fl">2.3</span>, sd <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span></span>
-<span><span class="va">orr_trt</span> <span class="op">&lt;-</span> <span class="fu">endpoint</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'orr'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, </span>
+<span><span class="va">orr_trt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoint.html">endpoint</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'orr'</span>, type <span class="op">=</span> <span class="st">'non-tte'</span>, </span>
 <span>                    readout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>orr <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, </span>
 <span>                    generator <span class="op">=</span> <span class="va">rbinom</span>, size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">.25</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## define the treatment arm</span></span>
-<span><span class="va">trt</span> <span class="op">&lt;-</span> <span class="fu">arm</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'treatment'</span><span class="op">)</span></span>
+<span><span class="va">trt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/arm.html">arm</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'treatment'</span><span class="op">)</span></span>
 <span><span class="va">trt</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">tumor_cfb_trt</span>, <span class="va">orr_trt</span><span class="op">)</span></span></code></pre></div>
 <p>With the treatment arms defined, we can proceed to create a trial.
 Patients are recruited at a piecewise constant rate, with an accrual
@@ -167,7 +167,7 @@ function:</p>
 <code class="sourceCode R"><span><span class="va">accrual_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>end_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">6</span>, <span class="cn">Inf</span><span class="op">)</span>, </span>
 <span>                           piecewise_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">trial</span> <span class="op">&lt;-</span> <span class="fu">trial</span><span class="op">(</span></span>
+<span><span class="va">trial</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trial.html">trial</a></span><span class="op">(</span></span>
 <span>  name <span class="op">=</span> <span class="st">'Trial-31415'</span>, description <span class="op">=</span> <span class="st">'Example Clinical Trial'</span>, </span>
 <span>  n_patients <span class="op">=</span> <span class="fl">420</span>, duration <span class="op">=</span> <span class="fl">30</span>, </span>
 <span>  enroller <span class="op">=</span> <span class="va">StaggeredRecruiter</span>, accrual_rate <span class="op">=</span> <span class="va">accrual_rate</span>, </span>
@@ -194,7 +194,7 @@ function:</p>
 are recruited into the trial. Similarly, <code>scale</code> and
 <code>shape</code> are arguments of <code>rweibull</code>. All these
 arguments are passed through <code>...</code> of
-<code>trial()</code>.</p>
+<code><a href="../reference/trial.html">trial()</a></code>.</p>
 <p><code>TrialSimulator</code> allows defining trial events at specific
 time points when data is locked for analysis. Here, we define three key
 events:</p>
@@ -214,11 +214,11 @@ conditions is met:
 <li>Final Analysis: Occurs when the trial reaches 30 months.</li>
 </ol>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">interim</span> <span class="op">&lt;-</span> <span class="fu">event</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'interim'</span>, </span>
+<code class="sourceCode R"><span><span class="va">interim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/event.html">event</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'interim'</span>, </span>
 <span>                 trigger_condition <span class="op">=</span> <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'orr'</span>, n <span class="op">=</span> <span class="fl">60</span><span class="op">)</span>, </span>
 <span>                 action <span class="op">=</span> <span class="va">doNothing</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">random</span> <span class="op">&lt;-</span> <span class="fu">event</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'random'</span>, </span>
+<span><span class="va">random</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/event.html">event</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'random'</span>, </span>
 <span>                trigger_condition <span class="op">=</span> </span>
 <span>                  <span class="fu"><a href="../reference/calendarTime.html">calendarTime</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">&amp;</span> </span>
 <span>                  <span class="op">(</span><span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'cfb'</span>, n <span class="op">=</span> <span class="fl">100</span><span class="op">)</span> <span class="op">|</span> </span>
@@ -226,7 +226,7 @@ conditions is met:
 <span>                   <span class="op">)</span>, </span>
 <span>                action <span class="op">=</span> <span class="va">doNothing</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">final</span> <span class="op">&lt;-</span> <span class="fu">event</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'final'</span>, </span>
+<span><span class="va">final</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/event.html">event</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'final'</span>, </span>
 <span>               trigger_condition <span class="op">=</span> <span class="fu"><a href="../reference/calendarTime.html">calendarTime</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fl">30</span><span class="op">)</span>, </span>
 <span>               action <span class="op">=</span> <span class="va">doNothing</span><span class="op">)</span></span></code></pre></div>
 <p>Here <code>action = doNothing</code> in <code>event</code> means we
@@ -239,14 +239,14 @@ advanced setups are covered in other vignettes.</p>
 to monitor and execute the trial.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## register events to the listener</span></span>
-<span><span class="va">listener</span> <span class="op">&lt;-</span> <span class="fu">listener</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">listener</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/listener.html">listener</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">listener</span><span class="op">$</span><span class="fu">add_events</span><span class="op">(</span><span class="va">interim</span>, <span class="va">random</span>, <span class="va">final</span><span class="op">)</span></span>
 <span><span class="co">#&gt; An event &lt;interim&gt; is registered.</span></span>
 <span><span class="co">#&gt; An event &lt;random&gt; is registered.</span></span>
 <span><span class="co">#&gt; An event &lt;final&gt; is registered.</span></span>
 <span></span>
 <span><span class="co">## run the trial</span></span>
-<span><span class="va">controller</span> <span class="op">&lt;-</span> <span class="fu">controller</span><span class="op">(</span><span class="va">trial</span>, <span class="va">listener</span><span class="op">)</span></span>
+<span><span class="va">controller</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/controller.html">controller</a></span><span class="op">(</span><span class="va">trial</span>, <span class="va">listener</span><span class="op">)</span></span>
 <span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Conditioin of event &lt;interim&gt; is being checked.</span></span>
 <span><span class="co">#&gt; Data is locked at time = 8.05 for event &lt;interim&gt;.</span></span>
@@ -302,11 +302,11 @@ properly and automatically handles endpoint availability at different
 event triggers.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">not_ready_at_interim</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">interim_data</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="va">interim_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">cfb</span><span class="op">)</span> <span class="op">&amp;</span> </span>
 <span>                  <span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">orr</span><span class="op">)</span> <span class="op">&amp;</span> </span>
-<span>                  <span class="va">enroll_time</span> <span class="op">+</span> <span class="fl">6</span> <span class="op">&lt;</span> <span class="va">dropout_time</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>                  <span class="va">enroll_time</span> <span class="op">+</span> <span class="fl">6</span> <span class="op">&lt;</span> <span class="va">dropout_time</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   patient_id       arm enroll_time dropout_time cfb cfb_readout orr orr_readout</span></span>
 <span><span class="co">#&gt; 1         63 treatment        6.10     23.76025  NA           6  NA           2</span></span>
@@ -316,8 +316,8 @@ event triggers.</p>
 <span><span class="co">#&gt; 5         69   placebo        6.40     84.56996  NA           6  NA           2</span></span>
 <span><span class="co">#&gt; 6         70 treatment        6.45     31.77506  NA           6  NA           2</span></span>
 <span></span>
-<span><span class="va">random_data</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">patient_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">not_ready_at_interim</span><span class="op">$</span><span class="va">patient_id</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span><span class="va">random_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">patient_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">not_ready_at_interim</span><span class="op">$</span><span class="va">patient_id</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   patient_id       arm enroll_time dropout_time        cfb cfb_readout orr</span></span>
 <span><span class="co">#&gt; 1         63 treatment        6.10     23.76025 -4.8136091           6   0</span></span>

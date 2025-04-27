@@ -15,6 +15,7 @@
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/Controllers.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/DynamicRNGFunction.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/DynamicTriggerConditionFunction.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/reference/Endpoints.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/Events.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/GraphicalTesting.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/GroupSequentialTest.html</loc></url>
@@ -24,10 +25,14 @@
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/Trials.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/TriggerByCalendarTime.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/TriggerByEventNumbers.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/reference/arm.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/calendarTime.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/reference/controller.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/default_action.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/doNothing.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/reference/endpoint.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/enrollment.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/reference/event.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/eventNumber.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/fitCoxph.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/fitFarringtonManning.html</loc></url>
@@ -36,8 +41,10 @@
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/fitLogrank.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/getAdaptiveDesignOutput.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/index.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/reference/listener.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/rconst.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/solveMixtureExponentialDistribution.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/reference/trial.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/weibullDropout.html</loc></url>
 </urlset>
 

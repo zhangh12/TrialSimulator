@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.65.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.66.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -118,6 +118,7 @@
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">enroller</span>,</span>
 <span>  dropout <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  silent <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -155,6 +156,10 @@ patients. Its first argument is the number of enrolled patients.</p></dd>
 <dt><code>dropout</code></dt>
 <dd><p>a function returning a vector of dropout time for
 patients. Its first argument is the number of enrolled patients.</p></dd>
+
+
+<dt><code>silent</code></dt>
+<dd><p>logical. <code>TRUE</code> to mute messages.</p></dd>
 
 
 <dt><code>...</code></dt>
