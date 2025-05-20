@@ -14,6 +14,10 @@ It follows principle of modularity to isolate codes of statistical testing from 
 It provides a set of tools to sample endpoints of common or custom distributions, manage trial data, and summarize simulation results under fixed or adaptive designs. 
 It also provides functions of group sequential design, graphical testing procedure, combination test, and closed test that are widely used in analyze complex trial designs. 
 
+## Shiny App
+
+An online version of this app is hosted on [shinyapps.io](https://bx7ttm-han-zhang.shinyapps.io/trialsimulatorstarter/). 
+
 ## Validation
 
 The validation documents for this R package are hosted [here](https://github.com/zhangh12/TrialSimulatorDocuments) and are continuously updated.
