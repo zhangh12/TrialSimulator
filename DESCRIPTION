@@ -6,6 +6,7 @@ Description: Simulate phase II and/or phase III clinical trials. It supports var
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+Depends: R (>= 4.1.0)
 Imports: 
     dplyr,
     ggplot2,
