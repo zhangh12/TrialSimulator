@@ -17,6 +17,7 @@ the class constructor \code{Arm$new}. Users who are not familiar with
 the concept of classes may consider using this wrapper directly.
 }
 \examples{
+
 risk <- data.frame(
   end_time = c(1, 10, 26.0, 52.0),
   piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01)
@@ -35,7 +36,7 @@ placebo <- arm(name = 'pbo', description = 'Placebo arm')
 
 placebo$add_endpoints(pfs, orr)
 placebo
-placebo$get_endpoints()[[1]]$get_generator()(n = 1e3) \%>\% head()
+head(placebo$get_endpoints()[[1]]$get_generator()(n = 1e3))
 placebo$get_endpoints()[[2]]$get_name()
 
 }

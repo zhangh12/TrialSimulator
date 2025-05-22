@@ -9,6 +9,7 @@
 #' @param description optional. Description of arm
 #'
 #' @examples
+#'
 #' risk <- data.frame(
 #'   end_time = c(1, 10, 26.0, 52.0),
 #'   piecewise_risk = c(1, 1.01, 0.381, 0.150) * exp(-3.01)
@@ -27,7 +28,7 @@
 #'
 #' placebo$add_endpoints(pfs, orr)
 #' placebo
-#' placebo$get_endpoints()[[1]]$get_generator()(n = 1e3) %>% head()
+#' head(placebo$get_endpoints()[[1]]$get_generator()(n = 1e3))
 #' placebo$get_endpoints()[[2]]$get_name()
 #'
 #' @export
