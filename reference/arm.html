@@ -70,7 +70,8 @@ the concept of classes may consider using this wrapper directly.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  end_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">10</span>, <span class="fl">26.0</span>, <span class="fl">52.0</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  piecewise_risk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1.01</span>, <span class="fl">0.381</span>, <span class="fl">0.150</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">3.01</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
@@ -92,8 +93,14 @@ the concept of classes may consider using this wrapper directly.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Description:  Placebo arm </span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ # of Endpoints:  2 </span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BBBBBB; background-color: #0000BB;"> ⚕⚕ Registered Endpoints:  pfs, orr </span> </span>
-<span class="r-in"><span><span class="va">placebo</span><span class="op">$</span><span class="fu">get_endpoints</span><span class="op">(</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="fu">get_generator</span><span class="op">(</span><span class="op">)</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in (placebo$get_endpoints()[[1]]$get_generator())(n = 1000) %&gt;%     head():</span> could not find function "%&gt;%"</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">placebo</span><span class="op">$</span><span class="fu">get_endpoints</span><span class="op">(</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="fu">get_generator</span><span class="op">(</span><span class="op">)</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         pfs pfs_event</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  5.544936         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  1.439360         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 52.000000         0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  1.311340         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  9.644761         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  6.911185         1</span>
 <span class="r-in"><span><span class="va">placebo</span><span class="op">$</span><span class="fu">get_endpoints</span><span class="op">(</span><span class="op">)</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="fu">get_name</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "orr"</span>
 <span class="r-in"><span></span></span>
