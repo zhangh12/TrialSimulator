@@ -982,7 +982,7 @@ Trials <- R6::R6Class(
         if('patient_id' %in% names(out)){
           colnames(out)[names(out) == 'patient_id'] <- 'patient'
         }
-        print(out)
+        message(paste0(capture.output(out), collapse = "\n"))
         message('\n')
       }
 
@@ -1620,7 +1620,7 @@ Trials <- R6::R6Class(
                 '>, stage-wise information (number of events) are lower than 30 (see stage_* below). \n',
                 'Make sure that such a low stage-wise information is sufficient to maintain normality of independent increments of logrank statistics. ',
                 immediate. = TRUE)
-        print(ret_)
+        message(paste0(capture.output(ret_), collapse = "\n"))
         message("\033[31m>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\033[0m\n")
       }
 
