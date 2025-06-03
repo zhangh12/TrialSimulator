@@ -27,23 +27,30 @@ library(TrialSimulator)
 set.seed(12345)
 ```
 
-The first step in simulating a randomized clinical trial using `TrialSimulator` is to define one or more endpoints for each treatment arm. This vignette demonstrates how to use the following key functions:
+The first step in simulating a randomized clinical trial using `TrialSimulator` is to define one or more endpoints for each treatment arm. This vignette demonstrates how to use the following key functions to define time-to-event endpoints. For non-time-to-event endpoints, please refer to the separate vignette [Define Non-Time-to-Event Endpoints in Clinical Trials](defineNonTimeToEventEndpoints.html).
 
-- `endpoints`: Creates one or more endpoints
+- `endpoint`: Creates one or more endpoints
 - `test_generator`: Generates an example dataset from an Endpoint object
 
-Typically, endpoints follow the same distribution family across arms but with different parameters. Distribution parameters are specified through the `...` arguments in `endpoints`.
+Typically, endpoints follow the same distribution family across arms but with different parameters. Distribution parameters are specified through the `...` arguments in `endpoints`. However, please note that `endpoint` offers the flexibility to specify different distribution families across arms for endpoints. 
+
+Note that the function `test_generator` is for helping users understanding how `TrialSimulator` works. In formal simulation, we do not need to call this function. 
+
+For the sake of completeness, in this vignette, we also demonstrates how to define an arm with the created endpoints by using the following key functions: 
+
+- `arm`: Creates one or more arms
+- `add_endpoints`: Add one or more endpoints into an arm
 
 ## Define a univariate endpoint with random number generators from `stats`
 
-To define a time-to-event endpoint such as progression-free survival (`PFS`) following an exponential distribution, you need to specify its `name` and `type.` This specification is crucial because `TrialSimulator` ensures all arms have the same set of endpoints and manages endpoint data based on `type`. For example, endpoints of type `"tte"` (time-to-event) automatically receive an additional column `(name)_event` to indicate censoring status.
+To define a time-to-event endpoint such as progression-free survival (`PFS`) following an exponential distribution, we need to specify its `name` and `type.` This specification is crucial because `TrialSimulator` ensures all arms have the same set of endpoints and manages endpoint data based on `type`. For example, endpoints of type `"tte"` (time-to-event) automatically receive an additional column `(name)_event` to indicate censoring status.
 
 ```{r lkioie}
 pfs_pbo <- endpoint(name = 'PFS', type = 'tte', 
                     generator = rexp, rate = log(2)/5.6)
 ```
 
-Arguments for the generator function (in this case, `rate`) are passed through `...`. You can verify that the generator works as expected by requesting an example dataset:
+Arguments for the generator function (in this case, `rate`) are passed through `...`. We can verify that the generator works as expected by requesting an example dataset:
 
 ```{r adfla, message=FALSE}
 test_set <- pfs_pbo$test_generator(n = 1e5)
@@ -51,11 +58,11 @@ head(test_set)
 median(test_set$PFS) ## should be close to 5.6
 ```
 
-Note that data returned by `test_generator` is only for validation purposes. During actual trial simulation, `TrialSimulator` determines when to call `generator` and how many samples to draw.
+Note that data returned by `test_generator` is only for validation purposes. During actual trial simulation, `TrialSimulator` determines when to call `generator` from which how many samples to draw. To request access of a data locked at a milestone, we can use the member function `get_locked_data` of a `Trials` object which will be introduced in the vignette [An Example of Simulating a Trial with Adaptive Design](adaptiveDesign.html). 
+
 Similarly, we can define a `PFS` endpoint for the treatment arm:
 
 ```{r aldj}
-library(TrialSimulator)
 pfs_trt <- endpoint(name = 'PFS', type = 'tte', 
                     generator = rexp, rate = log(2)/6.4)
 median(pfs_trt$test_generator(n = 1e5)$PFS) ## should be close to 6.4
@@ -121,7 +128,7 @@ trt$add_endpoints(pfs_trt)
 
 ## Define multiple endpoints
 
-You can define more than one endpoint in a trial. Let's add overall survival (OS) as a second endpoint. We'll assume the median overall survival is 7.2 months in the placebo arm and 8.5 months in the treatment arm. 
+We can define more than one endpoint in a trial. Let's add overall survival (OS) as a second endpoint. We'll assume the median overall survival is 7.2 months in the placebo arm and 8.5 months in the treatment arm. 
 
 ```{r laiojb}
 os_pbo <- endpoint(name = 'OS', type = 'tte', 
@@ -137,11 +144,11 @@ pbo$add_endpoints(os_pbo)
 trt$add_endpoints(os_trt)
 ```
 
-Note that by defining `PFS` and `OS` separately (i.e., calling `endpoints` for each endpoint), you are implicitly assuming that these endpoints are independent in the trial.
+Note that by defining `PFS` and `OS` separately (i.e., calling `endpoints` for each endpoint), we are implicitly assuming that these endpoints are independent in the trial.
 
 ## An example of a custom random number generator for correlated endpoints
 
-To define multiple correlated endpoints, you need to create a custom generator. In this example, we define one based on the R package `simdata`:
+To define multiple correlated endpoints, we need to create a custom generator. In this example, we define one based on the R package `simdata`:
 
 ```{r albaiola}
 custom_generator <- function(n, pfs_rate, os_rate, corr){
@@ -160,7 +167,7 @@ custom_generator <- function(n, pfs_rate, os_rate, corr){
 }
 ```
 
-Note that for custom generator, you need to add columns of event indicator for each of the time-to-event endpoints. 
+Note that for custom generator, we need to add columns of event indicator for each of the time-to-event endpoints. 
 
 ```{r ojhonln}
 corr <- matrix(c(1, .6, .6, 1), nrow = 2)
