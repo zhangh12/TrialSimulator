@@ -11,7 +11,7 @@ the concept of classes may consider using this wrapper directly."><meta property
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.67.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.68.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -23,7 +23,7 @@ the concept of classes may consider using this wrapper directly."><meta property
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
-    <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Events in a Trial</a></li>
+    <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/designDocument.html">Modular Clinical Trial Simulation: Overview of Core Functions and Workflow</a></li>
@@ -71,7 +71,56 @@ the concept of classes may consider using this wrapper directly.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">## controller &lt;- controller(trial, listener)</span></span></span>
+<span class="r-in"><span><span class="co"># a minimum, meaningful, and executable example,</span></span></span>
+<span class="r-in"><span><span class="co"># where a randomized trial with two arms is simulated and analyzed.</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">control</span> <span class="op">&lt;-</span> <span class="fu"><a href="arm.html">arm</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'control arm'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">active</span> <span class="op">&lt;-</span> <span class="fu"><a href="arm.html">arm</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'active arm'</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">pfs_in_control</span> <span class="op">&lt;-</span> <span class="fu"><a href="endpoint.html">endpoint</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'PFS'</span>, type <span class="op">=</span> <span class="st">'tte'</span>, generator <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="fl">5</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">control</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">pfs_in_control</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">pfs_in_active</span> <span class="op">&lt;-</span> <span class="fu"><a href="endpoint.html">endpoint</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'PFS'</span>, type <span class="op">=</span> <span class="st">'tte'</span>, generator <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="fl">6</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">active</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">pfs_in_active</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">accrual_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>end_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="cn">Inf</span><span class="op">)</span>, piecewise_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">30</span>, <span class="fl">50</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">trial</span> <span class="op">&lt;-</span> <span class="fu"><a href="trial.html">trial</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'trial'</span>,</span></span>
+<span class="r-in"><span>               n_patients <span class="op">=</span> <span class="fl">1000</span>,</span></span>
+<span class="r-in"><span>               duration <span class="op">=</span> <span class="fl">40</span>,</span></span>
+<span class="r-in"><span>               enroller <span class="op">=</span> <span class="va">StaggeredRecruiter</span>,</span></span>
+<span class="r-in"><span>               accrual_rate <span class="op">=</span> <span class="va">accrual_rate</span>,</span></span>
+<span class="r-in"><span>               dropout <span class="op">=</span> <span class="va">rweibull</span>, shape <span class="op">=</span> <span class="fl">2</span>, scale <span class="op">=</span> <span class="fl">38</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Seed is not specified. TrialSimulator sets it to 670422752</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, <span class="va">control</span>, <span class="va">active</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Arm(s) &lt;control arm, active arm&gt; are added to the trial. </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Randomization is done for 1000 potential patients. </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Data of 1000 potential patients are generated for the trial with 2 arm(s) &lt;control arm, active arm&gt;. </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">action_at_final</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">milestone_name</span><span class="op">)</span><span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">milestone_name</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="fitLogrank.html">fitLogrank</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'PFS'</span>, placebo <span class="op">=</span> <span class="st">'control arm'</span>, data <span class="op">=</span> <span class="va">locked_data</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="cn">NULL</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">final</span> <span class="op">&lt;-</span> <span class="fu"><a href="milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'final analysis'</span>,</span></span>
+<span class="r-in"><span>                   action <span class="op">=</span> <span class="va">action_at_final</span>,</span></span>
+<span class="r-in"><span>                   trigger_condition <span class="op">=</span> <span class="fu"><a href="calendarTime.html">calendarTime</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fl">40</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">listener</span> <span class="op">&lt;-</span> <span class="fu"><a href="listener.html">listener</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">listener</span><span class="op">$</span><span class="fu">add_milestones</span><span class="op">(</span><span class="va">final</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> A milestone &lt;final analysis&gt; is registered. </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">controller</span> <span class="op">&lt;-</span> <span class="fu">controller</span><span class="op">(</span><span class="va">trial</span>, <span class="va">listener</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Conditioin of milestone &lt;final analysis&gt; is being checked. </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Data is locked at time = 40 for milestone &lt;final analysis&gt;.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Locked data can be accessed in Trial$get_locked_data('final analysis'). </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Number of events at lock time: </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   patient PFS                      arms</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 1    1000 709 &lt;control arm, active arm&gt;</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-plt img"><img src="controller-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
@@ -84,7 +133,7 @@ the concept of classes may consider using this wrapper directly.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer></div>

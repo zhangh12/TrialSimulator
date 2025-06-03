@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.67.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.68.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -19,7 +19,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
-    <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Events in a Trial</a></li>
+    <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/designDocument.html">Modular Clinical Trial Simulation: Overview of Core Functions and Workflow</a></li>
@@ -39,6 +39,21 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.68.0" id="trialsimulator-0680">TrialSimulator 0.68.0<a class="anchor" aria-label="anchor" href="#trialsimulator-0680"></a></h2>
+<div class="section level3">
+<h3 id="updates-0-68-0">Updates<a class="anchor" aria-label="anchor" href="#updates-0-68-0"></a></h3>
+<ul><li>Rename trial event as milestone. This a major update. Relevant codes and documents are updated accordingly.</li>
+<li>Add executable examples for <code><a href="../reference/controller.html">controller()</a></code> as per suggestion from CRAN team.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.67.0" id="trialsimulator-0670">TrialSimulator 0.67.0<a class="anchor" aria-label="anchor" href="#trialsimulator-0670"></a></h2>
+<div class="section level3">
+<h3 id="updates-0-67-0">Updates<a class="anchor" aria-label="anchor" href="#updates-0-67-0"></a></h3>
+<ul><li>Print event counts at trial events using <code><a href="https://rdrr.io/r/base/message.html" class="external-link">message()</a></code> so that Shiny app can display it properly.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.66.0" id="trialsimulator-0660">TrialSimulator 0.66.0<a class="anchor" aria-label="anchor" href="#trialsimulator-0660"></a></h2>
 <div class="section level3">
@@ -323,7 +338,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer></div>

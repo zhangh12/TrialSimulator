@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.67.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.68.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,7 +39,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
-    <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Events in a Trial</a></li>
+    <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/designDocument.html">Modular Clinical Trial Simulation: Overview of Core Functions and Workflow</a></li>
@@ -78,8 +78,8 @@ defining and simulating a variety of clinical trial endpoints by
 specifying the <code>type</code> parameter in <code>endpoints</code>.
 This vignette covers non-time-to-event (non-TTE) endpoints,
 demonstrating how they can be defined, integrated into trial arms, and
-analyzed at pre-specified event triggers. For time-to-event endpoints,
-please refer to the separate vignette <a href="defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints in
+analyzed at pre-specified milestone triggers. For time-to-event
+endpoints, please refer to the separate vignette <a href="defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints in
 Clinical Trials</a>.</p>
 <div class="section level2">
 <h2 id="define-endpoints-with-random-number-generators">Define endpoints with random number generators<a class="anchor" aria-label="anchor" href="#define-endpoints-with-random-number-generators"></a>
@@ -194,9 +194,9 @@ are recruited into the trial. Similarly, <code>scale</code> and
 <code>shape</code> are arguments of <code>rweibull</code>. All these
 arguments are passed through <code>...</code> of
 <code><a href="../reference/trial.html">trial()</a></code>.</p>
-<p><code>TrialSimulator</code> allows defining trial events at specific
-time points when data is locked for analysis. Here, we define three key
-events:</p>
+<p><code>TrialSimulator</code> allows defining trial milestones at
+specific time points when data is locked for analysis. Here, we define
+three key milestones:</p>
 <ol style="list-style-type: decimal">
 <li>Interim Analysis: Triggered when <code>orr</code> has been observed
 for 60 patients.</li>
@@ -213,70 +213,70 @@ conditions is met:
 <li>Final Analysis: Occurs when the trial reaches 30 months.</li>
 </ol>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">interim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/event.html">event</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'interim'</span>, </span>
-<span>                 trigger_condition <span class="op">=</span> <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'orr'</span>, n <span class="op">=</span> <span class="fl">60</span><span class="op">)</span>, </span>
-<span>                 action <span class="op">=</span> <span class="va">doNothing</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">interim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'interim'</span>, </span>
+<span>                     trigger_condition <span class="op">=</span> <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'orr'</span>, n <span class="op">=</span> <span class="fl">60</span><span class="op">)</span>, </span>
+<span>                     action <span class="op">=</span> <span class="va">doNothing</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">random</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/event.html">event</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'random'</span>, </span>
-<span>                trigger_condition <span class="op">=</span> </span>
-<span>                  <span class="fu"><a href="../reference/calendarTime.html">calendarTime</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">&amp;</span> </span>
-<span>                  <span class="op">(</span><span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'cfb'</span>, n <span class="op">=</span> <span class="fl">100</span><span class="op">)</span> <span class="op">|</span> </span>
-<span>                     <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'orr'</span>, n <span class="op">=</span> <span class="fl">180</span><span class="op">)</span></span>
-<span>                   <span class="op">)</span>, </span>
-<span>                action <span class="op">=</span> <span class="va">doNothing</span><span class="op">)</span></span>
+<span><span class="va">random</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'random'</span>, </span>
+<span>                    trigger_condition <span class="op">=</span> </span>
+<span>                      <span class="fu"><a href="../reference/calendarTime.html">calendarTime</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">&amp;</span> </span>
+<span>                      <span class="op">(</span><span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'cfb'</span>, n <span class="op">=</span> <span class="fl">100</span><span class="op">)</span> <span class="op">|</span> </span>
+<span>                         <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'orr'</span>, n <span class="op">=</span> <span class="fl">180</span><span class="op">)</span></span>
+<span>                       <span class="op">)</span>, </span>
+<span>                    action <span class="op">=</span> <span class="va">doNothing</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">final</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/event.html">event</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'final'</span>, </span>
-<span>               trigger_condition <span class="op">=</span> <span class="fu"><a href="../reference/calendarTime.html">calendarTime</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fl">30</span><span class="op">)</span>, </span>
-<span>               action <span class="op">=</span> <span class="va">doNothing</span><span class="op">)</span></span></code></pre></div>
-<p>Here <code>action = doNothing</code> in <code>event</code> means we
-don’t expect any action at the time of triggered events. In practice,
-instead of <code>doNothing</code>, custom action function can be adopted
-to add or remove arms (e.g., dose selection), adjust sample ratio per
-arm, or carry out statistical analysis based on locked data. These
-advanced setups are covered in other vignettes.</p>
-<p>Next, we register the events with a listener and create a controller
-to monitor and execute the trial.</p>
+<span><span class="va">final</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'final'</span>, </span>
+<span>                   trigger_condition <span class="op">=</span> <span class="fu"><a href="../reference/calendarTime.html">calendarTime</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fl">30</span><span class="op">)</span>, </span>
+<span>                   action <span class="op">=</span> <span class="va">doNothing</span><span class="op">)</span></span></code></pre></div>
+<p>Here <code>action = doNothing</code> in <code>milestone</code> means
+we don’t expect any action at the time of triggered milestones. In
+practice, instead of <code>doNothing</code>, custom action function can
+be adopted to add or remove arms (e.g., dose selection), adjust sample
+ratio per arm, or carry out statistical analysis based on locked data.
+These advanced setups are covered in other vignettes.</p>
+<p>Next, we register the milestones with a listener and create a
+controller to monitor and execute the trial.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">## register events to the listener</span></span>
+<code class="sourceCode R"><span><span class="co">## register milestones to the listener</span></span>
 <span><span class="va">listener</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/listener.html">listener</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">listener</span><span class="op">$</span><span class="fu">add_events</span><span class="op">(</span><span class="va">interim</span>, <span class="va">random</span>, <span class="va">final</span><span class="op">)</span></span>
-<span><span class="co">#&gt; An event &lt;interim&gt; is registered.</span></span>
-<span><span class="co">#&gt; An event &lt;random&gt; is registered.</span></span>
-<span><span class="co">#&gt; An event &lt;final&gt; is registered.</span></span>
+<span><span class="va">listener</span><span class="op">$</span><span class="fu">add_milestones</span><span class="op">(</span><span class="va">interim</span>, <span class="va">random</span>, <span class="va">final</span><span class="op">)</span></span>
+<span><span class="co">#&gt; A milestone &lt;interim&gt; is registered.</span></span>
+<span><span class="co">#&gt; A milestone &lt;random&gt; is registered.</span></span>
+<span><span class="co">#&gt; A milestone &lt;final&gt; is registered.</span></span>
 <span></span>
 <span><span class="co">## run the trial</span></span>
 <span><span class="va">controller</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/controller.html">controller</a></span><span class="op">(</span><span class="va">trial</span>, <span class="va">listener</span><span class="op">)</span></span>
 <span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Conditioin of event &lt;interim&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 8.05 for event &lt;interim&gt;.</span></span>
+<span><span class="co">#&gt; Conditioin of milestone &lt;interim&gt; is being checked.</span></span>
+<span><span class="co">#&gt; Data is locked at time = 8.05 for milestone &lt;interim&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('interim'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   patient cfb orr                 arms</span></span>
 <span><span class="co">#&gt; 1     102  18  60 &lt;treatment, placebo&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Conditioin of event &lt;random&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 14.8 for event &lt;random&gt;.</span></span>
+<span><span class="co">#&gt; Conditioin of milestone &lt;random&gt; is being checked.</span></span>
+<span><span class="co">#&gt; Data is locked at time = 14.8 for milestone &lt;random&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('random'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   patient cfb orr                 arms</span></span>
 <span><span class="co">#&gt; 1     237 100 178 &lt;treatment, placebo&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Conditioin of event &lt;final&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 30 for event &lt;final&gt;.</span></span>
+<span><span class="co">#&gt; Conditioin of milestone &lt;final&gt; is being checked.</span></span>
+<span><span class="co">#&gt; Data is locked at time = 30 for milestone &lt;final&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('final'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   patient cfb orr                 arms</span></span>
 <span><span class="co">#&gt; 1     420 282 327 &lt;treatment, placebo&gt;</span></span>
 <span><span class="co">#&gt; </span></span></code></pre></div>
 <p><img src="defineNonTimeToEventEndpoints_files/figure-html/ihhf-1.png" width="100%"></p>
-<p>We can inspect the dataset locked at different event points by
-calling member function <code>get_locked_data</code> with event names.
+<p>We can inspect the dataset locked at different milestone by calling
+member function <code>get_locked_data</code> with milestone names.
 Ideally, this should be done within custom action function, where
-decision is made based on data locked at the time of an event.</p>
+decision is made based on data locked at the time of a milestone.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">interim_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span>event_name <span class="op">=</span> <span class="st">'interim'</span><span class="op">)</span></span>
-<span><span class="va">random_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span>event_name <span class="op">=</span> <span class="st">'random'</span><span class="op">)</span></span>
-<span><span class="va">final_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span>event_name <span class="op">=</span> <span class="st">'final'</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">interim_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span>milestone_name <span class="op">=</span> <span class="st">'interim'</span><span class="op">)</span></span>
+<span><span class="va">random_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span>milestone_name <span class="op">=</span> <span class="st">'random'</span><span class="op">)</span></span>
+<span><span class="va">final_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span>milestone_name <span class="op">=</span> <span class="st">'final'</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">interim_data</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   patient_id       arm enroll_time dropout_time       cfb cfb_readout orr</span></span>
 <span><span class="co">#&gt; 1          1 treatment         0.0    21.180883 -4.434289           6   0</span></span>
@@ -298,7 +298,7 @@ appearing as <code>NA</code> in <code>interim_data.</code> However,
 these values become available in <code>random_data</code> collected at a
 later time point. This demonstrates how <code>TrialSimulator</code>
 properly and automatically handles endpoint availability at different
-event triggers.</p>
+milestones</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">not_ready_at_interim</span> <span class="op">&lt;-</span> </span>
 <span>  <span class="va">interim_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
@@ -352,7 +352,7 @@ tailored to specific research needs.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>

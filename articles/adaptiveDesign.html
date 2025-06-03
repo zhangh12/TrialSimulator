@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.67.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.68.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,7 +39,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
-    <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Events in a Trial</a></li>
+    <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/designDocument.html">Modular Clinical Trial Simulation: Overview of Core Functions and Workflow</a></li>
@@ -76,8 +76,8 @@
 <p>In this vignette, we illustrate how to use
 <code>TrialSimulator</code> to simulate a trial with seamless adaptive
 design of multiple endpoints, where dose selection, futility analysis,
-interim analysis are triggered by user-defined events. Family-wise error
-rate are controlled by closed test with Dunnett’s test, with
+interim analysis are triggered by user-defined milestones. Family-wise
+error rate are controlled by closed test with Dunnett’s test, with
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math>
 split for the endpoints. Please refer to another vignette where
 graphical testing procedure is adopted instead.</p>
@@ -214,9 +214,9 @@ closed test with Dunnett’s test for intersection hypotheses.</li>
 Recruitment curve are specified through <code>enroller</code> with a
 built-in function <code>StaggeredRecruiter</code> of piecewise constant
 rate. We set <code>duration</code> to be an arbitrary large number (50)
-but controlling the end of trial through pre-defined events later. Note
-that if <code>seed = NULL</code>, <code>TrialSimulator</code> will pick
-a seed for the purpose of reproducibility.</p>
+but controlling the end of trial through pre-defined milestones later.
+Note that if <code>seed = NULL</code>, <code>TrialSimulator</code> will
+pick a seed for the purpose of reproducibility.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">accrual_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>end_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="cn">Inf</span><span class="op">)</span>,</span>
 <span>                           piecewise_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">30</span>, <span class="fl">50</span><span class="op">)</span><span class="op">)</span></span>
@@ -233,20 +233,20 @@ a seed for the purpose of reproducibility.</p>
 <span><span class="co">#&gt; Data of 1000 potential patients are generated for the trial with 3 arm(s) &lt;low dose, high dose, placebo&gt;.</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="define-trial-events-and-action-functions">Define Trial Events and Action Functions<a class="anchor" aria-label="anchor" href="#define-trial-events-and-action-functions"></a>
+<h2 id="define-trial-milestones-and-action-functions">Define Trial Milestones and Action Functions<a class="anchor" aria-label="anchor" href="#define-trial-milestones-and-action-functions"></a>
 </h2>
-<p>Next, we define action functions for trial events, i.e., dose
+<p>Next, we define action functions for trial milestones, i.e., dose
 selection, interim and final analysis. Note that an action function
 should always has arguments <code>trial</code> of class
-<code>Trial</code> and a character <code>event_name</code>. We calculate
-z statistics of the Farrington-Manning test for binary endpoint
-<code>surrogate</code> using helper function
+<code>Trial</code> and a character <code>milestone_name</code>. We
+calculate z statistics of the Farrington-Manning test for binary
+endpoint <code>surrogate</code> using helper function
 <code>fitFarringtonManning</code>, which returns a data frame (see
 <code><a href="../reference/fitFarringtonManning.html">?fitFarringtonManning</a></code>).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">action1</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">event_name</span><span class="op">)</span><span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="va">action1</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">milestone_name</span><span class="op">)</span><span class="op">{</span></span>
 <span>  </span>
-<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">event_name</span><span class="op">)</span></span>
+<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">milestone_name</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fitFarringtonManning.html">fitFarringtonManning</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'surrogate'</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>,</span>
 <span>                              data <span class="op">=</span> <span class="va">locked_data</span>, alternative <span class="op">=</span> <span class="st">'greater'</span><span class="op">)</span></span>
@@ -274,11 +274,11 @@ selection, <code>fit</code> may consists of testing results of one or
 two dose arms. Note that a formal test for <code>PFS</code> will be done
 at the end of the trial when we have all p-values. If no futility
 analysis is planned, we can simply set <code>action = doNothing</code>
-in <code>event</code>.</p>
+in <code>milestone</code>.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">action2</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">event_name</span><span class="op">)</span><span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="va">action2</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">milestone_name</span><span class="op">)</span><span class="op">{</span></span>
 <span>  </span>
-<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">event_name</span><span class="op">)</span></span>
+<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">milestone_name</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fitLogrank.html">fitLogrank</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'pfs'</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>,</span>
 <span>                    data <span class="op">=</span> <span class="va">locked_data</span><span class="op">)</span></span>
@@ -299,28 +299,28 @@ in <code>event</code>.</p>
 <p>At final analysis, we conduct a closed test using Dunnett’s test for
 intersection hypotheses. The action function is as follows.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">action3</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">event_name</span><span class="op">)</span><span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="va">action3</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">milestone_name</span><span class="op">)</span><span class="op">{</span></span>
 <span>  </span>
-<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">event_name</span><span class="op">)</span></span>
+<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">milestone_name</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="co">## test PFS</span></span>
 <span>  <span class="va">dt_pfs</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">dunnettTest</span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'pfs'</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>,</span>
 <span>                              treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
-<span>                              events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'interim'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
+<span>                              milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'interim'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                              planned_info <span class="op">=</span> <span class="st">'default'</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="va">ct_pfs</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span><span class="va">dt_pfs</span>, treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
-<span>                             events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'interim'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
+<span>                             milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'interim'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                             alpha <span class="op">=</span> <span class="fl">.005</span>, alpha_spending <span class="op">=</span> <span class="st">'asOF'</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="co">## test OS</span></span>
 <span>  <span class="va">dt_os</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">dunnettTest</span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'os'</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>,</span>
 <span>                             treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
-<span>                             events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
+<span>                             milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                             planned_info <span class="op">=</span> <span class="st">'default'</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="va">ct_os</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span><span class="va">dt_pfs</span>, treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
-<span>                            events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'final'</span><span class="op">)</span>,</span>
+<span>                            milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                            alpha <span class="op">=</span> <span class="fl">.02</span>, alpha_spending <span class="op">=</span> <span class="st">'asOF'</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="co">## we only save testing decision here</span></span>
@@ -339,37 +339,37 @@ intersection hypotheses. The action function is as follows.</p>
 <span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="cn">NULL</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p>Next, we register three trial events to a listener</p>
+<p>Next, we register three trial milestones to a listener</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dose_selection</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/event.html">event</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'dose selection'</span>, action <span class="op">=</span> <span class="va">action1</span>, </span>
-<span>                        trigger_condition <span class="op">=</span> </span>
-<span>                          <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'surrogate'</span>, n <span class="op">=</span> <span class="fl">300</span><span class="op">)</span></span>
-<span>                        <span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">dose_selection</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'dose selection'</span>, action <span class="op">=</span> <span class="va">action1</span>,   </span>
+<span>                            trigger_condition <span class="op">=</span> </span>
+<span>                              <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'surrogate'</span>, n <span class="op">=</span> <span class="fl">300</span><span class="op">)</span></span>
+<span>                            <span class="op">)</span></span>
 <span></span>
-<span><span class="va">interim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/event.html">event</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'interim'</span>, action <span class="op">=</span> <span class="va">action2</span>, </span>
-<span>                 trigger_condition <span class="op">=</span> </span>
-<span>                   <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'pfs'</span>, n <span class="op">=</span> <span class="fl">300</span><span class="op">)</span></span>
-<span>                 <span class="op">)</span></span>
-<span></span>
-<span><span class="va">final</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/event.html">event</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'final'</span>, action <span class="op">=</span> <span class="va">action3</span>, </span>
-<span>               trigger_condition <span class="op">=</span></span>
-<span>                     <span class="fu"><a href="../reference/enrollment.html">enrollment</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1000</span>, arms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'placebo'</span>, <span class="st">'low dose'</span>, <span class="st">'high dose'</span><span class="op">)</span><span class="op">)</span> <span class="op">&amp;</span></span>
-<span>                     <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'os'</span>, n <span class="op">=</span> <span class="fl">300</span><span class="op">)</span> <span class="op">&amp;</span> <span class="op">(</span></span>
-<span>                       <span class="fu"><a href="../reference/calendarTime.html">calendarTime</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fl">28</span><span class="op">)</span> <span class="op">|</span></span>
-<span>                         <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'pfs'</span>, n <span class="op">=</span> <span class="fl">520</span><span class="op">)</span></span>
+<span><span class="va">interim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'interim'</span>, action <span class="op">=</span> <span class="va">action2</span>, </span>
+<span>                     trigger_condition <span class="op">=</span> </span>
+<span>                       <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'pfs'</span>, n <span class="op">=</span> <span class="fl">300</span><span class="op">)</span></span>
 <span>                     <span class="op">)</span></span>
-<span>               <span class="op">)</span></span>
+<span></span>
+<span><span class="va">final</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'final'</span>, action <span class="op">=</span> <span class="va">action3</span>, </span>
+<span>                   trigger_condition <span class="op">=</span> </span>
+<span>                     <span class="fu"><a href="../reference/enrollment.html">enrollment</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1000</span>, arms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'placebo'</span>, <span class="st">'low dose'</span>, <span class="st">'high dose'</span><span class="op">)</span><span class="op">)</span> <span class="op">&amp;</span> </span>
+<span>                     <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'os'</span>, n <span class="op">=</span> <span class="fl">300</span><span class="op">)</span> <span class="op">&amp;</span> <span class="op">(</span></span>
+<span>                       <span class="fu"><a href="../reference/calendarTime.html">calendarTime</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fl">28</span><span class="op">)</span> <span class="op">|</span> </span>
+<span>                         <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'pfs'</span>, n <span class="op">=</span> <span class="fl">520</span><span class="op">)</span></span>
+<span>                       <span class="op">)</span></span>
+<span>                   <span class="op">)</span></span>
 <span></span>
 <span><span class="va">listener</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/listener.html">listener</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#' register events with listener</span></span>
-<span><span class="va">listener</span><span class="op">$</span><span class="fu">add_events</span><span class="op">(</span></span>
+<span><span class="co">#' register milestones with listener</span></span>
+<span><span class="va">listener</span><span class="op">$</span><span class="fu">add_milestones</span><span class="op">(</span></span>
 <span>  <span class="va">dose_selection</span>,</span>
 <span>  <span class="va">interim</span>,</span>
 <span>  <span class="va">final</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; An event &lt;dose selection&gt; is registered.</span></span>
-<span><span class="co">#&gt; An event &lt;interim&gt; is registered.</span></span>
-<span><span class="co">#&gt; An event &lt;final&gt; is registered.</span></span></code></pre></div>
+<span><span class="co">#&gt; A milestone &lt;dose selection&gt; is registered.</span></span>
+<span><span class="co">#&gt; A milestone &lt;interim&gt; is registered.</span></span>
+<span><span class="co">#&gt; A milestone &lt;final&gt; is registered.</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="execute-a-trial">Execute a Trial<a class="anchor" aria-label="anchor" href="#execute-a-trial"></a>
@@ -382,8 +382,8 @@ replicates is run to save time.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">controller</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/controller.html">controller</a></span><span class="op">(</span><span class="va">trial</span>, <span class="va">listener</span><span class="op">)</span></span>
 <span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>plot_event <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Conditioin of event &lt;dose selection&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 11.3138461538462 for event &lt;dose selection&gt;.</span></span>
+<span><span class="co">#&gt; Conditioin of milestone &lt;dose selection&gt; is being checked.</span></span>
+<span><span class="co">#&gt; Data is locked at time = 11.3138461538462 for milestone &lt;dose selection&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('dose selection'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   patient pfs os surrogate                           arms</span></span>
@@ -395,15 +395,15 @@ replicates is run to save time.</p>
 <span><span class="co">#&gt; Randomization will be carried out again for unenrolled patients.</span></span>
 <span><span class="co">#&gt; Randomization is done for 634 potential patients.</span></span>
 <span><span class="co">#&gt; Data of 634 potential patients are generated for the trial with 2 arm(s) &lt;low dose, placebo&gt;.</span></span>
-<span><span class="co">#&gt; Conditioin of event &lt;interim&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 19.1658431016631 for event &lt;interim&gt;.</span></span>
+<span><span class="co">#&gt; Conditioin of milestone &lt;interim&gt; is being checked.</span></span>
+<span><span class="co">#&gt; Data is locked at time = 19.1658431016631 for milestone &lt;interim&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('interim'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   patient pfs  os surrogate                arms</span></span>
 <span><span class="co">#&gt; 1     637 300 146       534 &lt;low dose, placebo&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Conditioin of event &lt;final&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 29.4476342734663 for event &lt;final&gt;.</span></span>
+<span><span class="co">#&gt; Conditioin of milestone &lt;final&gt; is being checked.</span></span>
+<span><span class="co">#&gt; Data is locked at time = 29.4476342734663 for milestone &lt;final&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('final'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   patient pfs  os surrogate                arms</span></span>
@@ -430,7 +430,7 @@ trial
 seed
 </th>
 <th style="text-align:right;">
-event_time_&lt;dose selection&gt;
+milestone_time_&lt;dose selection&gt;
 </th>
 <th style="text-align:right;">
 n_events_&lt;dose selection&gt;_&lt;patient_id&gt;
@@ -451,7 +451,7 @@ n_events_&lt;dose selection&gt;_&lt;arms&gt;
 kept_arm
 </th>
 <th style="text-align:right;">
-event_time_&lt;interim&gt;
+milestone_time_&lt;interim&gt;
 </th>
 <th style="text-align:right;">
 n_events_&lt;interim&gt;_&lt;patient_id&gt;
@@ -472,7 +472,7 @@ n_events_&lt;interim&gt;_&lt;arms&gt;
 futility
 </th>
 <th style="text-align:right;">
-event_time_&lt;final&gt;
+milestone_time_&lt;final&gt;
 </th>
 <th style="text-align:right;">
 n_events_&lt;final&gt;_&lt;patient_id&gt;
@@ -594,45 +594,46 @@ final analysis. We can literally execute the function line by line with
 locked data loaded. Note that the member functions
 <code>Trial$dunnettTest</code> and <code>Trial$closedTest</code> can
 make use of locked data at multiple stages (through the
-<code>events</code> argument) automatically, thus, unlike in
+<code>milestones</code> argument) automatically, thus, unlike in
 <code>action3</code>, an explicit call of
-<code>Trial$get_locked_data(event_name)</code> is unnecessary.</p>
+<code>Trial$get_locked_data(milestone_name)</code> is unnecessary.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## test PFS</span></span>
 <span><span class="va">dt_pfs</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">dunnettTest</span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'pfs'</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>,</span>
 <span>                            treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
-<span>                            events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'interim'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
+<span>                            milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'interim'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                            planned_info <span class="op">=</span> <span class="st">'default'</span><span class="op">)</span></span>
 <span><span class="va">ct_pfs</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span><span class="va">dt_pfs</span>, treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
-<span>                           events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'interim'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
+<span>                           milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'interim'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                           alpha <span class="op">=</span> <span class="fl">.005</span>, alpha_spending <span class="op">=</span> <span class="st">'asOF'</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## test OS</span></span>
 <span><span class="va">dt_os</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">dunnettTest</span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'os'</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>,</span>
 <span>                           treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
-<span>                           events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
+<span>                           milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                           planned_info <span class="op">=</span> <span class="st">'default'</span><span class="op">)</span></span>
 <span><span class="va">ct_os</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span><span class="va">dt_pfs</span>, treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
-<span>                          events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'final'</span><span class="op">)</span>,</span>
+<span>                          milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                          alpha <span class="op">=</span> <span class="fl">.02</span>, alpha_spending <span class="op">=</span> <span class="st">'asOF'</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ct_pfs</span><span class="op">)</span></span>
-<span><span class="co">#&gt;         arm decision event_at_reject reject_time</span></span>
-<span><span class="co">#&gt; 1 high dose   accept            &lt;NA&gt;         Inf</span></span>
-<span><span class="co">#&gt; 2  low dose   reject           final    29.44763</span></span>
+<span><span class="co">#&gt;         arm decision milestone_at_reject reject_time</span></span>
+<span><span class="co">#&gt; 1 high dose   accept                &lt;NA&gt;         Inf</span></span>
+<span><span class="co">#&gt; 2  low dose   reject               final    29.44763</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ct_os</span><span class="op">)</span></span>
-<span><span class="co">#&gt;         arm decision event_at_reject reject_time</span></span>
-<span><span class="co">#&gt; 1 high dose   accept            &lt;NA&gt;         Inf</span></span>
-<span><span class="co">#&gt; 2  low dose   reject           final    29.44763</span></span></code></pre></div>
+<span><span class="co">#&gt;         arm decision milestone_at_reject reject_time</span></span>
+<span><span class="co">#&gt; 1 high dose   accept                &lt;NA&gt;         Inf</span></span>
+<span><span class="co">#&gt; 2  low dose   reject               final    29.44763</span></span></code></pre></div>
 <p>The two null hypotheses of <code>PFS</code> and <code>OS</code> are
 both accepted for the high dose because it is dropped at dose selection.
-Thus, <code>event_at_reject</code> is <code>NA</code>, and the
+Thus, <code>milestone_at_reject</code> is <code>NA</code>, and the
 <code>reject_time</code> is infinite. In contrast, <code>PFS</code> and
 <code>OS</code> are significant in low does. Note that even if
 <code>PFS</code> are tested at interim and final, one cannot claim its
-significance until the final analysis (<code>event_at_reject</code>).
-The <code>reject_time</code> (29.4476343) can be saved to the output
-using the member function <code>Trial$save</code>.</p>
+significance until the final analysis
+(<code>milestone_at_reject</code>). The <code>reject_time</code>
+(29.4476343) can be saved to the output using the member function
+<code>Trial$save</code>.</p>
 <p><code>TrialSimulator</code> abstracts the data generation and
 management to allow user focus on implementing the statistical analysis.
 It simulates a trial on patient level, and provide flexibility in
@@ -669,7 +670,7 @@ trial
 seed
 </th>
 <th style="text-align:right;">
-event_time_&lt;dose selection&gt;
+milestone_time_&lt;dose selection&gt;
 </th>
 <th style="text-align:right;">
 n_events_&lt;dose selection&gt;_&lt;patient_id&gt;
@@ -690,7 +691,7 @@ n_events_&lt;dose selection&gt;_&lt;arms&gt;
 kept_arm
 </th>
 <th style="text-align:right;">
-event_time_&lt;interim&gt;
+milestone_time_&lt;interim&gt;
 </th>
 <th style="text-align:right;">
 n_events_&lt;interim&gt;_&lt;patient_id&gt;
@@ -711,7 +712,7 @@ n_events_&lt;interim&gt;_&lt;arms&gt;
 futility
 </th>
 <th style="text-align:right;">
-event_time_&lt;final&gt;
+milestone_time_&lt;final&gt;
 </th>
 <th style="text-align:right;">
 n_events_&lt;final&gt;_&lt;patient_id&gt;
@@ -744,186 +745,21 @@ os_low_dose_decision
 error_message
 </th>
 </tr></thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td style="text-align:left;">
 Trial-3415
 </td>
 <td style="text-align:right;">
-776792356
+1727811904
 </td>
 <td style="text-align:right;">
-11.33385
+11.31385
 </td>
 <td style="text-align:right;">
-367
+366
 </td>
 <td style="text-align:right;">
-139
-</td>
-<td style="text-align:right;">
-68
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-high
-</td>
-<td style="text-align:right;">
-19.52434
-</td>
-<td style="text-align:right;">
-654
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-145
-</td>
-<td style="text-align:right;">
-544
-</td>
-<td style="text-align:left;">
-&lt;high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-positive
-</td>
-<td style="text-align:right;">
-29.56296
-</td>
-<td style="text-align:right;">
-877
-</td>
-<td style="text-align:right;">
-520
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-748
-</td>
-<td style="text-align:left;">
-&lt;high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Trial-3415
-</td>
-<td style="text-align:right;">
-1430198130
-</td>
-<td style="text-align:right;">
-11.41385
-</td>
-<td style="text-align:right;">
-371
-</td>
-<td style="text-align:right;">
-138
-</td>
-<td style="text-align:right;">
-64
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-low
-</td>
-<td style="text-align:right;">
-19.99458
-</td>
-<td style="text-align:right;">
-677
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-158
-</td>
-<td style="text-align:right;">
-554
-</td>
-<td style="text-align:left;">
-&lt;low dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-positive
-</td>
-<td style="text-align:right;">
-30.26166
-</td>
-<td style="text-align:right;">
-877
-</td>
-<td style="text-align:right;">
-546
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-740
-</td>
-<td style="text-align:left;">
-&lt;low dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Trial-3415
-</td>
-<td style="text-align:right;">
-1400866922
-</td>
-<td style="text-align:right;">
-11.29385
-</td>
-<td style="text-align:right;">
-365
-</td>
-<td style="text-align:right;">
-154
+142
 </td>
 <td style="text-align:right;">
 65
@@ -935,514 +771,22 @@ Trial-3415
 &lt;low dose, high dose, placebo&gt;
 </td>
 <td style="text-align:left;">
-high
-</td>
-<td style="text-align:right;">
-19.48899
-</td>
-<td style="text-align:right;">
-653
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-140
-</td>
-<td style="text-align:right;">
-547
-</td>
-<td style="text-align:left;">
-&lt;high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-positive
-</td>
-<td style="text-align:right;">
-28.74682
-</td>
-<td style="text-align:right;">
-878
-</td>
-<td style="text-align:right;">
-541
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-755
-</td>
-<td style="text-align:left;">
-&lt;high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Trial-3415
-</td>
-<td style="text-align:right;">
-1898009641
-</td>
-<td style="text-align:right;">
-11.19385
-</td>
-<td style="text-align:right;">
-360
-</td>
-<td style="text-align:right;">
-131
-</td>
-<td style="text-align:right;">
-60
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
 low
 </td>
 <td style="text-align:right;">
-19.73958
+19.16584
 </td>
 <td style="text-align:right;">
-667
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-151
-</td>
-<td style="text-align:right;">
-550
-</td>
-<td style="text-align:left;">
-&lt;low dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-positive
-</td>
-<td style="text-align:right;">
-28.64718
-</td>
-<td style="text-align:right;">
-880
-</td>
-<td style="text-align:right;">
-534
+637
 </td>
 <td style="text-align:right;">
 300
-</td>
-<td style="text-align:right;">
-743
-</td>
-<td style="text-align:left;">
-&lt;low dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Trial-3415
-</td>
-<td style="text-align:right;">
-1214982489
-</td>
-<td style="text-align:right;">
-11.21385
-</td>
-<td style="text-align:right;">
-361
 </td>
 <td style="text-align:right;">
 146
 </td>
 <td style="text-align:right;">
-66
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-high
-</td>
-<td style="text-align:right;">
-19.47266
-</td>
-<td style="text-align:right;">
-654
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-139
-</td>
-<td style="text-align:right;">
-533
-</td>
-<td style="text-align:left;">
-&lt;high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-positive
-</td>
-<td style="text-align:right;">
-29.53156
-</td>
-<td style="text-align:right;">
-880
-</td>
-<td style="text-align:right;">
-540
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-742
-</td>
-<td style="text-align:left;">
-&lt;high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Trial-3415
-</td>
-<td style="text-align:right;">
-1159524289
-</td>
-<td style="text-align:right;">
-11.35385
-</td>
-<td style="text-align:right;">
-368
-</td>
-<td style="text-align:right;">
-150
-</td>
-<td style="text-align:right;">
-74
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-high
-</td>
-<td style="text-align:right;">
-19.35884
-</td>
-<td style="text-align:right;">
-645
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-140
-</td>
-<td style="text-align:right;">
 534
-</td>
-<td style="text-align:left;">
-&lt;high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-positive
-</td>
-<td style="text-align:right;">
-30.35872
-</td>
-<td style="text-align:right;">
-877
-</td>
-<td style="text-align:right;">
-541
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-734
-</td>
-<td style="text-align:left;">
-&lt;high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Trial-3415
-</td>
-<td style="text-align:right;">
-14594745
-</td>
-<td style="text-align:right;">
-11.39385
-</td>
-<td style="text-align:right;">
-370
-</td>
-<td style="text-align:right;">
-129
-</td>
-<td style="text-align:right;">
-73
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-high
-</td>
-<td style="text-align:right;">
-19.46822
-</td>
-<td style="text-align:right;">
-651
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-150
-</td>
-<td style="text-align:right;">
-545
-</td>
-<td style="text-align:left;">
-&lt;high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-positive
-</td>
-<td style="text-align:right;">
-27.78101
-</td>
-<td style="text-align:right;">
-877
-</td>
-<td style="text-align:right;">
-523
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-749
-</td>
-<td style="text-align:left;">
-&lt;high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Trial-3415
-</td>
-<td style="text-align:right;">
-267680632
-</td>
-<td style="text-align:right;">
-11.29385
-</td>
-<td style="text-align:right;">
-365
-</td>
-<td style="text-align:right;">
-133
-</td>
-<td style="text-align:right;">
-66
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-both
-</td>
-<td style="text-align:right;">
-17.00115
-</td>
-<td style="text-align:right;">
-651
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-165
-</td>
-<td style="text-align:right;">
-544
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-positive
-</td>
-<td style="text-align:right;">
-24.31141
-</td>
-<td style="text-align:right;">
-1000
-</td>
-<td style="text-align:right;">
-520
-</td>
-<td style="text-align:right;">
-302
-</td>
-<td style="text-align:right;">
-808
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Trial-3415
-</td>
-<td style="text-align:right;">
-236356855
-</td>
-<td style="text-align:right;">
-11.29385
-</td>
-<td style="text-align:right;">
-365
-</td>
-<td style="text-align:right;">
-139
-</td>
-<td style="text-align:right;">
-65
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-low
-</td>
-<td style="text-align:right;">
-19.15550
-</td>
-<td style="text-align:right;">
-636
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-148
-</td>
-<td style="text-align:right;">
-527
 </td>
 <td style="text-align:left;">
 &lt;low dose, placebo&gt;
@@ -1451,19 +795,19 @@ low
 positive
 </td>
 <td style="text-align:right;">
-28.28298
+29.44763
 </td>
 <td style="text-align:right;">
 878
 </td>
 <td style="text-align:right;">
-544
+542
 </td>
 <td style="text-align:right;">
 300
 </td>
 <td style="text-align:right;">
-753
+744
 </td>
 <td style="text-align:left;">
 &lt;low dose, placebo&gt;
@@ -1472,108 +816,25 @@ positive
 accept
 </td>
 <td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
 accept
 </td>
 <td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
 reject
 </td>
 <td style="text-align:left;">
 </td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Trial-3415
-</td>
-<td style="text-align:right;">
-1910683895
-</td>
-<td style="text-align:right;">
-11.29385
-</td>
-<td style="text-align:right;">
-365
-</td>
-<td style="text-align:right;">
-147
-</td>
-<td style="text-align:right;">
-74
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-both
-</td>
-<td style="text-align:right;">
-16.95067
-</td>
-<td style="text-align:right;">
-648
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-156
-</td>
-<td style="text-align:right;">
-543
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-positive
-</td>
-<td style="text-align:right;">
-24.75913
-</td>
-<td style="text-align:right;">
-1000
-</td>
-<td style="text-align:right;">
-537
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-837
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-</tbody>
+</tr></tbody>
 </table>
 </div>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">output</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
-<span>    time_dose_selection <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`event_time_&lt;dose selection&gt;`</span><span class="op">)</span>, </span>
-<span>    time_interim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`event_time_&lt;interim&gt;`</span><span class="op">)</span>, </span>
-<span>    time_final <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`event_time_&lt;final&gt;`</span><span class="op">)</span>, </span>
+<span>    time_dose_selection <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`milestone_time_&lt;dose selection&gt;`</span><span class="op">)</span>, </span>
+<span>    time_interim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`milestone_time_&lt;interim&gt;`</span><span class="op">)</span>, </span>
+<span>    time_final <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`milestone_time_&lt;final&gt;`</span><span class="op">)</span>, </span>
 <span>    n_dose_selection <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`n_events_&lt;dose selection&gt;_&lt;patient_id&gt;`</span><span class="op">)</span>, </span>
 <span>    n_interim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`n_events_&lt;interim&gt;_&lt;patient_id&gt;`</span><span class="op">)</span>, </span>
 <span>    n_final <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">`n_events_&lt;final&gt;_&lt;patient_id&gt;`</span><span class="op">)</span>, </span>
@@ -1682,28 +943,28 @@ Both
 11.3
 </td>
 <td style="text-align:right;">
-19.1
+19.2
 </td>
 <td style="text-align:right;">
-28
+29.4
 </td>
 <td style="text-align:right;">
-365
+366
 </td>
 <td style="text-align:right;">
-647.6
+637
 </td>
 <td style="text-align:right;">
-893.2
+878
 </td>
 <td style="text-align:right;">
-70.5
+100
 </td>
 <td style="text-align:right;">
-17.3
+0
 </td>
 <td style="text-align:right;">
-12.2
+0
 </td>
 </tr></tbody>
 </table>
@@ -1788,22 +1049,22 @@ Final
 </thead>
 <tbody><tr>
 <td style="text-align:right;">
-144.4
+142
 </td>
 <td style="text-align:right;">
 300
 </td>
 <td style="text-align:right;">
-532.7
+542
 </td>
 <td style="text-align:right;">
-67.9
+65
 </td>
 <td style="text-align:right;">
-152.2
+146
 </td>
 <td style="text-align:right;">
-301.9
+300
 </td>
 </tr></tbody>
 </table>
@@ -1904,28 +1165,28 @@ Low and High
 </thead>
 <tbody><tr>
 <td style="text-align:right;">
-57.6
+100
 </td>
 <td style="text-align:right;">
-24.6
+0
 </td>
 <td style="text-align:right;">
-75.4
+100
 </td>
 <td style="text-align:right;">
-6.8
+0
 </td>
 <td style="text-align:right;">
-72.1
+100
 </td>
 <td style="text-align:right;">
-27.4
+0
 </td>
 <td style="text-align:right;">
-90.6
+100
 </td>
 <td style="text-align:right;">
-8.9
+0
 </td>
 </tr></tbody>
 </table>
@@ -1989,13 +1250,13 @@ Reject PFS or OS
 0
 </td>
 <td style="text-align:right;">
-15.2
+0
 </td>
 <td style="text-align:right;">
-75.4
+100
 </td>
 <td style="text-align:right;">
-90.6
+100
 </td>
 </tr></tbody>
 </table>
@@ -2011,7 +1272,7 @@ Reject PFS or OS
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>

@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Condition System for Triggering Events in a Trial • TrialSimulator</title>
+<title>Condition System for Triggering Milestones in a Trial • TrialSimulator</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -15,7 +15,7 @@
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Condition System for Triggering Events in a Trial">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Condition System for Triggering Milestones in a Trial">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.67.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.68.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,7 +39,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
-    <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Events in a Trial</a></li>
+    <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/designDocument.html">Modular Clinical Trial Simulation: Overview of Core Functions and Workflow</a></li>
@@ -64,7 +64,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>Condition System for Triggering Events in a Trial</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Condition System for Triggering Milestones in a Trial</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/vignettes/conditionSystem.Rmd" class="external-link"><code>vignettes/conditionSystem.Rmd</code></a></small>
@@ -76,34 +76,34 @@
 <p>In clinical trial simulations, it is often necessary to specify when
 certain actions should be taken. For example, a trial may require
 interim data reviews when a predefined number of surrogate endpoint
-events occur to support dose selection. More complex event triggers can
-be defined based on event numbers of one or multiple endpoints, calendar
+events occur to support dose selection. More complex triggers can be
+defined based on event numbers of one or multiple endpoints, calendar
 time, the number of enrolled patients, or a combination of multiple
 conditions. These triggers may govern critical analyses such as futility
 assessments, sample size re-assessment, interim analyses, and final
-evaluations.</p>
+evaluations, at various trial milestones.</p>
 <p>To facilitate this process, <code>TrialSimulator</code> provides an
-intuitive condition-based system for defining event triggers. It
+intuitive condition-based system for defining milestone triggers. It
 supports logical operations (<code>&amp;</code> for AND and
 <code>|</code> for OR), allowing users to specify complex conditions
 seamlessly. The simulator is then automatically determines the
 appropriate time points and executes user-defined actions
 accordingly.</p>
 <p>Currently, <code>TrialSimulator</code> provides three key functions
-to define the earliest possible time for triggering an event:</p>
+to define the earliest possible time for triggering a milestone:</p>
 <ul>
 <li><p><code>calendarTime(time)</code>: Specifies a minimum trial
-duration before an event can occur.</p></li>
+duration before a milestone can occur.</p></li>
 <li><p><code>enrollment(n)</code>: Specifies a minimum number of
-patients that must be enrolled before an event can occur.</p></li>
+patients that must be enrolled before a milestone can occur.</p></li>
 <li><p><code>eventNumber(endpoint, n, arms)</code>: Specifies a minimum
-number of observed events for a given endpoint before triggering an
-event. This condition can apply to specific arms or the entire
+number of observed events for a given endpoint before triggering a
+milestone This condition can apply to specific arms or the entire
 trial.</p></li>
 </ul>
-<p>The following sections illustrate various ways to define event
+<p>The following sections illustrate various ways to define milestone
 triggers using these functions, which could be passed to the argument
-<code>trigger_condition</code> of <code><a href="../reference/event.html">event()</a></code>.</p>
+<code>trigger_condition</code> of <code><a href="../reference/milestone.html">milestone()</a></code>.</p>
 <div class="section level4">
 <h4 id="a-trial-has-been-running-for-6-months">A trial has been running for 6 months<a class="anchor" aria-label="anchor" href="#a-trial-has-been-running-for-6-months"></a>
 </h4>
@@ -174,7 +174,7 @@ triggers using these functions, which could be passed to the argument
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>
