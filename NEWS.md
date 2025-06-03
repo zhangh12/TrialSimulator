@@ -1,3 +1,16 @@
+# TrialSimulator 0.68.0
+
+## Updates
+
+- Rename trial event as milestone. This a major update. Relevant codes and documents are updated accordingly. 
+- Add executable examples for `controller()` as per suggestion from CRAN team. 
+
+# TrialSimulator 0.67.0
+
+## Updates
+
+- Print event counts at trial events using `message()` so that Shiny app can display it properly. 
+
 # TrialSimulator 0.66.0
 
 ## Updates

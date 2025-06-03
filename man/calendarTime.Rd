@@ -7,13 +7,13 @@
 calendarTime(time)
 }
 \arguments{
-\item{time}{numeric. Calendar time to trigger an event.}
+\item{time}{numeric. Calendar time to trigger a milestone of a trial.}
 }
 \value{
 an object of class `Condition`
 }
 \description{
-Define a condition to trigger trial event by calendar time. The event will
+Define a condition to trigger trial milestone by calendar time. The milestone will
 be trigger when a trial has been running for at least the specified
 duration. It can be used combined with conditions specified by
 \link[TrialSimulator]{enrollment} and \link[TrialSimulator]{eventNumber}.

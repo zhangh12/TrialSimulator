@@ -23,11 +23,11 @@ CalendarTimeCondition <- R6::R6Class(
 
     get_trigger_time = function(trial){
 
-      event_time <- trial$get_data_lock_time_by_calendar_time(
+      milestone_time <- trial$get_data_lock_time_by_calendar_time(
         calendar_time = self$time,
         arms = self$arms)
 
-      event_time
+      milestone_time
     },
 
     print = function(){

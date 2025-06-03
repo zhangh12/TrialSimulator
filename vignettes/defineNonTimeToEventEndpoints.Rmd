@@ -24,7 +24,7 @@ library(TrialSimulator)
 set.seed(12345)
 ```
 
-`TrialSimulator` provides a flexible framework for defining and simulating a variety of clinical trial endpoints by specifying the `type` parameter in `endpoints`. This vignette covers non-time-to-event (non-TTE) endpoints, demonstrating how they can be defined, integrated into trial arms, and analyzed at pre-specified event triggers. For time-to-event endpoints, please refer to the separate vignette [Define Time-to-Event Endpoints in Clinical Trials](defineTimeToEventEndpoints.html).
+`TrialSimulator` provides a flexible framework for defining and simulating a variety of clinical trial endpoints by specifying the `type` parameter in `endpoints`. This vignette covers non-time-to-event (non-TTE) endpoints, demonstrating how they can be defined, integrated into trial arms, and analyzed at pre-specified milestone triggers. For time-to-event endpoints, please refer to the separate vignette [Define Time-to-Event Endpoints in Clinical Trials](defineTimeToEventEndpoints.html).
 
 ## Define endpoints with random number generators
 
@@ -105,7 +105,7 @@ trial
 
 Here `accrual_rate` is an argument of `TrialSimulator::StaggeredRecruiter` controlling how patients are recruited into the trial. Similarly, `scale` and `shape` are arguments of `rweibull`. All these arguments are passed through `...` of `trial()`. 
 
-`TrialSimulator` allows defining trial events at specific time points when data is locked for analysis. Here, we define three key events:
+`TrialSimulator` allows defining trial milestones at specific time points when data is locked for analysis. Here, we define three key milestones:
 
 1. Interim Analysis: Triggered when `orr` has been observed for 60 patients.
 2. Random Checkpoint: For illustration purpose only. Triggered when the trial has reached at least 10 months, and at least one of the following conditions is met:
@@ -114,47 +114,47 @@ Here `accrual_rate` is an argument of `TrialSimulator::StaggeredRecruiter` contr
 3. Final Analysis: Occurs when the trial reaches 30 months.
 
 ```{r llieh}
-interim <- event(name = 'interim', 
-                 trigger_condition = eventNumber(endpoint = 'orr', n = 60), 
-                 action = doNothing)
+interim <- milestone(name = 'interim', 
+                     trigger_condition = eventNumber(endpoint = 'orr', n = 60), 
+                     action = doNothing)
 
-random <- event(name = 'random', 
-                trigger_condition = 
-                  calendarTime(time = 10) & 
-                  (eventNumber(endpoint = 'cfb', n = 100) | 
-                     eventNumber(endpoint = 'orr', n = 180)
-                   ), 
-                action = doNothing)
+random <- milestone(name = 'random', 
+                    trigger_condition = 
+                      calendarTime(time = 10) & 
+                      (eventNumber(endpoint = 'cfb', n = 100) | 
+                         eventNumber(endpoint = 'orr', n = 180)
+                       ), 
+                    action = doNothing)
 
-final <- event(name = 'final', 
-               trigger_condition = calendarTime(time = 30), 
-               action = doNothing)
+final <- milestone(name = 'final', 
+                   trigger_condition = calendarTime(time = 30), 
+                   action = doNothing)
 ```
 
-Here `action = doNothing` in `event` means we don't expect any action at the time of triggered events. In practice, instead of `doNothing`, custom action function can be adopted to add or remove arms (e.g., dose selection), adjust sample ratio per arm, or carry out statistical analysis based on locked data. These advanced setups are covered in other vignettes.
+Here `action = doNothing` in `milestone` means we don't expect any action at the time of triggered milestones. In practice, instead of `doNothing`, custom action function can be adopted to add or remove arms (e.g., dose selection), adjust sample ratio per arm, or carry out statistical analysis based on locked data. These advanced setups are covered in other vignettes.
 
-Next, we register the events with a listener and create a controller to monitor and execute the trial.
+Next, we register the milestones with a listener and create a controller to monitor and execute the trial.
 
 ```{r ihhf}
-## register events to the listener
+## register milestones to the listener
 listener <- listener()
-listener$add_events(interim, random, final)
+listener$add_milestones(interim, random, final)
 
 ## run the trial
 controller <- controller(trial, listener)
 controller$run()
 ```
 
-We can inspect the dataset locked at different event points by calling member function `get_locked_data` with event names. Ideally, this should be done within custom action function, where decision is made based on data locked at the time of an event. 
+We can inspect the dataset locked at different milestone by calling member function `get_locked_data` with milestone names. Ideally, this should be done within custom action function, where decision is made based on data locked at the time of a milestone. 
 
 ```{r ihegea}
-interim_data <- trial$get_locked_data(event_name = 'interim')
-random_data <- trial$get_locked_data(event_name = 'random')
-final_data <- trial$get_locked_data(event_name = 'final')
+interim_data <- trial$get_locked_data(milestone_name = 'interim')
+random_data <- trial$get_locked_data(milestone_name = 'random')
+final_data <- trial$get_locked_data(milestone_name = 'final')
 head(interim_data)
 ```
 
-Since `cfb` has a 6-month readout time, at interim analysis, some patients’ `cfb` values are still unavailable, appearing as `NA` in `interim_data.` However, these values become available in `random_data` collected at a later time point. This demonstrates how `TrialSimulator` properly and automatically handles endpoint availability at different event triggers.
+Since `cfb` has a 6-month readout time, at interim analysis, some patients’ `cfb` values are still unavailable, appearing as `NA` in `interim_data.` However, these values become available in `random_data` collected at a later time point. This demonstrates how `TrialSimulator` properly and automatically handles endpoint availability at different milestones
 
 ```{r eqfee}
 not_ready_at_interim <- 

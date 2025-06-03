@@ -34,7 +34,7 @@ library(TrialSimulator)
 In this vignette, we illustrate how to use `TrialSimulator` to simulate
 a trial with seamless adaptive design of multiple endpoints, where dose
 selection, futility analysis, interim analysis are triggered by
-user-defined events. Family-wise error rate are controlled by closed
+user-defined milestones. Family-wise error rate are controlled by closed
 test with Dunnett's test, with $\alpha$ split for the endpoints. Please
 refer to another vignette where graphical testing procedure is adopted
 instead.
@@ -142,7 +142,7 @@ With three arms, we can define a trial of class `Trial`. Recruitment
 curve are specified through `enroller` with a built-in function
 `StaggeredRecruiter` of piecewise constant rate. We set `duration` to be
 an arbitrary large number (50) but controlling the end of trial through
-pre-defined events later. Note that if `seed = NULL`, `TrialSimulator`
+pre-defined milestones later. Note that if `seed = NULL`, `TrialSimulator`
 will pick a seed for the purpose of reproducibility.
 
 ```{r lagieg, class.source="fold-show"}
@@ -158,19 +158,19 @@ trial <- trial(
 trial$add_arms(sample_ratio = c(1, 1, 1), low, high, pbo)
 ```
 
-## Define Trial Events and Action Functions
+## Define Trial Milestones and Action Functions
 
-Next, we define action functions for trial events, i.e., dose selection,
+Next, we define action functions for trial milestones, i.e., dose selection,
 interim and final analysis. Note that an action function should always
-has arguments `trial` of class `Trial` and a character `event_name`. We
+has arguments `trial` of class `Trial` and a character `milestone_name`. We
 calculate z statistics of the Farrington-Manning test for binary
 endpoint `surrogate` using helper function `fitFarringtonManning`, which
 returns a data frame (see `?fitFarringtonManning`).
 
 ```{r ieaong, class.source='fold-show'}
-action1 <- function(trial, event_name){
+action1 <- function(trial, milestone_name){
   
-  locked_data <- trial$get_locked_data(event_name)
+  locked_data <- trial$get_locked_data(milestone_name)
   
   fit <- fitFarringtonManning(endpoint = 'surrogate', placebo = 'placebo',
                               data = locked_data, alternative = 'greater')
@@ -199,12 +199,12 @@ on how many arms are carried forward in dose selection, `fit` may
 consists of testing results of one or two dose arms. Note that a formal
 test for `PFS` will be done at the end of the trial when we have all
 p-values. If no futility analysis is planned, we can simply set
-`action = doNothing` in `event`.
+`action = doNothing` in `milestone`.
 
 ```{r aotel, class.source="fold-show"}
-action2 <- function(trial, event_name){
+action2 <- function(trial, milestone_name){
   
-  locked_data <- trial$get_locked_data(event_name)
+  locked_data <- trial$get_locked_data(milestone_name)
 
   fit <- fitLogrank(endpoint = 'pfs', placebo = 'placebo',
                     data = locked_data)
@@ -228,28 +228,28 @@ At final analysis, we conduct a closed test using Dunnett's test for
 intersection hypotheses. The action function is as follows.
 
 ```{r alkdae, class.source="fold-show"}
-action3 <- function(trial, event_name){
+action3 <- function(trial, milestone_name){
   
-  locked_data <- trial$get_locked_data(event_name)
+  locked_data <- trial$get_locked_data(milestone_name)
 
   ## test PFS
   dt_pfs <- trial$dunnettTest(endpoint = 'pfs', placebo = 'placebo',
                               treatments = c('high dose', 'low dose'),
-                              events = c('dose selection', 'interim', 'final'),
+                              milestones = c('dose selection', 'interim', 'final'),
                               planned_info = 'default')
   
   ct_pfs <- trial$closedTest(dt_pfs, treatments = c('high dose', 'low dose'),
-                             events = c('interim', 'final'),
+                             milestones = c('interim', 'final'),
                              alpha = .005, alpha_spending = 'asOF')
 
   ## test OS
   dt_os <- trial$dunnettTest(endpoint = 'os', placebo = 'placebo',
                              treatments = c('high dose', 'low dose'),
-                             events = c('dose selection', 'final'),
+                             milestones = c('dose selection', 'final'),
                              planned_info = 'default')
   
   ct_os <- trial$closedTest(dt_pfs, treatments = c('high dose', 'low dose'),
-                            events = c('final'),
+                            milestones = c('final'),
                             alpha = .02, alpha_spending = 'asOF')
   
   ## we only save testing decision here
@@ -270,31 +270,31 @@ action3 <- function(trial, event_name){
 }
 ```
 
-Next, we register three trial events to a listener
+Next, we register three trial milestones to a listener
 
 ```{r}
-dose_selection <- event(name = 'dose selection', action = action1, 
-                        trigger_condition = 
-                          eventNumber(endpoint = 'surrogate', n = 300)
-                        )
+dose_selection <- milestone(name = 'dose selection', action = action1,   
+                            trigger_condition = 
+                              eventNumber(endpoint = 'surrogate', n = 300)
+                            )
 
-interim <- event(name = 'interim', action = action2, 
-                 trigger_condition = 
-                   eventNumber(endpoint = 'pfs', n = 300)
-                 )
-
-final <- event(name = 'final', action = action3, 
-               trigger_condition =
-                     enrollment(n = 1000, arms = c('placebo', 'low dose', 'high dose')) &
-                     eventNumber(endpoint = 'os', n = 300) & (
-                       calendarTime(time = 28) |
-                         eventNumber(endpoint = 'pfs', n = 520)
+interim <- milestone(name = 'interim', action = action2, 
+                     trigger_condition = 
+                       eventNumber(endpoint = 'pfs', n = 300)
                      )
-               )
+
+final <- milestone(name = 'final', action = action3, 
+                   trigger_condition = 
+                     enrollment(n = 1000, arms = c('placebo', 'low dose', 'high dose')) & 
+                     eventNumber(endpoint = 'os', n = 300) & (
+                       calendarTime(time = 28) | 
+                         eventNumber(endpoint = 'pfs', n = 520)
+                       )
+                   )
 
 listener <- listener()
-#' register events with listener
-listener$add_events(
+#' register milestones with listener
+listener$add_milestones(
   dose_selection,
   interim,
   final
@@ -330,27 +330,27 @@ Here we dive into the action function (`action3`) for the final
 analysis. We can literally execute the function line by line with locked
 data loaded. Note that the member functions `Trial$dunnettTest` and
 `Trial$closedTest` can make use of locked data at multiple stages
-(through the `events` argument) automatically, thus, unlike in
-`action3`, an explicit call of `Trial$get_locked_data(event_name)` is
+(through the `milestones` argument) automatically, thus, unlike in
+`action3`, an explicit call of `Trial$get_locked_data(milestone_name)` is
 unnecessary.
 
 ```{r aief, class.source='fold-show'}
 ## test PFS
 dt_pfs <- trial$dunnettTest(endpoint = 'pfs', placebo = 'placebo',
                             treatments = c('high dose', 'low dose'),
-                            events = c('dose selection', 'interim', 'final'),
+                            milestones = c('dose selection', 'interim', 'final'),
                             planned_info = 'default')
 ct_pfs <- trial$closedTest(dt_pfs, treatments = c('high dose', 'low dose'),
-                           events = c('interim', 'final'),
+                           milestones = c('interim', 'final'),
                            alpha = .005, alpha_spending = 'asOF')
 
 ## test OS
 dt_os <- trial$dunnettTest(endpoint = 'os', placebo = 'placebo',
                            treatments = c('high dose', 'low dose'),
-                           events = c('dose selection', 'final'),
+                           milestones = c('dose selection', 'final'),
                            planned_info = 'default')
 ct_os <- trial$closedTest(dt_pfs, treatments = c('high dose', 'low dose'),
-                          events = c('final'),
+                          milestones = c('final'),
                           alpha = .02, alpha_spending = 'asOF')
 
 print(ct_pfs)
@@ -358,11 +358,11 @@ print(ct_os)
 ```
 
 The two null hypotheses of `PFS` and `OS` are both accepted for the high
-dose because it is dropped at dose selection. Thus, `event_at_reject` is
+dose because it is dropped at dose selection. Thus, `milestone_at_reject` is
 `NA`, and the `reject_time` is infinite. In contrast, `PFS` and `OS` are
 significant in low does. Note that even if `PFS` are tested at interim
 and final, one cannot claim its significance until the final analysis
-(`event_at_reject`). The `reject_time` (`r ct_os$reject_time[2]`) can be
+(`milestone_at_reject`). The `reject_time` (`r ct_os$reject_time[2]`) can be
 saved to the output using the member function `Trial$save`.
 
 `TrialSimulator` abstracts the data generation and management to allow
@@ -400,9 +400,9 @@ output %>%
 ```{r iojalf}
 output %>% 
   summarise(
-    time_dose_selection = mean(`event_time_<dose selection>`), 
-    time_interim = mean(`event_time_<interim>`), 
-    time_final = mean(`event_time_<final>`), 
+    time_dose_selection = mean(`milestone_time_<dose selection>`), 
+    time_interim = mean(`milestone_time_<interim>`), 
+    time_final = mean(`milestone_time_<final>`), 
     n_dose_selection = mean(`n_events_<dose selection>_<patient_id>`), 
     n_interim = mean(`n_events_<interim>_<patient_id>`), 
     n_final = mean(`n_events_<final>_<patient_id>`), 

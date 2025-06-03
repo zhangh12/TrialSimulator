@@ -105,18 +105,18 @@ Controllers <- R6::R6Class(
     #' trial. Note that warning messages are still displayed.
     #' @param dry_run \code{TRUE} if action function provided by users is
     #' ignored and a built-in default action \code{default_action} is called
-    #' instead. This default function only locks data when the event is
-    #' triggered. Event time and number of endpoints' events or sample sizes
+    #' instead. This default function only locks data when the milestone is
+    #' triggered. Milestone time and number of endpoints' events or sample sizes
     #' are saved. It is suggested to set \code{dry_run = TRUE} to estimate
     #' distributions of triggering time and number of events before formally
     #' using custom action functions if a fixed design is in use.
     #' This helps determining planned maximum
-    #' information for group sequential design and reasonable time of event
+    #' information for group sequential design and reasonable time of milestone
     #' of interest when planning a trial. Set it to \code{FALSE} for formal
     #' simulations. However, for an adaptive design where arm(s) could
     #' possibly be added or removed, setting \code{dry_run} to \code{TRUE}
     #' is usually not helpful because adaption should be actually applied
-    #' to estimate event time.
+    #' to estimate milestone time.
     run = function(n = 1, plot_event = TRUE, silent = FALSE, dry_run = FALSE){
 
       self$get_trial()$make_arms_snapshot()

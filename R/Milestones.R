@@ -1,22 +1,25 @@
-#' Class of Event
+#' Class of Milestones
 #' @description
-#' Create a class of event. An event means the time point to take an action,
+#' Create a class of milestone. An milestone means the time point to take an action,
 #' e.g., carry out (futility, interim, final) analysis for add/remove arms,
-#' or stop a trial early.
+#' or stop a trial early. It can also be any more general time point where trial
+#' data is used in decision making or adaptation. For example, one can define a
+#' milestone for changing randomization scheme, sample size re-assessment, trial
+#' duration extension etc.
 #'
 #' @docType class
 #' @examples
 #' ##
 #' @export
-Events <- R6::R6Class(
-  'Events',
+Milestones <- R6::R6Class(
+  'Milestones',
 
   private = list(
     name = NULL,
     type = NULL,
     trigger_condition = NULL,
     action = NULL,
-    triggered = FALSE, ## logical. Whether this event has been triggered
+    triggered = FALSE, ## logical. Whether this milestone has been triggered
                       ## (to avoid repeated execution)
     silent = FALSE,
     is_dry_run = FALSE
@@ -25,13 +28,14 @@ Events <- R6::R6Class(
   public = list(
 
     #' @description
-    #' initialize Event
-    #' @param name character. Name of event.
-    #' @param type character vector. Event type(s) (futility, interim, final),
-    #' an event can be of multiple types.
-    #' @param trigger_condition function to check if this event should
-    #' trigger. Return TRUE/FALSE.
-    #' @param action function to execute when the event triggers.
+    #' initialize milestone
+    #' @param name character. Name of milestone.
+    #' @param type character vector. Milestone type(s) (futility, interim, final),
+    #' a milestone can be of multiple types. This is for information purpose so
+    #' can be any string.
+    #' @param trigger_condition function to check if this milestone should
+    #' trigger. See vignette \code{Condition System for Triggering Milestones in a Trial}.
+    #' @param action function to execute when the milestone triggers.
     #' @param ... arguments for \code{trigger_condition}.
     initialize = function(name, type = name, trigger_condition, action = doNothing, ...){
       stopifnot(is.character(name) && (length(name) == 1))
@@ -39,16 +43,16 @@ Events <- R6::R6Class(
       if(!('Condition' %in% class(trigger_condition))){
         stop('trigger_condition should be created by functions <',
              'eventNumber, calendarTime, enrollment',
-             '> and their combination using & and |. ')
+             '> and their combination using (), & and |. ')
       }
       # allow no specified action, for testing purpose.
       stopifnot(is.function(action) || is.null(action))
 
       if(is.function(action)){
         args_in_action <- names(formals(action))
-        if(!all(c('trial', 'event_name') %in% args_in_action)){
+        if(!all(c('trial', 'milestone_name') %in% args_in_action)){
           stop('action function ', deparse(substitute(action)), ' must use ',
-               'arguments \'trial\' and \'event_name\'.')
+               'arguments \'trial\' and \'milestone_name\'.')
         }
       }
 
@@ -63,13 +67,13 @@ Events <- R6::R6Class(
     },
 
     #' @description
-    #' return name of event
+    #' return name of milestone
     get_name = function(){
       private$name
     },
 
     #' @description
-    #' return type(s) of event
+    #' return type(s) of milestone
     get_type = function(){
       private$type
     },
@@ -87,7 +91,7 @@ Events <- R6::R6Class(
     },
 
     #' @description
-    #' set if dry run should be carried out for the event. For more details,
+    #' set if dry run should be carried out for the milestone. For more details,
     #' refer to \code{Controller::run}.
     #' @param dry_run logical.
     set_dry_run = function(dry_run){
@@ -106,7 +110,7 @@ Events <- R6::R6Class(
       }
 
       if(!private$silent && !is.null(action)){
-        message('Action for <', self$get_name(), '> is executed: \n')
+        message('Action for milestone <', self$get_name(), '> is executed: \n')
         print(action)
       }
 
@@ -119,7 +123,7 @@ Events <- R6::R6Class(
     },
 
     #' @description
-    #' reset an event so that it can be triggered again. Usually, this is called
+    #' reset an milestone so that it can be triggered again. Usually, this is called
     #' before the controller of a trial can run additional replicates
     #' of simulation.
     reset = function(){
@@ -127,19 +131,19 @@ Events <- R6::R6Class(
     },
 
     #' @description
-    #' trigger an event (always TRUE) and execute action accordingly. It calls
+    #' trigger an milestone (always TRUE) and execute action accordingly. It calls
     #' Trial$get_data_lock_time() to lock data based on conditions implemented
-    #' in Event$trigger_condition. If time that meets the condition cannot be
+    #' in Milestones$trigger_condition. If time that meets the condition cannot be
     #' found, Trial$get_data_lock_time() will throw an error and stop the
     #' program. This means that user needs to adjust their trigger_condition
     #' (e.g., target number of events (target_n_events) is impossible to
     #' reach).
     #' @param trial a \code{Trial} object.
     #' @param ... other arguments.
-    trigger_event = function(trial, ...){
+    trigger_milestone = function(trial, ...){
       if(self$get_trigger_status()){
         if(!private$silent){
-          message('Event <', self$get_name(),
+          message('Milestone <', self$get_name(),
                   '> has already been triggered before, thus is skipped. ')
         }
         return(NULL)
@@ -148,12 +152,12 @@ Events <- R6::R6Class(
       ## find time that meets the trigger condition to lock data in trial,
       ## so that action can be executed on it.
       if(!private$silent){
-        message('Conditioin of event <', self$get_name(), '> is being checked. \n')
+        message('Conditioin of milestone <', self$get_name(), '> is being checked. \n')
       }
 
       data_lock_time <- self$get_trigger_condition()$get_trigger_time(trial)
 
-      ## always lock data after an event and before taking actions
+      ## always lock data after an milestone and before taking actions
       trial$lock_data(data_lock_time, self$get_name())
 
       self$execute_action(trial)
