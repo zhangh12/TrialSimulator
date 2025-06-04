@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.67.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.68.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -19,7 +19,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
-    <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Events in a Trial</a></li>
+    <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/designDocument.html">Modular Clinical Trial Simulation: Overview of Core Functions and Workflow</a></li>
@@ -69,22 +69,10 @@
         <dd>A wrapper of random number generator.</dd>
       </dl><dl><dt>
 
-          <code><a href="DynamicTriggerConditionFunction.html">DynamicTriggerConditionFunction()</a></code>
-
-        </dt>
-        <dd>A wrapper of event trigger condition function</dd>
-      </dl><dl><dt>
-
           <code><a href="Endpoints.html">Endpoints</a></code>
 
         </dt>
         <dd>Class of Endpoint</dd>
-      </dl><dl><dt>
-
-          <code><a href="Events.html">Events</a></code>
-
-        </dt>
-        <dd>Class of Event</dd>
       </dl><dl><dt>
 
           <code><a href="GraphicalTesting.html">GraphicalTesting</a></code>
@@ -105,6 +93,12 @@
         <dd>Class of Listener</dd>
       </dl><dl><dt>
 
+          <code><a href="Milestones.html">Milestones</a></code>
+
+        </dt>
+        <dd>Class of Milestones</dd>
+      </dl><dl><dt>
+
           <code><a href="PiecewiseConstantExponentialRNG.html">PiecewiseConstantExponentialRNG()</a></code>
 
         </dt>
@@ -121,18 +115,6 @@
 
         </dt>
         <dd>Class of Trial</dd>
-      </dl><dl><dt>
-
-          <code><a href="TriggerByCalendarTime.html">TriggerByCalendarTime()</a></code>
-
-        </dt>
-        <dd>A trigger_condition function</dd>
-      </dl><dl><dt>
-
-          <code><a href="TriggerByEventNumbers.html">TriggerByEventNumbers()</a></code>
-
-        </dt>
-        <dd>A trigger_condition function</dd>
       </dl><dl><dt>
 
           <code><a href="arm.html">arm()</a></code>
@@ -177,16 +159,10 @@
         <dd>Triggering condition by number of randomized patients</dd>
       </dl><dl><dt>
 
-          <code><a href="event.html">event()</a></code>
-
-        </dt>
-        <dd>Define an Trial Event</dd>
-      </dl><dl><dt>
-
           <code><a href="eventNumber.html">eventNumber()</a></code>
 
         </dt>
-        <dd>Triggering condition by number of events</dd>
+        <dd>Triggering condition by number of events or observations of an endpoint</dd>
       </dl><dl><dt>
 
           <code><a href="fitCoxph.html">fitCoxph()</a></code>
@@ -231,6 +207,12 @@
         <dd>Define a Listener</dd>
       </dl><dl><dt>
 
+          <code><a href="milestone.html">milestone()</a></code>
+
+        </dt>
+        <dd>Define a Milestone of a Trial</dd>
+      </dl><dl><dt>
+
           <code><a href="rconst.html">rconst()</a></code>
 
         </dt>
@@ -262,7 +244,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer></div>
