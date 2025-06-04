@@ -1,8 +1,8 @@
 ---
-title: "Condition System for Triggering Events in a Trial"
+title: "Condition System for Triggering Milestones in a Trial"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Condition System for Triggering Events in a Trial}
+  %\VignetteIndexEntry{Condition System for Triggering Milestones in a Trial}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -11,7 +11,7 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   cache = TRUE,
-  cache.path = 'cache/defineNonTimeToEventEndpoints/',
+  cache.path = 'cache/conditionSystem/',
   comment = '#>',
   dpi = 300,
   out.width = '100%'
@@ -22,20 +22,20 @@ knitr::opts_chunk$set(
 library(TrialSimulator)
 ```
 
-In clinical trial simulations, it is often necessary to specify when certain actions should be taken. For example, a trial may require interim data reviews when a predefined number of surrogate endpoint events occur to support dose selection. More complex event triggers can be defined based on event numbers of one or multiple endpoints, calendar time, the number of enrolled patients, or a combination of multiple conditions. These triggers may govern critical analyses such as futility assessments, sample size re-assessment, interim analyses, and final evaluations.
+In clinical trial simulations, it is often necessary to specify when certain actions should be taken. For example, a trial may require interim data reviews when a predefined number of surrogate endpoint events occur to support dose selection. More complex triggers can be defined based on event numbers of one or multiple endpoints, calendar time, the number of enrolled patients, or a combination of multiple conditions. These triggers may govern critical analyses such as futility assessments, sample size re-assessment, interim analyses, and final evaluations, at various trial milestones. 
 
-To facilitate this process, `TrialSimulator` provides an intuitive condition-based system for defining event triggers. It supports logical operations (`&` for AND and `|` for OR), allowing users to specify complex conditions seamlessly. The simulator is then automatically determines the appropriate time points and executes user-defined actions accordingly.
+To facilitate this process, `TrialSimulator` provides an intuitive condition-based system for defining milestone triggers. It supports logical operations (`&` for AND and `|` for OR), allowing users to specify complex conditions seamlessly. The simulator is then automatically determines the appropriate time points and executes user-defined actions accordingly.
 
-Currently, `TrialSimulator` provides three key functions to define the earliest possible time for triggering an event:
+Currently, `TrialSimulator` provides three key functions to define the earliest possible time for triggering a milestone:
 
-- `calendarTime(time)`: Specifies a minimum trial duration before an event can occur.
+- `calendarTime(time)`: Specifies a minimum trial duration before a milestone can occur.
 
-- `enrollment(n)`: Specifies a minimum number of patients that must be enrolled before an event can occur.
+- `enrollment(n)`: Specifies a minimum number of patients that must be enrolled before a milestone can occur.
 
-- `eventNumber(endpoint, n, arms)`: Specifies a minimum number of observed events for a given endpoint before triggering an event. This condition can apply to specific arms or the entire trial.
+- `eventNumber(endpoint, n, arms)`: Specifies a minimum number of observed events for a given endpoint before triggering a milestone This condition can apply to specific arms or the entire trial.
 
-The following sections illustrate various ways to define event triggers using these functions, 
-which could be passed to the argument `trigger_condition` of `event()`. 
+The following sections illustrate various ways to define milestone triggers using these functions, 
+which could be passed to the argument `trigger_condition` of `milestone()`. 
 
 #### A trial has been running for 6 months
 ```{r oiea}

@@ -1,5 +1,5 @@
 
-test_that('trial event timing and endpoint event count work as expected', {
+test_that('trial milestone timing and endpoint event count work as expected', {
 
   pfs <- endpoint(name = 'pfs', type = 'tte', generator = rexp, rate = log(2)/10)
   os <- endpoint(name = 'os', type = 'tte', generator = rexp, rate = log(2)/17)
@@ -27,20 +27,20 @@ test_that('trial event timing and endpoint event count work as expected', {
 
   trial$add_arms(sample_ratio = c(1, 2), pbo, trt)
 
-  interim1 <- event(name = 'interim1',
-                    trigger_condition =
-                      eventNumber(endpoint = 'or', n = 200))
+  interim1 <- milestone(name = 'interim1',
+                        trigger_condition =
+                          eventNumber(endpoint = 'or', n = 200))
 
-  interim2 <- event(name = 'interim2',
-                    trigger_condition =
-                      eventNumber(endpoint = 'pfs', n = 240) &
-                      eventNumber(endpoint = 'os', n = 170))
+  interim2 <- milestone(name = 'interim2',
+                        trigger_condition =
+                          eventNumber(endpoint = 'pfs', n = 240) &
+                          eventNumber(endpoint = 'os', n = 170))
 
-  final <- event(name = 'final',
-                 trigger_condition = calendarTime(time = 40))
+  final <- milestone(name = 'final',
+                     trigger_condition = calendarTime(time = 40))
 
   listener <- listener(silent = TRUE)
-  listener$add_events(interim1, interim2, final)
+  listener$add_milestones(interim1, interim2, final)
 
   controller <- controller(trial, listener)
   controller$run(n = 1, plot_event = FALSE, silent = TRUE)
@@ -51,8 +51,8 @@ test_that('trial event timing and endpoint event count work as expected', {
   dat2 <- trial$get_locked_data('interim2')
   dat3 <- trial$get_locked_data('final')
 
-  time1 <- trial$get_event_time('interim1')
-  time2 <- trial$get_event_time('interim2')
+  time1 <- trial$get_milestone_time('interim1')
+  time2 <- trial$get_milestone_time('interim2')
 
 
   expect_equal(sum(!is.na(dat1$or)), 200)
@@ -121,17 +121,17 @@ test_that('endpoint event counts work as expected when duration is adapted', {
 
   trial$add_arms(sample_ratio = c(1, 2), pbo, trt)
 
-  action_at_interim <- function(trial, event_name){
+  action_at_interim <- function(trial, milestone_name){
     trial$set_duration(duration = 40)
   }
 
-  interim <- event(name = 'interim',
-                   trigger_condition =
-                     eventNumber(endpoint = 'os', n = 150),
-                   action = action_at_interim)
+  interim <- milestone(name = 'interim',
+                       trigger_condition =
+                         eventNumber(endpoint = 'os', n = 150),
+                       action = action_at_interim)
 
   listener <- listener(silent = TRUE)
-  listener$add_events(interim)
+  listener$add_milestones(interim)
 
   controller <- controller(trial, listener)
   controller$run(plot_event = FALSE, silent = TRUE)
@@ -140,13 +140,13 @@ test_that('endpoint event counts work as expected when duration is adapted', {
 
   expect_equal(sum(dat1_$os_event %in% 1), 150)
 
-  final <- event(name = 'final',
-                 trigger_condition =
-                   eventNumber(endpoint = 'os', n = 400) |
-                   calendarTime(time = 40))
+  final <- milestone(name = 'final',
+                     trigger_condition =
+                       eventNumber(endpoint = 'os', n = 400) |
+                       calendarTime(time = 40))
 
 
-  listener$add_events(final)
+  listener$add_milestones(final)
   controller$run(plot_event = FALSE, silent = TRUE)
 
   dat1 <- trial$get_locked_data('interim')
@@ -227,21 +227,21 @@ test_that('endpoint event counts work as expected when an arm is removed', {
 
   trial$add_arms(sample_ratio = c(1, 1, 2), pbo, trt1, trt2)
 
-  interim1 <- event(name = 'interim1',
-                    trigger_condition =
-                      eventNumber(endpoint = 'or', n = 200),
-                    action = function(trial, event_name){trial$remove_arms('trt1')})
+  interim1 <- milestone(name = 'interim1',
+                        trigger_condition =
+                          eventNumber(endpoint = 'or', n = 200),
+                        action = function(trial, milestone_name){trial$remove_arms('trt1')})
 
-  interim2 <- event(name = 'interim2',
-                    trigger_condition =
-                      eventNumber(endpoint = 'pfs', n = 240) &
-                      eventNumber(endpoint = 'os', n = 170))
+  interim2 <- milestone(name = 'interim2',
+                        trigger_condition =
+                          eventNumber(endpoint = 'pfs', n = 240) &
+                          eventNumber(endpoint = 'os', n = 170))
 
-  final <- event(name = 'final',
+  final <- milestone(name = 'final',
                  trigger_condition = calendarTime(time = 40))
 
   listener <- listener(silent = TRUE)
-  listener$add_events(interim1, interim2, final)
+  listener$add_milestones(interim1, interim2, final)
 
   controller <- controller(trial, listener)
   controller$run(n = 1, plot_event = FALSE, silent = TRUE)
@@ -253,7 +253,7 @@ test_that('endpoint event counts work as expected when an arm is removed', {
   remove_attr <- function(locked_data){
     attr(locked_data, 'lock_time') <- NULL
     attr(locked_data, 'n_enrolled_patients') <- NULL
-    attr(locked_data, 'event_name') <- NULL
+    attr(locked_data, 'milestone_name') <- NULL
     locked_data
   }
 

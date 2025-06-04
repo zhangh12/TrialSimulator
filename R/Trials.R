@@ -123,7 +123,7 @@ Trials <- R6::R6Class(
                 '> -> <', self$get_duration(), '>. ')
       }
 
-      ## all patients enrolled before current event should be censored
+      ## all patients enrolled before current milestone should be censored
       ## or truncated at old duration
       self$censor_trial_data(censor_at = old_duration,
                              enrolled_before = self$get_current_time())
@@ -265,11 +265,11 @@ Trials <- R6::R6Class(
                 '>. \n')
       }
 
-      ## data of removed arms should be censored at event time
+      ## data of removed arms should be censored at milestone time
       ## so that number of events of those arms are fixed.
       ## Otherwise, number of events can possibly increase later and affect
       ## calculation of triggering condition based on event numbers.
-      ## Idealy, number of events in removed arms should be flatten afterward,
+      ## Ideally, number of events in removed arms should be flatten afterward,
       ## and can be seen through Trial$event_plot().
       self$censor_trial_data(censor_at = self$get_current_time(),
                              selected_arms = arms_name)
@@ -629,9 +629,9 @@ Trials <- R6::R6Class(
 
     #' @description
     #' set current time of a trial. Any data collected before could not be
-    #' changed. private$now should be set after an event is triggered
-    #' (through Event class, futility, interim, etc), an arm is added or
-    #' removed as a result of an event
+    #' changed. private$now should be set after a milestone is triggered
+    #' (through Milestones class, futility, interim, etc), an arm is added or
+    #' removed at a milestone
     #' @param time current calendar time of a trial.
     set_current_time = function(time){
       stopifnot(time >= 0)
@@ -646,7 +646,7 @@ Trials <- R6::R6Class(
     },
 
     #' @description
-    #' count accumulative number of events (for TTE) or samples (otherwise) over
+    #' count accumulative number of events (for TTE) or non-missing samples (otherwise) over
     #' calendar time (enroll time + tte for TTE, or enroll time + readout otherwise)
     #' @param arms a vector of arms' name on which the event tables are created.
     #' if \code{NULL}, all arms in the trial will be used.
@@ -704,7 +704,7 @@ Trials <- R6::R6Class(
 
     #' @description
     #' given a set of endpoints and target number of events, determine the data
-    #' lock time for Event (futility, interim, final (?)). This function does
+    #' lock time for a milestone (futility, interim, final, etc.). This function does
     #' not change trial object (e.g. rolling back not yet randomized patients after
     #' the found data lock time).
     #' @param endpoints character vector. Data lock time is determined by a set
@@ -741,17 +741,17 @@ Trials <- R6::R6Class(
              '> are missing in event_counts when determining data lock time. ')
       }
 
-      event_times <- NULL
+      milestone_times <- NULL
       for(i in seq_along(endpoints)){
         if(max(event_counts[[endpoints[i]]]$n_events) < target_n_events[i]){
           warning('No enough events/samples for endpoint <', endpoints[i],
                '> to reach the target number <', target_n_events[i], '>. ',
                immediate. = TRUE)
-          event_times <- c(event_times, Inf)
+          milestone_times <- c(milestone_times, Inf)
         }else{
 
-          event_times <-
-            c(event_times,
+          milestone_times <-
+            c(milestone_times,
               min(event_counts[[endpoints[i]]]$calendar_time[
                 event_counts[[endpoints[i]]]$n_events >= target_n_events[i]
               ]))
@@ -760,8 +760,8 @@ Trials <- R6::R6Class(
 
       lock_time <-
         case_when(
-          type %in% 'all' ~ max(event_times),
-          type %in% 'any' ~ min(event_times),
+          type %in% 'all' ~ max(milestone_times),
+          type %in% 'any' ~ min(milestone_times),
           TRUE ~ -Inf
         )
 
@@ -827,15 +827,15 @@ Trials <- R6::R6Class(
     },
 
     #' @description
-    #' return locked data for an event
-    #' @param event_name character, event name of which the locked data to be
+    #' return locked data for a milestone
+    #' @param milestone_name character, milestone name of which the locked data to be
     #' extracted.
-    get_locked_data = function(event_name){
-      if(!(event_name %in% names(private$locked_data))){
-        stop('Locked data for event <', event_name, '> cannot be found. ')
+    get_locked_data = function(milestone_name){
+      if(!(milestone_name %in% names(private$locked_data))){
+        stop('Locked data for milestone <', milestone_name, '> cannot be found. ')
       }
 
-      private$locked_data[[event_name]]
+      private$locked_data[[milestone_name]]
     },
 
     #' @description
@@ -845,83 +845,83 @@ Trials <- R6::R6Class(
     },
 
     #' @description
-    #' return number of events at lock time
-    #' @param event_name names of triggered events. Use all triggered events
+    #' return number of events at lock time of milestones
+    #' @param milestone_name names of triggered milestones. Use all triggered milestones
     #' if \code{NULL}.
-    get_event_number = function(event_name = NULL){
-      if(is.null(event_name)){
-        event_name <- self$get_locked_data_name()
+    get_event_number = function(milestone_name = NULL){
+      if(is.null(milestone_name)){
+        milestone_name <- self$get_locked_data_name()
       }
 
       n_events <- NULL
       lock_time <- NULL
-      for(event in event_name){
+      for(milestone in milestone_name){
         lock_time <- c(lock_time,
-                       attr(self$get_locked_data(event), 'lock_time')[1])
+                       attr(self$get_locked_data(milestone), 'lock_time')[1])
         n_events <- bind_rows(n_events,
-                              attr(attr(self$get_locked_data(event), 'lock_time'), 'n_events'))
+                              attr(attr(self$get_locked_data(milestone), 'lock_time'), 'n_events'))
       }
 
       n_events <- n_events %>%
         mutate(lock_time = lock_time) %>%
-        mutate(event_name = event_name) %>%
+        mutate(milestone_name = milestone_name) %>%
         arrange(lock_time)
 
       n_events
     },
 
     #' @description
-    #' save time of a new event.
-    #' @param event_time numeric. Time of new event.
-    #' @param event_name character. Name of new event.
-    save_event_time = function(event_time, event_name){
-      if(event_name %in% names(private$event_time)){
-        stop('Time of event <', event_name, '> has already been saved before. ')
+    #' save time of a new milestone.
+    #' @param milestone_time numeric. Time of new milestone.
+    #' @param milestone_name character. Name of new milestone.
+    save_milestone_time = function(milestone_time, milestone_name){
+      if(milestone_name %in% names(private$milestone_time)){
+        stop('Time of milestone <', milestone_name, '> has already been saved before. ')
       }
 
-      if(length(private$event_time) > 0){
-        if(any(private$event_time > event_time)){
-          en <- names(private$event_time)[private$event_time > event_time]
-          et <- private$event_time[private$event_time > event_time]
-          stop('New event <', event_name, '> (time = ', round(event_time, 2),
-               ') happens before events <',
+      if(length(private$milestone_time) > 0){
+        if(any(private$milestone_time > milestone_time)){
+          en <- names(private$milestone_time)[private$milestone_time > milestone_time]
+          et <- private$milestone_time[private$milestone_time > milestone_time]
+          stop('New milestone <', milestone_name, '> (time = ', round(milestone_time, 2),
+               ') happens before milestones <',
                paste0(en, ' (time = ', round(et, 2), ')', collapse = ', '), '>. \n',
-               'A possible reason is mis-specification of event order or triggering conditions. \n',
+               'A possible reason is mis-specification of milestone order or triggering conditions. \n',
                'Use seed = <', self$get_seed(), '> to debug it. ')
         }
       }
 
-      private$event_time[event_name] <- event_time
+      private$milestone_time[milestone_name] <- milestone_time
     },
 
     #' @description
-    #' return event time when triggering a given event
-    #' @param event_name character. Name of event.
-    get_event_time = function(event_name){
-      if(!all(event_name %in% names(private$event_time))){
-        stop('Event(s) <',
-             paste0(setdiff(event_name, names(private$event_time)), collapse = ', '),
+    #' return milestone time when triggering a given milestone
+    #' @param milestone_name character. Name of milestone.
+    get_milestone_time = function(milestone_name){
+      if(!all(milestone_name %in% names(private$milestone_time))){
+        stop('Milestone(s) <',
+             paste0(setdiff(milestone_name, names(private$milestone_time)), collapse = ', '),
              '> cannot be found. ',
-             'Make sure that event(s) have be triggered ',
-             'and their triggering time has been saved by calling get_event_time. ',
+             'Make sure that milestone(s) have be triggered ',
+             'and their triggering time has been saved by calling get_milestone_time. ',
              'Usually this function is called automatically while locking a data. ')
       }
 
-      private$event_time[event_name]
+      private$milestone_time[milestone_name]
     },
 
     #' @description
     #' lock data at specific calendar time.
-    #' For time-to-event endpoints, their event indicator *_event should be
+    #' For time-to-event endpoints, their event indicator \code{*_event} should be
     #' updated accordingly. Locked data should be stored separately.
     #' DO NOT OVERWRITE/UPDATE private$trial_data! which can lose actual
     #' time-to-event information. For example, a patient may be censored at
     #' the first data lock. However, he may have event being observed in a
     #' later data lock.
     #' @param at_calendar_time time point to lock trial data
-    #' @param event_name assign event name as the name of locked data for
+    #' @param milestone_name assign milestone name as the name of locked data for
     #' future reference.
-    lock_data = function(at_calendar_time, event_name){
+    lock_data = function(at_calendar_time, milestone_name){
 
       trial_data <- self$get_trial_data()
 
@@ -963,20 +963,20 @@ Trials <- R6::R6Class(
 
       attr(locked_data, 'lock_time') <- at_calendar_time
       attr(locked_data, 'n_enrolled_patients') <- length(unique(locked_data$patient_id))
-      attr(locked_data, 'event_name') <- event_name
-      private$locked_data[[event_name]] <- locked_data
+      attr(locked_data, 'milestone_name') <- milestone_name
+      private$locked_data[[milestone_name]] <- locked_data
       self$set_current_time(at_calendar_time)
-      self$save_event_time(at_calendar_time, event_name)
+      self$save_milestone_time(at_calendar_time, milestone_name)
 
-      self$save(value = at_calendar_time, name = paste0('event_time_<', event_name, '>'))
+      self$save(value = at_calendar_time, name = paste0('milestone_time_<', milestone_name, '>'))
       self$save(value = as.data.frame(attr(at_calendar_time, 'n_events')),
-                name = paste0('n_events_<', event_name, '>'))
+                name = paste0('n_events_<', milestone_name, '>'))
 
       if(!private$silent){
-        message('Data is locked at time = ', at_calendar_time, ' for event <',
-                event_name, '>.\n',
+        message('Data is locked at time = ', at_calendar_time, ' for milestone <',
+                milestone_name, '>.\n',
                 'Locked data can be accessed in Trial$get_locked_data(\'',
-                event_name, '\'). \n',
+                milestone_name, '\'). \n',
                 'Number of events at lock time: \n')
         out <- as.data.frame(attr(at_calendar_time, 'n_events'))
         if('patient_id' %in% names(out)){
@@ -987,13 +987,13 @@ Trials <- R6::R6Class(
       }
 
       ## I am not sure about this part yet.
-      ## Once data is locked for an event, it is not always necessary to
+      ## Once data is locked for a milestone, it is not always necessary to
       ## roll back. For example, all arms are keeping moving without anything
       ## change is possible. This could happen except for futility analysis
       ## (early stop), or adding/removing arms. It seems like this part should
-      ## be done in action() depending on the type of event.
+      ## be done in action() depending on the type of milestone.
       ##
-      ## updated note: Yes, should be done by users in action function of event
+      ## updated note: Yes, should be done by users in action function of milestone
       ## Actually, $add_arms, $remove_arms, and $update_sample_ratio can be
       ## called by users in action function. All these three functions will
       ## do randomization, and patient enrollment again. We possibly support
@@ -1178,9 +1178,9 @@ Trials <- R6::R6Class(
     #' removed arms) only. If \code{NULL}, it will be set to all available arms
     #' in trial data. Otherwise, censoring is applied to user-specified arms only.
     #' This is necessary because number of events/sample size in removed arms
-    #' should be fixed unchanged since corresponding event is triggered. In that
+    #' should be fixed unchanged since corresponding milestone is triggered. In that
     #' case, one can update trial data by something like
-    #' \code{censor_trial_data(censor_at = event_time, selected_arms = removed_arms)}.
+    #' \code{censor_trial_data(censor_at = milestone_time, selected_arms = removed_arms)}.
     #' @param enrolled_before censoring is applied to patients enrolled before
     #' specific time. This argument would be used when trial duration is
     #' updated by \code{set_duration}. Adaptation happens when \code{set_duration}
@@ -1454,12 +1454,12 @@ Trials <- R6::R6Class(
     },
 
     #' @description
-    #' calculate independent increments from a given set of events
+    #' calculate independent increments from a given set of milestones
     #' @param endpoint character. Name of time-to-event endpoint in trial's
     #' locked data.
     #' @param placebo character. String of placebo in trial's locked data.
-    #' @param events a character vector of event names in the trial, e.g.,
-    #' \code{listener$get_event_names()}.
+    #' @param milestones a character vector of milestone names in the trial, e.g.,
+    #' \code{listener$get_milestone_names()}.
     #' @param planned_info a vector of planned accumulative number of event of
     #' time-to-event endpoint. Note: \code{planned_info} can also be a character
     #' \code{"oracle"} so that planned number of events are set to be observed
@@ -1498,19 +1498,19 @@ Trials <- R6::R6Class(
     #' @examples
     #'
     #' \dontrun{
-    #' trial$independentIncrement('pfs', 'pbo', listener$get_event_names(), 'oracle')
+    #' trial$independentIncrement('pfs', 'pbo', listener$get_milestone_names(), 'oracle')
     #' }
-    independentIncrement = function(endpoint, placebo, events,
+    independentIncrement = function(endpoint, placebo, milestones,
                                     planned_info,
                                     ...){
 
-      if(!identical(planned_info, 'oracle') && length(events) != length(planned_info)){
-        stop('events and planned_info should be of same length. ')
+      if(!identical(planned_info, 'oracle') && length(milestones) != length(planned_info)){
+        stop('milestones and planned_info should be of same length. ')
       }
 
-      ## by doing this, events in function argument can be in arbitrary order
-      event_time <- sort(self$get_event_time(events))
-      events <- names(event_time)
+      ## by doing this, milestones in function argument can be in arbitrary order
+      milestone_time <- sort(self$get_milestone_time(milestones))
+      milestones <- names(milestone_time)
 
       info <- c() ## observed accumulated events
       lr <- c() ## one-sided log rank statistics
@@ -1524,10 +1524,10 @@ Trials <- R6::R6Class(
       n_pbo <- c()
       n_trt <- c()
       trt_str <- c()
-      event_name <- c()
-      for(i in seq_along(events)){
-        event_name[i] <- events[i]
-        lr_fit <- fitLogrank(endpoint, placebo, self$get_locked_data(events[i]), ...)
+      milestone_name <- c()
+      for(i in seq_along(milestones)){
+        milestone_name[i] <- milestones[i]
+        lr_fit <- fitLogrank(endpoint, placebo, self$get_locked_data(milestones[i]), ...)
         info[i] <- lr_fit$info
         lr[i] <- lr_fit$z
         info_pbo[i] <- lr_fit$info_pbo
@@ -1543,7 +1543,7 @@ Trials <- R6::R6Class(
       }
 
       if(any(diff(planned_info) < 0)){
-        stop('events and planned_info should be in the same order. ')
+        stop('milestones and planned_info should be in the same order. ')
       }
 
       if(any(diff(info) < 0)){
@@ -1590,8 +1590,8 @@ Trials <- R6::R6Class(
 
       ret <-
         data.frame(
-          event = event_name,
-          event_time = unname(event_time),
+          milestone = milestone_name,
+          milestone_time = unname(milestone_time),
           p_inverse_normal = 1 - pnorm(inverse_normal),
           z_inverse_normal = inverse_normal,
           p_logrank = 1 - pnorm(lr),
@@ -1613,7 +1613,7 @@ Trials <- R6::R6Class(
       if(any(ret$stage_info < 30)){
         ret_ <- ret %>%
           dplyr::filter(stage_info < 30) %>%
-          dplyr::select(event, event_time, planned_info, info, stage_info, stage_n_pbo, stage_n_trt, trt_str)
+          dplyr::select(milestone, milestone_time, planned_info, info, stage_info, stage_n_pbo, stage_n_trt, trt_str)
 
         warning('In the arm(s) <',
                 paste0(unique(ret_$trt_str), collapse = ', '),
@@ -1634,12 +1634,12 @@ Trials <- R6::R6Class(
     #' @param placebo character. Name of placebo arm.
     #' @param treatments character vector. Name of treatment arms to be used in
     #' comparison.
-    #' @param events character vector. Names of triggered events at which either
+    #' @param milestones character vector. Names of triggered milestones at which either
     #' adaptation is applied or statistical testing for endpoint is performed.
-    #' Event in \code{events} does not need to be sorted by their triggering time.
+    #' Milestones in \code{milestones} does not need to be sorted by their triggering time.
     #' @param planned_info a data frame of planned number of events of
-    #' time-to-event endpoint in each stage and each arm. Event names, i.e.,
-    #' \code{events} are row names of \code{planned_info}, and arm names, i.e.,
+    #' time-to-event endpoint in each stage and each arm. Milestone names, i.e.,
+    #' \code{milestones} are row names of \code{planned_info}, and arm names, i.e.,
     #' \code{c(placebo, treatments)} are column names.
     #' Note that it is not the accumulative but stage-wise event numbers.
     #' It is usually not easy to determine these numbers in practice, simulation
@@ -1688,7 +1688,7 @@ Trials <- R6::R6Class(
     #' to a much higher power (roughly 10\%) than setting \code{planned_info} to
     #' median of event numbers at stages, which can be determined by simulation.
     #' I am not sure if regulator would support such practice. For example,
-    #' if an event (e.g., interim analysis) is triggered at a pre-specified
+    #' if a milestone (e.g., interim analysis) is triggered at a pre-specified
     #' calendar time, the number of randomized patients is random and is unknown
     #' when planning the trial. If I understand it correctly, regulator may want
     #' the information fraction in closed test (combined with Dunnett test) to
@@ -1709,17 +1709,18 @@ Trials <- R6::R6Class(
     #'
     #' @examples
     #' \dontrun{
-    #' trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_names(), 'default')
+    #' trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'),
+    #'                   listener$get_milestone_names(), 'default')
     #' }
     #'
-    dunnettTest = function(endpoint, placebo, treatments, events, planned_info, ...){
+    dunnettTest = function(endpoint, placebo, treatments, milestones, planned_info, ...){
 
       if(!identical(planned_info, 'default')){
         if(!('data.frame' %in% class(planned_info))){
           stop('planned_info should be a data frame of planned information at each of the stages. ')
         }
-        if(nrow(planned_info) != length(events)){
-          stop('events and planned_info should be of same length. ')
+        if(nrow(planned_info) != length(milestones)){
+          stop('milestones and planned_info should be of same length. ')
         }
 
         if(ncol(planned_info) != length(treatments) + 1){
@@ -1736,29 +1737,29 @@ Trials <- R6::R6Class(
 
         planned_info <- planned_info[, c(placebo, treatments), drop = FALSE]
 
-        if(!setequal(rownames(planned_info), events)){
-          stop('planned_info should use event names for its row names. ')
+        if(!setequal(rownames(planned_info), milestones)){
+          stop('planned_info should use milestone names for its row names. ')
         }
 
-        planned_info <- planned_info[events, , drop = FALSE]
+        planned_info <- planned_info[milestones, , drop = FALSE]
       }
 
-      ## by doing this, events in function argument can be in arbitrary order
+      ## by doing this, milestones in function argument can be in arbitrary order
 
-      if(!all(events %in% names(private$event_time))){
-        stop('Event(s) <', paste0(setdiff(events, names(private$event_time)), collapse = ', '),
-             '> haven\'t been triggered yet, so are unable to be used as "events" in dunnettTest(). ')
+      if(!all(milestones %in% names(private$milestone_time))){
+        stop('Milestone(s) <', paste0(setdiff(milestones, names(private$milestone_time)), collapse = ', '),
+             '> haven\'t been triggered yet, so are unable to be used as "milestones" in dunnettTest(). ')
       }
 
-      event_time <- sort(self$get_event_time(events))
-      events <- names(event_time)
+      milestone_time <- sort(self$get_milestone_time(milestones))
+      milestones <- names(milestone_time)
 
       ii <- list() ## calculate independent increments for each of treatment arms
       for(i in seq_along(treatments)){
         trt_str <- treatments[i]
 
         ii[[trt_str]] <-
-          self$independentIncrement(endpoint, placebo, events,
+          self$independentIncrement(endpoint, placebo, milestones,
                                     ## it doesn't matter what is used for planned_info
                                     ## because we only use z_ii in returned object
                                     ## which is irrelevant to planned_info
@@ -1787,19 +1788,19 @@ Trials <- R6::R6Class(
       inverse_normal_dunnett_pvalue <- list()
       for(comb in all_combn){
         inverse_normal_dunnett_pvalue[[createArmCombination(comb)]] <- NULL
-        for(event_name in events){ ## events is already ordered by triggering time
+        for(milestone_name in milestones){ ## milestones is already ordered by triggering time
           z_ii <- NULL
           ratio_trt <- NULL
           stage_n_pbo <- NULL
           available_trt <- NULL
           if(!identical(planned_info, 'default')){
-            pinfo <- planned_info[event_name, placebo]
+            pinfo <- planned_info[milestone_name, placebo]
           }
           for(trt in comb){
-            ii0 <- ii[[trt]] %>% dplyr::filter(event %in% event_name)
+            ii0 <- ii[[trt]] %>% dplyr::filter(milestone %in% milestone_name)
 
             if(!identical(planned_info, 'default')){
-              pinfo <- pinfo + planned_info[event_name, trt]
+              pinfo <- pinfo + planned_info[milestone_name, trt]
             }
 
             ## we expect stage_n_pbo is a constant vector
@@ -1814,9 +1815,9 @@ Trials <- R6::R6Class(
             }
           }
 
-          name1 <- paste0(createArmCombination(comb), '@', event_name)
+          name1 <- paste0(createArmCombination(comb), '@', milestone_name)
           if(length(available_trt) > 0){
-            name2 <- paste0(paste0(sort(available_trt), collapse = '|'), '@', event_name)
+            name2 <- paste0(paste0(sort(available_trt), collapse = '|'), '@', milestone_name)
             if(!is.null(stage_dunnett_pvalue[[name2]])){
               stage_dunnett_pvalue[[name1]] <- stage_dunnett_pvalue[[name2]]
             }else{
@@ -1848,8 +1849,8 @@ Trials <- R6::R6Class(
           tmp <-
             data.frame(
               endpoint = endpoint,
-              event = event_name,
-              event_time = unname(event_time[event_name]),
+              milestone = milestone_name,
+              milestone_time = unname(milestone_time[milestone_name]),
               p_logrank = ii0$p_logrank,
               stage_p = stage_dunnett_pvalue[[name1]],
               stage_planned_info = pinfo)
@@ -1872,7 +1873,7 @@ Trials <- R6::R6Class(
         ## the last entry in is_final should be set to TRUE when calling GroupSequentialTest
         ## However, we don't do this here because not all rows in inverse_normal_dunnett_pvalue
         ## will be used to test a specific endpoint (e.g., PFS may not be tested
-        ## at all event time). Instead, set the last entry to TRUE before
+        ## at all milestone time). Instead, set the last entry to TRUE before
         ## performing the significance test
         tmp$is_final <- FALSE
         inverse_normal_dunnett_pvalue[[i]] <- tmp
@@ -1889,29 +1890,29 @@ Trials <- R6::R6Class(
     #' @param dunnett_test object returned by \code{Trial$dunnettTest()}.
     #' @param treatments character vector. Name of treatment arms to be used in
     #' comparison.
-    #' @param events character vector. Names of triggered events at which
+    #' @param milestones character vector. Names of triggered milestones at which
     #' significance testing for endpoint is performed in closed test.
-    #' Event in \code{events} does not need to be sorted by their triggering time.
+    #' Milestones in \code{milestones} does not need to be sorted by their triggering time.
     #' @param alpha numeric. Allocated alpha.
     #' @param alpha_spending alpha spending function. It can be \code{"asP"} or
     #' \code{"asOF"}. Note that theoretically it can be \code{"asUser"}, but
     #' it is not tested. It may be supported in the future.
     #'
     #' @return a data frame of columns \code{arm}, \code{decision},
-    #' \code{event_at_reject}, and \code{reject_time}.
+    #' \code{milestone_at_reject}, and \code{reject_time}.
     #'
     #' @examples
     #' \dontrun{
     #' dt <- trial$dunnettTest(
     #'   'pfs', 'pbo', c('high dose', 'low dose'),
-    #'   listener$get_event_names(), 'default')
+    #'   listener$get_milestone_names(), 'default')
     #'
     #' trial$closedTest(dt, c('high dose', 'low dose'),
     #'                  c('pfs interim', 'pfs final'),
     #'                  0.025, 'asOF')
     #' }
     #'
-    closedTest = function(dunnett_test, treatments, events, alpha, alpha_spending = c('asP', 'asOF')){
+    closedTest = function(dunnett_test, treatments, milestones, alpha, alpha_spending = c('asP', 'asOF')){
 
       alpha_spending <- match.arg(alpha_spending)
 
@@ -1931,16 +1932,16 @@ Trials <- R6::R6Class(
 
       for(i in seq_along(dunnett_test)){
 
-          if(all(events %in% dunnett_test[[i]]$event)){
+          if(all(milestones %in% dunnett_test[[i]]$milestone)){
             dunnett_test[[i]] <- dunnett_test[[i]] %>%
-              dplyr::filter(event %in% events) %>%
-              arrange(event_time) %>%
+              dplyr::filter(milestone %in% milestones) %>%
+              arrange(milestone_time) %>%
               mutate(is_final = FALSE)
 
             dunnett_test[[i]]$is_final[nrow(dunnett_test[[i]])] <- TRUE
           }else{
-            stop('Events <',
-                 paste0(setdiff(events, dunnett_test[[i]]$event), collapse = ', '),
+            stop('Milestones <',
+                 paste0(setdiff(milestones, dunnett_test[[i]]$milestone), collapse = ', '),
                  '> are not in dunnett_test. ')
           }
       }
@@ -1974,8 +1975,8 @@ Trials <- R6::R6Class(
                       p_values = dunnett_test[[comb]]$p_inverse_normal)
 
         gst_res[[comb]] <- gst[[comb]]$get_trajectory() %>%
-          mutate(event = dunnett_test[[comb]]$event) %>%
-          mutate(event_time = dunnett_test[[comb]]$event_time)
+          mutate(milestone = dunnett_test[[comb]]$milestone) %>%
+          mutate(milestone_time = dunnett_test[[comb]]$milestone_time)
       }
 
       # print(gst_res)
@@ -1985,7 +1986,7 @@ Trials <- R6::R6Class(
           arm = NA,
           comb = NA,
           reject = FALSE,
-          event_at_reject = NA,
+          milestone_at_reject = NA,
           reject_time = Inf,
           stageLevels = NA_real_,
           obs_p_value = NA_real_
@@ -2006,8 +2007,8 @@ Trials <- R6::R6Class(
           if('reject' %in% gst_res[[comb]]$decision){ ## trial reach the endpoint
             tmp$reject <- TRUE
             idx <- which(gst_res[[comb]]$decision %in% 'reject')[1]
-            tmp$event_at_reject <- gst_res[[comb]]$event[idx]
-            tmp$reject_time <- gst_res[[comb]]$event_time[idx]
+            tmp$milestone_at_reject <- gst_res[[comb]]$milestone[idx]
+            tmp$reject_time <- gst_res[[comb]]$milestone_time[idx]
             tmp$stageLevels <- gst_res[[comb]]$stageLevels[idx]
             tmp$obs_p_value <- gst_res[[comb]]$obs_p_value[idx]
           }
@@ -2028,14 +2029,14 @@ Trials <- R6::R6Class(
                         data.frame(
                           arm = trt,
                           decision = 'reject',
-                          event_at_reject = ret[[trt]]$event_at_reject[idx],
+                          milestone_at_reject = ret[[trt]]$milestone_at_reject[idx],
                           reject_time = ret[[trt]]$reject_time[idx]))
         }else{
           ret_ <- rbind(ret_,
                         data.frame(
                           arm = trt,
                           decision = 'accept',
-                          event_at_reject = NA,
+                          milestone_at_reject = NA,
                           reject_time = Inf))
         }
       }
@@ -2130,7 +2131,7 @@ Trials <- R6::R6Class(
         private[[field]] <- private$.snapshot[[field]]
       }
 
-      private$event_time <- c()
+      private$milestone_time <- c()
       private$trial_data <- NULL
       private$enroll_time <- NULL
       private$randomization_queue <- NULL
@@ -2173,9 +2174,9 @@ Trials <- R6::R6Class(
     arms = list(),
     now = 0, # current time point of a trial. Change to the data of patients
              # enrolled before are not allowed. When a trial is created,
-             # now = 0. If an event triggers a data lock (in Event class),
+             # now = 0. If a milestone triggers a data lock (in Milestones class),
              # now will be set to the time of data lock (e.g. futility, interim).
-             # When adding or removing a arm at an event,
+             # When adding or removing a arm at a milestone,
              # private$randomizatioon_queue[private$enroll_time > now] will be
              # regenerated. This is important because randomization needs to be
              # done with possibly changed sample ratio. enroll_patients() is
@@ -2189,7 +2190,7 @@ Trials <- R6::R6Class(
     trial_data = NULL,
     locked_data = list(),
 
-    event_time = c(),
+    milestone_time = c(),
 
     silent = FALSE,
 
@@ -2245,9 +2246,9 @@ Trials <- R6::R6Class(
         stop('All patients are enrolled. No further randomization is needed. \n',
              'If you see this message, there is probably an unexpected issue with your code. \n',
              'One known reason is that arms are added into the trial one right after one, \n',
-             'e.g., calling $add_arms twice and no event happen in between. \n',
-             'However, whenever an event is triggered during a trial, ',
-             'patients being enrolled after the event time will be rolled back, ',
+             'e.g., calling $add_arms twice and no milestone happen in between. \n',
+             'However, whenever a milestone is triggered during a trial, ',
+             'patients being enrolled after the milestone time will be rolled back, ',
              'so that a new arm can be removed or added. \n',
              'Those patients will be randomized again. \n')
       }

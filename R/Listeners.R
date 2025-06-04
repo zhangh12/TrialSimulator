@@ -1,7 +1,7 @@
 #' Class of Listener
 #' @description
 #' Create a class of listener. A listener monitors the trial while checking
-#' condition of pre-defined events. Actions are triggered and executed
+#' condition of pre-defined milestones. Actions are triggered and executed
 #' automatically.
 #'
 #' @docType class
@@ -12,7 +12,7 @@ Listeners <- R6::R6Class(
   'Listeners',
 
   private = list(
-    events = list(),
+    milestones = list(),
     silent = FALSE
   ),
 
@@ -24,64 +24,64 @@ Listeners <- R6::R6Class(
     initialize = function(silent = FALSE){
       stopifnot(is.logical(silent))
       private$silent <- silent
-      private$events <- list()
+      private$milestones <- list()
     },
 
     #' @description
-    #' register events with listener. Order in \code{...} matter
+    #' register milestones with listener. Order in \code{...} matter
     #' as they are scanned in that order. It is user's responsibility
     #' to use reasonable order when calling this function, otherwise,
     #' the result of \code{Listener$monitor()} can be problematic.
-    #' @param ... events
-    add_events = function(...){
-      event_list <- list(...)
+    #' @param ... milestones
+    add_milestones = function(...){
+      milestone_list <- list(...)
 
-      for(event in event_list){
-        stopifnot(inherits(event, 'Events'))
-        if(event$get_name() %in% names(private$events)){
-          warning('Listener has event <', event$get_name(), '> already. ',
+      for(milestone in milestone_list){
+        stopifnot(inherits(milestone, 'Milestones'))
+        if(milestone$get_name() %in% names(private$milestones)){
+          warning('Listener has milestone <', milestone$get_name(), '> already. ',
                   'Do you want to over-write it? \n')
         }
-        private$events[[event$get_name()]] <- event
+        private$milestones[[milestone$get_name()]] <- milestone
 
         if(!private$silent){
-          message('An event <', event$get_name(), '> is registered. ')
+          message('A milestone <', milestone$get_name(), '> is registered. ')
         }
       }
     },
 
     #' @description
-    #' return registered events
-    #' @param event_name return \code{Event} object with given name(s).
-    #' If \code{NULL}, all registered events are returned.
-    get_events = function(event_name = NULL){
-      if(is.null(event_name)){
-        return(private$events)
+    #' return registered milestones
+    #' @param milestone_name return \code{Milestone} object with given name(s).
+    #' If \code{NULL}, all registered milestones are returned.
+    get_milestones = function(milestone_name = NULL){
+      if(is.null(milestone_name)){
+        return(private$milestones)
       }
 
-      if(!(event_name %in% names(private$events))){
-        stop('Event <', event_name, '> is not registered. ')
+      if(!(milestone_name %in% names(private$milestones))){
+        stop('Milestone <', milestone_name, '> is not registered. ')
       }
 
-      return(private$events[[event_name]])
+      return(private$milestones[[milestone_name]])
     },
 
     #' @description
-    #' return names of registered events
-    get_event_names = function(){
+    #' return names of registered milestones
+    get_milestone_names = function(){
 
       names <- NULL
-      for(event in private$events){
-        names <- c(names, event$get_name())
+      for(milestone in private$milestones){
+        names <- c(names, milestone$get_name())
       }
       return(names)
 
     },
 
     #' @description
-    #' scan, check, and trigger registered events.
-    #' Events are triggered in the order when calling
-    #' \code{Listener$add_events}.
+    #' scan, check, and trigger registered milestones.
+    #' Milestones are triggered in the order when calling
+    #' \code{Listener$add_milestones}.
     #' @param trial a \code{Trial} object.
     #' @param dry_run logical. See \code{Controller::run} for more information.
     monitor = function(trial, dry_run){
@@ -90,10 +90,10 @@ Listeners <- R6::R6Class(
         stop('No arm is found in the trial. ',
              'Make sure that Trial$add_arms() has been executed before running the trial. ')
       }
-      for(event in self$get_events()){
-        event$set_dry_run(dry_run)
-        event$trigger_event(trial)
-        event$set_dry_run(FALSE)
+      for(milestone in self$get_milestones()){
+        milestone$set_dry_run(dry_run)
+        milestone$trigger_milestone(trial)
+        milestone$set_dry_run(FALSE)
       }
     },
 
@@ -102,18 +102,18 @@ Listeners <- R6::R6Class(
     #' @param silent logical.
     mute = function(silent){
       private$silent <- silent
-      for(event in self$get_events()){
-        event$mute(private$silent)
+      for(milestone in self$get_milestones()){
+        milestone$mute(private$silent)
       }
     },
 
     #' @description
-    #' reset all events registered to the listener. Usually, this is called
+    #' reset all milestones registered to the listener. Usually, this is called
     #' before a controller can run additional replicates of simulation.
     reset = function(){
-      events <- self$get_events()
-      for(event in events){
-        event$reset()
+      milestones <- self$get_milestones()
+      for(milestone in milestones){
+        milestone$reset()
       }
     }
   )

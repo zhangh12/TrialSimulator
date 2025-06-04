@@ -18,6 +18,42 @@ the concept of classes may consider using this wrapper directly.
 }
 \examples{
 
-## controller <- controller(trial, listener)
+# a minimum, meaningful, and executable example,
+# where a randomized trial with two arms is simulated and analyzed.
+
+control <- arm(name = 'control arm')
+active <- arm(name = 'active arm')
+
+pfs_in_control <- endpoint(name = 'PFS', type = 'tte', generator = rexp, rate = log(2) / 5)
+control$add_endpoints(pfs_in_control)
+
+pfs_in_active <- endpoint(name = 'PFS', type = 'tte', generator = rexp, rate = log(2) / 6)
+active$add_endpoints(pfs_in_active)
+
+accrual_rate <- data.frame(end_time = c(10, Inf), piecewise_rate = c(30, 50))
+trial <- trial(name = 'trial',
+               n_patients = 1000,
+               duration = 40,
+               enroller = StaggeredRecruiter,
+               accrual_rate = accrual_rate,
+               dropout = rweibull, shape = 2, scale = 38)
+
+trial$add_arms(sample_ratio = c(1, 1), control, active)
+
+action_at_final <- function(trial, milestone_name){
+  locked_data <- trial$get_locked_data(milestone_name)
+  fitLogrank(endpoint = 'PFS', placebo = 'control arm', data = locked_data)
+  invisible(NULL)
+}
+
+final <- milestone(name = 'final analysis',
+                   action = action_at_final,
+                   trigger_condition = calendarTime(time = 40))
+
+listener <- listener()
+listener$add_milestones(final)
+
+controller <- controller(trial, listener)
+controller$run(n = 1)
 
 }

@@ -17,8 +17,8 @@ trial by the time of calculation.}
 an object of class `Condition`
 }
 \description{
-Define a condition to trigger trial event by the number of randomized
-patients. The event will be trigger when a trial has enrolled
+Define a condition to trigger trial milestone by the number of randomized
+patients. The milestone will be trigger when a trial has enrolled
 at least the specified number of patients. It can be used combined with
 conditions specified by \link[TrialSimulator]{calendarTime} and
 \link[TrialSimulator]{eventNumber}.

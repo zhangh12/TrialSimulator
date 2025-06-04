@@ -30,7 +30,7 @@ Create a class of trial.
 
 
 \dontrun{
-trial$independentIncrement('pfs', 'pbo', listener$get_event_names(), 'oracle')
+trial$independentIncrement('pfs', 'pbo', listener$get_milestone_names(), 'oracle')
 }
 
 ## ------------------------------------------------
@@ -38,7 +38,8 @@ trial$independentIncrement('pfs', 'pbo', listener$get_event_names(), 'oracle')
 ## ------------------------------------------------
 
 \dontrun{
-trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_names(), 'default')
+trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'),
+                  listener$get_milestone_names(), 'default')
 }
 
 
@@ -49,7 +50,7 @@ trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_n
 \dontrun{
 dt <- trial$dunnettTest(
   'pfs', 'pbo', c('high dose', 'low dose'),
-  listener$get_event_names(), 'default')
+  listener$get_milestone_names(), 'default')
 
 trial$closedTest(dt, c('high dose', 'low dose'),
                  c('pfs interim', 'pfs final'),
@@ -94,8 +95,8 @@ trial$closedTest(dt, c('high dose', 'low dose'),
 \item \href{#method-Trials-get_locked_data}{\code{Trials$get_locked_data()}}
 \item \href{#method-Trials-get_locked_data_name}{\code{Trials$get_locked_data_name()}}
 \item \href{#method-Trials-get_event_number}{\code{Trials$get_event_number()}}
-\item \href{#method-Trials-save_event_time}{\code{Trials$save_event_time()}}
-\item \href{#method-Trials-get_event_time}{\code{Trials$get_event_time()}}
+\item \href{#method-Trials-save_milestone_time}{\code{Trials$save_milestone_time()}}
+\item \href{#method-Trials-get_milestone_time}{\code{Trials$get_milestone_time()}}
 \item \href{#method-Trials-lock_data}{\code{Trials$lock_data()}}
 \item \href{#method-Trials-event_plot}{\code{Trials$event_plot()}}
 \item \href{#method-Trials-censor_trial_data}{\code{Trials$censor_trial_data()}}
@@ -554,9 +555,9 @@ n_patients is greater than remaining patients as planned.}
 \if{latex}{\out{\hypertarget{method-Trials-set_current_time}{}}}
 \subsection{Method \code{set_current_time()}}{
 set current time of a trial. Any data collected before could not be
-changed. private$now should be set after an event is triggered
-(through Event class, futility, interim, etc), an arm is added or
-removed as a result of an event
+changed. private$now should be set after a milestone is triggered
+(through Milestones class, futility, interim, etc), an arm is added or
+removed at a milestone
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$set_current_time(time)}\if{html}{\out{</div>}}
 }
@@ -583,7 +584,7 @@ return current time of a trial
 \if{html}{\out{<a id="method-Trials-get_event_tables"></a>}}
 \if{latex}{\out{\hypertarget{method-Trials-get_event_tables}{}}}
 \subsection{Method \code{get_event_tables()}}{
-count accumulative number of events (for TTE) or samples (otherwise) over
+count accumulative number of events (for TTE) or non-missing samples (otherwise) over
 calendar time (enroll time + tte for TTE, or enroll time + readout otherwise)
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$get_event_tables(arms = NULL)}\if{html}{\out{</div>}}
@@ -603,7 +604,7 @@ if \code{NULL}, all arms in the trial will be used.}
 \if{latex}{\out{\hypertarget{method-Trials-get_data_lock_time_by_event_number}{}}}
 \subsection{Method \code{get_data_lock_time_by_event_number()}}{
 given a set of endpoints and target number of events, determine the data
-lock time for Event (futility, interim, final (?)). This function does
+lock time for a milestone (futility, interim, final, etc.). This function does
 not change trial object (e.g. rolling back not yet randomized patients after
 the found data lock time).
 \subsection{Usage}{
@@ -680,15 +681,15 @@ data lock time
 \if{html}{\out{<a id="method-Trials-get_locked_data"></a>}}
 \if{latex}{\out{\hypertarget{method-Trials-get_locked_data}{}}}
 \subsection{Method \code{get_locked_data()}}{
-return locked data for an event
+return locked data for a milestone
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_locked_data(event_name)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_locked_data(milestone_name)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{event_name}}{character, event name of which the locked data to be
+\item{\code{milestone_name}}{character, milestone name of which the locked data to be
 extracted.}
 }
 \if{html}{\out{</div>}}
@@ -708,52 +709,52 @@ return names of locked data
 \if{html}{\out{<a id="method-Trials-get_event_number"></a>}}
 \if{latex}{\out{\hypertarget{method-Trials-get_event_number}{}}}
 \subsection{Method \code{get_event_number()}}{
-return number of events at lock time
+return number of events at lock time of milestones
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_event_number(event_name = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_event_number(milestone_name = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{event_name}}{names of triggered events. Use all triggered events
+\item{\code{milestone_name}}{names of triggered milestones. Use all triggered milestones
 if \code{NULL}.}
 }
 \if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-save_event_time"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-save_event_time}{}}}
-\subsection{Method \code{save_event_time()}}{
-save time of a new event.
+\if{html}{\out{<a id="method-Trials-save_milestone_time"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-save_milestone_time}{}}}
+\subsection{Method \code{save_milestone_time()}}{
+save time of a new milestone.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$save_event_time(event_time, event_name)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$save_milestone_time(milestone_time, milestone_name)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{event_time}}{numeric. Time of new event.}
+\item{\code{milestone_time}}{numeric. Time of new milestone.}
 
-\item{\code{event_name}}{character. Name of new event.}
+\item{\code{milestone_name}}{character. Name of new milestone.}
 }
 \if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_event_time"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_event_time}{}}}
-\subsection{Method \code{get_event_time()}}{
-return event time when triggering a given event
+\if{html}{\out{<a id="method-Trials-get_milestone_time"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-get_milestone_time}{}}}
+\subsection{Method \code{get_milestone_time()}}{
+return milestone time when triggering a given milestone
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_event_time(event_name)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_milestone_time(milestone_name)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{event_name}}{character. Name of event.}
+\item{\code{milestone_name}}{character. Name of milestone.}
 }
 \if{html}{\out{</div>}}
 }
@@ -763,14 +764,14 @@ return event time when triggering a given event
 \if{latex}{\out{\hypertarget{method-Trials-lock_data}{}}}
 \subsection{Method \code{lock_data()}}{
 lock data at specific calendar time.
-For time-to-event endpoints, their event indicator *_event should be
+For time-to-event endpoints, their event indicator \code{*_event} should be
 updated accordingly. Locked data should be stored separately.
 DO NOT OVERWRITE/UPDATE private$trial_data! which can lose actual
 time-to-event information. For example, a patient may be censored at
 the first data lock. However, he may have event being observed in a
 later data lock.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$lock_data(at_calendar_time, event_name)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$lock_data(at_calendar_time, milestone_name)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -778,7 +779,7 @@ later data lock.
 \describe{
 \item{\code{at_calendar_time}}{time point to lock trial data}
 
-\item{\code{event_name}}{assign event name as the name of locked data for
+\item{\code{milestone_name}}{assign milestone name as the name of locked data for
 future reference.}
 }
 \if{html}{\out{</div>}}
@@ -817,9 +818,9 @@ censor trial data at calendar time
 removed arms) only. If \code{NULL}, it will be set to all available arms
 in trial data. Otherwise, censoring is applied to user-specified arms only.
 This is necessary because number of events/sample size in removed arms
-should be fixed unchanged since corresponding event is triggered. In that
+should be fixed unchanged since corresponding milestone is triggered. In that
 case, one can update trial data by something like
-\code{censor_trial_data(censor_at = event_time, selected_arms = removed_arms)}.}
+\code{censor_trial_data(censor_at = milestone_time, selected_arms = removed_arms)}.}
 
 \item{\code{enrolled_before}}{censoring is applied to patients enrolled before
 specific time. This argument would be used when trial duration is
@@ -969,9 +970,9 @@ mute all messages (not including warnings)
 \if{html}{\out{<a id="method-Trials-independentIncrement"></a>}}
 \if{latex}{\out{\hypertarget{method-Trials-independentIncrement}{}}}
 \subsection{Method \code{independentIncrement()}}{
-calculate independent increments from a given set of events
+calculate independent increments from a given set of milestones
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$independentIncrement(endpoint, placebo, events, planned_info, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$independentIncrement(endpoint, placebo, milestones, planned_info, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -982,8 +983,8 @@ locked data.}
 
 \item{\code{placebo}}{character. String of placebo in trial's locked data.}
 
-\item{\code{events}}{a character vector of event names in the trial, e.g.,
-\code{listener$get_event_names()}.}
+\item{\code{milestones}}{a character vector of milestone names in the trial, e.g.,
+\code{listener$get_milestone_names()}.}
 
 \item{\code{planned_info}}{a vector of planned accumulative number of event of
 time-to-event endpoint. Note: \code{planned_info} can also be a character
@@ -1027,7 +1028,7 @@ Accumulative data is used. }
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{
 \dontrun{
-trial$independentIncrement('pfs', 'pbo', listener$get_event_names(), 'oracle')
+trial$independentIncrement('pfs', 'pbo', listener$get_milestone_names(), 'oracle')
 }
 }
 \if{html}{\out{</div>}}
@@ -1042,7 +1043,14 @@ trial$independentIncrement('pfs', 'pbo', listener$get_event_names(), 'oracle')
 carry out closed test based on Dunnett method under group sequential
 design.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$dunnettTest(endpoint, placebo, treatments, events, planned_info, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$dunnettTest(
+  endpoint,
+  placebo,
+  treatments,
+  milestones,
+  planned_info,
+  ...
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -1055,13 +1063,13 @@ design.
 \item{\code{treatments}}{character vector. Name of treatment arms to be used in
 comparison.}
 
-\item{\code{events}}{character vector. Names of triggered events at which either
+\item{\code{milestones}}{character vector. Names of triggered milestones at which either
 adaptation is applied or statistical testing for endpoint is performed.
-Event in \code{events} does not need to be sorted by their triggering time.}
+Milestones in \code{milestones} does not need to be sorted by their triggering time.}
 
 \item{\code{planned_info}}{a data frame of planned number of events of
-time-to-event endpoint in each stage and each arm. Event names, i.e.,
-\code{events} are row names of \code{planned_info}, and arm names, i.e.,
+time-to-event endpoint in each stage and each arm. Milestone names, i.e.,
+\code{milestones} are row names of \code{planned_info}, and arm names, i.e.,
 \code{c(placebo, treatments)} are column names.
 Note that it is not the accumulative but stage-wise event numbers.
 It is usually not easy to determine these numbers in practice, simulation
@@ -1113,7 +1121,7 @@ Based on numerical study, setting \code{planned_info = "default"} leads
 to a much higher power (roughly 10\%) than setting \code{planned_info} to
 median of event numbers at stages, which can be determined by simulation.
 I am not sure if regulator would support such practice. For example,
-if an event (e.g., interim analysis) is triggered at a pre-specified
+if a milestone (e.g., interim analysis) is triggered at a pre-specified
 calendar time, the number of randomized patients is random and is unknown
 when planning the trial. If I understand it correctly, regulator may want
 the information fraction in closed test (combined with Dunnett test) to
@@ -1137,7 +1145,8 @@ significance test.
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{\dontrun{
-trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'), listener$get_event_names(), 'default')
+trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'),
+                  listener$get_milestone_names(), 'default')
 }
 
 }
@@ -1155,7 +1164,7 @@ perform closed test based on Dunnett test
 \if{html}{\out{<div class="r">}}\preformatted{Trials$closedTest(
   dunnett_test,
   treatments,
-  events,
+  milestones,
   alpha,
   alpha_spending = c("asP", "asOF")
 )}\if{html}{\out{</div>}}
@@ -1169,9 +1178,9 @@ perform closed test based on Dunnett test
 \item{\code{treatments}}{character vector. Name of treatment arms to be used in
 comparison.}
 
-\item{\code{events}}{character vector. Names of triggered events at which
+\item{\code{milestones}}{character vector. Names of triggered milestones at which
 significance testing for endpoint is performed in closed test.
-Event in \code{events} does not need to be sorted by their triggering time.}
+Milestones in \code{milestones} does not need to be sorted by their triggering time.}
 
 \item{\code{alpha}}{numeric. Allocated alpha.}
 
@@ -1183,14 +1192,14 @@ it is not tested. It may be supported in the future.}
 }
 \subsection{Returns}{
 a data frame of columns \code{arm}, \code{decision},
-\code{event_at_reject}, and \code{reject_time}.
+\code{milestone_at_reject}, and \code{reject_time}.
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{\dontrun{
 dt <- trial$dunnettTest(
   'pfs', 'pbo', c('high dose', 'low dose'),
-  listener$get_event_names(), 'default')
+  listener$get_milestone_names(), 'default')
 
 trial$closedTest(dt, c('high dose', 'low dose'),
                  c('pfs interim', 'pfs final'),
