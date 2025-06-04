@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.68.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.69.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -76,23 +76,41 @@
 <p>The first step in simulating a randomized clinical trial using
 <code>TrialSimulator</code> is to define one or more endpoints for each
 treatment arm. This vignette demonstrates how to use the following key
-functions:</p>
+functions to define time-to-event endpoints. For non-time-to-event
+endpoints, please refer to the separate vignette <a href="defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event
+Endpoints in Clinical Trials</a>.</p>
 <ul>
 <li>
-<code>endpoints</code>: Creates one or more endpoints</li>
+<code>endpoint</code>: Creates one or more endpoints</li>
 <li>
 <code>test_generator</code>: Generates an example dataset from an
 Endpoint object</li>
 </ul>
 <p>Typically, endpoints follow the same distribution family across arms
 but with different parameters. Distribution parameters are specified
-through the <code>...</code> arguments in <code>endpoints</code>.</p>
+through the <code>...</code> arguments in <code>endpoints</code>.
+However, please note that <code>endpoint</code> offers the flexibility
+to specify different distribution families across arms for
+endpoints.</p>
+<p>Note that the function <code>test_generator</code> is for helping
+users understanding how <code>TrialSimulator</code> works. In formal
+simulation, we do not need to call this function.</p>
+<p>For the sake of completeness, in this vignette, we also demonstrates
+how to define an arm with the created endpoints by using the following
+key functions:</p>
+<ul>
+<li>
+<code>arm</code>: Creates one or more arms</li>
+<li>
+<code>add_endpoints</code>: Add one or more endpoints into an
+arm</li>
+</ul>
 <div class="section level2">
 <h2 id="define-a-univariate-endpoint-with-random-number-generators-from-stats">Define a univariate endpoint with random number generators from
 <code>stats</code><a class="anchor" aria-label="anchor" href="#define-a-univariate-endpoint-with-random-number-generators-from-stats"></a>
 </h2>
 <p>To define a time-to-event endpoint such as progression-free survival
-(<code>PFS</code>) following an exponential distribution, you need to
+(<code>PFS</code>) following an exponential distribution, we need to
 specify its <code>name</code> and <code>type.</code> This specification
 is crucial because <code>TrialSimulator</code> ensures all arms have the
 same set of endpoints and manages endpoint data based on
@@ -103,7 +121,7 @@ same set of endpoints and manages endpoint data based on
 <code class="sourceCode R"><span><span class="va">pfs_pbo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoint.html">endpoint</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'PFS'</span>, type <span class="op">=</span> <span class="st">'tte'</span>, </span>
 <span>                    generator <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">/</span><span class="fl">5.6</span><span class="op">)</span></span></code></pre></div>
 <p>Arguments for the generator function (in this case,
-<code>rate</code>) are passed through <code>...</code>. You can verify
+<code>rate</code>) are passed through <code>...</code>. We can verify
 that the generator works as expected by requesting an example
 dataset:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -121,11 +139,15 @@ dataset:</p>
 <p>Note that data returned by <code>test_generator</code> is only for
 validation purposes. During actual trial simulation,
 <code>TrialSimulator</code> determines when to call
-<code>generator</code> and how many samples to draw. Similarly, we can
-define a <code>PFS</code> endpoint for the treatment arm:</p>
+<code>generator</code> from which how many samples to draw. To request
+access of a data locked at a milestone, we can use the member function
+<code>get_locked_data</code> of a <code>Trials</code> object which will
+be introduced in the vignette <a href="adaptiveDesign.html">An Example
+of Simulating a Trial with Adaptive Design</a>.</p>
+<p>Similarly, we can define a <code>PFS</code> endpoint for the
+treatment arm:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://zhangh12.github.io/TrialSimulator/">TrialSimulator</a></span><span class="op">)</span></span>
-<span><span class="va">pfs_trt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoint.html">endpoint</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'PFS'</span>, type <span class="op">=</span> <span class="st">'tte'</span>, </span>
+<code class="sourceCode R"><span><span class="va">pfs_trt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoint.html">endpoint</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'PFS'</span>, type <span class="op">=</span> <span class="st">'tte'</span>, </span>
 <span>                    generator <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">/</span><span class="fl">6.4</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">pfs_trt</span><span class="op">$</span><span class="fu">test_generator</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1e5</span><span class="op">)</span><span class="op">$</span><span class="va">PFS</span><span class="op">)</span> <span class="co">## should be close to 6.4</span></span>
 <span><span class="co">#&gt; [1] 6.434287</span></span></code></pre></div>
@@ -204,7 +226,7 @@ all values to 1 (no censoring).</p>
 <div class="section level2">
 <h2 id="define-multiple-endpoints">Define multiple endpoints<a class="anchor" aria-label="anchor" href="#define-multiple-endpoints"></a>
 </h2>
-<p>You can define more than one endpoint in a trial. Let’s add overall
+<p>We can define more than one endpoint in a trial. Let’s add overall
 survival (OS) as a second endpoint. We’ll assume the median overall
 survival is 7.2 months in the placebo arm and 8.5 months in the
 treatment arm.</p>
@@ -223,7 +245,7 @@ treatment arm.</p>
 <span><span class="va">pbo</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">os_pbo</span><span class="op">)</span></span>
 <span><span class="va">trt</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">os_trt</span><span class="op">)</span></span></code></pre></div>
 <p>Note that by defining <code>PFS</code> and <code>OS</code> separately
-(i.e., calling <code>endpoints</code> for each endpoint), you are
+(i.e., calling <code>endpoints</code> for each endpoint), we are
 implicitly assuming that these endpoints are independent in the
 trial.</p>
 </div>
@@ -231,7 +253,7 @@ trial.</p>
 <h2 id="an-example-of-a-custom-random-number-generator-for-correlated-endpoints">An example of a custom random number generator for correlated
 endpoints<a class="anchor" aria-label="anchor" href="#an-example-of-a-custom-random-number-generator-for-correlated-endpoints"></a>
 </h2>
-<p>To define multiple correlated endpoints, you need to create a custom
+<p>To define multiple correlated endpoints, we need to create a custom
 generator. In this example, we define one based on the R package
 <code>simdata</code>:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
@@ -249,7 +271,7 @@ generator. In this example, we define one based on the R package
 <span>  <span class="fu">simdata</span><span class="fu">::</span><span class="fu"><a href="https://matherealize.github.io/simdata/reference/simulate_data.html" class="external-link">simulate_data</a></span><span class="op">(</span><span class="va">dsgn</span>, n_obs <span class="op">=</span> <span class="va">n</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>PFS_event <span class="op">=</span> <span class="fl">1</span>, OS_event <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="co">## event indicators</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p>Note that for custom generator, you need to add columns of event
+<p>Note that for custom generator, we need to add columns of event
 indicator for each of the time-to-event endpoints.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">corr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">.6</span>, <span class="fl">.6</span>, <span class="fl">1</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
