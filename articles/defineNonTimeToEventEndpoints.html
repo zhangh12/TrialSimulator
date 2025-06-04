@@ -81,6 +81,24 @@ demonstrating how they can be defined, integrated into trial arms, and
 analyzed at pre-specified milestone triggers. For time-to-event
 endpoints, please refer to the separate vignette <a href="defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints in
 Clinical Trials</a>.</p>
+<p>This vignette demonstrates how to use the following key functions to
+define time-to-event endpoints. For the sake of completeness, we also
+demonstrates how to define arms and trial with the created endpoints</p>
+<ul>
+<li>
+<code>endpoint</code>: Creates one or more endpoints</li>
+<li>
+<code>test_generator</code>: Generates an example dataset from an
+Endpoint object</li>
+<li>
+<code>arm</code>: Creates one or more arms</li>
+<li>
+<code>add_endpoints</code>: Add one or more endpoints into an
+arm</li>
+<li>
+<code>milestone</code>: Defines one or more milestones when data
+snapshots are created for analysis</li>
+</ul>
 <div class="section level2">
 <h2 id="define-endpoints-with-random-number-generators">Define endpoints with random number generators<a class="anchor" aria-label="anchor" href="#define-endpoints-with-random-number-generators"></a>
 </h2>
