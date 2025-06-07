@@ -98,8 +98,8 @@ Arms <- R6::R6Class(
     #' @description
     #' print an arm
     print = function(){
-      white_text_blue_bg <- "\033[0m" ## "\033[37;44m"
-      reset <- "\033[0m"  # Reset to default color
+      white_text_blue_bg <- "" ## "\033[37;44m"
+      reset <- "" ## "\033[0m"  # Reset to default color
       logo <- '\u2695\u2695' ## stringi::stri_escape_unicode('⚕')
 
       cat(white_text_blue_bg, logo, 'Arm Name: ', self$get_name(), reset, '\n')
