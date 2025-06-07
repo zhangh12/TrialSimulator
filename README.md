@@ -51,9 +51,9 @@ To efficiently utilize `TrialSimulator` for clinical trial simulations, we recom
 - Define endpoints
   - [Time-to-event (TTE) endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineTimeToEventEndpoints.html)
   - [Non-TTE endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineNonTimeToEventEndpoints.html)
-  - Repeated measures
+  - [Longitudinal endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineLongitudinalEndpoints.html)
 - Condition system
-  - [Triggering trial events](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html)
+  - [Triggering trial milestones](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html)
 - Define actions at trial events
   - [Action function]
 - Examples: fixed design
