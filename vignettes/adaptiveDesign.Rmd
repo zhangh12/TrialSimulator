@@ -194,7 +194,7 @@ action1 <- function(trial, milestone_name){
 ```
 
 At the interim, we test `PFS` using the logrank test to carry out a
-non-binding futility analysis in the following action function. epending
+non-binding futility analysis in the following action function. Depending
 on how many arms are carried forward in dose selection, `fit` may
 consists of testing results of one or two dose arms. Note that a formal
 test for `PFS` will be done at the end of the trial when we have all
