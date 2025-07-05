@@ -51,7 +51,8 @@
 <span>  <span class="va">data</span>,</span>
 <span>  exclude_vars <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  tte_vars <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  event_vars <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  event_vars <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  categorical_vars <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -75,6 +76,12 @@
 <dd><p>character. Vector of event indicators. Every time-to-event
 variable should be corresponding to an event indicator.</p></dd>
 
+
+<dt id="arg-categorical-vars">categorical_vars<a class="anchor" aria-label="anchor" href="#arg-categorical-vars"></a></dt>
+<dd><p>character. Vector of categorical variables. This can
+be used to specify variables with limited distinct values as categorical
+variables in summary.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -96,133 +103,7 @@ variable should be corresponding to an event indicator.</p></dd>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">summarizeDataFrame</span><span class="op">(</span><span class="va">data</span>, tte_vars <span class="op">=</span> <span class="st">'time_to_death'</span>, event_vars <span class="op">=</span> <span class="st">'death'</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;!DOCTYPE html&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;html&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;head&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;meta charset="UTF-8"&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;title&gt;Data Frame Summary&lt;/title&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;style&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         body {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             font-family: Arial, sans-serif;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             margin: 20px;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             background-color: white;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             display: flex;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             flex-direction: column;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             align-items: center;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         h1 {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             color: black;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             text-align: center;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             margin-bottom: 20px;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             font-size: 20px;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         .subtitle {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             text-align: center;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             color: #666;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             margin-bottom: 20px;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             font-size: 16px;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         table {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             border-collapse: collapse;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             font-size: 14px;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             border: 1px solid #999;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             width: auto;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             margin: 0 auto;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         th {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             background-color: #f0f0f0;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             color: black;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             padding: 10px;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             text-align: left;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             font-weight: normal;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             border: 1px solid #999;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             white-space: nowrap;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             font-size: 14px;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         td {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             padding: 10px;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             border: 1px solid #999;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             vertical-align: top;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             line-height: 1.4;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             font-size: 14px;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         .no-col {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             text-align: center;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             white-space: nowrap;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         .variable-col {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             white-space: nowrap;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         .stats-col {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         .freqs-col {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             line-height: 20px;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         .graph-col {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             text-align: center;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             white-space: nowrap;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             vertical-align: top;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         img {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             display: block;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             margin: 0 auto;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             vertical-align: top;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;/style&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;/head&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;body&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;h1&gt;Data Frame Summary&lt;/h1&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;div class="subtitle" style="text-align: left;"&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         Data frame: data&lt;br&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         Dimensions: 1000 x 5&lt;br&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         Duplicates: 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;/div&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;table&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         &lt;thead&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             &lt;tr&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;th class="no-col"&gt;No&lt;/th&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;th class="variable-col"&gt;Variable&lt;/th&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;th class="stats-col"&gt;Stats / Freqs&lt;/th&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;th class="graph-col"&gt;Graph&lt;/th&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             &lt;/tr&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         &lt;/thead&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         &lt;tbody&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             &lt;tr&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="no-col"&gt;1&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="variable-col"&gt;age&lt;br&gt;[numeric]&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="stats-col"&gt;Mean (sd): 65.16 (9.92)&lt;br&gt;Min &lt; median &lt; max:&lt;br&gt;36.9 &lt; 65.09 &lt; 97.41&lt;br&gt;IQR (CV): 12.93 (0.15)&lt;br&gt;Missing: 0 (0%)&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="graph-col"&gt;&lt;img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAABQCAMAAADlRUG7AAAAz1BMVEWZmZmampqbm5ucnJydnZ2enp6fn5+goKChoaGioqKjo6OkpKSlpaWmpqanp6eoqKipqamrq6usrKytra2urq6wsLCxsbGzs7O0tLS1tbW2tra3t7e4uLi6urq7u7u8vLy9vb2+vr6/v7/AwMDCwsLDw8PExMTFxcXGxsbHx8fIyMjJycnKysrLy8vMzMzNzc3Pz8/R0dHT09PU1NTV1dXb29vd3d3e3t7k5OTl5eXm5ubn5+fr6+vx8fH29vb39/f5+fn6+vr9/f3+/v7///+WkuXJAAAACXBIWXMAAA7DAAAOwwHHb6hkAAABb0lEQVRoge3aXVOCYBAFYL4M1EIFpVRSETKyTCVN7UvL/v9vaoY93XCVTK457bnZd86M+wwzcAMqnweKcmzw/BaZ88AvLlLw/DRegwdeVIYULU7SxFywQ16iCyywwAILLLDAAh8MDlQFWfHC3TMUzkLg44bXr5QHbrhqWml0btge0fpzgQUWWOC/Dq/qeNdiMMMzF+9aVG7Yw1qBBU6SYsGkNJnhk2CS5sbmhkOaI4EFFljgfwZfdSju7vBd8RFZ54CNIExj7w5faw7FmuWBp7QlxxUPLBSewAIL/FtwrYlv6lNmuFSjb+otgxvu0Jz+AH6KEI0ZHtW6FIUbbuNHXPDzkhLsBdaxffmWhd/VCkXfBzxRsN26z8IbjW5836zioLRolk9RqBc07dJ3gT+gOCYKvU6zYaAo4HFqqijKJbxQ8T4Ab8d41PshDi3MqIdDe0hz0EHhxzRjH8XlgOawjaIXZZaFfRzG2+zNxZmDwV+ju5QsLk08kgAAAABJRU5ErkJggg==" alt="histogram"&gt;&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             &lt;/tr&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             &lt;tr&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="no-col"&gt;2&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="variable-col"&gt;gender&lt;br&gt;[categorical]&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="stats-col"&gt;F: 402 (40.2%)&lt;br&gt;M: 401 (40.1%)&lt;br&gt;Missing: 197 (19.7%)&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="graph-col"&gt;&lt;img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAA8CAMAAACac46aAAAAVFBMVEWampqbm5ucnJydnZ2hoaGioqKjo6OlpaWmpqanp6eoqKirq6u2tra7u7u8vLzAwMDOzs7T09Pf39/g4ODj4+Pk5OTr6+vw8PD4+Pj7+/v8/Pz///+Wj6eYAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAiElEQVRYhe3ZSQ7CMBBE0SaGjJDBmfH978kNsnAvCkX/7623seSSbEmUfVdNNodW0dNiNyl6AwMDAwMD/yG8WFD0sHRoMtnm2j+SeovVoEi2uSpgYGBgYOALWPUsyoaAbPo4xt7pgvPnbVG74PxbPb6AgYGBgYFvBud//zSlC3Z8eG0u2HPY0w/hkQ6IngWRZQAAAABJRU5ErkJggg==" alt="barplot" style="height: auto; width: 120px;"&gt;&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             &lt;/tr&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             &lt;tr&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="no-col"&gt;3&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="variable-col"&gt;time_to_death&lt;br&gt;[time-to-event]&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="stats-col"&gt;Median time: 116.15&lt;br&gt;Events: 609&lt;br&gt;Missing: 0 (0%)&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="graph-col"&gt;&lt;img src="data:image/png;base64,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" alt="KM curve"&gt;&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             &lt;/tr&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             &lt;tr&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="no-col"&gt;4&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="variable-col"&gt;death&lt;br&gt;[event indicator]&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="stats-col"&gt;1: 609 (60.9%)&lt;br&gt;0: 391 (39.1%)&lt;br&gt;Missing: 0 (0%)&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="graph-col"&gt;&lt;img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAA8CAMAAACac46aAAAAVFBMVEWampqbm5ucnJydnZ2hoaGlpaWoqKirq6u2tra5ubm6urq7u7u9vb2/v7/AwMDDw8PR0dHT09Pf39/g4ODj4+Pk5OTw8PDx8fH4+Pj8/Pz9/f3////8pnC9AAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAg0lEQVRYhe3WSw7CMAxFUZcUWr5tk0BbvP99MmEBRLL0GNw7tnQmlmxzUbY/NVlJJ0W95WFRNAIDAwMDA/8hXC0p6sw3TSb7uV7XwKYGOB8fYd0PLXDgVs/AwMDAwMAxsOosyh6B30djM3+L4HoTwfkMDAwMDAwM/IXLRQTvqwjWsO4fEFdXabfDwlYAAAAASUVORK5CYII=" alt="barplot" style="height: auto; width: 120px;"&gt;&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             &lt;/tr&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             &lt;tr&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="no-col"&gt;5&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="variable-col"&gt;type&lt;br&gt;[categorical]&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="stats-col"&gt;B: 138 (13.8%)&lt;br&gt;A: 133 (13.3%)&lt;br&gt;D: 131 (13.1%)&lt;br&gt;H: 124 (12.4%)&lt;br&gt;E: 121 (12.1%)&lt;br&gt;3 others: 353 (35.3%)&lt;br&gt;Missing: 0 (0%)&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 &lt;td class="graph-col"&gt;&lt;img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAACMCAMAAACAuZ3vAAAAjVBMVEWcnJyfn5+goKChoaGioqKjo6OlpaWmpqanp6erq6usrKyurq6wsLCxsbGzs7O0tLS2tra5ubnGxsbPz8/Q0NDR0dHT09PU1NTV1dXW1tbX19fd3d3f39/g4ODh4eHj4+Pk5OTo6Ojw8PDx8fHz8/P09PT19fX39/f4+Pj5+fn6+vr7+/v8/Pz+/v7////YKDAdAAAACXBIWXMAAA7DAAAOwwHHb6hkAAABMklEQVR4nO3b2U4CURCE4VEZEQVZZERgkH1QWd7/8UwI16QrqZxz89cD9HfTyalkeopLphTAyeDjXMr32QUvHl6VFFsXXHc+lTwBAwMDAwMngFt9Jb5nsfmQUp1csGmODv9JzafxwbVSfVqVEVa2+h0YGBgYGDgJrFSfthE+SM1n44Ntk1T4dzaNZ22E68duOJ2uExa2egQMDAwMDJwGFqrPmxM+VELzWRph3ygR/okXn70VjlefcuKFw1vdAwYGBgYGTgXnehazFQHnMAkOl73xzguH6+3zlxmObnUPGBgYGBg4GRytPqUZDn/+mfmuXq6wdZoCa5/4fFHvuVx5US/YXBkAAwMDAwPfgbW/f1wpxaNfX/JVn2aVCa6HwMDAwMDAwDd4kQs++i6XNTgPC5ww/+fTYUq+REB4AAAAAElFTkSuQmCC" alt="barplot" style="height: auto; width: 120px;"&gt;&lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             &lt;/tr&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         &lt;/tbody&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;/table&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;/body&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;/html&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Summary generated.</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
