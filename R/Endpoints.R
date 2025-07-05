@@ -125,6 +125,33 @@ Endpoints <- R6::R6Class(
     #' return endpoints' type
     get_type = function(){
       private$type
+    },
+
+    #' @description
+    #' print an endpoint object
+    #'
+    #' @param categorical_vars categorical_vars character. Vector of categorical variables. This can
+    #' be used to specify variables with limited distinct values as categorical
+    #' variables in summary.
+    print = function(categorical_vars = NULL){
+      white_text_blue_bg <- "" ## "\033[37;44m"
+      reset <- "" ## "\033[0m"  # Reset to default color
+      logo <- '\u2695\u2695' ## stringi::stri_escape_unicode('⚕')
+
+      cat(white_text_blue_bg, logo, 'Endpoint Name: ', paste0(self$get_name(), collapse = ', '), reset, '\n')
+      cat(white_text_blue_bg, logo, '# of Endpoints: ', length(self$get_name()), reset, '\n')
+
+      dat <- self$test_generator(n = 1e4)
+      vars <- self$get_name()
+      event_vars <- intersect(paste0(vars, '_event'), names(dat))
+      tte_vars <- gsub('_event$', '', event_vars)
+      exclude_vars <- grep('_readout$', names(dat), value = TRUE)
+      summarizeDataFrame(dat, exclude_vars = exclude_vars,
+                         tte_vars = tte_vars, event_vars = event_vars,
+                         categorical_vars = categorical_vars)
+
+      invisible(self)
+
     }
   ),
 
