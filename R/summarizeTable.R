@@ -8,11 +8,15 @@
 #' @param tte_vars character. Vector of time-to-event variables.
 #' @param event_vars character. Vector of event indicators. Every time-to-event
 #' variable should be corresponding to an event indicator.
+#' @param categorical_vars character. Vector of categorical variables. This can
+#' be used to specify variables with limited distinct values as categorical
+#' variables in summary.
 #'
 #' @returns a data frame of summary
 #' @export
 #'
 #' @importFrom base64enc base64encode
+#' @importFrom htmltools HTML
 #' @examples
 #'
 #' set.seed(123)
@@ -28,23 +32,25 @@
 #'
 #' summarizeDataFrame(data, tte_vars = 'time_to_death', event_vars = 'death')
 #'
-summarizeDataFrame <- function(data, exclude_vars = NULL, tte_vars = NULL, event_vars = NULL) {
+summarizeDataFrame <- function(data,
+                               exclude_vars = NULL,
+                               tte_vars = NULL,
+                               event_vars = NULL,
+                               categorical_vars = NULL) {
 
   if(length(tte_vars) != length(event_vars)){
     stop('tte_vars should be of same length as of event_vars. ')
   }
 
-  if(!is.null(exclude_vars)){
-    data <- data[, !(names(data) %in% exclude_vars), drop = FALSE]
-  }
-
   var_summaries <- list()
 
-  for(var_name in names(data)) {
+  for(var_name in setdiff(names(data), exclude_vars)) {
+
     var_data <- data[[var_name]]
 
     is_tte <- var_name %in% tte_vars
     is_event <- var_name %in% event_vars
+    is_cate <- var_name %in% categorical_vars
 
     if(is_tte) {
       event_var <- event_vars[which(tte_vars == var_name)]
@@ -98,7 +104,7 @@ summarizeDataFrame <- function(data, exclude_vars = NULL, tte_vars = NULL, event
       )
 
 
-    } else if(is_event || is.factor(var_data) || is.character(var_data)) {
+    } else if(is_event || is_cate || is.factor(var_data) || is.character(var_data)) {
       cnt <- .count(as.character(var_data))
       inv_cnt <- rev(cnt)
       freq_text <- paste0(names(inv_cnt), ": ", inv_cnt, " (",
@@ -131,7 +137,7 @@ summarizeDataFrame <- function(data, exclude_vars = NULL, tte_vars = NULL, event
 
       var_summaries[[var_name]] <- list(
         no = length(var_summaries) + 1,
-        variable = paste0(var_name, "<br>[event indicator]"),
+        variable = paste0(var_name, "<br>", ifelse(is_event, "[event indicator]", "[categorical]")),
         stats = freq_text,
         graph = graph_html
       )
@@ -257,7 +263,7 @@ summarizeDataFrame <- function(data, exclude_vars = NULL, tte_vars = NULL, event
     <h1>Data Frame Summary</h1>
     <div class="subtitle" style="text-align: left;">
         Data frame: ', deparse(substitute(data)), '<br>
-        Dimensions: ', nrow(data), ' x ', ncol(data), '<br>
+        Dimensions: ', nrow(data), ' x ', length(setdiff(names(data), exclude_vars)), '<br>
         Duplicates: ', sum(duplicated(data)), '
     </div>
 
@@ -288,20 +294,30 @@ summarizeDataFrame <- function(data, exclude_vars = NULL, tte_vars = NULL, event
 </body>
 </html>')
 
-  if(requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+  # 检测环境并返回适当的格式
+  if(requireNamespace("knitr", quietly = TRUE) && !is.null(knitr::opts_knit$get("rmarkdown.pandoc.to"))) {
+    # 在R Markdown环境中，返回HTML对象
+    if(requireNamespace("htmltools", quietly = TRUE)) {
+      return(htmltools::HTML(html_content))
+    } else {
+      # 如果没有htmltools，直接返回HTML字符串
+      structure(html_content, class = "html")
+    }
+  } else if(requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+    # 在RStudio中使用Viewer
     temp_html <- tempfile(fileext = ".html")
     writeLines(html_content, temp_html, useBytes = TRUE)
     rstudioapi::viewer(temp_html)
-    # message("ummary displayed in RStudio Viewer")
+    return(invisible(html_content))
   } else {
+    # 控制台环境
     cat(html_content)
+    return(invisible(html_content))
   }
-
-  return(invisible(var_summaries))
 }
 
 .count <- function(x, top_k = 5) {
-  stopifnot(class(x) %in% c('logical', 'character', 'factor'))
+
   x_char <- as.character(x)
 
   # Frequency of non-NA values
@@ -333,7 +349,7 @@ summarizeDataFrame <- function(data, exclude_vars = NULL, tte_vars = NULL, event
     result <- c(result, setNames(others_count, others_label))
   }
 
-  result <- c(result, 'NA' = n_missing) |> rev()
+  result <- c(result, Missing = n_missing) |> rev()
 
   return(result)
 }
