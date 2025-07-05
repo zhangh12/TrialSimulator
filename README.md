@@ -43,8 +43,8 @@ remotes::install_github(
 `TrialSimulator` is designed with a modular architecture, allowing users to systematically construct and simulate clinical trials in a structured and flexible manner. The simulation process is broken down into three key steps:
 
 1. **Defining Endpoints**: Specify the treatment endpoints that will be evaluated throughout the trial.
-2. **Specifying Trial Event Triggers**: Establish the conditions under which specific trial events (e.g., interim analysis, futility assessment, or stopping rules) will be triggered.
-3. **Defining Actions for Triggered Events**: Determine the appropriate actions to be taken once a trial event is triggered, such as adjusting enrollment, terminating treatment arms, or conducting statistical analysis.
+2. **Specifying Milestone**: Establish the conditions under which specific milestones (e.g., interim analysis, futility assessment, or stopping rules) will be triggered.
+3. **Defining Actions for Milestones**: Determine the appropriate actions to be taken once a milestone is triggered, such as adjusting enrollment, terminating treatment arms, or conducting statistical analysis.
 
 To efficiently utilize `TrialSimulator` for clinical trial simulations, we recommend reading the following vignettes in order:
 
@@ -54,7 +54,7 @@ To efficiently utilize `TrialSimulator` for clinical trial simulations, we recom
   - [Longitudinal endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineLongitudinalEndpoints.html)
 - Condition system
   - [Triggering trial milestones](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html)
-- Define actions at trial events
+- Define actions for milestones
   - [Action function]
 - Examples: fixed design
   - [Fixed design]
