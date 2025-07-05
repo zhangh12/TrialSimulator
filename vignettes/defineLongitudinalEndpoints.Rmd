@@ -99,11 +99,16 @@ Note that we deliberately specify the `name` and `readout` arguments in an order
 
 This example also demonstrates that `endpoint()` can be used to generate covariates. For instance, the baseline value is typically used as a covariate in statistical models, and should therefore be simulated and retained. More generally, users can define covariates, biomarker dynamics, or subgroup indicators using the same mechanism to simulate complex trial designs. 
 
+A simple way to generate a report for an endpoint object is to print it in console directly
+```{r eiieala, results='asis'}
+ep_in_trt1
+```
+
 ## Defining Endpoints for Another Arm
 
 We now define another arm with slightly different means and correlation structure for blood pressure:
 
-```{r adlfeqadl}
+```{r adlfeqadl, results='asis'}
 vcov2 <- matrix(
   c(2, 1.5, 1, 
     1.5, 3, 1, 
@@ -119,6 +124,8 @@ ep_in_trt2 <- endpoint(
   bp_means = c(140, 127, 122), 
   bp_vcov = vcov2
 )
+
+ep_in_trt2
 ```
 
 Note that user can even specify different generators across arms. For example, `bp_generator` can be replaced by another function with different mechanism and arguments. 
@@ -127,7 +134,7 @@ Note that user can even specify different generators across arms. For example, `
 
 Finally, we create two treatment arms and attach the respective endpoints:
 
-```{r daliea}
+```{r daliea, results='asis'}
 trt1 <- arm(name = 'treatment 1')
 trt2 <- arm(name = 'treatment 2')
 

@@ -146,9 +146,35 @@ Endpoints <- R6::R6Class(
       event_vars <- intersect(paste0(vars, '_event'), names(dat))
       tte_vars <- gsub('_event$', '', event_vars)
       exclude_vars <- grep('_readout$', names(dat), value = TRUE)
-      summarizeDataFrame(dat, exclude_vars = exclude_vars,
-                         tte_vars = tte_vars, event_vars = event_vars,
-                         categorical_vars = categorical_vars)
+
+      if(requireNamespace("knitr", quietly = TRUE) &&
+         isTRUE(getOption('knitr.in.progress'))) {
+        summary_html <- summarizeDataFrame(dat, exclude_vars = exclude_vars,
+                                           tte_vars = tte_vars, event_vars = event_vars,
+                                           categorical_vars = categorical_vars)
+
+        temp_file <- tempfile(fileext = ".html")
+        writeLines(summary_html, temp_file, useBytes = TRUE)
+
+        if(requireNamespace("htmltools", quietly = TRUE)) {
+          iframe_html <- htmltools::tags$iframe(
+            src = paste0("data:text/html;charset=utf-8;base64,", base64enc::base64encode(temp_file)),
+            width = "100%",
+            height = "500px",
+            style = "border: 1px solid #ccc; border-radius: 4px;"
+          )
+          cat(as.character(iframe_html))
+        } else {
+          file_content <- paste(readLines(temp_file), collapse = "\n")
+          file_b64 <- base64enc::base64encode(charToRaw(file_content))
+          cat('<iframe src="data:text/html;charset=utf-8;base64,', file_b64,
+              '" width="100%" height="500px" style="border: 1px solid #ccc;"></iframe>')
+        }
+      } else {
+        summarizeDataFrame(dat, exclude_vars = exclude_vars,
+                           tte_vars = tte_vars, event_vars = event_vars,
+                           categorical_vars = categorical_vars)
+      }
 
       invisible(self)
 

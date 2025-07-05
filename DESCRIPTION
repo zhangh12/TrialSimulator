@@ -11,10 +11,12 @@ Imports:
     dplyr,
     ggplot2,
     gMCPLite,
+    htmltools,
     mvtnorm,
     R6,
     rlang,
     rpact,
+    rstudioapi,
     survival,
     utils
 Authors@R: 

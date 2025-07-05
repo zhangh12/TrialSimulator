@@ -8,7 +8,8 @@ summarizeDataFrame(
   data,
   exclude_vars = NULL,
   tte_vars = NULL,
-  event_vars = NULL
+  event_vars = NULL,
+  categorical_vars = NULL
 )
 }
 \arguments{
@@ -20,6 +21,10 @@ summarizeDataFrame(
 
 \item{event_vars}{character. Vector of event indicators. Every time-to-event
 variable should be corresponding to an event indicator.}
+
+\item{categorical_vars}{character. Vector of categorical variables. This can
+be used to specify variables with limited distinct values as categorical
+variables in summary.}
 }
 \value{
 a data frame of summary
