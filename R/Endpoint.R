@@ -73,6 +73,11 @@
 #'
 #' mean(ep3$get_generator()(1e4)[, 1]) # compared to 0.4
 #'
+#' ## print summary reports for endpoint objects in console
+#' # ep1
+#' # ep2
+#' # ep3
+#'
 #' ## An example of piecewise constant exponential random number generator
 #' ## Baseline hazards are piecewise constant
 #' ## Hazard ratios are piecewise constant, resulting a delayed effect.
@@ -116,6 +121,10 @@
 #'            conf.int = TRUE,  # Show confidence intervals
 #'            risk.table = TRUE,  # Add risk table
 #'            palette = c("blue", "red"))
+#'
+#' ## print summary reports for endpoint objects in console
+#' # ep1
+#' # ep2
 #'
 #' }
 #'

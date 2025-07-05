@@ -23,6 +23,7 @@ generator.
 \item \href{#method-Endpoints-get_uid}{\code{Endpoints$get_uid()}}
 \item \href{#method-Endpoints-get_name}{\code{Endpoints$get_name()}}
 \item \href{#method-Endpoints-get_type}{\code{Endpoints$get_type()}}
+\item \href{#method-Endpoints-print}{\code{Endpoints$print()}}
 \item \href{#method-Endpoints-clone}{\code{Endpoints$clone()}}
 }
 }
@@ -144,6 +145,25 @@ return endpoints' type
 \if{html}{\out{<div class="r">}}\preformatted{Endpoints$get_type()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Endpoints-print"></a>}}
+\if{latex}{\out{\hypertarget{method-Endpoints-print}{}}}
+\subsection{Method \code{print()}}{
+print an endpoint object
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Endpoints$print(categorical_vars = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{categorical_vars}}{categorical_vars character. Vector of categorical variables. This can
+be used to specify variables with limited distinct values as categorical
+variables in summary.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Endpoints-clone"></a>}}

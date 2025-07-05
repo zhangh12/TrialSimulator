@@ -17,6 +17,10 @@
 #'
 #' @importFrom base64enc base64encode
 #' @importFrom htmltools HTML
+#' @importFrom grDevices dev.off png
+#' @importFrom graphics axis barplot hist par
+#' @importFrom stats IQR complete.cases median sd setNames
+#' @importFrom rstudioapi isAvailable viewer
 #' @examples
 #'
 #' set.seed(123)
@@ -294,24 +298,16 @@ summarizeDataFrame <- function(data,
 </body>
 </html>')
 
-  # 检测环境并返回适当的格式
-  if(requireNamespace("knitr", quietly = TRUE) && !is.null(knitr::opts_knit$get("rmarkdown.pandoc.to"))) {
-    # 在R Markdown环境中，返回HTML对象
-    if(requireNamespace("htmltools", quietly = TRUE)) {
-      return(htmltools::HTML(html_content))
-    } else {
-      # 如果没有htmltools，直接返回HTML字符串
-      structure(html_content, class = "html")
-    }
+  if(requireNamespace("knitr", quietly = TRUE) &&
+     isTRUE(getOption('knitr.in.progress'))) {
+    return(invisible(html_content))
   } else if(requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
-    # 在RStudio中使用Viewer
     temp_html <- tempfile(fileext = ".html")
     writeLines(html_content, temp_html, useBytes = TRUE)
     rstudioapi::viewer(temp_html)
     return(invisible(html_content))
   } else {
-    # 控制台环境
-    cat(html_content)
+    cat("Summary generated.\n")
     return(invisible(html_content))
   }
 }

@@ -1,3 +1,15 @@
+# TrialSimulator 0.72.0
+
+## New Feature
+
+- Print summary report of endpoints when printing an endpoint object in console or `rmarkdown`. 
+
+# TrialSimulator 0.70.0
+
+## Updates
+
+- Add vignette for longitudinal endpoints. 
+
 # TrialSimulator 0.68.0
 
 ## Updates

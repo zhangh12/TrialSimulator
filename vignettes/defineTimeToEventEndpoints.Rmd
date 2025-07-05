@@ -50,6 +50,11 @@ pfs_pbo <- endpoint(name = 'PFS', type = 'tte',
                     generator = rexp, rate = log(2)/5.6)
 ```
 
+We can get a summary report by printing an `endpoint` object
+```{r ieaofdsaf, results='asis'}
+pfs_pbo
+```
+
 Arguments for the generator function (in this case, `rate`) are passed through `...`. We can verify that the generator works as expected by requesting an example dataset:
 
 ```{r adfla, message=FALSE}
@@ -191,6 +196,18 @@ test_set %>%
   group_by(arm) %>% 
   summarise(PFS = median(PFS), OS = median(OS))
 
+```
+
+Instead of use `test_generator`, a simpler way to summarize an endpoint object is to print it directly. For example, the two endpoints in the placebo arm
+
+```{r daadidal, results='asis'}
+eps_pbo
+```
+
+and the two endpoints in the treatment arm 
+
+```{r ieaofafa, results='asis'}
+eps_trt
 ```
 
 To define arms with these correlated endpoints, simply do the following:
