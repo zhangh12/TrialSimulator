@@ -11,7 +11,7 @@ the concept of classes may consider using this wrapper directly."><meta property
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.72.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.73.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -94,16 +94,20 @@ the concept of classes may consider using this wrapper directly.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕ Description:  Placebo arm  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕ # of Endpoints:  2  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕ Registered Endpoints:  pfs, orr  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Summary generated.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">placebo</span><span class="op">$</span><span class="fu">get_endpoints</span><span class="op">(</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="fu">get_generator</span><span class="op">(</span><span class="op">)</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          pfs pfs_event</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  8.8535740         1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  2.3621465         1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.3399034         1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 13.4254660         1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 52.0000000         0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 30.0593732         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         pfs pfs_event</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  4.981851         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 25.011062         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 18.540704         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 45.415833         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 52.000000         0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  5.831509         1</span>
 <span class="r-in"><span><span class="va">placebo</span><span class="op">$</span><span class="fu">get_endpoints</span><span class="op">(</span><span class="op">)</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="fu">get_name</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "orr"</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## print summary reports for endpoint objects in console</span></span></span>
+<span class="r-in"><span><span class="co"># placebo</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
