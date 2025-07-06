@@ -39,4 +39,7 @@ placebo
 head(placebo$get_endpoints()[[1]]$get_generator()(n = 1e3))
 placebo$get_endpoints()[[2]]$get_name()
 
+## print summary reports for endpoint objects in console
+# placebo
+
 }

@@ -129,9 +129,18 @@ return name of endpoints registered to the arm
 \subsection{Method \code{print()}}{
 print an arm
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Arms$print()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Arms$print(categorical_vars = NULL)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{categorical_vars}}{categorical_vars character. Vector of categorical variables. This can
+be used to specify variables with limited distinct values as categorical
+variables in summary.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Arms-clone"></a>}}
