@@ -1,3 +1,9 @@
+# TrialSimulator 0.73.0
+
+## New Feature
+
+- Print summary report of arms when printing an arm object in console or `rmarkdown`. 
+
 # TrialSimulator 0.72.0
 
 ## New Feature

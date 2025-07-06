@@ -50,11 +50,6 @@ pfs_pbo <- endpoint(name = 'PFS', type = 'tte',
                     generator = rexp, rate = log(2)/5.6)
 ```
 
-We can get a summary report by printing an `endpoint` object
-```{r ieaofdsaf, results='asis'}
-pfs_pbo
-```
-
 Arguments for the generator function (in this case, `rate`) are passed through `...`. We can verify that the generator works as expected by requesting an example dataset:
 
 ```{r adfla, message=FALSE}
@@ -64,6 +59,11 @@ median(test_set$PFS) ## should be close to 5.6
 ```
 
 Note that data returned by `test_generator` is only for validation purposes. During actual trial simulation, `TrialSimulator` determines when to call `generator` from which how many samples to draw. To request access of a data locked at a milestone, we can use the member function `get_locked_data` of a `Trials` object which will be introduced in the vignette [An Example of Simulating a Trial with Adaptive Design](adaptiveDesign.html). 
+
+We can get a summary report by printing an `endpoint` object
+```{r ieaofdsaf, results='asis'}
+pfs_pbo
+```
 
 Similarly, we can define a `PFS` endpoint for the treatment arm:
 

@@ -92,12 +92,17 @@ Arms <- R6::R6Class(
           ep$get_name()
         }
       ) %>%
-        unlist()
+        unlist() %>%
+        unname()
     },
 
     #' @description
     #' print an arm
-    print = function(){
+    #'
+    #' @param categorical_vars categorical_vars character. Vector of categorical variables. This can
+    #' be used to specify variables with limited distinct values as categorical
+    #' variables in summary.
+    print = function(categorical_vars = NULL){
       white_text_blue_bg <- "" ## "\033[37;44m"
       reset <- "" ## "\033[0m"  # Reset to default color
       logo <- '\u2695\u2695' ## stringi::stri_escape_unicode('⚕')
@@ -107,6 +112,48 @@ Arms <- R6::R6Class(
       cat(white_text_blue_bg, logo, '# of Endpoints: ', self$get_number_endpoints(), reset, '\n')
       cat(white_text_blue_bg, logo, 'Registered Endpoints: ',
           paste0(self$get_endpoints_name(), collapse = ', '), reset, '\n')
+
+      dat <- NULL
+      for(ep in self$get_endpoints()){
+        if(is.null(dat)){
+          dat <- ep$test_generator(n = 1e4)
+        }
+        dat <- cbind(dat, ep$test_generator(n = 1e4))
+      }
+      vars <- self$get_endpoints_name()
+      event_vars <- intersect(paste0(vars, '_event'), names(dat))
+      tte_vars <- gsub('_event$', '', event_vars)
+      exclude_vars <- grep('_readout$', names(dat), value = TRUE)
+
+
+      if(requireNamespace("knitr", quietly = TRUE) &&
+         isTRUE(getOption('knitr.in.progress'))) {
+        summary_html <- summarizeDataFrame(dat, exclude_vars = exclude_vars,
+                                           tte_vars = tte_vars, event_vars = event_vars,
+                                           categorical_vars = categorical_vars)
+
+        temp_file <- tempfile(fileext = ".html")
+        writeLines(summary_html, temp_file, useBytes = TRUE)
+
+        if(requireNamespace("htmltools", quietly = TRUE)) {
+          iframe_html <- htmltools::tags$iframe(
+            src = paste0("data:text/html;charset=utf-8;base64,", base64enc::base64encode(temp_file)),
+            width = "100%",
+            height = "500px",
+            style = "border: 1px solid #ccc; border-radius: 4px;"
+          )
+          cat(as.character(iframe_html))
+        } else {
+          file_content <- paste(readLines(temp_file), collapse = "\n")
+          file_b64 <- base64enc::base64encode(charToRaw(file_content))
+          cat('<iframe src="data:text/html;charset=utf-8;base64,', file_b64,
+              '" width="100%" height="500px" style="border: 1px solid #ccc;"></iframe>')
+        }
+      } else {
+        summarizeDataFrame(dat, exclude_vars = exclude_vars,
+                           tte_vars = tte_vars, event_vars = event_vars,
+                           categorical_vars = categorical_vars)
+      }
 
       invisible(self)
 
