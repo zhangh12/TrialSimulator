@@ -579,9 +579,7 @@ Trials <- R6::R6Class(
             dropout_time = self$get_dropout()(n = n_patients_in_arm)
           )
 
-        for(ep in self$get_an_arm(arm)$get_endpoints()){
-          arms_data[[arm]] <- cbind(arms_data[[arm]], ep$get_generator()(n_patients_in_arm))
-        }
+        arms_data[[arm]] <- cbind(arms_data[[arm]], self$get_an_arm(arm)$generate_data(n_patients_in_arm))
 
         arm_data <- arms_data[[arm]]
 
