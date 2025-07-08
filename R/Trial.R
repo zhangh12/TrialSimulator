@@ -35,7 +35,7 @@
 #'   readout = c(orr=1), generator = rbinom,
 #'   size = 1, prob = .4)
 #'
-#' placebo <- arm(name = 'pbo', description = 'Placebo arm')
+#' placebo <- arm(name = 'pbo')
 #'
 #' placebo$add_endpoints(pfs1, orr1)
 #'
@@ -51,7 +51,7 @@
 #'   generator = rbinom, readout = c(orr=3),
 #'   size = 1, prob = .6)
 #'
-#' active <- arm(name = 'ac', description = 'Active arm')
+#' active <- arm(name = 'ac')
 #'
 #' active$add_endpoints(pfs2, orr2)
 #'

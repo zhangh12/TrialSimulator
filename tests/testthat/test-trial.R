@@ -281,3 +281,40 @@ test_that('endpoint event counts work as expected when an arm is removed', {
   expect_equal(dat1 %>% filter(arm == 'trt1'), dat1__ %>% filter(arm == 'trt1'))
 
 })
+
+test_that('inclusion criteria of arm work as expected', {
+
+  rng <- function(n){
+
+    data.frame(
+      x = rnorm(n),
+      y = rbinom(n, 1, .5),
+      z = sample(LETTERS[1:3], n, replace = TRUE),
+      w = rexp(n, rate = .01),
+      w_event = rbinom(n, 1, .3)
+    )
+
+  }
+
+  ep <- endpoint(name = c('x', 'y', 'z', 'w'),
+                 type = c('non-tte', 'non-tte', 'non-tte', 'tte'),
+                 readout = c(x = 0, y = 0, z = 0),
+                 generator = rng)
+
+  test <- arm(name = 'test', x > 0)
+  test$add_endpoints(ep)
+
+  dat <- test$generate_data(1e4)
+  expect_true(all(dat$x > 0))
+
+  test <- arm(name = 'test', x > 1, z %in% c('A', 'C'))
+  test$add_endpoints(ep)
+  dat <- test$generate_data(1e4)
+  expect_true(all(dat$x > 1) && all(dat$z %in% c('A', 'C')))
+
+  test <- arm(name = 'test', x > -0.5 | z %in% c('B', 'C'))
+  test$add_endpoints(ep)
+  dat <- test$generate_data(1e4)
+  expect_true(all(dat$x > -0.5 | dat$z %in% c('B', 'C')))
+
+})

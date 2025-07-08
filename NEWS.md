@@ -1,3 +1,9 @@
+# TrialSimulator 0.74.0
+
+## New Feature
+
+- Support inclusion criteria in `arm` through the `...` argument. 
+
 # TrialSimulator 0.73.0
 
 ## New Feature
