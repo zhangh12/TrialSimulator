@@ -30,9 +30,9 @@ set.seed(12345)
 The first step in simulating a randomized clinical trial using `TrialSimulator` is to define one or more endpoints for each treatment arm. This vignette demonstrates how to use the following key functions to define time-to-event endpoints. For non-time-to-event endpoints, please refer to the separate vignette [Define Non-Time-to-Event Endpoints in Clinical Trials](defineNonTimeToEventEndpoints.html).
 
 - `endpoint`: Creates one or more endpoints
-- `test_generator`: Generates an example dataset from an Endpoint object
+- `test_generator`: Generates an example dataset from an `Endpoints` object
 
-Typically, endpoints follow the same distribution family across arms but with different parameters. Distribution parameters are specified through the `...` arguments in `endpoints`. However, please note that `endpoint` offers the flexibility to specify different distribution families across arms for endpoints. 
+Typically, endpoints follow the same distribution family across arms but with different parameters. Distribution parameters are specified through the `...` arguments in `endpoint`. However, please note that `endpoint` offers the flexibility to specify different distribution families across arms for endpoints. 
 
 Note that the function `test_generator` is for helping users understanding how `TrialSimulator` works. In formal simulation, we do not need to call this function. 
 

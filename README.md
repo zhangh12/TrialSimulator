@@ -48,10 +48,11 @@ remotes::install_github(
 
 To efficiently utilize `TrialSimulator` for clinical trial simulations, we recommend reading the following vignettes in order:
 
-- Define endpoints
+- Define endpoints and arms
   - [Time-to-event (TTE) endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineTimeToEventEndpoints.html)
   - [Non-TTE endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineNonTimeToEventEndpoints.html)
   - [Longitudinal endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineLongitudinalEndpoints.html)
+  - [Define and summarize arms](https://zhangh12.github.io/TrialSimulator/articles/defineArms.html)
 - Condition system
   - [Triggering trial milestones](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html)
 - Define actions for milestones

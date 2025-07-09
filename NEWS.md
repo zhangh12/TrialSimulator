@@ -1,3 +1,9 @@
+# TrialSimulator 0.75.0
+
+## Update
+
+- Add vignette of defining arms. 
+
 # TrialSimulator 0.74.0
 
 ## New Feature
