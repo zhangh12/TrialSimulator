@@ -1,3 +1,9 @@
+# TrialSimulator 0.77.0
+
+## Udates
+
+- Add case for unit test. 
+
 # TrialSimulator 0.76.0
 
 ## Bug Fixes

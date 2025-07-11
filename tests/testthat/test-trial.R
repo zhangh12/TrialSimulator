@@ -349,3 +349,76 @@ test_that('custom data can be re-used in multiple trials', {
   expect_no_error(controller$run(n = 10, plot_event = FALSE, silent = TRUE))
 
 })
+
+
+test_that('trial data can be replicated', {
+
+  ep <- endpoint(name = 'ep', type = 'tte', generator = rexp, rate = .1)
+  pbo <- arm(name = 'pbo')
+  pbo$add_endpoints(ep)
+
+  accrual_rate <- data.frame(end_time = c(1, 2, 6, 12, Inf),
+                             piecewise_rate = c(2, 8, 20, 25, 50))
+
+  trial <- trial(
+    name = 'test', n_patients = 1000, duration = 40,
+    enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
+    silent = TRUE
+  )
+
+  trial$add_arms(sample_ratio = 1, pbo)
+
+  act <- function(trial, milestone_name){
+
+    locked_data <- trial$get_locked_data(milestone_name)
+    trial$save(value = median(locked_data$ep), name = 'median')
+    trial$save(value = mean(locked_data$ep), name = 'mean')
+    trial$save(value = sd(locked_data$ep), name = 'sd')
+
+  }
+
+  final <- milestone(name = 'final',
+                     action = act,
+                     trigger_condition = calendarTime(time = 40))
+
+  listener <- listener(silent = TRUE)
+  listener$add_milestones(final)
+
+  controller <- controller(trial, listener)
+  controller$run(n = 10, plot_event = FALSE, silent = TRUE)
+  op10 <- controller$get_output()
+  op10 <- op10[order(op10$seed), ]
+  rownames(op10) <- NULL
+
+  ## feed seeds in op10 one by one for testing purpose
+
+  seeds <- sort(op10$seed)
+  ops <- NULL
+  for(seed in seeds){
+    trial <- trial(
+      name = 'test', n_patients = 1000, duration = 40,
+      seed = seed,
+      enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
+      silent = TRUE
+    )
+
+    trial$add_arms(sample_ratio = 1, pbo)
+
+    final <- milestone(name = 'final',
+                       action = act,
+                       trigger_condition = calendarTime(time = 40))
+
+    listener <- listener(silent = TRUE)
+    listener$add_milestones(final)
+
+    controller <- controller(trial, listener)
+    controller$run(plot_event = FALSE, silent = TRUE)
+    ops <- rbind(ops, controller$get_output())
+
+  }
+
+  expect_identical(op10, ops)
+
+})
+
+
