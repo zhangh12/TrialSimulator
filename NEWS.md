@@ -1,3 +1,9 @@
+# TrialSimulator 0.76.0
+
+## Bug Fixes
+
+- Fix a bug that `trial$get_custom_data` throws an error when `n > 1` in `controller$run(n)` because custom data is wiped out in `trial$reset`. 
+
 # TrialSimulator 0.75.0
 
 ## Update

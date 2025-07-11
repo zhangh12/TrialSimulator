@@ -1405,6 +1405,7 @@ Trials <- R6::R6Class(
       }
 
       private$custom_data[[name]] <- value
+      private$.snapshot[['custom_data']][[name]] <- value
     },
 
     #' @description
