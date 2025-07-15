@@ -4,21 +4,15 @@
 \alias{milestone}
 \title{Define a Milestone of a Trial}
 \usage{
-milestone(name, type = name, trigger_condition, action = doNothing, ...)
+milestone(name, when, action = doNothing)
 }
 \arguments{
 \item{name}{character. Name of milestone.}
 
-\item{type}{character vector. Milestone type(s) (futility, interim, final, etc.),
-an milestone can be of multiple types. This is for information purpose so any
-string is valid.}
-
-\item{trigger_condition}{condition to check if this milestone should be
+\item{when}{condition to check if this milestone should be
 triggered.}
 
 \item{action}{function to execute when the milestone triggers.}
-
-\item{...}{arguments for \code{trigger_condition}.}
 }
 \description{
 Define a milestone of a trial. This is a user-friendly wrapper for

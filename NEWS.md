@@ -1,3 +1,9 @@
+# TrialSimulator 0.78.0
+
+## Udates
+
+- The `trigger_condition` in the function `milestone` is deprecated and is replaced with `when`. Note that `trigger_condition` is still supported in the `R6` class `Milestones`. 
+
 # TrialSimulator 0.77.0
 
 ## Udates

@@ -38,7 +38,7 @@ duration extension etc.
 \subsection{Method \code{new()}}{
 initialize milestone
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Milestones$new(name, type = name, trigger_condition, action = doNothing, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Milestones$new(name, type = name, trigger_condition, action = doNothing)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -54,8 +54,6 @@ can be any string.}
 trigger. See vignette \code{Condition System for Triggering Milestones in a Trial}.}
 
 \item{\code{action}}{function to execute when the milestone triggers.}
-
-\item{\code{...}}{arguments for \code{trigger_condition}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -169,15 +167,13 @@ program. This means that user needs to adjust their trigger_condition
 (e.g., target number of events (target_n_events) is impossible to
 reach).
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Milestones$trigger_milestone(trial, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Milestones$trigger_milestone(trial)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{trial}}{a \code{Trial} object.}
-
-\item{\code{...}}{other arguments.}
 }
 \if{html}{\out{</div>}}
 }

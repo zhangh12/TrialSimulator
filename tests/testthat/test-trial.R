@@ -28,16 +28,14 @@ test_that('trial milestone timing and endpoint event count work as expected', {
   trial$add_arms(sample_ratio = c(1, 2), pbo, trt)
 
   interim1 <- milestone(name = 'interim1',
-                        trigger_condition =
-                          eventNumber(endpoint = 'or', n = 200))
+                        when = eventNumber(endpoint = 'or', n = 200))
 
   interim2 <- milestone(name = 'interim2',
-                        trigger_condition =
-                          eventNumber(endpoint = 'pfs', n = 240) &
+                        when = eventNumber(endpoint = 'pfs', n = 240) &
                           eventNumber(endpoint = 'os', n = 170))
 
   final <- milestone(name = 'final',
-                     trigger_condition = calendarTime(time = 40))
+                     when = calendarTime(time = 40))
 
   listener <- listener(silent = TRUE)
   listener$add_milestones(interim1, interim2, final)
@@ -126,8 +124,7 @@ test_that('endpoint event counts work as expected when duration is adapted', {
   }
 
   interim <- milestone(name = 'interim',
-                       trigger_condition =
-                         eventNumber(endpoint = 'os', n = 150),
+                       when = eventNumber(endpoint = 'os', n = 150),
                        action = action_at_interim)
 
   listener <- listener(silent = TRUE)
@@ -141,8 +138,7 @@ test_that('endpoint event counts work as expected when duration is adapted', {
   expect_equal(sum(dat1_$os_event %in% 1), 150)
 
   final <- milestone(name = 'final',
-                     trigger_condition =
-                       eventNumber(endpoint = 'os', n = 400) |
+                     when = eventNumber(endpoint = 'os', n = 400) |
                        calendarTime(time = 40))
 
 
@@ -228,17 +224,15 @@ test_that('endpoint event counts work as expected when an arm is removed', {
   trial$add_arms(sample_ratio = c(1, 1, 2), pbo, trt1, trt2)
 
   interim1 <- milestone(name = 'interim1',
-                        trigger_condition =
-                          eventNumber(endpoint = 'or', n = 200),
+                        when = eventNumber(endpoint = 'or', n = 200),
                         action = function(trial, milestone_name){trial$remove_arms('trt1')})
 
   interim2 <- milestone(name = 'interim2',
-                        trigger_condition =
-                          eventNumber(endpoint = 'pfs', n = 240) &
+                        when = eventNumber(endpoint = 'pfs', n = 240) &
                           eventNumber(endpoint = 'os', n = 170))
 
   final <- milestone(name = 'final',
-                 trigger_condition = calendarTime(time = 40))
+                 when = calendarTime(time = 40))
 
   listener <- listener(silent = TRUE)
   listener$add_milestones(interim1, interim2, final)
@@ -340,7 +334,7 @@ test_that('custom data can be re-used in multiple trials', {
   final <- milestone(name = 'final',
                      action = function(trial, milestone_name) {
                        trial$get_custom_data('config')},
-                     trigger_condition = calendarTime(time = 40))
+                     when = calendarTime(time = 40))
 
   listener <- listener(silent = TRUE)
   listener$add_milestones(final)
@@ -379,7 +373,7 @@ test_that('trial data can be replicated', {
 
   final <- milestone(name = 'final',
                      action = act,
-                     trigger_condition = calendarTime(time = 40))
+                     when = calendarTime(time = 40))
 
   listener <- listener(silent = TRUE)
   listener$add_milestones(final)
@@ -406,7 +400,7 @@ test_that('trial data can be replicated', {
 
     final <- milestone(name = 'final',
                        action = act,
-                       trigger_condition = calendarTime(time = 40))
+                       when = calendarTime(time = 40))
 
     listener <- listener(silent = TRUE)
     listener$add_milestones(final)
