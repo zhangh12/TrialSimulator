@@ -36,8 +36,7 @@ Milestones <- R6::R6Class(
     #' @param trigger_condition function to check if this milestone should
     #' trigger. See vignette \code{Condition System for Triggering Milestones in a Trial}.
     #' @param action function to execute when the milestone triggers.
-    #' @param ... arguments for \code{trigger_condition}.
-    initialize = function(name, type = name, trigger_condition, action = doNothing, ...){
+    initialize = function(name, type = name, trigger_condition, action = doNothing){
       stopifnot(is.character(name) && (length(name) == 1))
       stopifnot(is.character(type))
       if(!('Condition' %in% class(trigger_condition))){
@@ -139,8 +138,7 @@ Milestones <- R6::R6Class(
     #' (e.g., target number of events (target_n_events) is impossible to
     #' reach).
     #' @param trial a \code{Trial} object.
-    #' @param ... other arguments.
-    trigger_milestone = function(trial, ...){
+    trigger_milestone = function(trial){
       if(self$get_trigger_status()){
         if(!private$silent){
           message('Milestone <', self$get_name(),

@@ -274,18 +274,15 @@ Next, we register three trial milestones to a listener
 
 ```{r}
 dose_selection <- milestone(name = 'dose selection', action = action1,   
-                            trigger_condition = 
-                              eventNumber(endpoint = 'surrogate', n = 300)
+                            when = eventNumber(endpoint = 'surrogate', n = 300)
                             )
 
 interim <- milestone(name = 'interim', action = action2, 
-                     trigger_condition = 
-                       eventNumber(endpoint = 'pfs', n = 300)
+                     when = eventNumber(endpoint = 'pfs', n = 300)
                      )
 
 final <- milestone(name = 'final', action = action3, 
-                   trigger_condition = 
-                     enrollment(n = 1000, arms = c('placebo', 'low dose', 'high dose')) & 
+                   when = enrollment(n = 1000, arms = c('placebo', 'low dose', 'high dose')) & 
                      eventNumber(endpoint = 'os', n = 300) & (
                        calendarTime(time = 28) | 
                          eventNumber(endpoint = 'pfs', n = 520)

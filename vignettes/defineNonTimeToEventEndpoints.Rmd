@@ -124,11 +124,11 @@ Here `accrual_rate` is an argument of `TrialSimulator::StaggeredRecruiter` contr
 
 ```{r llieh}
 interim <- milestone(name = 'interim', 
-                     trigger_condition = eventNumber(endpoint = 'orr', n = 60), 
+                     when = eventNumber(endpoint = 'orr', n = 60), 
                      action = doNothing)
 
 random <- milestone(name = 'random', 
-                    trigger_condition = 
+                    when = 
                       calendarTime(time = 10) & 
                       (eventNumber(endpoint = 'cfb', n = 100) | 
                          eventNumber(endpoint = 'orr', n = 180)
@@ -136,7 +136,7 @@ random <- milestone(name = 'random',
                     action = doNothing)
 
 final <- milestone(name = 'final', 
-                   trigger_condition = calendarTime(time = 30), 
+                   when = calendarTime(time = 30), 
                    action = doNothing)
 ```
 

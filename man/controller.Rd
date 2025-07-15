@@ -48,7 +48,7 @@ action_at_final <- function(trial, milestone_name){
 
 final <- milestone(name = 'final analysis',
                    action = action_at_final,
-                   trigger_condition = calendarTime(time = 40))
+                   when = calendarTime(time = 40))
 
 listener <- listener()
 listener$add_milestones(final)
