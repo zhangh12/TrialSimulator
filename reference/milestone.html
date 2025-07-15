@@ -11,7 +11,7 @@ the concept of classes may consider using this wrapper directly."><meta property
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.77.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.78.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,7 +54,7 @@ the concept of classes may consider using this wrapper directly.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">milestone</span><span class="op">(</span><span class="va">name</span>, type <span class="op">=</span> <span class="va">name</span>, <span class="va">trigger_condition</span>, action <span class="op">=</span> <span class="va">doNothing</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">milestone</span><span class="op">(</span><span class="va">name</span>, <span class="va">when</span>, action <span class="op">=</span> <span class="va">doNothing</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -65,23 +65,13 @@ the concept of classes may consider using this wrapper directly.</p>
 <dd><p>character. Name of milestone.</p></dd>
 
 
-<dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
-<dd><p>character vector. Milestone type(s) (futility, interim, final, etc.),
-an milestone can be of multiple types. This is for information purpose so any
-string is valid.</p></dd>
-
-
-<dt id="arg-trigger-condition">trigger_condition<a class="anchor" aria-label="anchor" href="#arg-trigger-condition"></a></dt>
+<dt id="arg-when">when<a class="anchor" aria-label="anchor" href="#arg-when"></a></dt>
 <dd><p>condition to check if this milestone should be
 triggered.</p></dd>
 
 
 <dt id="arg-action">action<a class="anchor" aria-label="anchor" href="#arg-action"></a></dt>
 <dd><p>function to execute when the milestone triggers.</p></dd>
-
-
-<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>arguments for <code>trigger_condition</code>.</p></dd>
 
 </dl></div>
 
