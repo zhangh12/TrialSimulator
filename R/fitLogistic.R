@@ -3,40 +3,42 @@
 #' @description
 #' Fit logistic regression model on an binary endpoint.
 #'
-#' @param endpoint Character. Name of the endpoint in \code{data}.
+#' @param formula An object of class \code{formula}. Must include \code{arm}
+#' and endpoint in \code{data}. Covariates can be adjusted.
 #' @param placebo Character. String indicating the placebo in \code{data$arm}.
 #' @param data Data frame. Usually it is a locked data set.
 #' @param alternative a character string specifying the alternative hypothesis,
 #' must be one of \code{"greater"} or \code{"less"}. No default value.
 #' \code{"greater"} means superiority of treatment over placebo is established
-#' by an odds ratio greater than 1 because a
-#' logistic regression model is fitted with \code{endpoint ~ I(arm != placebo)}.
+#' by an odds ratio greater than 1.
 #' @param ... Subset conditions compatible with \code{dplyr::filter}.
 #' \code{glm} will be fitted on this subset only. This argument can be useful
 #' to create a subset of data for analysis when a trial consists of more
 #' than two arms. By default, it is not specified,
 #' all data will be used to fit the model. More than one condition can be
 #' specified in \code{...}, e.g.,
-#' \code{fitLogistic('remission', 'pbo', data, arm \%in\% c('pbo', 'low dose'), cfb > 0.5)},
+#' \code{fitLogistic(remission ~ arm, 'pbo', data, arm \%in\% c('pbo', 'low dose'), cfb > 0.5)},
 #' which is equivalent to:
-#' \code{fitLogistic('remission', 'pbo', data, arm \%in\% c('pbo', 'low dose') & cfb > 0.5)}.
+#' \code{fitLogistic(remission ~ arm, 'pbo', data, arm \%in\% c('pbo', 'low dose') & cfb > 0.5)}.
 #' Note that if more than one treatment arm are present in the data after
 #' applying filter in \code{...}, models are fitted for placebo verse
 #' each of the treatment arms.
 #'
-#' @returns a data frame with three columns:
+#' @returns a data frame with columns:
 #' \describe{
+#' \item{\code{arm}}{name of the treatment arm. }
+#' \item{\code{placebo}}{name of the placebo arm. }
 #' \item{\code{p}}{one-sided p-value for log odds ratio (treated vs placebo). }
-#' \item{\code{info}}{sample size in the subset with \code{NA} being removed. }
-#' \item{\code{z}}{the z statistics of log odds ratio (treated vs placebo). }
+#' \item{\code{info}}{sample size used in model with \code{NA} being removed. }
+#' \item{\code{z}}{z statistics of log odds ratio (treated vs placebo). }
 #' }
 #'
 #' @export
 #'
-fitLogistic <- function(endpoint, placebo, data, alternative, ...) {
+fitLogistic <- function(formula, placebo, data, alternative, ...) {
 
-  if(!is.character(endpoint) || length(endpoint) != 1){
-    stop("endpoint must be a single character string")
+  if(!inherits(formula, 'formula')){
+    stop('formula must be a formula object with "arm" indicating the column arm in data. ')
   }
 
   if(!is.character(placebo) || length(placebo) != 1){
@@ -49,9 +51,9 @@ fitLogistic <- function(endpoint, placebo, data, alternative, ...) {
 
   alternative <- match.arg(alternative, choices = c('greater', 'less'))
 
-  required_cols <- c('arm', endpoint)
+  required_cols <- c('arm')
   if(!all(required_cols %in% names(data))){
-    stop('Columns <',
+    stop('Column(s) <',
          paste0(setdiff(required_cols, names(data)), collapse = ', '),
          '> are not present in locked data. ',
          'Please check endpoint\'s name. ')
@@ -78,24 +80,29 @@ fitLogistic <- function(endpoint, placebo, data, alternative, ...) {
 
   treatment_arms <- setdiff(unique(filtered_data$arm), placebo) %>% sort()
 
-  # Create the formula
-  formula_str <- paste0(endpoint, " ~ I(arm != '", placebo, "')")
-
   ret <- NULL
 
   for(trt_arm in treatment_arms){
     sub_data <- filtered_data %>% dplyr::filter(.data$arm %in% c(placebo, trt_arm))
 
-    # Fit the logistic regression model
-    fit <- summary(glm(as.formula(formula_str),
-                       family = 'binomial',
-                       data = sub_data)
-                   )$coef
+    # Ensure arm is a factor with placebo and treatment
+    sub_data$arm <- factor(sub_data$arm, levels = c(placebo, trt_arm))
 
-    z <- fit[2, 'z value']
+    # Fit the linear regression model
+    fit <- glm(formula, data = sub_data, family = 'binomial')
+
+    ref_grid <- emmeans::emmeans(fit, ~ arm)
+    cont <- emmeans::contrast(
+      ref_grid,
+      method = list("trt_vs_pbo" = setNames(c(-1, 1), c(placebo, trt_arm))),
+      type = "link"
+    ) %>%
+      summary()
+
+    z <- cont$z.ratio
     p <- ifelse(alternative == 'greater', 1 - pnorm(z), pnorm(z))
 
-    info <- sum(!is.na(sub_data[[endpoint]]))
+    info <- fit$df.residual + fit$rank
 
     ret <- rbind(ret, data.frame(arm = trt_arm, placebo = placebo,
                                  p = p, info = info, z = z

@@ -1,18 +1,24 @@
+# TrialSimulator 0.80.0
+
+## Updates
+
+- The function `fitLogistic` now supports `formula` with covariates, and uses `emmeans` contrast to compute average treatment effect (ATE) on the `logit` scale. 
+
 # TrialSimulator 0.79.0
 
-## Udates
+## Updates
 
-- The function `fitLinear` now supports `formula` with covariates, and use `emmeans` contrast to estimate causal effect. 
+- The function `fitLinear` now supports `formula` with covariates, and uses `emmeans` contrast to compute average treatment effect (ATE) on the mean scale. 
 
 # TrialSimulator 0.78.0
 
-## Udates
+## Updates
 
 - The `trigger_condition` in the function `milestone` is deprecated and is replaced with `when`. Note that `trigger_condition` is still supported in the `R6` class `Milestones`. 
 
 # TrialSimulator 0.77.0
 
-## Udates
+## Updates
 
 - Add case for unit test. 
 
