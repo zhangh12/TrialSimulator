@@ -344,7 +344,6 @@ test_that('custom data can be re-used in multiple trials', {
 
 })
 
-
 test_that('trial data can be replicated', {
 
   ep <- endpoint(name = 'ep', type = 'tte', generator = rexp, rate = .1)
@@ -412,6 +411,68 @@ test_that('trial data can be replicated', {
   }
 
   expect_identical(op10, ops)
+
+})
+
+test_that('fitLinear works as expected', {
+
+
+  ep <- endpoint(name = 'ep', type = 'tte', generator = rnorm)
+  pbo <- arm(name = 'pbo')
+  pbo$add_endpoints(ep)
+
+  ep <- endpoint(name = 'ep', type = 'tte', generator = rnorm, mean = .1)
+  trt <- arm(name = 'trt')
+  trt$add_endpoints(ep)
+
+  accrual_rate <- data.frame(end_time = c(1, 2, 6, 12, Inf),
+                             piecewise_rate = c(2, 8, 20, 25, 50))
+
+  trial <- trial(
+    name = 'test', n_patients = 1000, duration = 40,
+    enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
+    silent = TRUE
+  )
+
+  trial$add_arms(sample_ratio = c(1, 2), pbo, trt)
+
+  act <- function(trial, milestone_name){
+
+    locked_data <- trial$get_locked_data(milestone_name)
+
+    n <- nrow(locked_data)
+    locked_data$covar1 <- rnorm(n)
+    locked_data$covar2 <- rbinom(n, 1, .4)
+
+    fit <- fitLinear(ep ~ arm + covar1 + covar2, placebo = 'pbo', data = locked_data, alternative = 'greater')
+    trial$save(value = fit, name = 'fitLinear_output')
+    fit_ <- lm(ep ~ I(arm != 'pbo') + covar1 + covar2, data =locked_data)
+    trial$save(value = data.frame(z = summary(fit_)$coef[2, 't value']) %>%
+                 mutate(p = 1 - pt(z, df = fit_$df.residual - 2)) %>%
+                 mutate(info = fit_$df.residual + fit_$rank),
+               name = 'lm_output')
+
+    invisible(NULL)
+
+  }
+
+  final <- milestone(name = 'final',
+                     action = act,
+                     when = calendarTime(time = 40))
+
+  listener <- listener(silent = TRUE)
+  listener$add_milestones(final)
+
+  controller <- controller(trial, listener)
+  controller$run(n = 10, plot_event = FALSE, silent = TRUE)
+
+  op <- controller$get_output()
+
+  expect_equal(op$`fitLinear_output_<p>`, op$`lm_output_<p>`, tolerance = 1e-3)
+  expect_equal(op$`fitLinear_output_<z>`, op$`lm_output_<z>`, tolerance = 1e-3)
+  expect_equal(op$`fitLinear_output_<info>`, op$`lm_output_<info>`)
+  expect_true(all(op$`fitLinear_output_<arm>` == 'trt'))
+  expect_true(all(op$`fitLinear_output_<placebo>` == 'pbo'))
 
 })
 

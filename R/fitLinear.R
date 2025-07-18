@@ -3,14 +3,14 @@
 #' @description
 #' Fit linear regression model on a continuous endpoint.
 #'
-#' @param endpoint Character. Name of the endpoint in \code{data}.
-#' @param placebo Character. String indicating the placebo in \code{data$arm}.
+#' @param formula an object of class \code{formula}. Must include `arm` and
+#' endpoint in `data`. Covariates can be adjusted.
+#' @param placebo Character. String indicating the placebo arm in \code{data$arm}.
 #' @param data Data frame. Usually it is a locked data set.
 #' @param alternative a character string specifying the alternative hypothesis,
 #' must be one of \code{"greater"} or \code{"less"}. No default value.
 #' \code{"greater"} means superiority of treatment over placebo is established
-#' by a greater mean in treated arm because a
-#' linear regression model is fitted with \code{endpoint ~ I(arm != placebo)}.
+#' by a greater mean in treated arm.
 #' @param ... Subset conditions compatible with \code{dplyr::filter}.
 #' \code{glm} will be fitted on this subset only. This argument can be useful
 #' to create a subset of data for analysis when a trial consists of more
@@ -26,18 +26,21 @@
 #'
 #' @returns a data frame with three columns:
 #' \describe{
+#' \item{\code{arm}}{name of the treatment arm. }
+#' \item{\code{placebo}}{name of the placebo arm. }
 #' \item{\code{p}}{one-sided p-value for between-arm difference (treated vs placebo). }
-#' \item{\code{info}}{sample size in the subset with \code{NA} being removed. }
+#' \item{\code{info}}{sample size used in model with \code{NA} being removed. }
 #' \item{\code{z}}{the z statistics of between-arm difference (treated vs placebo). }
 #' }
 #'
 #' @importFrom stats glm
+#' @importFrom emmeans emmeans contrast
 #' @export
 #'
-fitLinear <- function(endpoint, placebo, data, alternative, ...) {
+fitLinear <- function(formula, placebo, data, alternative, ...) {
 
-  if(!is.character(endpoint) || length(endpoint) != 1){
-    stop("endpoint must be a single character string")
+  if(!inherits(formula, 'formula')){
+    stop('formula must be a formula object with "arm" indicating the column arm in data. ')
   }
 
   if(!is.character(placebo) || length(placebo) != 1){
@@ -50,7 +53,7 @@ fitLinear <- function(endpoint, placebo, data, alternative, ...) {
 
   alternative <- match.arg(alternative, choices = c('greater', 'less'))
 
-  required_cols <- c('arm', endpoint)
+  required_cols <- c('arm')
   if(!all(required_cols %in% names(data))){
     stop('Columns <',
          paste0(setdiff(required_cols, names(data)), collapse = ', '),
@@ -66,7 +69,7 @@ fitLinear <- function(endpoint, placebo, data, alternative, ...) {
       data %>% dplyr::filter(...)
     },
     error = function(e){
-      stop('Error in filtering data for fitting a logistic regression model. ',
+      stop('Error in filtering data for fitting a linear regression model. ',
            'Please check condition in ..., ',
            'which should be compatible with dplyr::filter. ')
     })
@@ -79,24 +82,28 @@ fitLinear <- function(endpoint, placebo, data, alternative, ...) {
 
   treatment_arms <- setdiff(unique(filtered_data$arm), placebo) %>% sort()
 
-  # Create the formula
-  formula_str <- paste0(endpoint, " ~ I(arm != '", placebo, "')")
-
   ret <- NULL
 
   for(trt_arm in treatment_arms){
     sub_data <- filtered_data %>% dplyr::filter(.data$arm %in% c(placebo, trt_arm))
 
-    # Fit the logistic regression model
-    fit <- summary(glm(as.formula(formula_str),
-                       family = 'gaussian',
-                       data = sub_data)
-    )$coef
+    # Ensure arm is a factor with placebo and treatment
+    sub_data$arm <- factor(sub_data$arm, levels = c(placebo, trt_arm))
 
-    z <- fit[2, 't value']
-    p <- ifelse(alternative == 'greater', 1 - pnorm(z), pnorm(z))
+    # Fit the linear regression model
+    fit <- glm(formula, data = sub_data, family = 'gaussian')
 
-    info <- sum(!is.na(sub_data[[endpoint]]))
+    ref_grid <- emmeans(fit, ~ arm)
+    cont <- contrast(ref_grid,
+                     method = list('trt_vs_pbo' = setNames(c(-1, 1), c(placebo, trt_arm)))
+                     ) %>%
+      summary()
+
+    z <- cont$t.ratio
+    df <- cont$df
+    p <- ifelse(alternative == 'greater', 1 - pt(z, df = df), pt(z, df = df))
+
+    info <- fit$df.residual + fit$rank
 
     ret <- rbind(ret, data.frame(arm = trt_arm, placebo = placebo,
                                  p = p, info = info, z = z

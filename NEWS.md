@@ -1,3 +1,9 @@
+# TrialSimulator 0.79.0
+
+## Udates
+
+- The function `fitLinear` now supports `formula` with covariates, and use `emmeans` contrast to estimate causal effect. 
+
 # TrialSimulator 0.78.0
 
 ## Udates
