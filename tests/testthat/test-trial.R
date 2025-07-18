@@ -595,11 +595,11 @@ test_that('fitLogistic can compute ATE as expected in model without covariates',
 
   op <- controller$get_output()
 
-  expect_equal(op$`fitLinear_output_<p>`, op$`lm_output_<p>`, tolerance = 1e-3)
-  expect_equal(op$`fitLinear_output_<z>`, op$`lm_output_<z>`, tolerance = 1e-3)
-  expect_equal(op$`fitLinear_output_<info>`, op$`lm_output_<info>`)
-  expect_true(all(op$`fitLinear_output_<arm>` == 'trt'))
-  expect_true(all(op$`fitLinear_output_<placebo>` == 'pbo'))
+  expect_equal(op$`fitLogistic_output_<p>`, op$`glm_output_<p>`, tolerance = 1e-3)
+  expect_equal(op$`fitLogistic_output_<z>`, op$`glm_output_<z>`, tolerance = 1e-3)
+  expect_equal(op$`fitLogistic_output_<info>`, op$`glm_output_<info>`)
+  expect_true(all(op$`fitLogistic_output_<arm>` == 'trt'))
+  expect_true(all(op$`fitLogistic_output_<placebo>` == 'pbo'))
 
 })
 
