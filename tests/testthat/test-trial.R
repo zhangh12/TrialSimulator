@@ -444,6 +444,7 @@ test_that('fitLinear works as expected', {
     locked_data$covar1 <- rnorm(n)
     locked_data$covar2 <- rbinom(n, 1, .4)
 
+    ## ATE is equivalent to model coefficient when no interaction term in linear regression
     fit <- fitLinear(ep ~ arm + covar1 + covar2, placebo = 'pbo', data = locked_data, alternative = 'greater')
     trial$save(value = fit, name = 'fitLinear_output')
     fit_ <- lm(ep ~ I(arm != 'pbo') + covar1 + covar2, data =locked_data)
