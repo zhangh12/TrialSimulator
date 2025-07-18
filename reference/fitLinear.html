@@ -56,8 +56,8 @@
 
 
 <dl><dt id="arg-formula">formula<a class="anchor" aria-label="anchor" href="#arg-formula"></a></dt>
-<dd><p>an object of class <code>formula</code>. Must include `arm` and
-endpoint in `data`. Covariates can be adjusted.</p></dd>
+<dd><p>an object of class <code>formula</code>. Must include <code>arm</code> and
+endpoint in <code>data</code>. Covariates can be adjusted.</p></dd>
 
 
 <dt id="arg-placebo">placebo<a class="anchor" aria-label="anchor" href="#arg-placebo"></a></dt>
@@ -82,9 +82,9 @@ to create a subset of data for analysis when a trial consists of more
 than two arms. By default, it is not specified,
 all data will be used to fit the model. More than one condition can be
 specified in <code>...</code>, e.g.,
-<code>fitLinear('cfb', 'pbo', data, arm %in% c('pbo', 'low dose'), cfb &gt; 0.5)</code>,
+<code>fitLinear(cfb ~ arm, 'pbo', data, arm %in% c('pbo', 'low dose'), cfb &gt; 0.5)</code>,
 which is equivalent to:
-<code>fitLinear('cfb', 'pbo', data, arm %in% c('pbo', 'low dose') &amp; cfb &gt; 0.5)</code>.
+<code>fitLinear(cfb ~ arm, 'pbo', data, arm %in% c('pbo', 'low dose') &amp; cfb &gt; 0.5)</code>.
 Note that if more than one treatment arm are present in the data after
 applying filter in <code>...</code>, models are fitted for placebo verse
 each of the treatment arms.</p></dd>
@@ -92,7 +92,7 @@ each of the treatment arms.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>a data frame with three columns:</p><dl><dt><code>arm</code></dt>
+    <p>a data frame with columns:</p><dl><dt><code>arm</code></dt>
 <dd><p>name of the treatment arm.</p></dd>
 
 <dt><code>placebo</code></dt>
@@ -105,7 +105,7 @@ each of the treatment arms.</p></dd>
 <dd><p>sample size used in model with <code>NA</code> being removed.</p></dd>
 
 <dt><code>z</code></dt>
-<dd><p>the z statistics of between-arm difference (treated vs placebo).</p></dd>
+<dd><p>z statistics of between-arm difference (treated vs placebo).</p></dd>
 
 
 </dl></div>
