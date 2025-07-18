@@ -4,20 +4,20 @@
 \alias{fitLinear}
 \title{Fit linear regression model}
 \usage{
-fitLinear(endpoint, placebo, data, alternative, ...)
+fitLinear(formula, placebo, data, alternative, ...)
 }
 \arguments{
-\item{endpoint}{Character. Name of the endpoint in \code{data}.}
+\item{formula}{an object of class \code{formula}. Must include `arm` and
+endpoint in `data`. Covariates can be adjusted.}
 
-\item{placebo}{Character. String indicating the placebo in \code{data$arm}.}
+\item{placebo}{Character. String indicating the placebo arm in \code{data$arm}.}
 
 \item{data}{Data frame. Usually it is a locked data set.}
 
 \item{alternative}{a character string specifying the alternative hypothesis,
 must be one of \code{"greater"} or \code{"less"}. No default value.
 \code{"greater"} means superiority of treatment over placebo is established
-by a greater mean in treated arm because a
-linear regression model is fitted with \code{endpoint ~ I(arm != placebo)}.}
+by a greater mean in treated arm.}
 
 \item{...}{Subset conditions compatible with \code{dplyr::filter}.
 \code{glm} will be fitted on this subset only. This argument can be useful
@@ -35,8 +35,10 @@ each of the treatment arms.}
 \value{
 a data frame with three columns:
 \describe{
+\item{\code{arm}}{name of the treatment arm. }
+\item{\code{placebo}}{name of the placebo arm. }
 \item{\code{p}}{one-sided p-value for between-arm difference (treated vs placebo). }
-\item{\code{info}}{sample size in the subset with \code{NA} being removed. }
+\item{\code{info}}{sample size used in model with \code{NA} being removed. }
 \item{\code{z}}{the z statistics of between-arm difference (treated vs placebo). }
 }
 }
