@@ -25,9 +25,9 @@ to create a subset of data for analysis when a trial consists of more
 than two arms. By default, it is not specified,
 all data will be used to fit the model. More than one condition can be
 specified in \code{...}, e.g.,
-\code{fitLinear(cfb ~ arm, 'pbo', data, arm \%in\% c('pbo', 'low dose'), cfb > 0.5)},
+\code{fitLinear(cfb ~ arm, 'pbo', data, 'greater', arm \%in\% c('pbo', 'low dose'), cfb > 0.5)},
 which is equivalent to:
-\code{fitLinear(cfb ~ arm, 'pbo', data, arm \%in\% c('pbo', 'low dose') & cfb > 0.5)}.
+\code{fitLinear(cfb ~ arm, 'pbo', data, 'greater', arm \%in\% c('pbo', 'low dose') & cfb > 0.5)}.
 Note that if more than one treatment arm are present in the data after
 applying filter in \code{...}, models are fitted for placebo verse
 each of the treatment arms.}
@@ -37,6 +37,7 @@ a data frame with columns:
 \describe{
 \item{\code{arm}}{name of the treatment arm. }
 \item{\code{placebo}}{name of the placebo arm. }
+\item{\code{estimate}}{estimate depending on \code{scale}. }
 \item{\code{p}}{one-sided p-value for between-arm difference (treated vs placebo). }
 \item{\code{info}}{sample size used in model with \code{NA} being removed. }
 \item{\code{z}}{z statistics of between-arm difference (treated vs placebo). }

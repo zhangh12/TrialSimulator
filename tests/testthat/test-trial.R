@@ -512,7 +512,8 @@ test_that('fitLinear can compute ATE as expected in additive model', {
     trial$save(value = fit, name = 'fitLinear_output')
 
     fit_ <- lm(ep ~ I(arm != 'pbo') + covar1 + covar2, data = locked_data)
-    trial$save(value = data.frame(z = summary(fit_)$coef[2, 't value']) %>%
+    trial$save(value = data.frame(z = summary(fit_)$coef[2, 't value'],
+                                  estimate = summary(fit_)$coef[2, 'Estimate']) %>%
                  mutate(p = 1 - pt(z, df = fit_$df.residual - 2)) %>%
                  mutate(info = fit_$df.residual + fit_$rank),
                name = 'lm_output')
@@ -535,6 +536,7 @@ test_that('fitLinear can compute ATE as expected in additive model', {
 
   expect_equal(op$`fitLinear_output_<p>`, op$`lm_output_<p>`, tolerance = 1e-3)
   expect_equal(op$`fitLinear_output_<z>`, op$`lm_output_<z>`, tolerance = 1e-3)
+  expect_equal(op$`fitLinear_output_<estimate>`, op$`lm_output_<estimate>`, tolerance = 1e-3)
   expect_equal(op$`fitLinear_output_<info>`, op$`lm_output_<info>`)
   expect_true(all(op$`fitLinear_output_<arm>` == 'trt'))
   expect_true(all(op$`fitLinear_output_<placebo>` == 'pbo'))
@@ -566,18 +568,55 @@ test_that('fitLogistic can compute ATE as expected in model without covariates',
 
     locked_data <- trial$get_locked_data(milestone_name)
 
-    n <- nrow(locked_data)
+    trial$save(value = nrow(locked_data), name = 'n')
 
-    ## ATE is equivalent to log OR estimate when covariate in logistic regression
-    fit <- fitLogistic(I(ep > 0) ~ arm, placebo = 'pbo', data = locked_data, alternative = 'greater')
-    trial$save(value = fit, name = 'fitLogistic_output')
+    ## ATE is equivalent to log OR estimate when no covariate in logistic regression
+    fit_logOR <- fitLogistic(I(ep > 0) ~ arm, placebo = 'pbo',
+                             data = locked_data, alternative = 'greater',
+                             scale = 'log odds ratio')
 
-    fit_ <- glm(I(ep > 0) ~ I(arm != 'pbo'), data = locked_data, family = 'binomial')
+    trial$save(value = fit_logOR, name = 'fit_logOR')
 
-    trial$save(value = data.frame(z = summary(fit_)$coef[2, 'z value']) %>%
+    fit_OR <- fitLogistic(I(ep > 0) ~ arm, placebo = 'pbo',
+                          data = locked_data, alternative = 'greater',
+                          scale = 'odds ratio')
+
+    trial$save(value = fit_OR, name = 'fit_OR')
+
+    ## ATE is equivalent to ratio of arm probabilities when no covariate in logistic regression
+    fit_RR <- fitLogistic(I(ep > 0) ~ arm, placebo = 'pbo',
+                          data = locked_data, alternative = 'greater',
+                          scale = 'risk ratio')
+
+    trial$save(value = fit_RR, name = 'fit_RR')
+
+    ## ATE is equivalent to difference of arm probabilities when no covariate in logistic regression
+    fit_RD <- fitLogistic(I(ep > 0) ~ arm, placebo = 'pbo',
+                          data = locked_data, alternative = 'greater',
+                          scale = 'risk difference')
+
+    trial$save(value = fit_RD, name = 'fit_RD')
+
+    fit <- glm(I(ep > 0) ~ I(arm != 'pbo'), data = locked_data, family = 'binomial')
+
+    trial$save(value = data.frame(estimate = summary(fit)$coef[2, 'Estimate'],
+                                  z = summary(fit)$coef[2, 'z value']) %>%
                  mutate(p = 1 - pnorm(z)) %>%
-                 mutate(info = fit_$df.residual + fit_$rank),
-               name = 'glm_output')
+                 mutate(info = fit$df.residual + fit$rank),
+               name = 'glm_logOR')
+
+    probs <- locked_data %>%
+      group_by(arm) %>%
+      summarise(prob = mean(ep > 0))
+
+    trial$save(value = exp(summary(fit)$coef[2, 'Estimate']),
+               name = 'glm_OR')
+
+    trial$save(value = probs$prob[probs$arm == 'trt'] / probs$prob[probs$arm == 'pbo'],
+               name = 'glm_RR')
+
+    trial$save(value = probs$prob[probs$arm == 'trt'] - probs$prob[probs$arm == 'pbo'],
+               name = 'glm_RD')
 
     invisible(NULL)
 
@@ -595,11 +634,35 @@ test_that('fitLogistic can compute ATE as expected in model without covariates',
 
   op <- controller$get_output()
 
-  expect_equal(op$`fitLogistic_output_<p>`, op$`glm_output_<p>`, tolerance = 1e-3)
-  expect_equal(op$`fitLogistic_output_<z>`, op$`glm_output_<z>`, tolerance = 1e-3)
-  expect_equal(op$`fitLogistic_output_<info>`, op$`glm_output_<info>`)
-  expect_true(all(op$`fitLogistic_output_<arm>` == 'trt'))
-  expect_true(all(op$`fitLogistic_output_<placebo>` == 'pbo'))
+  #################
+
+  expect_true(all(op$`fit_logOR_<arm>` == 'trt'))
+  expect_true(all(op$`fit_OR_<arm>` == 'trt'))
+  expect_true(all(op$`fit_RR_<arm>` == 'trt'))
+  expect_true(all(op$`fit_RD_<arm>` == 'trt'))
+
+  expect_true(all(op$`fit_logOR_<placebo>` == 'pbo'))
+  expect_true(all(op$`fit_OR_<placebo>` == 'pbo'))
+  expect_true(all(op$`fit_RR_<placebo>` == 'pbo'))
+  expect_true(all(op$`fit_RD_<placebo>` == 'pbo'))
+
+  expect_equal(op$`fit_logOR_<estimate>`, op$`glm_logOR_<estimate>`, tolerance = 1e-3)
+
+  expect_equal(op$`fit_logOR_<p>`, op$`glm_logOR_<p>`, tolerance = 1e-3)
+  expect_equal(op$`fit_OR_<p>`, op$`glm_logOR_<p>`, tolerance = 1e-3)
+
+  expect_equal(op$`fit_logOR_<z>`, op$`glm_logOR_<z>`, tolerance = 1e-3)
+  expect_equal(op$`fit_OR_<z>`, op$`glm_logOR_<z>`, tolerance = 1e-3)
+
+  expect_equal(op$`fit_OR_<estimate>`, op$`glm_OR`, tolerance = 1e-3)
+  expect_equal(op$`fit_RR_<estimate>`, op$`glm_RR`, tolerance = 1e-3)
+  expect_equal(op$`fit_RD_<estimate>`, op$`glm_RD`, tolerance = 1e-3)
+
+  expect_identical(op$`fit_logOR_<info>`, op$n)
+  expect_identical(op$`fit_logOR_<info>`, op$`fit_OR_<info>`)
+  expect_identical(op$`fit_logOR_<info>`, op$`fit_RR_<info>`)
+  expect_identical(op$`fit_logOR_<info>`, op$`fit_RD_<info>`)
+
 
 })
 

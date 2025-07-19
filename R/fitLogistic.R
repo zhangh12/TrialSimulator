@@ -11,15 +11,18 @@
 #' must be one of \code{"greater"} or \code{"less"}. No default value.
 #' \code{"greater"} means superiority of treatment over placebo is established
 #' by an odds ratio greater than 1.
+#' @param scale character. The type of estimate in the output. Must be one
+#' of \code{"log odds ratio"}, \code{"odds ratio"}, \code{"risk ratio"},
+#' or \code{"risk difference"}. No default value.
 #' @param ... Subset conditions compatible with \code{dplyr::filter}.
 #' \code{glm} will be fitted on this subset only. This argument can be useful
 #' to create a subset of data for analysis when a trial consists of more
 #' than two arms. By default, it is not specified,
 #' all data will be used to fit the model. More than one condition can be
 #' specified in \code{...}, e.g.,
-#' \code{fitLogistic(remission ~ arm, 'pbo', data, arm \%in\% c('pbo', 'low dose'), cfb > 0.5)},
+#' \code{fitLogistic(remission ~ arm, 'pbo', data, 'greater', 'odds ratio', arm \%in\% c('pbo', 'low dose'), cfb > 0.5)},
 #' which is equivalent to:
-#' \code{fitLogistic(remission ~ arm, 'pbo', data, arm \%in\% c('pbo', 'low dose') & cfb > 0.5)}.
+#' \code{fitLogistic(remission ~ arm, 'pbo', data, 'greater', 'odds ratio', arm \%in\% c('pbo', 'low dose') & cfb > 0.5)}.
 #' Note that if more than one treatment arm are present in the data after
 #' applying filter in \code{...}, models are fitted for placebo verse
 #' each of the treatment arms.
@@ -28,14 +31,16 @@
 #' \describe{
 #' \item{\code{arm}}{name of the treatment arm. }
 #' \item{\code{placebo}}{name of the placebo arm. }
+#' \item{\code{estimate}}{estimate depending on \code{scale}. }
 #' \item{\code{p}}{one-sided p-value for log odds ratio (treated vs placebo). }
 #' \item{\code{info}}{sample size used in model with \code{NA} being removed. }
 #' \item{\code{z}}{z statistics of log odds ratio (treated vs placebo). }
 #' }
 #'
+#' @importFrom emmeans regrid
 #' @export
 #'
-fitLogistic <- function(formula, placebo, data, alternative, ...) {
+fitLogistic <- function(formula, placebo, data, alternative, scale, ...) {
 
   if(!inherits(formula, 'formula')){
     stop('formula must be a formula object with "arm" indicating the column arm in data. ')
@@ -50,6 +55,11 @@ fitLogistic <- function(formula, placebo, data, alternative, ...) {
   }
 
   alternative <- match.arg(alternative, choices = c('greater', 'less'))
+
+  valid_scales <- c('log odds ratio', 'odds ratio', 'risk ratio', 'risk difference')
+  if(!is.character(scale) || length(scale) != 1 || !(scale %in% valid_scales)){
+    stop('scale must be one of ', paste0(valid_scales, collapse = ', '))
+  }
 
   required_cols <- c('arm')
   if(!all(required_cols %in% names(data))){
@@ -91,20 +101,36 @@ fitLogistic <- function(formula, placebo, data, alternative, ...) {
     # Fit the linear regression model
     fit <- glm(formula, data = sub_data, family = 'binomial')
 
-    ref_grid <- emmeans::emmeans(fit, ~ arm)
-    cont <- emmeans::contrast(
-      ref_grid,
-      method = list("trt_vs_pbo" = setNames(c(-1, 1), c(placebo, trt_arm))),
-      type = "link"
-    ) %>%
+    type1 <- c('log odds ratio' = 'logit',
+               'odds ratio' = 'response',
+               'risk ratio' = 'response',
+               'risk difference' = 'response')[scale]
+
+    type2 <- c('log odds ratio' = 'none',
+               'odds ratio' = 'none',
+               'risk ratio' = 'log',
+               'risk difference' = 'response')[scale]
+
+    estimate_index <- c('log odds ratio' = 'estimate',
+                        'odds ratio' = 'odds.ratio',
+                        'risk ratio' = 'ratio',
+                        'risk difference' = 'estimate')[scale]
+
+    res <- fit %>%
+      emmeans(~ arm, type = type1) %>%
+      regrid(type2) %>%
+      contrast(method = list('trt_vs_pbo' = setNames(c(-1, 1), c(placebo, trt_arm)))) %>%
       summary()
 
-    z <- cont$z.ratio
+    estimate <- res[[estimate_index]]
+    z <- res$z.ratio
+
     p <- ifelse(alternative == 'greater', 1 - pnorm(z), pnorm(z))
 
     info <- fit$df.residual + fit$rank
 
     ret <- rbind(ret, data.frame(arm = trt_arm, placebo = placebo,
+                                 estimate = estimate,
                                  p = p, info = info, z = z
                                  )
                  )
