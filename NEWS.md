@@ -1,12 +1,19 @@
+# TrialSimulator 0.81.0
+
+## New Feature
+
+- The function `fitLogistic` now supports computing log odds ratio, odds ratio, risk ratio, and risk difference using `emmeans` contrast. 
+- Add unit tests for `fitLogistic` and `fitLinear`. 
+
 # TrialSimulator 0.80.0
 
-## Updates
+## New Feature
 
 - The function `fitLogistic` now supports `formula` with covariates, and uses `emmeans` contrast to compute average treatment effect (ATE) on the `logit` scale. 
 
 # TrialSimulator 0.79.0
 
-## Updates
+## New Feature
 
 - The function `fitLinear` now supports `formula` with covariates, and uses `emmeans` contrast to compute average treatment effect (ATE) on the mean scale. 
 

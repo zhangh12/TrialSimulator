@@ -150,7 +150,7 @@ Milestones <- R6::R6Class(
       ## find time that meets the trigger condition to lock data in trial,
       ## so that action can be executed on it.
       if(!private$silent){
-        message('Conditioin of milestone <', self$get_name(), '> is being checked. \n')
+        message('Condition of milestone <', self$get_name(), '> is being checked. \n')
       }
 
       data_lock_time <- self$get_trigger_condition()$get_trigger_time(trial)
