@@ -3,8 +3,8 @@
 #' @description
 #' Fit linear regression model on a continuous endpoint.
 #'
-#' @param formula an object of class \code{formula}. Must include `arm` and
-#' endpoint in `data`. Covariates can be adjusted.
+#' @param formula an object of class \code{formula}. Must include \code{arm} and
+#' endpoint in \code{data}. Covariates can be adjusted.
 #' @param placebo Character. String indicating the placebo arm in \code{data$arm}.
 #' @param data Data frame. Usually it is a locked data set.
 #' @param alternative a character string specifying the alternative hypothesis,
@@ -17,20 +17,20 @@
 #' than two arms. By default, it is not specified,
 #' all data will be used to fit the model. More than one condition can be
 #' specified in \code{...}, e.g.,
-#' \code{fitLinear('cfb', 'pbo', data, arm \%in\% c('pbo', 'low dose'), cfb > 0.5)},
+#' \code{fitLinear(cfb ~ arm, 'pbo', data, arm \%in\% c('pbo', 'low dose'), cfb > 0.5)},
 #' which is equivalent to:
-#' \code{fitLinear('cfb', 'pbo', data, arm \%in\% c('pbo', 'low dose') & cfb > 0.5)}.
+#' \code{fitLinear(cfb ~ arm, 'pbo', data, arm \%in\% c('pbo', 'low dose') & cfb > 0.5)}.
 #' Note that if more than one treatment arm are present in the data after
 #' applying filter in \code{...}, models are fitted for placebo verse
 #' each of the treatment arms.
 #'
-#' @returns a data frame with three columns:
+#' @returns a data frame with columns:
 #' \describe{
 #' \item{\code{arm}}{name of the treatment arm. }
 #' \item{\code{placebo}}{name of the placebo arm. }
 #' \item{\code{p}}{one-sided p-value for between-arm difference (treated vs placebo). }
 #' \item{\code{info}}{sample size used in model with \code{NA} being removed. }
-#' \item{\code{z}}{the z statistics of between-arm difference (treated vs placebo). }
+#' \item{\code{z}}{z statistics of between-arm difference (treated vs placebo). }
 #' }
 #'
 #' @importFrom stats glm
@@ -55,7 +55,7 @@ fitLinear <- function(formula, placebo, data, alternative, ...) {
 
   required_cols <- c('arm')
   if(!all(required_cols %in% names(data))){
-    stop('Columns <',
+    stop('Column(s) <',
          paste0(setdiff(required_cols, names(data)), collapse = ', '),
          '> are not present in locked data. ',
          'Please check endpoint\'s name. ')
@@ -94,9 +94,10 @@ fitLinear <- function(formula, placebo, data, alternative, ...) {
     fit <- glm(formula, data = sub_data, family = 'gaussian')
 
     ref_grid <- emmeans(fit, ~ arm)
-    cont <- contrast(ref_grid,
-                     method = list('trt_vs_pbo' = setNames(c(-1, 1), c(placebo, trt_arm)))
-                     ) %>%
+    cont <- contrast(
+      ref_grid,
+      method = list('trt_vs_pbo' = setNames(c(-1, 1), c(placebo, trt_arm)))
+    ) %>%
       summary()
 
     z <- cont$t.ratio
