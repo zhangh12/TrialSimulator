@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.80.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.81.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -82,9 +82,9 @@ to create a subset of data for analysis when a trial consists of more
 than two arms. By default, it is not specified,
 all data will be used to fit the model. More than one condition can be
 specified in <code>...</code>, e.g.,
-<code>fitLinear(cfb ~ arm, 'pbo', data, arm %in% c('pbo', 'low dose'), cfb &gt; 0.5)</code>,
+<code>fitLinear(cfb ~ arm, 'pbo', data, 'greater', arm %in% c('pbo', 'low dose'), cfb &gt; 0.5)</code>,
 which is equivalent to:
-<code>fitLinear(cfb ~ arm, 'pbo', data, arm %in% c('pbo', 'low dose') &amp; cfb &gt; 0.5)</code>.
+<code>fitLinear(cfb ~ arm, 'pbo', data, 'greater', arm %in% c('pbo', 'low dose') &amp; cfb &gt; 0.5)</code>.
 Note that if more than one treatment arm are present in the data after
 applying filter in <code>...</code>, models are fitted for placebo verse
 each of the treatment arms.</p></dd>
@@ -97,6 +97,9 @@ each of the treatment arms.</p></dd>
 
 <dt><code>placebo</code></dt>
 <dd><p>name of the placebo arm.</p></dd>
+
+<dt><code>estimate</code></dt>
+<dd><p>estimate depending on <code>scale</code>.</p></dd>
 
 <dt><code>p</code></dt>
 <dd><p>one-sided p-value for between-arm difference (treated vs placebo).</p></dd>

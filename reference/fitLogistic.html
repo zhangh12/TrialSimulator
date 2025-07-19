@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.80.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.81.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,7 +48,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fitLogistic</span><span class="op">(</span><span class="va">formula</span>, <span class="va">placebo</span>, <span class="va">data</span>, <span class="va">alternative</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fitLogistic</span><span class="op">(</span><span class="va">formula</span>, <span class="va">placebo</span>, <span class="va">data</span>, <span class="va">alternative</span>, <span class="va">scale</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -75,6 +75,12 @@ must be one of <code>"greater"</code> or <code>"less"</code>. No default value.
 by an odds ratio greater than 1.</p></dd>
 
 
+<dt id="arg-scale">scale<a class="anchor" aria-label="anchor" href="#arg-scale"></a></dt>
+<dd><p>character. The type of estimate in the output. Must be one
+of <code>"log odds ratio"</code>, <code>"odds ratio"</code>, <code>"risk ratio"</code>,
+or <code>"risk difference"</code>. No default value.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Subset conditions compatible with <code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter</a></code>.
 <code>glm</code> will be fitted on this subset only. This argument can be useful
@@ -82,9 +88,9 @@ to create a subset of data for analysis when a trial consists of more
 than two arms. By default, it is not specified,
 all data will be used to fit the model. More than one condition can be
 specified in <code>...</code>, e.g.,
-<code>fitLogistic(remission ~ arm, 'pbo', data, arm %in% c('pbo', 'low dose'), cfb &gt; 0.5)</code>,
+<code>fitLogistic(remission ~ arm, 'pbo', data, 'greater', 'odds ratio', arm %in% c('pbo', 'low dose'), cfb &gt; 0.5)</code>,
 which is equivalent to:
-<code>fitLogistic(remission ~ arm, 'pbo', data, arm %in% c('pbo', 'low dose') &amp; cfb &gt; 0.5)</code>.
+<code>fitLogistic(remission ~ arm, 'pbo', data, 'greater', 'odds ratio', arm %in% c('pbo', 'low dose') &amp; cfb &gt; 0.5)</code>.
 Note that if more than one treatment arm are present in the data after
 applying filter in <code>...</code>, models are fitted for placebo verse
 each of the treatment arms.</p></dd>
@@ -97,6 +103,9 @@ each of the treatment arms.</p></dd>
 
 <dt><code>placebo</code></dt>
 <dd><p>name of the placebo arm.</p></dd>
+
+<dt><code>estimate</code></dt>
+<dd><p>estimate depending on <code>scale</code>.</p></dd>
 
 <dt><code>p</code></dt>
 <dd><p>one-sided p-value for log odds ratio (treated vs placebo).</p></dd>
