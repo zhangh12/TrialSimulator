@@ -2,6 +2,13 @@
 
 ## New Feature
 
+- The function `fitCoxph` now supports formula to compute log hazard ratio or hazard ratio as main effect of `arm`. It will detect whether arm's main effect is specified in formula. It allows covariates and interaction between covariates and arm. However, only the main effect of arm is tested and returned. 
+- Add unit tests for `fitCoxph`. 
+
+# TrialSimulator 0.81.0
+
+## New Feature
+
 - The function `fitLogistic` now supports computing log odds ratio, odds ratio, risk ratio, and risk difference using `emmeans` contrast. 
 - Add unit tests for `fitLogistic` and `fitLinear`. 
 

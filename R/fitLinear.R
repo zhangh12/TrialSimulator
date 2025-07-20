@@ -28,7 +28,7 @@
 #' \describe{
 #' \item{\code{arm}}{name of the treatment arm. }
 #' \item{\code{placebo}}{name of the placebo arm. }
-#' \item{\code{estimate}}{estimate depending on \code{scale}. }
+#' \item{\code{estimate}}{estimate of average treatment effect of \code{arm}. }
 #' \item{\code{p}}{one-sided p-value for between-arm difference (treated vs placebo). }
 #' \item{\code{info}}{sample size used in model with \code{NA} being removed. }
 #' \item{\code{z}}{z statistics of between-arm difference (treated vs placebo). }
@@ -54,12 +54,15 @@ fitLinear <- function(formula, placebo, data, alternative, ...) {
 
   alternative <- match.arg(alternative, choices = c('greater', 'less'))
 
-  required_cols <- c('arm')
-  if(!all(required_cols %in% names(data))){
-    stop('Column(s) <',
-         paste0(setdiff(required_cols, names(data)), collapse = ', '),
-         '> are not present in locked data. ',
-         'Please check endpoint\'s name. ')
+  vars_in_formula <- all.vars(formula)
+  missing_vars <- setdiff(vars_in_formula, names(data))
+  if(length(missing_vars) > 0){
+    stop('The following variable(s) used in formula are missing from data: \n',
+         paste0(missing_vars, collapse = ', '))
+  }
+
+  if(!'arm' %in% vars_in_formula){
+    stop('formula must include main effect term for arm. ')
   }
 
   # Prepare the data based on condition ...

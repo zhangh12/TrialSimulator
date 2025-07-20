@@ -4,14 +4,26 @@
 \alias{fitCoxph}
 \title{Fit Cox proportional hazard ratio model}
 \usage{
-fitCoxph(endpoint, placebo, data, ...)
+fitCoxph(formula, placebo, data, alternative, scale, ...)
 }
 \arguments{
-\item{endpoint}{Character. Name of the endpoint in \code{data}.}
+\item{formula}{An object of class \code{formula} that can be used with
+\code{survival::coxph}. Must include \code{arm} and endpoint in \code{data}.
+Covariates can be adjusted. Interactions between \code{arm} and covariates are
+allowed in \code{formula}, but \code{arm} must has a term of main effect,
+and only estimate of that main effect is tested.}
 
 \item{placebo}{Character. String indicating the placebo in \code{data$arm}.}
 
 \item{data}{Data frame. Usually it is a locked data set.}
+
+\item{alternative}{a character string specifying the alternative hypothesis,
+must be one of \code{"greater"} or \code{"less"}. No default value.
+\code{"greater"} means superiority of treatment over placebo is established
+by an hazard ratio greater than 1.}
+
+\item{scale}{character. The type of estimate in the output. Must be one
+of \code{"log hazard ratio"} or \code{"hazard ratio"}. No default value.}
 
 \item{...}{Subset conditions compatible with \code{dplyr::filter}.
 \code{coxph} will be fitted on this subset only. This argument can be useful
@@ -19,15 +31,18 @@ to create a subset of data for analysis when a trial consists of more
 than two arms. By default, it is not specified,
 all data will be used to fit the model. More than one condition can be
 specified in \code{...}, e.g.,
-\code{fitCoxph('pfs', 'pbo', data, arm \%in\% c('pbo', 'low dose'), pfs > 0.5)},
+\code{fitCoxph('pfs', 'pbo', data, 'less', 'log hazard ratio', arm \%in\% c('pbo', 'low dose'), pfs > 0.5)},
 which is equivalent to:
-\code{fitCoxph('pfs', 'pbo', data, arm \%in\% c('pbo', 'low dose') & pfs > 0.5)}.}
+\code{fitCoxph('pfs', 'pbo', data, 'less', 'log hazard ratio', arm \%in\% c('pbo', 'low dose') & pfs > 0.5)}.}
 }
 \value{
 a data frame with three columns:
 \describe{
+\item{\code{arm}}{name of the treatment arm. }
+\item{\code{placebo}}{name of the placebo arm. }
+\item{\code{estimate}}{estimate of main effect of arm, depending on \code{scale}. }
 \item{\code{p}}{one-sided p-value for
-log hazard ratio (alternative hypothesis: log hazard ratio > 0). }
+log hazard ratio (treated vs placebo). }
 \item{\code{info}}{the number of events of the endpoint in the subset. }
 \item{\code{z}}{the z statistics of log hazard ratios. }
 }

@@ -37,7 +37,7 @@ a data frame with columns:
 \describe{
 \item{\code{arm}}{name of the treatment arm. }
 \item{\code{placebo}}{name of the placebo arm. }
-\item{\code{estimate}}{estimate depending on \code{scale}. }
+\item{\code{estimate}}{estimate of average treatment effect of \code{arm}. }
 \item{\code{p}}{one-sided p-value for between-arm difference (treated vs placebo). }
 \item{\code{info}}{sample size used in model with \code{NA} being removed. }
 \item{\code{z}}{z statistics of between-arm difference (treated vs placebo). }
