@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.81.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.82.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,15 +48,19 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fitCoxph</span><span class="op">(</span><span class="va">endpoint</span>, <span class="va">placebo</span>, <span class="va">data</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fitCoxph</span><span class="op">(</span><span class="va">formula</span>, <span class="va">placebo</span>, <span class="va">data</span>, <span class="va">alternative</span>, <span class="va">scale</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-endpoint">endpoint<a class="anchor" aria-label="anchor" href="#arg-endpoint"></a></dt>
-<dd><p>Character. Name of the endpoint in <code>data</code>.</p></dd>
+<dl><dt id="arg-formula">formula<a class="anchor" aria-label="anchor" href="#arg-formula"></a></dt>
+<dd><p>An object of class <code>formula</code> that can be used with
+<code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code>. Must include <code>arm</code> and endpoint in <code>data</code>.
+Covariates can be adjusted. Interactions between <code>arm</code> and covariates are
+allowed in <code>formula</code>, but <code>arm</code> must has a term of main effect,
+and only estimate of that main effect is tested.</p></dd>
 
 
 <dt id="arg-placebo">placebo<a class="anchor" aria-label="anchor" href="#arg-placebo"></a></dt>
@@ -67,6 +71,18 @@
 <dd><p>Data frame. Usually it is a locked data set.</p></dd>
 
 
+<dt id="arg-alternative">alternative<a class="anchor" aria-label="anchor" href="#arg-alternative"></a></dt>
+<dd><p>a character string specifying the alternative hypothesis,
+must be one of <code>"greater"</code> or <code>"less"</code>. No default value.
+<code>"greater"</code> means superiority of treatment over placebo is established
+by an hazard ratio greater than 1.</p></dd>
+
+
+<dt id="arg-scale">scale<a class="anchor" aria-label="anchor" href="#arg-scale"></a></dt>
+<dd><p>character. The type of estimate in the output. Must be one
+of <code>"log hazard ratio"</code> or <code>"hazard ratio"</code>. No default value.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Subset conditions compatible with <code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter</a></code>.
 <code>coxph</code> will be fitted on this subset only. This argument can be useful
@@ -74,16 +90,25 @@ to create a subset of data for analysis when a trial consists of more
 than two arms. By default, it is not specified,
 all data will be used to fit the model. More than one condition can be
 specified in <code>...</code>, e.g.,
-<code>fitCoxph('pfs', 'pbo', data, arm %in% c('pbo', 'low dose'), pfs &gt; 0.5)</code>,
+<code>fitCoxph('pfs', 'pbo', data, 'less', 'log hazard ratio', arm %in% c('pbo', 'low dose'), pfs &gt; 0.5)</code>,
 which is equivalent to:
-<code>fitCoxph('pfs', 'pbo', data, arm %in% c('pbo', 'low dose') &amp; pfs &gt; 0.5)</code>.</p></dd>
+<code>fitCoxph('pfs', 'pbo', data, 'less', 'log hazard ratio', arm %in% c('pbo', 'low dose') &amp; pfs &gt; 0.5)</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>a data frame with three columns:</p><dl><dt><code>p</code></dt>
+    <p>a data frame with three columns:</p><dl><dt><code>arm</code></dt>
+<dd><p>name of the treatment arm.</p></dd>
+
+<dt><code>placebo</code></dt>
+<dd><p>name of the placebo arm.</p></dd>
+
+<dt><code>estimate</code></dt>
+<dd><p>estimate of main effect of arm, depending on <code>scale</code>.</p></dd>
+
+<dt><code>p</code></dt>
 <dd><p>one-sided p-value for
-log hazard ratio (alternative hypothesis: log hazard ratio &gt; 0).</p></dd>
+log hazard ratio (treated vs placebo).</p></dd>
 
 <dt><code>info</code></dt>
 <dd><p>the number of events of the endpoint in the subset.</p></dd>
