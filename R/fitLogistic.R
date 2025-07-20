@@ -61,12 +61,15 @@ fitLogistic <- function(formula, placebo, data, alternative, scale, ...) {
     stop('scale must be one of ', paste0(valid_scales, collapse = ', '))
   }
 
-  required_cols <- c('arm')
-  if(!all(required_cols %in% names(data))){
-    stop('Column(s) <',
-         paste0(setdiff(required_cols, names(data)), collapse = ', '),
-         '> are not present in locked data. ',
-         'Please check endpoint\'s name. ')
+  vars_in_formula <- all.vars(formula)
+  missing_vars <- setdiff(vars_in_formula, names(data))
+  if(length(missing_vars) > 0){
+    stop('The following variable(s) used in formula are missing from data: \n',
+         paste0(missing_vars, collapse = ', '))
+  }
+
+  if(!'arm' %in% vars_in_formula){
+    stop('formula must include main effect term for arm. ')
   }
 
   # Prepare the data based on condition ...

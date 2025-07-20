@@ -480,11 +480,11 @@ test_that('fitLinear works as expected', {
 
 test_that('fitLinear can compute ATE as expected in additive model', {
 
-  ep <- endpoint(name = 'ep', type = 'tte', generator = rnorm)
+  ep <- endpoint(name = 'ep', type = 'non-tte', readout = c(ep = 0), generator = rnorm)
   pbo <- arm(name = 'pbo')
   pbo$add_endpoints(ep)
 
-  ep <- endpoint(name = 'ep', type = 'tte', generator = rnorm, mean = .1)
+  ep <- endpoint(name = 'ep', type = 'non-tte', readout = c(ep = 0), generator = rnorm, mean = .1)
   trt <- arm(name = 'trt')
   trt$add_endpoints(ep)
 
@@ -545,11 +545,11 @@ test_that('fitLinear can compute ATE as expected in additive model', {
 
 test_that('fitLogistic can compute ATE as expected in model without covariates', {
 
-  ep <- endpoint(name = 'ep', type = 'tte', generator = rnorm)
+  ep <- endpoint(name = 'ep', type = 'non-tte', readout = c(ep = 0), generator = rnorm)
   pbo <- arm(name = 'pbo')
   pbo$add_endpoints(ep)
 
-  ep <- endpoint(name = 'ep', type = 'tte', generator = rnorm, mean = .1)
+  ep <- endpoint(name = 'ep', type = 'non-tte', readout = c(ep = 0), generator = rnorm, mean = .1)
   trt <- arm(name = 'trt')
   trt$add_endpoints(ep)
 
@@ -663,6 +663,73 @@ test_that('fitLogistic can compute ATE as expected in model without covariates',
   expect_identical(op$`fit_logOR_<info>`, op$`fit_RR_<info>`)
   expect_identical(op$`fit_logOR_<info>`, op$`fit_RD_<info>`)
 
+
+})
+
+test_that('fitCoxph can compute main effect of arm', {
+
+  ep <- endpoint(name = 'ep', type = 'tte', generator = rexp, rate = log(2)/10)
+  pbo <- arm(name = 'pbo')
+  pbo$add_endpoints(ep)
+
+  ep <- endpoint(name = 'ep', type = 'tte', generator = rexp, rate = log(2)/12)
+  trt <- arm(name = 'trt')
+  trt$add_endpoints(ep)
+
+  accrual_rate <- data.frame(end_time = c(1, 2, 6, 12, Inf),
+                             piecewise_rate = c(2, 8, 20, 25, 50))
+
+  trial <- trial(
+    name = 'test', n_patients = 1000, duration = 40,
+    enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
+    silent = TRUE
+  )
+
+  trial$add_arms(sample_ratio = c(1, 2), pbo, trt)
+
+  act <- function(trial, milestone_name){
+
+    locked_data <- trial$get_locked_data(milestone_name)
+
+    n <- nrow(locked_data)
+    locked_data$covar1 <- rnorm(n)
+    locked_data$covar2 <- rbinom(n, 1, .4)
+
+    fit <- fitCoxph(Surv(ep, ep_event) ~ covar2 + arm*covar1 + covar1:covar2,
+                    placebo = 'pbo', data = locked_data, alternative = 'less',
+                    scale = 'hazard ratio')
+    trial$save(value = fit, name = 'fitCoxph_output')
+
+    fit_ <- coxph(Surv(ep, ep_event) ~ I(arm != 'pbo')*covar1 + covar1:covar2 + covar2, data = locked_data)
+
+    trial$save(value = data.frame(z = summary(fit_)$coef[1, 'z'],
+                                  estimate = exp(summary(fit_)$coef[1, 'coef'])) %>%
+                 mutate(p = pnorm(z)) %>%
+                 mutate(info = sum(locked_data$ep_event)),
+               name = 'coxph_output')
+
+    invisible(NULL)
+
+  }
+
+  final <- milestone(name = 'final',
+                     action = act,
+                     when = calendarTime(time = 40))
+
+  listener <- listener(silent = TRUE)
+  listener$add_milestones(final)
+
+  controller <- controller(trial, listener)
+  controller$run(n = 10, plot_event = FALSE, silent = TRUE)
+
+  op <- controller$get_output()
+
+  expect_equal(op$`fitCoxph_output_<p>`, op$`coxph_output_<p>`, tolerance = 1e-3)
+  expect_equal(op$`fitCoxph_output_<z>`, op$`coxph_output_<z>`, tolerance = 1e-3)
+  expect_equal(op$`fitCoxph_output_<estimate>`, op$`coxph_output_<estimate>`, tolerance = 1e-3)
+  expect_equal(op$`fitCoxph_output_<info>`, op$`coxph_output_<info>`)
+  expect_true(all(op$`fitCoxph_output_<arm>` == 'trt'))
+  expect_true(all(op$`fitCoxph_output_<placebo>` == 'pbo'))
 
 })
 
