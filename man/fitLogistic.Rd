@@ -20,7 +20,7 @@ must be one of \code{"greater"} or \code{"less"}. No default value.
 by an odds ratio greater than 1.}
 
 \item{scale}{character. The type of estimate in the output. Must be one
-of \code{"log odds ratio"}, \code{"odds ratio"}, \code{"risk ratio"},
+of \code{"coefficient"}, \code{"log odds ratio"}, \code{"odds ratio"}, \code{"risk ratio"},
 or \code{"risk difference"}. No default value.}
 
 \item{...}{Subset conditions compatible with \code{dplyr::filter}.

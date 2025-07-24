@@ -1,4 +1,11 @@
-# TrialSimulator 0.81.0
+# TrialSimulator 0.83.0
+
+## New Feature
+
+- The function `fitLogistic` now supports `scale = "coefficient"` to compute regression coefficient as main effect of `arm` in the presence of covariates. It is also equivalent to `scale = "log odds ratio"` in the absence of covariates. 
+- Add unit tests for `fitLogistic`. 
+
+# TrialSimulator 0.82.0
 
 ## New Feature
 
@@ -9,7 +16,7 @@
 
 ## New Feature
 
-- The function `fitLogistic` now supports computing log odds ratio, odds ratio, risk ratio, and risk difference using `emmeans` contrast. 
+- The function `fitLogistic` now supports computing log odds ratio, odds ratio, risk ratio, and risk difference using `emmeans` contrast, in the presence of covariates. 
 - Add unit tests for `fitLogistic` and `fitLinear`. 
 
 # TrialSimulator 0.80.0
