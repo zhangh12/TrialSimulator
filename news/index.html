@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.82.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.83.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,18 +42,26 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.81.0" id="trialsimulator-0810">TrialSimulator 0.81.0<a class="anchor" aria-label="anchor" href="#trialsimulator-0810"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.83.0" id="trialsimulator-0830">TrialSimulator 0.83.0<a class="anchor" aria-label="anchor" href="#trialsimulator-0830"></a></h2>
 <div class="section level3">
-<h3 id="new-feature-0-81-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-0-81-0"></a></h3>
+<h3 id="new-feature-0-83-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-0-83-0"></a></h3>
+<ul><li>The function <code>fitLogistic</code> now supports <code>scale = "coefficient"</code> to compute regression coefficient as main effect of <code>arm</code> in the presence of covariates. It is also equivalent to <code>scale = "log odds ratio"</code> in the absence of covariates.</li>
+<li>Add unit tests for <code>fitLogistic</code>.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.82.0" id="trialsimulator-0820">TrialSimulator 0.82.0<a class="anchor" aria-label="anchor" href="#trialsimulator-0820"></a></h2>
+<div class="section level3">
+<h3 id="new-feature-0-82-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-0-82-0"></a></h3>
 <ul><li>The function <code>fitCoxph</code> now supports formula to compute log hazard ratio or hazard ratio as main effect of <code>arm</code>. It will detect whether arm’s main effect is specified in formula. It allows covariates and interaction between covariates and arm. However, only the main effect of arm is tested and returned.</li>
 <li>Add unit tests for <code>fitCoxph</code>.</li>
 </ul></div>
 </div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.81.0" id="trialsimulator-0810-1">TrialSimulator 0.81.0<a class="anchor" aria-label="anchor" href="#trialsimulator-0810-1"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.81.0" id="trialsimulator-0810">TrialSimulator 0.81.0<a class="anchor" aria-label="anchor" href="#trialsimulator-0810"></a></h2>
 <div class="section level3">
-<h3 id="new-feature-0-81-0-1">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-0-81-0-1"></a></h3>
-<ul><li>The function <code>fitLogistic</code> now supports computing log odds ratio, odds ratio, risk ratio, and risk difference using <code>emmeans</code> contrast.</li>
+<h3 id="new-feature-0-81-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-0-81-0"></a></h3>
+<ul><li>The function <code>fitLogistic</code> now supports computing log odds ratio, odds ratio, risk ratio, and risk difference using <code>emmeans</code> contrast, in the presence of covariates.</li>
 <li>Add unit tests for <code>fitLogistic</code> and <code>fitLinear</code>.</li>
 </ul></div>
 </div>
