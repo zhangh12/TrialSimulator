@@ -12,7 +12,7 @@
 #' \code{"greater"} means superiority of treatment over placebo is established
 #' by an odds ratio greater than 1.
 #' @param scale character. The type of estimate in the output. Must be one
-#' of \code{"log odds ratio"}, \code{"odds ratio"}, \code{"risk ratio"},
+#' of \code{"coefficient"}, \code{"log odds ratio"}, \code{"odds ratio"}, \code{"risk ratio"},
 #' or \code{"risk difference"}. No default value.
 #' @param ... Subset conditions compatible with \code{dplyr::filter}.
 #' \code{glm} will be fitted on this subset only. This argument can be useful
@@ -56,7 +56,7 @@ fitLogistic <- function(formula, placebo, data, alternative, scale, ...) {
 
   alternative <- match.arg(alternative, choices = c('greater', 'less'))
 
-  valid_scales <- c('log odds ratio', 'odds ratio', 'risk ratio', 'risk difference')
+  valid_scales <- c('coefficient', 'log odds ratio', 'odds ratio', 'risk ratio', 'risk difference')
   if(!is.character(scale) || length(scale) != 1 || !(scale %in% valid_scales)){
     stop('scale must be one of ', paste0(valid_scales, collapse = ', '))
   }
@@ -102,31 +102,53 @@ fitLogistic <- function(formula, placebo, data, alternative, scale, ...) {
     sub_data$arm <- factor(sub_data$arm, levels = c(placebo, trt_arm))
 
     # Fit the linear regression model
-    fit <- glm(formula, data = sub_data, family = 'binomial')
+    # Fit the Cox model
+    fit <- tryCatch({
+      glm(formula, data = sub_data, family = 'binomial')
+    }, error = function(e){
+      stop('logistic regression model fitting failed: ', e$message)
+    })
 
-    type1 <- c('log odds ratio' = 'logit',
-               'odds ratio' = 'response',
-               'risk ratio' = 'response',
-               'risk difference' = 'response')[scale]
+    if(scale == 'coefficient'){
 
-    type2 <- c('log odds ratio' = 'none',
-               'odds ratio' = 'none',
-               'risk ratio' = 'log',
-               'risk difference' = 'response')[scale]
+      sfit <- summary(fit)
 
-    estimate_index <- c('log odds ratio' = 'estimate',
-                        'odds ratio' = 'odds.ratio',
-                        'risk ratio' = 'ratio',
-                        'risk difference' = 'estimate')[scale]
+      ## identify coefficient of treatment arm (main effect)
+      coef_row <- grep(paste0('^arm', trt_arm, '$'), rownames(sfit$coef))
+      if(length(coef_row) != 1){
+        stop('fixLogistic: unable to identify arm main effect coefficient for arm <', trt_arm,
+             '>. Please use <arm> in formula explicitly. ')
+      }
 
-    res <- fit %>%
-      emmeans(~ arm, type = type1) %>%
-      regrid(type2) %>%
-      contrast(method = list('trt_vs_pbo' = setNames(c(-1, 1), c(placebo, trt_arm)))) %>%
-      summary()
+      estimate <- sfit$coef[coef_row, 'Estimate']
+      z <- sfit$coef[coef_row, 'z value']
 
-    estimate <- res[[estimate_index]]
-    z <- res$z.ratio
+    }else{
+
+      type1 <- c('log odds ratio' = 'logit',
+                 'odds ratio' = 'response',
+                 'risk ratio' = 'response',
+                 'risk difference' = 'response')[scale]
+
+      type2 <- c('log odds ratio' = 'none',
+                 'odds ratio' = 'none',
+                 'risk ratio' = 'log',
+                 'risk difference' = 'response')[scale]
+
+      estimate_index <- c('log odds ratio' = 'estimate',
+                          'odds ratio' = 'odds.ratio',
+                          'risk ratio' = 'ratio',
+                          'risk difference' = 'estimate')[scale]
+
+      res <- fit %>%
+        emmeans(~ arm, type = type1) %>%
+        regrid(type2) %>%
+        contrast(method = list('trt_vs_pbo' = setNames(c(-1, 1), c(placebo, trt_arm)))) %>%
+        summary()
+
+      estimate <- res[[estimate_index]]
+      z <- res$z.ratio
+    }
 
     p <- ifelse(alternative == 'greater', 1 - pnorm(z), pnorm(z))
 

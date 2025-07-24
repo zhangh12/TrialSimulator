@@ -477,7 +477,6 @@ test_that('fitLinear works as expected', {
 
 })
 
-
 test_that('fitLinear can compute ATE as expected in additive model', {
 
   ep <- endpoint(name = 'ep', type = 'non-tte', readout = c(ep = 0), generator = rnorm)
@@ -663,6 +662,81 @@ test_that('fitLogistic can compute ATE as expected in model without covariates',
   expect_identical(op$`fit_logOR_<info>`, op$`fit_RR_<info>`)
   expect_identical(op$`fit_logOR_<info>`, op$`fit_RD_<info>`)
 
+
+})
+
+test_that('fitLogistic can compute regression coefficient as expected in model with covariates', {
+
+  ep <- endpoint(name = 'ep', type = 'non-tte', readout = c(ep = 0), generator = rnorm)
+  pbo <- arm(name = 'pbo')
+  pbo$add_endpoints(ep)
+
+  ep <- endpoint(name = 'ep', type = 'non-tte', readout = c(ep = 0), generator = rnorm, mean = .1)
+  trt <- arm(name = 'trt')
+  trt$add_endpoints(ep)
+
+  accrual_rate <- data.frame(end_time = c(1, 2, 6, 12, Inf),
+                             piecewise_rate = c(2, 8, 20, 25, 50))
+
+  trial <- trial(
+    name = 'test', n_patients = 1000, duration = 40,
+    enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
+    silent = TRUE
+  )
+
+  trial$add_arms(sample_ratio = c(1, 2), pbo, trt)
+
+  act <- function(trial, milestone_name){
+
+    locked_data <- trial$get_locked_data(milestone_name)
+    locked_data$x <- rnorm(nrow(locked_data))
+    locked_data$y <- rnorm(nrow(locked_data))
+    locked_data$z <- rbinom(nrow(locked_data), 1, .5)
+
+    trial$save(value = nrow(locked_data), name = 'n')
+
+    fit_coef <- fitLogistic(I(ep > 0) ~ x*arm + z + arm:y, placebo = 'pbo',
+                            data = locked_data, alternative = 'greater',
+                            scale = 'coefficient')
+    fit <- glm(I(ep > 0) ~ arm*x + z + arm:y, data = locked_data,
+               family = binomial)
+
+    trial$save(value = fit_coef, name = 'fit_coef')
+    trial$save(value = data.frame(estimate = summary(fit)$coef['armtrt', 'Estimate'],
+                                  z = summary(fit)$coef['armtrt', 'z value']) %>%
+                 mutate(p = 1 - pnorm(z)) %>%
+                 mutate(info = fit$df.residual + fit$rank),
+               name = 'glm_coef')
+
+    invisible(NULL)
+
+  }
+
+  final <- milestone(name = 'final',
+                     action = act,
+                     when = calendarTime(time = 40))
+
+  listener <- listener(silent = TRUE)
+  listener$add_milestones(final)
+
+  controller <- controller(trial, listener)
+  controller$run(n = 10, plot_event = FALSE, silent = TRUE)
+
+  op <- controller$get_output()
+
+  #################
+
+  expect_true(all(op$`fit_coef_<arm>` == 'trt'))
+
+  expect_true(all(op$`fit_coef_<placebo>` == 'pbo'))
+
+  expect_equal(op$`fit_coef_<estimate>`, op$`glm_coef_<estimate>`, tolerance = 1e-3)
+
+  expect_equal(op$`fit_coef_<p>`, op$`glm_coef_<p>`, tolerance = 1e-3)
+
+  expect_equal(op$`fit_coef_<z>`, op$`glm_coef_<z>`, tolerance = 1e-3)
+
+  expect_identical(op$`fit_coef_<info>`, op$n)
 
 })
 
