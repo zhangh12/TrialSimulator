@@ -1,3 +1,11 @@
+# TrialSimulator 0.84.0
+
+## New Feature
+
+- The function `fitLogrank` now supports `formula`. `strata(...)` can be in 
+`formula`. No covariate is accepted. 
+- Add unit tests for `fitLogistic`. 
+
 # TrialSimulator 0.83.0
 
 ## New Feature
@@ -9,7 +17,7 @@
 
 ## New Feature
 
-- The function `fitCoxph` now supports formula to compute log hazard ratio or hazard ratio as main effect of `arm`. It will detect whether arm's main effect is specified in formula. It allows covariates and interaction between covariates and arm. However, only the main effect of arm is tested and returned. 
+- The function `fitCoxph` now supports `formula` to compute log hazard ratio or hazard ratio as main effect of `arm`. It will detect whether arm's main effect is specified in formula. It allows covariates and interaction between covariates and arm. However, only the main effect of arm is tested and returned. 
 - Add unit tests for `fitCoxph`. 
 
 # TrialSimulator 0.81.0
