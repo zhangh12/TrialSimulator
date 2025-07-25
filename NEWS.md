@@ -1,3 +1,9 @@
+# TrialSimulator 0.85.0
+
+## New Feature
+
+- Add data generators of time to response, progression and death. 
+
 # TrialSimulator 0.84.0
 
 ## New Feature
