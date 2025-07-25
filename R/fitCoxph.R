@@ -4,7 +4,7 @@
 #' Fit Cox proportional hazards model on an time-to-event endpoint.
 #'
 #' @param formula An object of class \code{formula} that can be used with
-#' \code{survival::coxph}. Must include \code{arm} and endpoint in \code{data}.
+#' \code{survival::coxph}. Must consist \code{arm} and endpoint in \code{data}.
 #' Covariates can be adjusted. Interactions between \code{arm} and covariates are
 #' allowed in \code{formula}, but \code{arm} must has a term of main effect,
 #' and only estimate of that main effect is tested.
@@ -31,8 +31,7 @@
 #' \item{\code{arm}}{name of the treatment arm. }
 #' \item{\code{placebo}}{name of the placebo arm. }
 #' \item{\code{estimate}}{estimate of main effect of arm, depending on \code{scale}. }
-#' \item{\code{p}}{one-sided p-value for
-#' log hazard ratio (treated vs placebo). }
+#' \item{\code{p}}{one-sided p-value for log hazard ratio (treated vs placebo). }
 #' \item{\code{info}}{the number of events of the endpoint in the subset. }
 #' \item{\code{z}}{the z statistics of log hazard ratios. }
 #' }
