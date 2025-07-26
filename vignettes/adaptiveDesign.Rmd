@@ -206,8 +206,8 @@ action2 <- function(trial, milestone_name){
   
   locked_data <- trial$get_locked_data(milestone_name)
 
-  fit <- fitLogrank(Surv(pfs, pfs_event) ~ arm, placebo = 'placebo',
-                    data = locked_data, alternative = 'less')
+  fit <- fitLogrank(endpoint = 'pfs', , placebo = 'placebo', 
+                    data = locked_data)
 
   ## futility analysis
   if(max(fit$z) < .5){
