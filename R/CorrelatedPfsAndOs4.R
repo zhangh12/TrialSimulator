@@ -1,6 +1,3 @@
-
-
-
 #' Generate PFS and OS using the four-states model
 #'
 #' @param n integer. Number of observations.
@@ -28,7 +25,7 @@
 CorrelatedPfsAndOs4 <- function(n, transition_probability, duration) {
 
   if(!is.matrix(transition_probability) ||
-      !all(dim(transition_probability) == c(4, 4))) {
+     !all(dim(transition_probability) == c(4, 4))) {
     stop("transition_probability must be a 4x4 matrix.")
   }
 
@@ -46,35 +43,82 @@ CorrelatedPfsAndOs4 <- function(n, transition_probability, duration) {
   }
 
   simulate_one_patient <- function(){
-    current_state <- 1
-    first_visit <- rep(NA_integer_, 4)
 
-    for (day in 1:duration) {
-      if (is.na(first_visit[current_state])) {
-        first_visit[current_state] <- day
+    first_visit <- c(1, rep(NA_integer_, 3))
+    event <- rep(NA_integer_, 3)
 
-        if(current_state == 4){
-          first_visit[3] <- day
-        }
-      }
+    next_state_from_stable <- sample(1:4, size = duration, replace = TRUE, prob = transition_probability[1, ])
 
-      if (all(transition_probability[current_state, current_state] == 1)) {
-        break
-      }
-
-      current_state <- sample(1:4, size = 1,
-                              prob = transition_probability[current_state, ])
+    day <- which(next_state_from_stable != 1 &
+                   seq_along(next_state_from_stable) > 1)[1]
+    if(is.na(day)){ ## stay in stable state
+      browser()
+      return(first_visit[-1])
     }
 
-    first_visit[2:4]
+    second_state <- next_state_from_stable[day]
+    first_visit[second_state] <- day
+
+    if(second_state == 4){ ## death
+      if(is.na(first_visit[3])){
+        first_visit[3] <- day
+      }
+
+      browser()
+      return(first_visit[-1])
+    }
+
+    third_states <- sample(1:4, size = duration, replace = TRUE, prob = transition_probability[second_state, ])
+
+    day <- which(!(third_states %in% c(1, second_state)) &
+                   seq_along(third_states) > day)[1]
+    if(is.na(day)){ ## stay in second_state
+      browser()
+      return(first_visit[-1])
+    }
+
+    third_state <- third_states[day]
+    first_visit[third_state] <- day
+
+    if(third_state == 4){ ## death
+      if(is.na(first_visit[3])){
+        first_visit[3] <- day
+      }
+      browser()
+      return(first_visit[-1])
+    }
+
+    fourth_states <- sample(1:4, size = duration, replace = TRUE, prob = transition_probability[third_state, ])
+
+    day <- which(!(fourth_states %in% c(1, second_state, third_state)) &
+                   seq_along(fourth_states) > day)[1]
+    if(is.na(day)){ ## stay in third_state
+      browser()
+      return(first_visit[-1])
+    }
+
+    fourth_state <- fourth_states[day]
+    stopifnot(fourth_state == 4)
+    first_visit[fourth_state] <- day
+
+    browser()
+    return(first_visit[-1])
   }
 
   dat <- replicate(n, simulate_one_patient())
 
   dat <- as.data.frame(t(dat))
-  colnames(dat) <- c("time_to_response", "time_to_progression", "time_to_death")
+  colnames(dat) <- c('time_to_response', 'time_to_progression', 'time_to_death')
+
+  stopifnot(with(dat, all(is.na(time_to_death) | time_to_death >= time_to_progression)))
+  stopifnot(with(dat, all(is.na(time_to_progression) |
+                            is.na(time_to_response) |
+                            time_to_progression > time_to_response)))
+
 
   dat
 
 }
+
+
 
