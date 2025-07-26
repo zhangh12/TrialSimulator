@@ -1,3 +1,9 @@
+# TrialSimulator 0.86.0
+
+## Bug Fix
+
+- Fix a bug in the fourth-state model. 
+
 # TrialSimulator 0.85.0
 
 ## New Feature

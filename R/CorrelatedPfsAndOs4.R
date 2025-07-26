@@ -9,8 +9,9 @@
 #' extended).
 #'
 #' @returns
-#' A data frame of \code{n} rows and 3 columns (time to response, progression,
-#' and death).
+#' A data frame of \code{n} rows and 6 columns (response, progression,
+#' death, and their event indicators response_event, progression_event,
+#' death_event with 1 means event and 0 means censored at duration).
 #' @export
 #'
 #' @examples
@@ -22,7 +23,10 @@
 #'
 #' pfs_and_os <- CorrelatedPfsAndOs4(1e4, m, 365 * 3)
 #'
-CorrelatedPfsAndOs4 <- function(n, transition_probability, duration) {
+CorrelatedPfsAndOs4 <- function(n, transition_probability, duration,
+                                death_name = 'death',
+                                progression_name = 'progression',
+                                response_name = 'response') {
 
   if(!is.matrix(transition_probability) ||
      !all(dim(transition_probability) == c(4, 4))) {
@@ -45,14 +49,13 @@ CorrelatedPfsAndOs4 <- function(n, transition_probability, duration) {
   simulate_one_patient <- function(){
 
     first_visit <- c(1, rep(NA_integer_, 3))
-    event <- rep(NA_integer_, 3)
 
     next_state_from_stable <- sample(1:4, size = duration, replace = TRUE, prob = transition_probability[1, ])
 
     day <- which(next_state_from_stable != 1 &
                    seq_along(next_state_from_stable) > 1)[1]
     if(is.na(day)){ ## stay in stable state
-      browser()
+
       return(first_visit[-1])
     }
 
@@ -64,7 +67,7 @@ CorrelatedPfsAndOs4 <- function(n, transition_probability, duration) {
         first_visit[3] <- day
       }
 
-      browser()
+
       return(first_visit[-1])
     }
 
@@ -73,7 +76,7 @@ CorrelatedPfsAndOs4 <- function(n, transition_probability, duration) {
     day <- which(!(third_states %in% c(1, second_state)) &
                    seq_along(third_states) > day)[1]
     if(is.na(day)){ ## stay in second_state
-      browser()
+
       return(first_visit[-1])
     }
 
@@ -84,7 +87,7 @@ CorrelatedPfsAndOs4 <- function(n, transition_probability, duration) {
       if(is.na(first_visit[3])){
         first_visit[3] <- day
       }
-      browser()
+
       return(first_visit[-1])
     }
 
@@ -93,7 +96,7 @@ CorrelatedPfsAndOs4 <- function(n, transition_probability, duration) {
     day <- which(!(fourth_states %in% c(1, second_state, third_state)) &
                    seq_along(fourth_states) > day)[1]
     if(is.na(day)){ ## stay in third_state
-      browser()
+
       return(first_visit[-1])
     }
 
@@ -101,20 +104,36 @@ CorrelatedPfsAndOs4 <- function(n, transition_probability, duration) {
     stopifnot(fourth_state == 4)
     first_visit[fourth_state] <- day
 
-    browser()
+
     return(first_visit[-1])
   }
 
   dat <- replicate(n, simulate_one_patient())
 
   dat <- as.data.frame(t(dat))
-  colnames(dat) <- c('time_to_response', 'time_to_progression', 'time_to_death')
+  colnames(dat) <- c('response', 'progression', 'death')
 
-  stopifnot(with(dat, all(is.na(time_to_death) | time_to_death >= time_to_progression)))
-  stopifnot(with(dat, all(is.na(time_to_progression) |
-                            is.na(time_to_response) |
-                            time_to_progression > time_to_response)))
+  stopifnot(with(dat, all(is.na(death) | death >= progression)))
+  stopifnot(with(dat, all(is.na(progression) |
+                            is.na(response) |
+                            progression > response)))
 
+  event <- dat
+  event[is.na(dat)] <- 0
+  event[!is.na(dat)] <- 1
+  names(event) <- paste0(names(event), '_event')
+
+  dat[is.na(dat)] <- duration
+
+  dat <- cbind(dat, event)
+
+  dat <- dat %>%
+    rename(!!paste0(response_name, '_event') := .data$response_event) %>%
+    rename(!!response_name := .data$response) %>%
+    rename(!!paste0(progression_name, '_event') := .data$progression_event) %>%
+    rename(!!progression_name := .data$progression) %>%
+    rename(!!paste0(death_name, '_event') := .data$death_event) %>%
+    rename(!!death_name := .data$death)
 
   dat
 
