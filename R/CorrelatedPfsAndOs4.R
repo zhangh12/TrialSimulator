@@ -1,4 +1,4 @@
-#' Generate PFS and OS using the four-states model
+#' Generate PFS, OS and objective response using the four-states model
 #'
 #' @param n integer. Number of observations.
 #' @param transition_probability a 4x4 matrix defining transition probabilities
@@ -7,6 +7,12 @@
 #' @param duration integer. Duration of trial. Set it to a sufficient large
 #' integer in practice to cover the duration of the trial (potentially be
 #' extended).
+#' @param death_name column name of OS in returned data frame. It must be
+#' consistent with `name` in the function `endpoint()`.
+#' @param progression_name column name of PFS in returned data frame. It must be
+#' consistent with `name` in the function `endpoint()`.
+#' @param response_name column name of objective response in returned data frame. It must be
+#' consistent with `name` in the function `endpoint()`.
 #'
 #' @returns
 #' A data frame of \code{n} rows and 6 columns (response, progression,

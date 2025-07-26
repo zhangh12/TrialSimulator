@@ -206,7 +206,7 @@ action2 <- function(trial, milestone_name){
   
   locked_data <- trial$get_locked_data(milestone_name)
 
-  fit <- fitLogrank(endpoint = 'pfs', , placebo = 'placebo', 
+  fit <- fitLogrank(endpoint = 'pfs', placebo = 'placebo', 
                     data = locked_data)
 
   ## futility analysis
