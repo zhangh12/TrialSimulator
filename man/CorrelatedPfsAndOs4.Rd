@@ -4,7 +4,14 @@
 \alias{CorrelatedPfsAndOs4}
 \title{Generate PFS and OS using the four-states model}
 \usage{
-CorrelatedPfsAndOs4(n, transition_probability, duration)
+CorrelatedPfsAndOs4(
+  n,
+  transition_probability,
+  duration,
+  death_name = "death",
+  progression_name = "progression",
+  response_name = "response"
+)
 }
 \arguments{
 \item{n}{integer. Number of observations.}
@@ -18,8 +25,9 @@ integer in practice to cover the duration of the trial (potentially be
 extended).}
 }
 \value{
-A data frame of \code{n} rows and 3 columns (time to response, progression,
-and death).
+A data frame of \code{n} rows and 6 columns (response, progression,
+death, and their event indicators response_event, progression_event,
+death_event with 1 means event and 0 means censored at duration).
 }
 \description{
 Generate PFS and OS using the four-states model
