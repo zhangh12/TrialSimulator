@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.83.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.86.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,7 +57,7 @@
 
 <dl><dt id="arg-formula">formula<a class="anchor" aria-label="anchor" href="#arg-formula"></a></dt>
 <dd><p>An object of class <code>formula</code> that can be used with
-<code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code>. Must include <code>arm</code> and endpoint in <code>data</code>.
+<code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code>. Must consist <code>arm</code> and endpoint in <code>data</code>.
 Covariates can be adjusted. Interactions between <code>arm</code> and covariates are
 allowed in <code>formula</code>, but <code>arm</code> must has a term of main effect,
 and only estimate of that main effect is tested.</p></dd>
@@ -107,8 +107,7 @@ which is equivalent to:
 <dd><p>estimate of main effect of arm, depending on <code>scale</code>.</p></dd>
 
 <dt><code>p</code></dt>
-<dd><p>one-sided p-value for
-log hazard ratio (treated vs placebo).</p></dd>
+<dd><p>one-sided p-value for log hazard ratio (treated vs placebo).</p></dd>
 
 <dt><code>info</code></dt>
 <dd><p>the number of events of the endpoint in the subset.</p></dd>
