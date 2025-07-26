@@ -2,7 +2,7 @@
 % Please edit documentation in R/CorrelatedPfsAndOs4.R
 \name{CorrelatedPfsAndOs4}
 \alias{CorrelatedPfsAndOs4}
-\title{Generate PFS and OS using the four-states model}
+\title{Generate PFS, OS and objective response using the four-states model}
 \usage{
 CorrelatedPfsAndOs4(
   n,
@@ -23,6 +23,15 @@ death (absorbing, 4).}
 \item{duration}{integer. Duration of trial. Set it to a sufficient large
 integer in practice to cover the duration of the trial (potentially be
 extended).}
+
+\item{death_name}{column name of OS in returned data frame. It must be
+consistent with `name` in the function `endpoint()`.}
+
+\item{progression_name}{column name of PFS in returned data frame. It must be
+consistent with `name` in the function `endpoint()`.}
+
+\item{response_name}{column name of objective response in returned data frame. It must be
+consistent with `name` in the function `endpoint()`.}
 }
 \value{
 A data frame of \code{n} rows and 6 columns (response, progression,
@@ -30,7 +39,7 @@ death, and their event indicators response_event, progression_event,
 death_event with 1 means event and 0 means censored at duration).
 }
 \description{
-Generate PFS and OS using the four-states model
+Generate PFS, OS and objective response using the four-states model
 }
 \examples{
 m <- matrix(c(0.99, 0.0035, 0.0055, 0.0010,

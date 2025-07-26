@@ -16,6 +16,8 @@
 #' The event indicators are all 1s.
 #' @export
 #'
+#' @importFrom stats model.frame model.response rexp
+#'
 #' @examples
 #'
 #' pfs_and_os_trt <- CorrelatedPfsAndOs3(1e4, 0.06, 0.30, 0.30, 'PFS', 'OS')
