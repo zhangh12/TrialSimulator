@@ -4,7 +4,7 @@
 \alias{fitCoxph}
 \title{Fit Cox proportional hazard ratio model}
 \usage{
-fitCoxph(formula, placebo, data, alternative, scale, ...)
+fitCoxph(formula, placebo, data, alternative, scale, tidy = TRUE, ...)
 }
 \arguments{
 \item{formula}{An object of class \code{formula} that can be used with

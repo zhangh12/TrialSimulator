@@ -972,15 +972,19 @@ mute all messages (not including warnings)
 \subsection{Method \code{independentIncrement()}}{
 calculate independent increments from a given set of milestones
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$independentIncrement(endpoint, placebo, milestones, planned_info, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$independentIncrement(
+  formula,
+  placebo,
+  milestones,
+  planned_info,
+  alternative,
+  ...
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{endpoint}}{character. Name of time-to-event endpoint in trial's
-locked data.}
-
 \item{\code{placebo}}{character. String of placebo in trial's locked data.}
 
 \item{\code{milestones}}{a character vector of milestone names in the trial, e.g.,
@@ -1001,6 +1005,9 @@ in the strong sense.}
 logrank statistics. It could be useful when a
 trial consists of more than two arms. By default it is not specified,
 all data will be used to fit the model.}
+
+\item{\code{endpoint}}{character. Name of time-to-event endpoint in trial's
+locked data.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1044,11 +1051,12 @@ carry out closed test based on Dunnett method under group sequential
 design.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$dunnettTest(
-  endpoint,
+  formula,
   placebo,
   treatments,
   milestones,
   planned_info,
+  alternative,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -1056,8 +1064,6 @@ design.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{endpoint}}{character of an endpoint for Dunnett test.}
-
 \item{\code{placebo}}{character. Name of placebo arm.}
 
 \item{\code{treatments}}{character vector. Name of treatment arms to be used in
@@ -1093,6 +1099,8 @@ logrank statistics. It could be useful when comparison is made on a
 subset of treatment arms. By default it is not specified,
 all data (placebo plus one treatment arm at a time) in the locked data
 are used to fit the model.}
+
+\item{\code{endpoint}}{character of an endpoint for Dunnett test.}
 }
 \if{html}{\out{</div>}}
 }

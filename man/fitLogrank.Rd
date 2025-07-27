@@ -4,32 +4,41 @@
 \alias{fitLogrank}
 \title{Carry out log rank test}
 \usage{
-fitLogrank(endpoint, placebo, data, ...)
+fitLogrank(formula, placebo, data, alternative, tidy = TRUE, ...)
 }
 \arguments{
-\item{endpoint}{character. Name of endpoint in \code{data}.}
+\item{formula}{An object of class \code{formula} that can be used with
+\code{survival::coxph}. Must consist \code{arm} and endpoint in \code{data}.
+No covariate is allowed. Stratification variables are supported and can be
+added using \code{strata(...)}.}
 
 \item{placebo}{character. String of placebo in \code{data$arm}.}
 
 \item{data}{data frame. Usually it is a locked data.}
 
+\item{alternative}{a character string specifying the alternative hypothesis,
+must be one of \code{"greater"} or \code{"less"}. No default value.
+\code{"greater"} means superiority of treatment over placebo is established
+by an hazard ratio greater than 1.}
+
 \item{...}{subset condition that is compatible with \code{dplyr::filter}.
-\code{survival::survdiff} will be fitted on this subset only.
-This argument could be useful to create a subset of data for analysis when a
-trial consists of more than two arms. By default it is not specified,
-all data will be used to fit the model. More than one conditions can be
-specified in \code{...}, e.g.,
-\code{fitLogrank('pfs', 'pbo', data, arm \%in\% c('pbo', 'low dose'), pfs > 0.5)},
+\code{survival::coxph} with \code{ties = "exact"} will be fitted on this
+subset only. This argument could be useful to create a subset of data for
+analysis when a trial consists of more than two arms. By default it is not
+specified, all data will be used to fit the model. More than one conditions
+can be specified in \code{...}, e.g.,
+\code{fitLogrank(formula, data, arm \%in\% c('pbo', 'low dose'), pfs > 0.5)},
 which is equivalent to
-\code{fitLogrank('pfs', 'pbo', data, arm \%in\% c('pbo', 'low dose') & pfs > 0.5)}.}
+\code{fitLogrank(formula, data, arm \%in\% c('pbo', 'low dose') & pfs > 0.5)}.}
 }
 \value{
 a data frame with three columns:
 \describe{
-\item{\code{p}}{one-sided p-value for
-log rank test (alternative hypothesis: risk is higher in placebo arm). }
+\item{\code{arm}}{name of the treatment arm. }
+\item{\code{placebo}}{name of the placebo arm. }
+\item{\code{p}}{one-sided p-value for log-rank test (treated vs placebo). }
 \item{\code{info}}{the number of events of the endpoint in the subset. }
-\item{\code{z}}{the one-sided logrank statistics. }
+\item{\code{z}}{the z statistics of log hazard ratios. }
 }
 }
 \description{
