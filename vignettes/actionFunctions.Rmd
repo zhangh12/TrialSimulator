@@ -1,0 +1,167 @@
+---
+title: "Specify Actions to Execute at Trial Milestones"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Specify Actions to Execute at Trial Milestones}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  cache = TRUE,
+  cache.path = 'cache/defineActionFunctions/',
+  comment = '#>',
+  dpi = 300,
+  out.width = '100%'
+)
+```
+
+```{r setup, message = FALSE, echo=FALSE}
+library(dplyr)
+library(TrialSimulator)
+set.seed(12345)
+```
+
+
+In `TrialSimulator`, we can define custom action functions that are executed automatically when trial milestone are triggered. This mechanism allows for simulating dynamic trial behavior such as:
+
+- Interim analyses
+
+- Early stopping for efficacy or futility
+
+- Arm dropping or selection
+
+- Adaptive enrollment adjustments
+
+- Logging or tracking intermediate results
+
+- Anytime when trial data needs to be locked and accessed
+
+This vignette illustrates how to define such actions and assign them to trial milestones. 
+
+## Define Trial Milestones
+
+At a milestone, a snapshot of trial data by the triggered time is granted to users for custom analysis. A milestone consists of:
+
+- `name`: name of a milestone. We can use `trial$get_locked_data(milestone_name)` to request for a data snapshot at the triggering time. 
+
+- `when`: conditions triggering a milestone. We can refer to the vignette [Condition System for Triggering Milestones in a Trial](conditionSystem.html) for more information. 
+
+- `action`: a custom action function in which we can analyze data snapshot, make decisions, and save analysis results for summary later. 
+
+For example, an interim is triggerred when the trial has run at least 20 months and at least 450 events have been observed for the endpoint `PFS`.  
+
+```{r ioijeafa}
+interim <- milestone(name = 'interim analysis', 
+                     action = doNothing, 
+                     when = calendarTime(time = 20) & 
+                       eventNumber('PFS', n = 450)
+                     )
+```
+
+Note that `action` is set to a default function `doNothing`. In that case, `TrialSimulator` will only record triggering time for `interim` into a data frame of output. This is useful when only triggering time is of interest given a recruitment schedule and dropout of a trial. 
+
+We can define arbitrary number of milestones for a trial. For example, a milestone for final analysis can be defined as follow
+
+```{r eeaelaf}
+final <- milestone(name = 'final analysis', 
+                   action = doNothing, 
+                   when = eventNumber('PFS', n = 800) & 
+                     eventNumber('OS', n = 500))
+```
+
+Here we complete a trial when sufficient number of events are observed for two endpoints `PFS` and `OS` to achieve certain planned powers. 
+
+## Custom Action Functions
+
+In practice, we may want to analyze data at interim. In that case we need to define a custom action function and pass it to `action`. A custom action function always takes two arguments
+
+- `trial`: a trial object returned from the function `trial()`. 
+- `milestone_name`: a character of milestone name. 
+
+The first line of code in an action function is always recommended to be calling function `trial$get_locked_data()` to request for data snapshot. It is then up to the users to analyze the data and make decisions. In the example below, hazard ratio is estimated by fitting a proportional harzard model, from which the p-value is also computed. The return value of an action function does not matter. 
+
+
+```{r ioieaadalfjal}
+action_at_interim <- function(trial, milestone_name){
+  
+  locked_data <- trial$get_locked_data(milestone_name)
+  
+  ## fit coxph model on locked_data
+  ## extract estimate and p-value of hazard ratio
+  ## assume that hr is estimate, and pval is p-value
+  
+  ## no return value is needed in an action function
+  
+}
+```
+
+### Save intermediate results in action functions
+
+`TrialSimulator` supports several member functions to save results during a trial. Result can be classified as 
+- **output** of the trial, i.e., it will be used to summarize trial's operating characteristics. The output of a trial is managed by the `trial` object and stored in a private data frame of one row. We cannot access or modify it directly. Instead, member functions `trial$save()` and `trial$get_output()` should be used to insert and extract outputs. Because the output is a data frame of one row, `trial$save()` can only accept a scalar or a data frame of one row. 
+
+- **intermediate results** of the trial, i.e., it is useful in subsequent analysis later (e.g., in action functions of other milestones). For the purpose of avoiding the use of global variables while enabling communication between milestones, intermediate results can be saved by calling member function `trial$save_custom_data()`. To extract it later, simply call `trial$get_custom_data()`. Unlike `trial$save()`, `trial$save_custom_data` can save any objects, which provides flexibility. 
+
+Here we give more details of those member functions. 
+
+- `save(value, name)`: `value` can be a scalar or a data frame to be inserted to the output of a trial. To access one or more values anywhere later, call `trial$get_output(cols = name)`. 
+
+- `save_custom_data(value, name)`: `value` can be of any type that is stored as a private list with a trial. To access the value anywhere later, call `trial$get_custom_data(name)`. 
+
+- `bind(value, name)`: it is a special implementation of `save_custom_data` as it only accepts a data frame as `value`. If a data frame `name` already exists in the trial by calling `save_custom_data`, `value` will be row-binded to the existing data frame `name`. Otherwise, a new data frame `name` will be created for trial.  To access the updated data frame anywhere later, call `trial$get_custom_data(name)`. This is useful when endpoints are tested at multiple milestones under a group sequential design and we want to save estimates, p-values among others across milestones in a data frame, so that we can test it with a graphical testing strategy when all p-values are collected (i.e. at the last milestone). 
+
+For example, the action function `action_at_interim` uses `save` to store hazard ratio estimate and its p-value. Of course, we can calculate something else and call the function `save` to store. 
+
+```{r ioiealfjal}
+action_at_interim <- function(trial, milestone_name){
+  
+  locked_data <- trial$get_locked_data(milestone_name)
+  
+  ## fit coxph model on locked_data
+  ## extract estimate and p-value of hazard ratio
+  ## assume that hr is estimate, and pval is p-value
+  trial$save(value = hr, name = 'pfs_interim_hazard_ratio')
+  trial$save(value = pval, name = 'pfs_interim_p_value')
+  
+  ## values of hr and pval can be accessed anywhere later by calling
+  ## trial$get_output(cols = 'pfs_interim_hazard_ratio')
+  ## trial$get_output(cols = 'pfs_interim_p_value')
+  ## trial$get_output(cols = c('pfs_interim_hazard_ratio', 'pfs_interim_hazard_ratio'))
+  ## If a colum specified in cols does not exist (e.g., typo in codes), 
+  ## an informative error message will be prompted. 
+  
+  ## no return value is needed in an action function
+  
+}
+```
+
+If we want to pass something more complicate (e.g., a list) for one-off calculation in other milestones, we can use the member function `save_custom_data`. We modify the action function `action_at_interim` as follow
+
+```{r ioiealfjtugal}
+action_at_interim <- function(trial, milestone_name){
+  
+  locked_data <- trial$get_locked_data(milestone_name)
+  
+  ## fit coxph model on locked_data
+  ## extract estimate and p-value of hazard ratio
+  ## assume that hr is estimate, and pval is p-value
+  trial$save(value = hr, name = 'pfs_interim_hazard_ratio')
+  trial$save(value = pval, name = 'pfs_interim_p_value')
+  
+  ## assume that we also compute other values that may be useful in later milestone, 
+  ## we save them in a list and call
+  more_results <- list(numeric = 1, 
+                       string = 'abc', 
+                       list = list(e1 = 100, e2 = 'AA'))
+  
+  trial$save_custom_data(value = more_results, name = 'more_results')
+  ## value of more_results can be accessed anywhere later by calling
+  ## tmp <- trial$get_custom_data(name = 'more_results')
+  
+  ## no return value is needed in an action function
+  
+}
+```

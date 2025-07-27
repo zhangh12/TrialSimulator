@@ -1499,8 +1499,8 @@ Trials <- R6::R6Class(
     #' \dontrun{
     #' trial$independentIncrement('pfs', 'pbo', listener$get_milestone_names(), 'oracle')
     #' }
-    independentIncrement = function(endpoint, placebo, milestones,
-                                    planned_info,
+    independentIncrement = function(formula, placebo, milestones,
+                                    planned_info, alternative,
                                     ...){
 
       if(!identical(planned_info, 'oracle') && length(milestones) != length(planned_info)){
@@ -1526,7 +1526,8 @@ Trials <- R6::R6Class(
       milestone_name <- c()
       for(i in seq_along(milestones)){
         milestone_name[i] <- milestones[i]
-        lr_fit <- fitLogrank(endpoint, placebo, self$get_locked_data(milestones[i]), ...)
+        lr_fit <- fitLogrank(formula, placebo, self$get_locked_data(milestones[i]),
+                             alternative, tidy = FALSE, ...)
         info[i] <- lr_fit$info
         lr[i] <- lr_fit$z
         info_pbo[i] <- lr_fit$info_pbo
@@ -1712,7 +1713,8 @@ Trials <- R6::R6Class(
     #'                   listener$get_milestone_names(), 'default')
     #' }
     #'
-    dunnettTest = function(endpoint, placebo, treatments, milestones, planned_info, ...){
+    dunnettTest = function(formula, placebo, treatments, milestones, planned_info,
+                           alternative, ...){
 
       if(!identical(planned_info, 'default')){
         if(!('data.frame' %in% class(planned_info))){
@@ -1758,14 +1760,17 @@ Trials <- R6::R6Class(
         trt_str <- treatments[i]
 
         ii[[trt_str]] <-
-          self$independentIncrement(endpoint, placebo, milestones,
+          self$independentIncrement(formula, placebo, milestones,
                                     ## it doesn't matter what is used for planned_info
                                     ## because we only use z_ii in returned object
                                     ## which is irrelevant to planned_info
                                     planned_info = 'oracle',
+                                    alternative = alternative,
                                     arm %in% c(placebo, trt_str), ...)
 
       }
+
+      browser()
 
       all_trt <- names(ii)
 
@@ -1845,9 +1850,19 @@ Trials <- R6::R6Class(
             stopifnot(length(pinfo) == 1)
           }
 
+          get_time_variable <- function(formula) {
+            lhs <- formula[[2]]  # extract LHS of Surv(...)
+            if(as.character(lhs[[1]]) != 'Surv'){
+              stop('Left side is not a Surv() object')
+            }
+
+            time_var <- lhs[[2]] # the second element is column name of time (the first one is "Surv")
+            as.character(time_var)
+          }
+
           tmp <-
             data.frame(
-              endpoint = endpoint,
+              endpoint = get_time_variable(formula),
               milestone = milestone_name,
               milestone_time = unname(milestone_time[milestone_name]),
               p_logrank = ii0$p_logrank,
