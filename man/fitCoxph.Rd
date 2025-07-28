@@ -25,6 +25,9 @@ by an hazard ratio greater than 1.}
 \item{scale}{character. The type of estimate in the output. Must be one
 of \code{"log hazard ratio"} or \code{"hazard ratio"}. No default value.}
 
+\item{tidy}{logical. \code{FALSE} if more information are returned.
+Default \code{TRUE}.}
+
 \item{...}{Subset conditions compatible with \code{dplyr::filter}.
 \code{coxph} will be fitted on this subset only. This argument can be useful
 to create a subset of data for analysis when a trial consists of more

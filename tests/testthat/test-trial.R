@@ -765,8 +765,7 @@ test_that('fitLogrank works as expected', {
 
     locked_data <- trial$get_locked_data(milestone_name)
 
-    # fit <- fitLogrank(Surv(ep, ep_event) ~ arm, placebo = 'pbo', data = locked_data, alternative = 'less')
-    fit <- fitLogrank(endpoint = 'ep', placebo = 'pbo', data = locked_data)
+    fit <- fitLogrank(Surv(ep, ep_event) ~ arm, placebo = 'pbo', data = locked_data, alternative = 'less')
 
     lr <- survdiff(Surv(ep, ep_event) ~ arm, data = locked_data)
     fit_ <- coxph(Surv(ep, ep_event) ~ arm, data = locked_data)

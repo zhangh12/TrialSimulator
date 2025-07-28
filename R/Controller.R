@@ -34,7 +34,8 @@
 #'
 #' action_at_final <- function(trial, milestone_name){
 #'   locked_data <- trial$get_locked_data(milestone_name)
-#'   fitLogrank(endpoint = 'PFS', placebo = 'control arm', data = locked_data)
+#'   fitLogrank(Surv(PFS, PFS_event) ~ arm, placebo = 'control arm',
+#'              data = locked_data, alternative = 'less')
 #'   invisible(NULL)
 #' }
 #'
