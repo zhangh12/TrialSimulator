@@ -1454,11 +1454,17 @@ Trials <- R6::R6Class(
 
     #' @description
     #' calculate independent increments from a given set of milestones
-    #' @param endpoint character. Name of time-to-event endpoint in trial's
-    #' locked data.
+    #' @param formula An object of class \code{formula} that can be used with
+    #' \code{survival::coxph}. Must consist \code{arm} and endpoint in \code{data}.
+    #' No covariate is allowed. Stratification variables are supported and can be
+    #' added using \code{strata(...)}.
     #' @param placebo character. String of placebo in trial's locked data.
     #' @param milestones a character vector of milestone names in the trial, e.g.,
     #' \code{listener$get_milestone_names()}.
+    #' @param alternative a character string specifying the alternative hypothesis,
+    #' must be one of \code{"greater"} or \code{"less"}. No default value.
+    #' \code{"greater"} means superiority of treatment over placebo is established
+    #' by an hazard ratio greater than 1 when a log-rank test is used.
     #' @param planned_info a vector of planned accumulative number of event of
     #' time-to-event endpoint. Note: \code{planned_info} can also be a character
     #' \code{"oracle"} so that planned number of events are set to be observed
@@ -1497,9 +1503,9 @@ Trials <- R6::R6Class(
     #' @examples
     #'
     #' \dontrun{
-    #' trial$independentIncrement('pfs', 'pbo', listener$get_milestone_names(), 'oracle')
+    #' trial$independentIncrement('pfs', 'pbo', listener$get_milestone_names(), 'less', 'oracle')
     #' }
-    independentIncrement = function(endpoint, placebo, milestones,
+    independentIncrement = function(formula, placebo, milestones, alternative,
                                     planned_info,
                                     ...){
 
@@ -1526,7 +1532,8 @@ Trials <- R6::R6Class(
       milestone_name <- c()
       for(i in seq_along(milestones)){
         milestone_name[i] <- milestones[i]
-        lr_fit <- fitLogrank(endpoint, placebo, self$get_locked_data(milestones[i]), ...)
+        lr_fit <- fitLogrank(formula, placebo, self$get_locked_data(milestones[i]),
+                             alternative, tidy = FALSE, ...)
         info[i] <- lr_fit$info
         lr[i] <- lr_fit$z
         info_pbo[i] <- lr_fit$info_pbo
@@ -1579,7 +1586,7 @@ Trials <- R6::R6Class(
           ## Set z statistic of independent increment to be an extremely value
           ## so that inverse normal combination test would always accept
           ## the neutral null hypothesis (p-value is close or equal to 1.0)
-          ii[i] <- -Inf ## 10 * qnorm(.Machine$double.eps) ## about -81
+          ii[i] <- ifelse(alternative == 'greater', -Inf, Inf) ## 10 * qnorm(.Machine$double.eps) ## about -81
         }else{
           ii[i] <- (sqrt(info[i]) * lr[i] - sqrt(info[i - 1]) * lr[i - 1]) /
             sqrt(stage_info[i])
@@ -1591,9 +1598,19 @@ Trials <- R6::R6Class(
         data.frame(
           milestone = milestone_name,
           milestone_time = unname(milestone_time),
-          p_inverse_normal = 1 - pnorm(inverse_normal),
+          p_inverse_normal =
+            if(alternative == 'greater'){
+              1 - pnorm(inverse_normal)
+            }else{
+              pnorm(inverse_normal)
+            },
           z_inverse_normal = inverse_normal,
-          p_logrank = 1 - pnorm(lr),
+          p_logrank =
+            if(alternative == 'greater'){
+              1 - pnorm(lr)
+            }else{
+              pnorm(lr)
+            },
           z_logrank = lr,
           info = info,
           planned_info = planned_info,
@@ -1629,13 +1646,20 @@ Trials <- R6::R6Class(
     #' @description
     #' carry out closed test based on Dunnett method under group sequential
     #' design.
-    #' @param endpoint character of an endpoint for Dunnett test.
+    #' @param formula An object of class \code{formula} that can be used with
+    #' \code{survival::coxph}. Must consist \code{arm} and endpoint in \code{data}.
+    #' No covariate is allowed. Stratification variables are supported and can be
+    #' added using \code{strata(...)}.
     #' @param placebo character. Name of placebo arm.
     #' @param treatments character vector. Name of treatment arms to be used in
     #' comparison.
     #' @param milestones character vector. Names of triggered milestones at which either
     #' adaptation is applied or statistical testing for endpoint is performed.
     #' Milestones in \code{milestones} does not need to be sorted by their triggering time.
+    #' @param alternative a character string specifying the alternative hypothesis,
+    #' must be one of \code{"greater"} or \code{"less"}. No default value.
+    #' \code{"greater"} means superiority of treatment over placebo is established
+    #' by an hazard ratio greater than 1 when a log-rank test is used.
     #' @param planned_info a data frame of planned number of events of
     #' time-to-event endpoint in each stage and each arm. Milestone names, i.e.,
     #' \code{milestones} are row names of \code{planned_info}, and arm names, i.e.,
@@ -1712,7 +1736,10 @@ Trials <- R6::R6Class(
     #'                   listener$get_milestone_names(), 'default')
     #' }
     #'
-    dunnettTest = function(endpoint, placebo, treatments, milestones, planned_info, ...){
+    dunnettTest = function(formula, placebo, treatments, milestones, alternative,
+                           planned_info, ...){
+
+      alternative <- match.arg(alternative, choices = c('greater', 'less'))
 
       if(!identical(planned_info, 'default')){
         if(!('data.frame' %in% class(planned_info))){
@@ -1758,7 +1785,7 @@ Trials <- R6::R6Class(
         trt_str <- treatments[i]
 
         ii[[trt_str]] <-
-          self$independentIncrement(endpoint, placebo, milestones,
+          self$independentIncrement(formula, placebo, milestones, alternative,
                                     ## it doesn't matter what is used for planned_info
                                     ## because we only use z_ii in returned object
                                     ## which is irrelevant to planned_info
@@ -1820,17 +1847,28 @@ Trials <- R6::R6Class(
             if(!is.null(stage_dunnett_pvalue[[name2]])){
               stage_dunnett_pvalue[[name1]] <- stage_dunnett_pvalue[[name2]]
             }else{
-              lower <- rep(-Inf, length(available_trt))
-              upper <- rep(max(z_ii), length(available_trt))
+              if(alternative == 'greater'){
+                lower <- rep(-Inf, length(available_trt))
+                upper <- rep(max(z_ii), length(available_trt))
+              }else{
+                lower <- rep(min(z_ii), length(available_trt))
+                upper <- rep(Inf, length(available_trt))
+              }
+
               corr <- outer(ratio_trt, ratio_trt,
                             function(x, y) x * y)
               diag(corr) <- 1.
 
               if(length(available_trt) > 1){
+                ## no matter what alternative is
                 stage_dunnett_pvalue[[name1]] <-
                   1 - pmvnorm(lower = lower, upper = upper, sigma = corr)
               }else{
-                stage_dunnett_pvalue[[name1]] <- 1 - pnorm(upper)
+                if(alternative == 'greater'){
+                  stage_dunnett_pvalue[[name1]] <- 1 - pnorm(upper)
+                }else{
+                  stage_dunnett_pvalue[[name1]] <- pnorm(lower)
+                }
               }
 
               stage_dunnett_pvalue[[name2]] <- stage_dunnett_pvalue[[name1]]
@@ -1845,9 +1883,19 @@ Trials <- R6::R6Class(
             stopifnot(length(pinfo) == 1)
           }
 
+          get_time_variable <- function(formula) {
+            lhs <- formula[[2]]  # extract LHS of Surv(...)
+            if(as.character(lhs[[1]]) != 'Surv'){
+              stop('Left side is not a Surv() object')
+            }
+
+            time_var <- lhs[[2]] # the second element is column name of time (the first one is "Surv")
+            as.character(time_var)
+          }
+
           tmp <-
             data.frame(
-              endpoint = endpoint,
+              endpoint = get_time_variable(formula),
               milestone = milestone_name,
               milestone_time = unname(milestone_time[milestone_name]),
               p_logrank = ii0$p_logrank,
