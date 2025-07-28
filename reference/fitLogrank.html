@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.86.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.87.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -18,7 +18,8 @@
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/actionFunctions.html">Specify Actions to Execute at Trial Milestones</a></li>
+    <li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
     <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
     <li><a class="dropdown-item" href="../articles/defineArms.html">Define and Summarize Arms in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineLongitudinalEndpoints.html">Define Longitudinal Endpoints in Clinical Trials</a></li>
@@ -48,15 +49,18 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fitLogrank</span><span class="op">(</span><span class="va">endpoint</span>, <span class="va">placebo</span>, <span class="va">data</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fitLogrank</span><span class="op">(</span><span class="va">formula</span>, <span class="va">placebo</span>, <span class="va">data</span>, <span class="va">alternative</span>, tidy <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-endpoint">endpoint<a class="anchor" aria-label="anchor" href="#arg-endpoint"></a></dt>
-<dd><p>character. Name of endpoint in <code>data</code>.</p></dd>
+<dl><dt id="arg-formula">formula<a class="anchor" aria-label="anchor" href="#arg-formula"></a></dt>
+<dd><p>An object of class <code>formula</code> that can be used with
+<code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code>. Must consist <code>arm</code> and endpoint in <code>data</code>.
+No covariate is allowed. Stratification variables are supported and can be
+added using <code>strata(...)</code>.</p></dd>
 
 
 <dt id="arg-placebo">placebo<a class="anchor" aria-label="anchor" href="#arg-placebo"></a></dt>
@@ -67,29 +71,46 @@
 <dd><p>data frame. Usually it is a locked data.</p></dd>
 
 
+<dt id="arg-alternative">alternative<a class="anchor" aria-label="anchor" href="#arg-alternative"></a></dt>
+<dd><p>a character string specifying the alternative hypothesis,
+must be one of <code>"greater"</code> or <code>"less"</code>. No default value.
+<code>"greater"</code> means superiority of treatment over placebo is established
+by an hazard ratio greater than 1.</p></dd>
+
+
+<dt id="arg-tidy">tidy<a class="anchor" aria-label="anchor" href="#arg-tidy"></a></dt>
+<dd><p>logical. <code>FALSE</code> if more information are returned.
+Default <code>TRUE</code>.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>subset condition that is compatible with <code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter</a></code>.
-<code><a href="https://rdrr.io/pkg/survival/man/survdiff.html" class="external-link">survival::survdiff</a></code> will be fitted on this subset only.
-This argument could be useful to create a subset of data for analysis when a
-trial consists of more than two arms. By default it is not specified,
-all data will be used to fit the model. More than one conditions can be
-specified in <code>...</code>, e.g.,
-<code>fitLogrank('pfs', 'pbo', data, arm %in% c('pbo', 'low dose'), pfs &gt; 0.5)</code>,
+<code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code> with <code>ties = "exact"</code> will be fitted on this
+subset only. This argument could be useful to create a subset of data for
+analysis when a trial consists of more than two arms. By default it is not
+specified, all data will be used to fit the model. More than one conditions
+can be specified in <code>...</code>, e.g.,
+<code>fitLogrank(formula, data, arm %in% c('pbo', 'low dose'), pfs &gt; 0.5)</code>,
 which is equivalent to
-<code>fitLogrank('pfs', 'pbo', data, arm %in% c('pbo', 'low dose') &amp; pfs &gt; 0.5)</code>.</p></dd>
+<code>fitLogrank(formula, data, arm %in% c('pbo', 'low dose') &amp; pfs &gt; 0.5)</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>a data frame with three columns:</p><dl><dt><code>p</code></dt>
-<dd><p>one-sided p-value for
-log rank test (alternative hypothesis: risk is higher in placebo arm).</p></dd>
+    <p>a data frame with three columns:</p><dl><dt><code>arm</code></dt>
+<dd><p>name of the treatment arm.</p></dd>
+
+<dt><code>placebo</code></dt>
+<dd><p>name of the placebo arm.</p></dd>
+
+<dt><code>p</code></dt>
+<dd><p>one-sided p-value for log-rank test (treated vs placebo).</p></dd>
 
 <dt><code>info</code></dt>
 <dd><p>the number of events of the endpoint in the subset.</p></dd>
 
 <dt><code>z</code></dt>
-<dd><p>the one-sided logrank statistics.</p></dd>
+<dd><p>the z statistics of log hazard ratios.</p></dd>
 
 
 </dl></div>
