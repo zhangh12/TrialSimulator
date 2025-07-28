@@ -16,6 +16,8 @@
 #' by an hazard ratio greater than 1.
 #' @param scale character. The type of estimate in the output. Must be one
 #' of \code{"log hazard ratio"} or \code{"hazard ratio"}. No default value.
+#' @param tidy logical. \code{FALSE} if more information are returned.
+#' Default \code{TRUE}.
 #' @param ... Subset conditions compatible with \code{dplyr::filter}.
 #' \code{coxph} will be fitted on this subset only. This argument can be useful
 #' to create a subset of data for analysis when a trial consists of more

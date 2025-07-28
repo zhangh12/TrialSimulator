@@ -1454,11 +1454,17 @@ Trials <- R6::R6Class(
 
     #' @description
     #' calculate independent increments from a given set of milestones
-    #' @param endpoint character. Name of time-to-event endpoint in trial's
-    #' locked data.
+    #' @param formula An object of class \code{formula} that can be used with
+    #' \code{survival::coxph}. Must consist \code{arm} and endpoint in \code{data}.
+    #' No covariate is allowed. Stratification variables are supported and can be
+    #' added using \code{strata(...)}.
     #' @param placebo character. String of placebo in trial's locked data.
     #' @param milestones a character vector of milestone names in the trial, e.g.,
     #' \code{listener$get_milestone_names()}.
+    #' @param alternative a character string specifying the alternative hypothesis,
+    #' must be one of \code{"greater"} or \code{"less"}. No default value.
+    #' \code{"greater"} means superiority of treatment over placebo is established
+    #' by an hazard ratio greater than 1 when a log-rank test is used.
     #' @param planned_info a vector of planned accumulative number of event of
     #' time-to-event endpoint. Note: \code{planned_info} can also be a character
     #' \code{"oracle"} so that planned number of events are set to be observed
@@ -1497,10 +1503,10 @@ Trials <- R6::R6Class(
     #' @examples
     #'
     #' \dontrun{
-    #' trial$independentIncrement('pfs', 'pbo', listener$get_milestone_names(), 'oracle')
+    #' trial$independentIncrement('pfs', 'pbo', listener$get_milestone_names(), 'less', 'oracle')
     #' }
-    independentIncrement = function(formula, placebo, milestones,
-                                    planned_info, alternative,
+    independentIncrement = function(formula, placebo, milestones, alternative,
+                                    planned_info,
                                     ...){
 
       if(!identical(planned_info, 'oracle') && length(milestones) != length(planned_info)){
@@ -1640,13 +1646,20 @@ Trials <- R6::R6Class(
     #' @description
     #' carry out closed test based on Dunnett method under group sequential
     #' design.
-    #' @param endpoint character of an endpoint for Dunnett test.
+    #' @param formula An object of class \code{formula} that can be used with
+    #' \code{survival::coxph}. Must consist \code{arm} and endpoint in \code{data}.
+    #' No covariate is allowed. Stratification variables are supported and can be
+    #' added using \code{strata(...)}.
     #' @param placebo character. Name of placebo arm.
     #' @param treatments character vector. Name of treatment arms to be used in
     #' comparison.
     #' @param milestones character vector. Names of triggered milestones at which either
     #' adaptation is applied or statistical testing for endpoint is performed.
     #' Milestones in \code{milestones} does not need to be sorted by their triggering time.
+    #' @param alternative a character string specifying the alternative hypothesis,
+    #' must be one of \code{"greater"} or \code{"less"}. No default value.
+    #' \code{"greater"} means superiority of treatment over placebo is established
+    #' by an hazard ratio greater than 1 when a log-rank test is used.
     #' @param planned_info a data frame of planned number of events of
     #' time-to-event endpoint in each stage and each arm. Milestone names, i.e.,
     #' \code{milestones} are row names of \code{planned_info}, and arm names, i.e.,
@@ -1723,8 +1736,10 @@ Trials <- R6::R6Class(
     #'                   listener$get_milestone_names(), 'default')
     #' }
     #'
-    dunnettTest = function(formula, placebo, treatments, milestones, planned_info,
-                           alternative, ...){
+    dunnettTest = function(formula, placebo, treatments, milestones, alternative,
+                           planned_info, ...){
+
+      alternative <- match.arg(alternative, choices = c('greater', 'less'))
 
       if(!identical(planned_info, 'default')){
         if(!('data.frame' %in% class(planned_info))){
@@ -1770,12 +1785,11 @@ Trials <- R6::R6Class(
         trt_str <- treatments[i]
 
         ii[[trt_str]] <-
-          self$independentIncrement(formula, placebo, milestones,
+          self$independentIncrement(formula, placebo, milestones, alternative,
                                     ## it doesn't matter what is used for planned_info
                                     ## because we only use z_ii in returned object
                                     ## which is irrelevant to planned_info
                                     planned_info = 'oracle',
-                                    alternative = alternative,
                                     arm %in% c(placebo, trt_str), ...)
 
       }

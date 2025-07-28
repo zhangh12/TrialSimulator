@@ -11,6 +11,8 @@
 #' must be one of \code{"greater"} or \code{"less"}. No default value.
 #' \code{"greater"} means superiority of treatment over placebo is established
 #' by an hazard ratio greater than 1.
+#' @param tidy logical. \code{FALSE} if more information are returned.
+#' Default \code{TRUE}.
 #' @param ... subset condition that is compatible with \code{dplyr::filter}.
 #' \code{survival::coxph} with \code{ties = "exact"} will be fitted on this
 #' subset only. This argument could be useful to create a subset of data for
@@ -29,6 +31,8 @@
 #' \item{\code{info}}{the number of events of the endpoint in the subset. }
 #' \item{\code{z}}{the z statistics of log hazard ratios. }
 #' }
+#'
+#' @importFrom stats terms
 #'
 #' @export
 #'
