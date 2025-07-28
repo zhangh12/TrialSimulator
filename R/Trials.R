@@ -1580,7 +1580,7 @@ Trials <- R6::R6Class(
           ## Set z statistic of independent increment to be an extremely value
           ## so that inverse normal combination test would always accept
           ## the neutral null hypothesis (p-value is close or equal to 1.0)
-          ii[i] <- -Inf ## 10 * qnorm(.Machine$double.eps) ## about -81
+          ii[i] <- ifelse(alternative == 'greater', -Inf, Inf) ## 10 * qnorm(.Machine$double.eps) ## about -81
         }else{
           ii[i] <- (sqrt(info[i]) * lr[i] - sqrt(info[i - 1]) * lr[i - 1]) /
             sqrt(stage_info[i])
@@ -1592,9 +1592,19 @@ Trials <- R6::R6Class(
         data.frame(
           milestone = milestone_name,
           milestone_time = unname(milestone_time),
-          p_inverse_normal = 1 - pnorm(inverse_normal),
+          p_inverse_normal =
+            if(alternative == 'greater'){
+              1 - pnorm(inverse_normal)
+            }else{
+              pnorm(inverse_normal)
+            },
           z_inverse_normal = inverse_normal,
-          p_logrank = 1 - pnorm(lr),
+          p_logrank =
+            if(alternative == 'greater'){
+              1 - pnorm(lr)
+            }else{
+              pnorm(lr)
+            },
           z_logrank = lr,
           info = info,
           planned_info = planned_info,
@@ -1770,8 +1780,6 @@ Trials <- R6::R6Class(
 
       }
 
-      browser()
-
       all_trt <- names(ii)
 
       all_combn <-
@@ -1825,17 +1833,28 @@ Trials <- R6::R6Class(
             if(!is.null(stage_dunnett_pvalue[[name2]])){
               stage_dunnett_pvalue[[name1]] <- stage_dunnett_pvalue[[name2]]
             }else{
-              lower <- rep(-Inf, length(available_trt))
-              upper <- rep(max(z_ii), length(available_trt))
+              if(alternative == 'greater'){
+                lower <- rep(-Inf, length(available_trt))
+                upper <- rep(max(z_ii), length(available_trt))
+              }else{
+                lower <- rep(min(z_ii), length(available_trt))
+                upper <- rep(Inf, length(available_trt))
+              }
+
               corr <- outer(ratio_trt, ratio_trt,
                             function(x, y) x * y)
               diag(corr) <- 1.
 
               if(length(available_trt) > 1){
+                ## no matter what alternative is
                 stage_dunnett_pvalue[[name1]] <-
                   1 - pmvnorm(lower = lower, upper = upper, sigma = corr)
               }else{
-                stage_dunnett_pvalue[[name1]] <- 1 - pnorm(upper)
+                if(alternative == 'greater'){
+                  stage_dunnett_pvalue[[name1]] <- 1 - pnorm(upper)
+                }else{
+                  stage_dunnett_pvalue[[name1]] <- pnorm(lower)
+                }
               }
 
               stage_dunnett_pvalue[[name2]] <- stage_dunnett_pvalue[[name1]]
