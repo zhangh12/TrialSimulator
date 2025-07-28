@@ -16,6 +16,8 @@
 #' by an hazard ratio greater than 1.
 #' @param scale character. The type of estimate in the output. Must be one
 #' of \code{"log hazard ratio"} or \code{"hazard ratio"}. No default value.
+#' @param tidy logical. \code{FALSE} if more information are returned.
+#' Default \code{TRUE}.
 #' @param ... Subset conditions compatible with \code{dplyr::filter}.
 #' \code{coxph} will be fitted on this subset only. This argument can be useful
 #' to create a subset of data for analysis when a trial consists of more
@@ -38,7 +40,7 @@
 #'
 #' @export
 #'
-fitCoxph <- function(formula, placebo, data, alternative, scale, ...) {
+fitCoxph <- function(formula, placebo, data, alternative, scale, tidy = TRUE, ...) {
 
   if(!inherits(formula, 'formula')){
     stop('formula must be a formula object with "arm" indicating the column arm in data. ')
@@ -125,12 +127,26 @@ fitCoxph <- function(formula, placebo, data, alternative, scale, ...) {
     surv_obj <- model.response(model_data)
     info <- sum(surv_obj[, 'status'] == 1)
 
-    ret <- rbind(ret, data.frame(arm = trt_arm, placebo = placebo,
-                                 estimate = ifelse(scale == 'log hazard ratio',
-                                                   estimate, exp(estimate)),
-                                 p = p, info = info, z = z
-                                 )
-                 )
+    res <- data.frame(arm = trt_arm, placebo = placebo,
+                      estimate = ifelse(scale == 'log hazard ratio',
+                                        estimate, exp(estimate)),
+                      p = p, info = info, z = z
+                    )
+
+    ## return only if tidy = FALSE
+    if(!tidy){
+      stopifnot(length(surv_obj) == nrow(model_data))
+      res$info_pbo <- sum(surv_obj[, 'status'] == 1 & model_data$arm %in% placebo)
+      res$info_trt <- sum(surv_obj[, 'status'] == 1 & model_data$arm %in% trt_arm)
+      stopifnot(res$info_pbo + res$info_trt == res$info)
+
+      res$n_pbo <- sum(model_data$arm %in% placebo)
+      res$n_trt <- sum(model_data$arm %in% trt_arm)
+      stopifnot(res$n_trt + res$n_pbo == nrow(model_data))
+    }
+
+    ret <- rbind(ret, res)
+
   }
 
   class(ret) <- c('fit_coxph', class(ret))

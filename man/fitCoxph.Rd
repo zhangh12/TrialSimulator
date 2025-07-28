@@ -4,7 +4,7 @@
 \alias{fitCoxph}
 \title{Fit Cox proportional hazard ratio model}
 \usage{
-fitCoxph(formula, placebo, data, alternative, scale, ...)
+fitCoxph(formula, placebo, data, alternative, scale, tidy = TRUE, ...)
 }
 \arguments{
 \item{formula}{An object of class \code{formula} that can be used with
@@ -24,6 +24,9 @@ by an hazard ratio greater than 1.}
 
 \item{scale}{character. The type of estimate in the output. Must be one
 of \code{"log hazard ratio"} or \code{"hazard ratio"}. No default value.}
+
+\item{tidy}{logical. \code{FALSE} if more information are returned.
+Default \code{TRUE}.}
 
 \item{...}{Subset conditions compatible with \code{dplyr::filter}.
 \code{coxph} will be fitted on this subset only. This argument can be useful

@@ -206,8 +206,8 @@ action2 <- function(trial, milestone_name){
   
   locked_data <- trial$get_locked_data(milestone_name)
 
-  fit <- fitLogrank(endpoint = 'pfs', placebo = 'placebo', 
-                    data = locked_data)
+  fit <- fitLogrank(Surv(pfs, pfs_event) ~ arm, placebo = 'placebo', 
+                    data = locked_data, alternative = 'less')
 
   ## futility analysis
   if(max(fit$z) < .5){
@@ -233,9 +233,10 @@ action3 <- function(trial, milestone_name){
   locked_data <- trial$get_locked_data(milestone_name)
 
   ## test PFS
-  dt_pfs <- trial$dunnettTest(endpoint = 'pfs', placebo = 'placebo',
+  dt_pfs <- trial$dunnettTest(Surv(pfs, pfs_event) ~ arm, placebo = 'placebo',
                               treatments = c('high dose', 'low dose'),
                               milestones = c('dose selection', 'interim', 'final'),
+                              alternative = 'less',
                               planned_info = 'default')
   
   ct_pfs <- trial$closedTest(dt_pfs, treatments = c('high dose', 'low dose'),
@@ -243,9 +244,10 @@ action3 <- function(trial, milestone_name){
                              alpha = .005, alpha_spending = 'asOF')
 
   ## test OS
-  dt_os <- trial$dunnettTest(endpoint = 'os', placebo = 'placebo',
+  dt_os <- trial$dunnettTest(Surv(os, os_event) ~ arm, placebo = 'placebo',
                              treatments = c('high dose', 'low dose'),
                              milestones = c('dose selection', 'final'),
+                             alternative = 'less', 
                              planned_info = 'default')
   
   ct_os <- trial$closedTest(dt_pfs, treatments = c('high dose', 'low dose'),
@@ -333,18 +335,20 @@ unnecessary.
 
 ```{r aief, class.source='fold-show'}
 ## test PFS
-dt_pfs <- trial$dunnettTest(endpoint = 'pfs', placebo = 'placebo',
+dt_pfs <- trial$dunnettTest(Surv(pfs, pfs_event) ~ arm, placebo = 'placebo',
                             treatments = c('high dose', 'low dose'),
                             milestones = c('dose selection', 'interim', 'final'),
+                            alternative = 'less', 
                             planned_info = 'default')
 ct_pfs <- trial$closedTest(dt_pfs, treatments = c('high dose', 'low dose'),
                            milestones = c('interim', 'final'),
                            alpha = .005, alpha_spending = 'asOF')
 
 ## test OS
-dt_os <- trial$dunnettTest(endpoint = 'os', placebo = 'placebo',
+dt_os <- trial$dunnettTest(Surv(os, os_event) ~ arm, placebo = 'placebo',
                            treatments = c('high dose', 'low dose'),
                            milestones = c('dose selection', 'final'),
+                           alternative = 'less', 
                            planned_info = 'default')
 ct_os <- trial$closedTest(dt_pfs, treatments = c('high dose', 'low dose'),
                           milestones = c('final'),

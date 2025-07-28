@@ -1,32 +1,57 @@
 #' Carry out log rank test
 #' @description
 #' Compute log rank test statistic on an endpoint.
-#' @param endpoint character. Name of endpoint in \code{data}.
+#' @param formula An object of class \code{formula} that can be used with
+#' \code{survival::coxph}. Must consist \code{arm} and endpoint in \code{data}.
+#' No covariate is allowed. Stratification variables are supported and can be
+#' added using \code{strata(...)}.
 #' @param placebo character. String of placebo in \code{data$arm}.
 #' @param data data frame. Usually it is a locked data.
+#' @param alternative a character string specifying the alternative hypothesis,
+#' must be one of \code{"greater"} or \code{"less"}. No default value.
+#' \code{"greater"} means superiority of treatment over placebo is established
+#' by an hazard ratio greater than 1.
+#' @param tidy logical. \code{FALSE} if more information are returned.
+#' Default \code{TRUE}.
 #' @param ... subset condition that is compatible with \code{dplyr::filter}.
-#' \code{survival::survdiff} will be fitted on this subset only.
-#' This argument could be useful to create a subset of data for analysis when a
-#' trial consists of more than two arms. By default it is not specified,
-#' all data will be used to fit the model. More than one conditions can be
-#' specified in \code{...}, e.g.,
-#' \code{fitLogrank('pfs', 'pbo', data, arm \%in\% c('pbo', 'low dose'), pfs > 0.5)},
+#' \code{survival::coxph} with \code{ties = "exact"} will be fitted on this
+#' subset only. This argument could be useful to create a subset of data for
+#' analysis when a trial consists of more than two arms. By default it is not
+#' specified, all data will be used to fit the model. More than one conditions
+#' can be specified in \code{...}, e.g.,
+#' \code{fitLogrank(formula, data, arm \%in\% c('pbo', 'low dose'), pfs > 0.5)},
 #' which is equivalent to
-#' \code{fitLogrank('pfs', 'pbo', data, arm \%in\% c('pbo', 'low dose') & pfs > 0.5)}.
+#' \code{fitLogrank(formula, data, arm \%in\% c('pbo', 'low dose') & pfs > 0.5)}.
+#'
 #' @returns a data frame with three columns:
 #' \describe{
-#' \item{\code{p}}{one-sided p-value for
-#' log rank test (alternative hypothesis: risk is higher in placebo arm). }
+#' \item{\code{arm}}{name of the treatment arm. }
+#' \item{\code{placebo}}{name of the placebo arm. }
+#' \item{\code{p}}{one-sided p-value for log-rank test (treated vs placebo). }
 #' \item{\code{info}}{the number of events of the endpoint in the subset. }
-#' \item{\code{z}}{the one-sided logrank statistics. }
+#' \item{\code{z}}{the z statistics of log hazard ratios. }
 #' }
+#'
+#' @importFrom stats terms
 #'
 #' @export
 #'
-fitLogrank <- function(endpoint, placebo, data, ...) {
+fitLogrank <- function(formula, placebo, data, alternative, tidy = TRUE, ...) {
 
-  if(!is.character(endpoint) || length(endpoint) != 1){
-    stop("endpoint must be a single character string")
+  if(!inherits(formula, 'formula')){
+    stop('formula must be a formula object with "arm" indicating the column arm in data. ')
+  }
+
+  is_valid_arm_formula <- function(formula, arm_var = "arm") {
+    trms <- terms(formula, specials = "strata")
+    labels <- attr(trms, "term.labels")
+    strata_vars <- untangle.specials(trms, "strata", order = TRUE)$vars
+    non_strata_vars <- setdiff(labels, strata_vars)
+    length(non_strata_vars) == 1 && non_strata_vars == arm_var
+  }
+
+  if(!is_valid_arm_formula(formula, 'arm')){
+    stop('formula should be in the format of Surv(time, event) ~ arm or Surv(time, event) ~ arm + strata(...) + ... + strata(...). ')
   }
 
   if(!is.character(placebo) || length(placebo) != 1){
@@ -37,13 +62,17 @@ fitLogrank <- function(endpoint, placebo, data, ...) {
     stop("data must be a data frame")
   }
 
-  event <- paste0(endpoint, '_event')
-  required_cols <- c('arm', endpoint, event)
-  if(!all(required_cols %in% names(data))){
-    stop('Columns <',
-         paste0(setdiff(required_cols, names(data)), collapse = ', '),
-         '> are not present in locked data. ',
-         'Please check endpoint\'s name. ')
+  alternative <- match.arg(alternative, choices = c('greater', 'less'))
+
+  vars_in_formula <- all.vars(formula)
+  missing_vars <- setdiff(vars_in_formula, names(data))
+  if(length(missing_vars) > 0){
+    stop('The following variable(s) used in formula are missing from data: \n',
+         paste0(missing_vars, collapse = ', '))
+  }
+
+  if(!'arm' %in% vars_in_formula){
+    stop('formula must include main effect term for arm. ')
   }
 
   # Prepare the data based on condition in ...
@@ -72,31 +101,35 @@ fitLogrank <- function(endpoint, placebo, data, ...) {
   for(trt_arm in treatment_arms){
     sub_data <- filtered_data %>% dplyr::filter(.data$arm %in% c(placebo, trt_arm))
 
-    # Create the formula
-    formula_str <- paste0("Surv(time = ", endpoint,
-                          ", event = ", endpoint, "_event) ~ ",
-                          "I(arm == '", placebo, "')")
+    # Ensure arm is a factor with placebo and treatment
+    sub_data$arm <- factor(sub_data$arm, levels = c(placebo, trt_arm))
 
-    # Fit the Cox model to get direction of effect
-    fit <- summary(coxph(as.formula(formula_str), data = sub_data))$coef
+    fit_cox <- fitCoxph(formula, placebo, sub_data, alternative,
+                        scale = 'log hazard ratio', tidy = tidy) ## ... is not needed
+
+    # Fit the Cox model
+    lr <- tryCatch({
+      coxph(formula, data = sub_data, ties = 'exact')
+    }, error = function(e){
+      stop('coxph model fitting failed in fitLogrank: ', e$message)
+    })
 
     # calculate log rank statistic
-    lr <- survdiff(as.formula(formula_str), data = sub_data)
+    z <- sqrt(summary(lr)$sctest['test']) * ifelse(fit_cox$z > 0, 1, -1)
+    p <- ifelse(alternative == 'greater', 1 - pnorm(z), pnorm(z))
+    info <- fit_cox$info
 
-    z <- ifelse(fit[1, 'coef']/fit[1, 'se(coef)'] < 0, -1, 1) * sqrt(lr$chisq)
-    p <- 1 - pnorm(z)
-    info <- sum(sub_data[[event]] %in% 1)
-    info_pbo <- sum(sub_data[[event]] %in% 1 & sub_data$arm %in% placebo)
-    info_trt <- info - info_pbo
-    n_pbo <- sum(sub_data$arm %in% placebo)
-    n_trt <- sum(!(sub_data$arm %in% placebo))
+    res <- data.frame(arm = trt_arm, placebo = placebo,
+                      p = p, info = info, z = z
+                    )
+    if(!tidy){
+      res$info_pbo <- fit_cox$info_pbo
+      res$info_trt <- fit_cox$info_trt
+      res$n_pbo <- fit_cox$n_pbo
+      res$n_trt <- fit_cox$n_trt
+    }
 
-    ret <- rbind(ret, data.frame(arm = trt_arm, placebo = placebo,
-                                 p = p, info = info, z = z,
-                                 info_pbo = info_pbo, info_trt = info_trt,
-                                 n_pbo = n_pbo, n_trt = n_trt
-    )
-    )
+    ret <- rbind(ret, res)
   }
 
   class(ret) <- c('fit_logrank', class(ret))

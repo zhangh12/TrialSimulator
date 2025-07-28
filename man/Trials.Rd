@@ -30,7 +30,7 @@ Create a class of trial.
 
 
 \dontrun{
-trial$independentIncrement('pfs', 'pbo', listener$get_milestone_names(), 'oracle')
+trial$independentIncrement('pfs', 'pbo', listener$get_milestone_names(), 'less', 'oracle')
 }
 
 ## ------------------------------------------------
@@ -972,19 +972,33 @@ mute all messages (not including warnings)
 \subsection{Method \code{independentIncrement()}}{
 calculate independent increments from a given set of milestones
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$independentIncrement(endpoint, placebo, milestones, planned_info, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$independentIncrement(
+  formula,
+  placebo,
+  milestones,
+  alternative,
+  planned_info,
+  ...
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{endpoint}}{character. Name of time-to-event endpoint in trial's
-locked data.}
+\item{\code{formula}}{An object of class \code{formula} that can be used with
+\code{survival::coxph}. Must consist \code{arm} and endpoint in \code{data}.
+No covariate is allowed. Stratification variables are supported and can be
+added using \code{strata(...)}.}
 
 \item{\code{placebo}}{character. String of placebo in trial's locked data.}
 
 \item{\code{milestones}}{a character vector of milestone names in the trial, e.g.,
 \code{listener$get_milestone_names()}.}
+
+\item{\code{alternative}}{a character string specifying the alternative hypothesis,
+must be one of \code{"greater"} or \code{"less"}. No default value.
+\code{"greater"} means superiority of treatment over placebo is established
+by an hazard ratio greater than 1 when a log-rank test is used.}
 
 \item{\code{planned_info}}{a vector of planned accumulative number of event of
 time-to-event endpoint. Note: \code{planned_info} can also be a character
@@ -1028,7 +1042,7 @@ Accumulative data is used. }
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{
 \dontrun{
-trial$independentIncrement('pfs', 'pbo', listener$get_milestone_names(), 'oracle')
+trial$independentIncrement('pfs', 'pbo', listener$get_milestone_names(), 'less', 'oracle')
 }
 }
 \if{html}{\out{</div>}}
@@ -1044,10 +1058,11 @@ carry out closed test based on Dunnett method under group sequential
 design.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$dunnettTest(
-  endpoint,
+  formula,
   placebo,
   treatments,
   milestones,
+  alternative,
   planned_info,
   ...
 )}\if{html}{\out{</div>}}
@@ -1056,7 +1071,10 @@ design.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{endpoint}}{character of an endpoint for Dunnett test.}
+\item{\code{formula}}{An object of class \code{formula} that can be used with
+\code{survival::coxph}. Must consist \code{arm} and endpoint in \code{data}.
+No covariate is allowed. Stratification variables are supported and can be
+added using \code{strata(...)}.}
 
 \item{\code{placebo}}{character. Name of placebo arm.}
 
@@ -1066,6 +1084,11 @@ comparison.}
 \item{\code{milestones}}{character vector. Names of triggered milestones at which either
 adaptation is applied or statistical testing for endpoint is performed.
 Milestones in \code{milestones} does not need to be sorted by their triggering time.}
+
+\item{\code{alternative}}{a character string specifying the alternative hypothesis,
+must be one of \code{"greater"} or \code{"less"}. No default value.
+\code{"greater"} means superiority of treatment over placebo is established
+by an hazard ratio greater than 1 when a log-rank test is used.}
 
 \item{\code{planned_info}}{a data frame of planned number of events of
 time-to-event endpoint in each stage and each arm. Milestone names, i.e.,
