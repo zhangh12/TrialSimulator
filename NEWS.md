@@ -1,3 +1,9 @@
+# TrialSimulator 0.87.0
+
+## Bug Fix
+
+- Revise `Trials$dunnettTest` to be compatible to one-sided logrank test. 
+
 # TrialSimulator 0.86.0
 
 ## Bug Fix
