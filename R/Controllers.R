@@ -88,6 +88,7 @@ Controllers <- R6::R6Class(
         stop('Columns <', paste0(setdiff(cols, names(private$output)), collapse = ', '),
              '> are not found in trial$output. Check if there is a typo. ')
       }
+
       ret <- private$output[, cols, drop = FALSE]
       if(simplify && ncol(ret) == 1){
         return(ret[1, 1])
@@ -130,6 +131,7 @@ Controllers <- R6::R6Class(
 
           error = function(e){
             self$get_trial()$save(e$message, 'error_message', overwrite = TRUE)
+            private$output <- bind_rows(private$output, self$get_trial()$get_output())
             stop(e$message)
           }
         )
