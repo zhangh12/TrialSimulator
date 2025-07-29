@@ -104,6 +104,7 @@ trial$closedTest(dt, c('high dose', 'low dose'),
 \item \href{#method-Trials-bind}{\code{Trials$bind()}}
 \item \href{#method-Trials-save_custom_data}{\code{Trials$save_custom_data()}}
 \item \href{#method-Trials-get_custom_data}{\code{Trials$get_custom_data()}}
+\item \href{#method-Trials-get}{\code{Trials$get()}}
 \item \href{#method-Trials-get_output}{\code{Trials$get_output()}}
 \item \href{#method-Trials-mute}{\code{Trials$mute()}}
 \item \href{#method-Trials-independentIncrement}{\code{Trials$independentIncrement()}}
@@ -918,6 +919,23 @@ with warning, otherwise, throwing an error and stop.}
 return saved custom data of specified name.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$get_custom_data(name)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{name}}{character. Name of custom data to be accessed.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-get"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-get}{}}}
+\subsection{Method \code{get()}}{
+alias of function \code{get_custom_data} to make it short and cool.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get(name)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
