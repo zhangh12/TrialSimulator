@@ -4,6 +4,14 @@
 
 - Add function `get` as alias of `get_custom_data` in the `Trials` class. 
 
+## Bug Fix
+
+- Fix a bug that no results is returned to controller when an error is triggered. 
+
+## Update
+
+- Print informative message when `trial$dunnettTest(..., planned_info = "default")` triggers an error. 
+
 # TrialSimulator 0.87.0
 
 ## Bug Fix
