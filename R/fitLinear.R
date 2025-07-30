@@ -118,6 +118,7 @@ fitLinear <- function(formula, placebo, data, alternative, ...) {
                  )
   }
 
+  rownames(ret) <- NULL
   class(ret) <- c('fit_linear', class(ret))
   ret
 }

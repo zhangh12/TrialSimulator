@@ -161,6 +161,7 @@ fitLogistic <- function(formula, placebo, data, alternative, scale, ...) {
                  )
   }
 
+  rownames(ret) <- NULL
   class(ret) <- c('fit_logistic', class(ret))
   ret
 }
