@@ -1,3 +1,9 @@
+# TrialSimulator 0.88.0
+
+## New Feature
+
+- Add function `get` as alias of `get_custom_data` in the `Trials` class. 
+
 # TrialSimulator 0.87.0
 
 ## Bug Fix

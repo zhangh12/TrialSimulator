@@ -1423,6 +1423,13 @@ Trials <- R6::R6Class(
     },
 
     #' @description
+    #' alias of function \code{get_custom_data} to make it short and cool.
+    #' @param name character. Name of custom data to be accessed.
+    get = function(name){
+      self$get_custom_data(name)
+    },
+
+    #' @description
     #' return a data frame of all current outputs saved by calling \code{save}.
     #' @param cols columns to be returned from \code{Trial$output}. If
     #' \code{NULL}, all columns are returned.
