@@ -34,9 +34,9 @@ to create a subset of data for analysis when a trial consists of more
 than two arms. By default, it is not specified,
 all data will be used to fit the model. More than one condition can be
 specified in \code{...}, e.g.,
-\code{fitCoxph('pfs', 'pbo', data, 'less', 'log hazard ratio', arm \%in\% c('pbo', 'low dose'), pfs > 0.5)},
+\code{fitCoxph(formula, 'pbo', data, 'less', 'log hazard ratio', arm \%in\% c('pbo', 'low dose'), pfs > 0.5)},
 which is equivalent to:
-\code{fitCoxph('pfs', 'pbo', data, 'less', 'log hazard ratio', arm \%in\% c('pbo', 'low dose') & pfs > 0.5)}.}
+\code{fitCoxph(formula, 'pbo', data, 'less', 'log hazard ratio', arm \%in\% c('pbo', 'low dose') & pfs > 0.5)}.}
 }
 \value{
 a data frame with three columns:

@@ -1,3 +1,9 @@
+# TrialSimulator 0.89.0
+
+## New Feature
+
+- Support `...` in `eventNumber` to count event in subset of trial data. This is useful in enrichment design when milestone is defined based on biomarker. 
+
 # TrialSimulator 0.88.0
 
 ## New Feature

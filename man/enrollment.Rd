@@ -4,10 +4,13 @@
 \alias{enrollment}
 \title{Triggering condition by number of randomized patients}
 \usage{
-enrollment(n, arms = NULL)
+enrollment(n, ..., arms = NULL)
 }
 \arguments{
 \item{n}{integer. Number of randomized patients.}
+
+\item{...}{subset conditions compatible with \code{dplyr::filter}. Number
+of randomized patients will be counted on subset of trial data only.}
 
 \item{arms}{vector of character. Name of arms on which the number of patients
 is counted. If \code{NULL}, use all arms that are not yet removed from the

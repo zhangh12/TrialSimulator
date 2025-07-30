@@ -4,12 +4,15 @@
 \alias{eventNumber}
 \title{Triggering condition by number of events or observations of an endpoint}
 \usage{
-eventNumber(endpoint, n, arms = NULL)
+eventNumber(endpoint, n, ..., arms = NULL)
 }
 \arguments{
 \item{endpoint}{character. Name of an endpoint.}
 
 \item{n}{integer. Targeted number of events.}
+
+\item{...}{subset conditions compatible with \code{dplyr::filter}. Number
+of events will be counted on subset of trial data only.}
 
 \item{arms}{vector of character. Name of arms on which the number of events
 is counted. If \code{NULL}, use all arms that are not yet removed from the

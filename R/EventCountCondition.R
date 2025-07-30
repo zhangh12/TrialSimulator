@@ -8,9 +8,10 @@ EventCountCondition <- R6::R6Class(
   public = list(
     endpoint = NULL,
     n = NULL,
+    filter_conditions = NULL,
     arms = NULL,
 
-    initialize = function(endpoint, n, arms = NULL){
+    initialize = function(endpoint, n, ..., arms = NULL){
       stopifnot(is.character(endpoint))
       stopifnot(length(endpoint) == 1)
 
@@ -21,6 +22,7 @@ EventCountCondition <- R6::R6Class(
 
       self$endpoint <- endpoint
       self$n <- n
+      self$filter_conditions <- enquos(...)
       self$arms <- arms
     },
 
@@ -30,6 +32,7 @@ EventCountCondition <- R6::R6Class(
         endpoints = self$endpoint,
         arms = self$arms,
         target_n_events = self$n,
+        !!!self$filter_conditions,
         type = 'all'
       )
 
