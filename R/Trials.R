@@ -1913,6 +1913,23 @@ Trials <- R6::R6Class(
             rbind(inverse_normal_dunnett_pvalue[[createArmCombination(comb)]], tmp)
           rm(tmp)
 
+          tmp_ <- inverse_normal_dunnett_pvalue[[createArmCombination(comb)]]
+          if(any(tmp_$stage_planned_info == 0)){
+            idx_ <- which(tmp_$stage_planned_info == 0)[1]
+            if(idx_ == 1){
+              stop('Using planned_info = "default" in dunnettTest() causes issues under your simulation settings. \n',
+                   'It specified weights of closed test based on number of newly randomized patients between milestones. \n',
+                   'In your case, no patient is recruited before milestone <', tmp_$milestone[idx_], '>. \n',
+                   'Contact the package author if you do not know how to specify <planned_info> after reading manual of Trials$dunnettTest. \n')
+            }else{
+              stop('Using planned_info = "default" in dunnettTest() causes issues under your simulation settings. \n',
+                   'It specified weights of closed test based on number of newly randomized patients between milestones. \n',
+                   'In your case, no patient is recruited between milestones <', tmp_$milestone[idx_ - 1],
+                   '> and <', tmp_$milestone[idx_], '>. \n',
+                   'Contact the package author if you do not know how to specify <planned_info> after reading manual of Trials$dunnettTest. \n')
+            }
+          }
+
         }
 
       }
