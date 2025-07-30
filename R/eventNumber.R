@@ -23,12 +23,14 @@
 #' @param arms vector of character. Name of arms on which the number of events
 #' is counted. If \code{NULL}, use all arms that are not yet removed from the
 #' trial by the time of calculation.
+#' @param ... subset conditions compatible with \code{dplyr::filter}. Number
+#' of events will be counted on subset of trial data only.
 #'
 #' @returns an object of class `Condition`
 #'
 #' @export
-eventNumber <- function(endpoint, n, arms = NULL){
+eventNumber <- function(endpoint, n, ..., arms = NULL){
 
-  EventCountCondition$new(endpoint, n, arms)
+  EventCountCondition$new(endpoint, n, ..., arms)
 
 }

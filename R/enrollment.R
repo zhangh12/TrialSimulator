@@ -11,12 +11,14 @@
 #' @param arms vector of character. Name of arms on which the number of patients
 #' is counted. If \code{NULL}, use all arms that are not yet removed from the
 #' trial by the time of calculation.
+#' @param ... subset conditions compatible with \code{dplyr::filter}. Number
+#' of randomized patients will be counted on subset of trial data only.
 #'
 #' @returns an object of class `Condition`
 #'
 #' @export
-enrollment <- function(n, arms = NULL){
+enrollment <- function(n, ..., arms = NULL){
 
-  EnrollmentCountCondition$new(n, arms)
+  EnrollmentCountCondition$new(n, ..., arms = arms)
 
 }

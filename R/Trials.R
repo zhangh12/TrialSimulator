@@ -646,9 +646,12 @@ Trials <- R6::R6Class(
     #' @description
     #' count accumulative number of events (for TTE) or non-missing samples (otherwise) over
     #' calendar time (enroll time + tte for TTE, or enroll time + readout otherwise)
+    #'
     #' @param arms a vector of arms' name on which the event tables are created.
     #' if \code{NULL}, all arms in the trial will be used.
-    get_event_tables = function(arms = NULL){
+    #' @param ... subset conditions compatible with \code{dplyr::filter}.
+    #' Event tables will be counted on subset of trial data only.
+    get_event_tables = function(arms = NULL, ...){
 
       if(is.null(arms)){
         arms <- self$get_arms_name()
@@ -662,6 +665,19 @@ Trials <- R6::R6Class(
 
       trial_data <- self$get_trial_data() %>%
         dplyr::filter(arm %in% arms)
+
+      trial_data <- if(...length() == 0){
+        trial_data
+      }else{
+        tryCatch({
+          trial_data %>% dplyr::filter(...)
+        },
+        error = function(e){
+          stop('Error in filtering data for table of event count. ',
+               'Please check condition in ..., ',
+               'which should be compatible with dplyr::filter. ')
+        })
+      }
 
       event_counts <- list()
 
@@ -713,12 +729,15 @@ Trials <- R6::R6Class(
     #' counted.
     #' @param type \code{all} if all target number of events are reached.
     #' \code{any} if the any target number of events is reached.
+    #' @param ... subset conditions compatible with \code{dplyr::filter}. Number
+    #' Time of milestone is based on event counts on the subset of trial data.
     #' @return data lock time
     #' @examples
     #' ## trial$get_data_lock_time_by_event_number(c('pfs','orr'), c(200,500), 'any')
     get_data_lock_time_by_event_number = function(endpoints, arms,
                                                   target_n_events,
-                                                  type = c('all', 'any')){
+                                                  type = c('all', 'any'),
+                                                  ...){
 
       type <- match.arg(type)
 
@@ -730,7 +749,7 @@ Trials <- R6::R6Class(
         arms <- self$get_arms_name()
       }
 
-      event_counts <- self$get_event_tables(arms)
+      event_counts <- self$get_event_tables(arms, ...)
 
       missed_endpoints <- setdiff(endpoints, names(event_counts))
       if(length(missed_endpoints) > 0){
@@ -769,6 +788,10 @@ Trials <- R6::R6Class(
 
 
       attr(lock_time, 'n_events') <- list()
+
+      ## count events on all trial data in trial output
+      event_counts <- self$get_event_tables(arms)
+
       for(i in seq_along(event_counts)){
         ec <- event_counts[[i]]
         attr(lock_time, 'n_events')[[names(event_counts)[i]]] <-

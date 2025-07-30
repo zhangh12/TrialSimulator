@@ -588,7 +588,7 @@ return current time of a trial
 count accumulative number of events (for TTE) or non-missing samples (otherwise) over
 calendar time (enroll time + tte for TTE, or enroll time + readout otherwise)
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_event_tables(arms = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_event_tables(arms = NULL, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -596,6 +596,9 @@ calendar time (enroll time + tte for TTE, or enroll time + readout otherwise)
 \describe{
 \item{\code{arms}}{a vector of arms' name on which the event tables are created.
 if \code{NULL}, all arms in the trial will be used.}
+
+\item{\code{...}}{subset conditions compatible with \code{dplyr::filter}.
+Event tables will be counted on subset of trial data only.}
 }
 \if{html}{\out{</div>}}
 }
@@ -613,7 +616,8 @@ the found data lock time).
   endpoints,
   arms,
   target_n_events,
-  type = c("all", "any")
+  type = c("all", "any"),
+  ...
 )}\if{html}{\out{</div>}}
 }
 
@@ -631,6 +635,9 @@ counted.}
 
 \item{\code{type}}{\code{all} if all target number of events are reached.
 \code{any} if the any target number of events is reached.}
+
+\item{\code{...}}{subset conditions compatible with \code{dplyr::filter}. Number
+Time of milestone is based on event counts on the subset of trial data.}
 }
 \if{html}{\out{</div>}}
 }
