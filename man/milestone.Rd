@@ -12,7 +12,10 @@ milestone(name, when, action = doNothing)
 \item{when}{condition to check if this milestone should be
 triggered.}
 
-\item{action}{function to execute when the milestone triggers.}
+\item{action}{function to execute when the milestone triggers.
+If no action to be executed but simply need to record triggering time of
+a milestone, \code{action} can be its default value, a built-in function
+\code{doNothing}.}
 }
 \description{
 Define a milestone of a trial. This is a user-friendly wrapper for
