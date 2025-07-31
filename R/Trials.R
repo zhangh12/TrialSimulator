@@ -541,7 +541,10 @@ Trials <- R6::R6Class(
       }
 
       if(self$get_number_unenrolled_patients() == 0){
-        stop('Maximum planned sample size has been reached. Patient cannot be enrolled. ')
+        if(!private$silent){
+          message('Maximum planned sample size has been reached. No more patient to be enrolled. ')
+        }
+        return(invisible(NULL))
       }
 
       if(is.null(n_patients)){
@@ -801,9 +804,27 @@ Trials <- R6::R6Class(
 
       }
 
+      event_count_per_arm <- list()
+      for(arm in arms){
+        ec <- self$get_event_tables(arms = arm)
+        for(endpoint in names(ec)){
+          count <- ifelse(any(ec[[endpoint]]$calendar_time <= lock_time),
+                          max(ec[[endpoint]]$n_events[ec[[endpoint]]$calendar_time <= lock_time]),
+                          0) %>% setNames(arm)
+
+          event_count_per_arm[[endpoint]] <- c(event_count_per_arm[[endpoint]], count)
+        }
+      }
+
+      event_count <- NULL
+      for(ep in names(event_count_per_arm)){
+        event_count <- bind_rows(event_count, data.frame(t(event_count_per_arm[[ep]])) %>% mutate(endpoint = ep))
+      }
+
       attr(lock_time, 'n_events') <-
-        data.frame(attr(lock_time, 'n_events')) %>%
-        mutate(arms = paste0('<', paste0(arms, collapse = ', '), '>'))
+        data.frame(attr(lock_time, 'n_events'))
+      attr(lock_time, 'n_events')$arms <- I(list(event_count))
+
 
       lock_time
 
@@ -839,9 +860,28 @@ Trials <- R6::R6Class(
                  0)
 
       }
+
+      event_count_per_arm <- list()
+      for(arm in arms){
+        ec <- self$get_event_tables(arms = arm)
+        for(endpoint in names(ec)){
+          count <- ifelse(any(ec[[endpoint]]$calendar_time <= lock_time),
+                          max(ec[[endpoint]]$n_events[ec[[endpoint]]$calendar_time <= lock_time]),
+                          0) %>% setNames(arm)
+
+          event_count_per_arm[[endpoint]] <- c(event_count_per_arm[[endpoint]], count)
+        }
+      }
+
+      event_count <- NULL
+      for(ep in names(event_count_per_arm)){
+        event_count <- bind_rows(event_count, data.frame(t(event_count_per_arm[[ep]])) %>% mutate(endpoint = ep))
+      }
+
       attr(lock_time, 'n_events') <-
-        data.frame(attr(lock_time, 'n_events')) %>%
-        mutate(arms = paste0('<', paste0(arms, collapse = ', '), '>'))
+        data.frame(attr(lock_time, 'n_events'))
+      attr(lock_time, 'n_events')$arms <- I(list(event_count))
+
 
       lock_time
 
@@ -990,7 +1030,8 @@ Trials <- R6::R6Class(
       self$save_milestone_time(at_calendar_time, milestone_name)
 
       self$save(value = at_calendar_time, name = paste0('milestone_time_<', milestone_name, '>'))
-      self$save(value = as.data.frame(attr(at_calendar_time, 'n_events')),
+
+      self$save(value = attr(at_calendar_time, 'n_events'),
                 name = paste0('n_events_<', milestone_name, '>'))
 
       if(!private$silent){
@@ -1335,7 +1376,8 @@ Trials <- R6::R6Class(
           }
         }
 
-        private$output[, cname] <- value[, cname]
+        ## this is flexible to assign scale value or a data frame to a cell in output
+        private$output[, cname] <- I(list(value[, cname]))
 
       }
 
