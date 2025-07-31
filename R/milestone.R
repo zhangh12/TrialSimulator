@@ -9,6 +9,9 @@
 #' @param when condition to check if this milestone should be
 #' triggered.
 #' @param action function to execute when the milestone triggers.
+#' If no action to be executed but simply need to record triggering time of
+#' a milestone, \code{action} can be its default value, a built-in function
+#' \code{doNothing}.
 #'
 #' @export
 #'

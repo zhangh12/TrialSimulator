@@ -92,7 +92,6 @@ test_that('trial milestone timing and endpoint event count work as expected', {
 
 test_that('filters are supported when defining milestones', {
 
-
   #' random number generator (RNG) for OS, PFS, and PRO
   rng <- function(n, medians, prop_high){
 
@@ -180,25 +179,43 @@ test_that('filters are supported when defining milestones', {
     trial$add_arms(sample_ratio = c(1, 1), soc, trt)
 
     interim <- milestone(name = 'interim', when = enrollment(n = 100, dll3 == 'high', x > -2),
-                         action = action)
+                         action = interim_action)
+
+    final <- milestone(name = 'final',
+                       when =
+                         eventNumber('pfs', n = 100, dll3 == 'high', x > -2) &
+                         eventNumber('pfs', n = 150) &
+                         eventNumber('os', n = 25, dll3 != 'high'),
+                       action = final_action)
 
     listener <- listener(silent = TRUE)
-    listener$add_milestones(interim)
+    listener$add_milestones(interim, final)
 
     controller <- controller(trial, listener)
     controller$run(n = 10, plot_event = FALSE, silent = TRUE)
 
     controller$get_output()
 
-
-
   }
 
-  action <- function(trial, milestone_name){
+  interim_action <- function(trial, milestone_name){
 
     locked_data <- trial$get_locked_data(milestone_name)
     trial$save(value = locked_data %>% filter(dll3 == 'high' & x > -2) %>% nrow(),
                name = 'n_at_lock')
+
+    invisible(NULL)
+  }
+
+  final_action <- function(trial, milestone_name){
+
+    locked_data <- trial$get_locked_data(milestone_name)
+    tmp1 <- locked_data %>% filter(dll3 == 'high' & x > -2)
+    trial$save(value = sum(tmp1$pfs_event), name = 'n_pfs_high')
+    trial$save(value = sum(locked_data$pfs_event), name = 'n_pfs_all')
+
+    tmp2 <- locked_data %>% filter(dll3 != 'high')
+    trial$save(value = sum(tmp2$os_event), name = 'n_os_low')
 
     invisible(NULL)
   }
@@ -224,6 +241,14 @@ test_that('filters are supported when defining milestones', {
                                  pro_all = 9.7))[[1]])
 
   expect_true(all(sims$n_at_lock == 100))
+
+  expect_true(all(sims$n_pfs_high >= 100))
+
+  expect_true(all(sims$n_pfs_all >= 150))
+
+  expect_true(all(sims$n_os_low >= 25))
+
+  expect_true(all(sims$`milestone_time_<final>` > sims$`milestone_time_<interim>`))
 
 
 })

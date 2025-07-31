@@ -31,6 +31,6 @@
 #' @export
 eventNumber <- function(endpoint, n, ..., arms = NULL){
 
-  EventCountCondition$new(endpoint, n, ..., arms)
+  EventCountCondition$new(endpoint, n, ..., arms = arms)
 
 }

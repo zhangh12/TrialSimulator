@@ -398,7 +398,7 @@ output %>%
   scroll_box(width = "100%")
 ```
 
-```{r iojalf}
+```{r iojalf, class.source = "fold-hide"}
 output %>% 
   summarise(
     time_dose_selection = mean(`milestone_time_<dose selection>`), 
@@ -419,7 +419,7 @@ output %>%
   kable_styling(full_width = TRUE)
 ```
 
-```{r adalf}
+```{r adalf, class.source = "fold-hide"}
 output %>% 
   summarise(
     n_pfs_dose_selection = mean(`n_events_<dose selection>_<pfs>`), 
@@ -436,7 +436,7 @@ output %>%
   kable_styling(full_width = TRUE)
 ```
 
-```{r dgslja}
+```{r dgslja, class.source = "fold-hide"}
 output %>% 
   summarise(
     power_pfs_low = mean(pfs_low_dose_decision == 'reject') * 100, 
@@ -455,7 +455,7 @@ output %>%
   kable_styling(full_width = TRUE)
 ```
 
-```{r eioajf}
+```{r eioajf, class.source = "fold-hide"}
 output %>% 
   summarise(
     power_pfs_not_os = mean((pfs_low_dose_decision == 'reject' | pfs_high_dose_decision == 'reject') & 
