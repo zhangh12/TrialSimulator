@@ -254,6 +254,20 @@ Trials <- R6::R6Class(
 
       for(arm_name in arms_name){
         private$arms[[arm_name]] <- NULL
+
+        ## I have to assume that the function Trials$remove_arms() can only be called in an action function.
+        ## Thus, the time an arm is removed from the trial is the triggering time of the most recent milestone
+        ## This assumption can be problematic but for now I do not have other solution.
+        ## In Trials$dunnettTest(), I need to know at a given milestone whether an arm is still in the trial.
+        ##
+        existing_milestone_time <- self$get_milestone_time()
+        if(is.null(existing_milestone_time)){
+          latest_milestone_time <- 0
+        }else{
+          latest_milestone_time <- max(existing_milestone_time)
+        }
+        self$set_arm_removal_time(arm = arm_name,
+                                  time = latest_milestone_time)
       }
 
       if(!private$silent){
@@ -383,6 +397,21 @@ Trials <- R6::R6Class(
 
         private$arms[[arm$get_name()]] <- arm
         arm_names <- c(arm_names, arm$get_name())
+
+        ## I have to assume that the function Trials$add_arms() can only be called in an action function.
+        ## Thus, the time an arm is added to the trial is the triggering time of the most recent milestone
+        ## This assumption can be problematic but for now I do not have other solution.
+        ## In Trials$dunnettTest(), I need to know at a given milestone whether an arm is still in the trial.
+        ##
+        existing_milestone_time <- self$get_milestone_time()
+        if(is.null(existing_milestone_time)){
+          latest_milestone_time <- 0
+        }else{
+          latest_milestone_time <- max(existing_milestone_time)
+        }
+        self$set_arm_added_time(arm = arm$get_name(),
+                                time = latest_milestone_time)
+
       }
 
       if(!private$silent){
@@ -957,8 +986,14 @@ Trials <- R6::R6Class(
 
     #' @description
     #' return milestone time when triggering a given milestone
-    #' @param milestone_name character. Name of milestone.
-    get_milestone_time = function(milestone_name){
+    #' @param milestone_name character. Name of milestone. If \code{NULL},
+    #' time of all triggered milestones are returned.
+    get_milestone_time = function(milestone_name = NULL){
+
+      if(is.null(milestone_name)){
+        return(private$milestone_time)
+      }
+
       if(!all(milestone_name %in% names(private$milestone_time))){
         stop('Milestone(s) <',
              paste0(setdiff(milestone_name, names(private$milestone_time)), collapse = ', '),
@@ -1538,7 +1573,8 @@ Trials <- R6::R6Class(
     #' \code{"greater"} means superiority of treatment over placebo is established
     #' by an hazard ratio greater than 1 when a log-rank test is used.
     #' @param planned_info a vector of planned accumulative number of event of
-    #' time-to-event endpoint. Note: \code{planned_info} can also be a character
+    #' time-to-event endpoint. It is named by milestone names.
+    #' Note: \code{planned_info} can also be a character
     #' \code{"oracle"} so that planned number of events are set to be observed
     #' number of events, in that case inverse normal z statistics equal to
     #' one-sided logrank statistics. This is for the purpose of debugging only.
@@ -1596,7 +1632,43 @@ Trials <- R6::R6Class(
       plan_best_info <- ifelse(identical(planned_info, 'oracle'), TRUE, FALSE)
       if(plan_best_info){
         planned_info <- c()
+      }else{
+        ## make it accumulative
+        planned_info <- planned_info[milestones] %>% cumsum()
       }
+
+
+      ## Get label of treated arm from subset data (through ...)
+      ## We need this label to call Trials$get_arm_removal_time
+
+      # Prepare the data based on condition in ...
+      analysis_set <- if(...length() == 0){
+        self$get_locked_data(tail(milestones, 1))
+      }else{
+        tryCatch({
+          self$get_locked_data(tail(milestones, 1)) %>% dplyr::filter(...)
+        },
+        error = function(e){
+          stop('Error when filtering data in independentIncrement(). ',
+               'Please check condition in ..., ',
+               'which should be compatible with dplyr::filter. ')
+        })
+      }
+
+      trt_arm <- setdiff(unique(analysis_set$arm), placebo)
+      if(length(trt_arm) == 0){
+        stop('No treatment arm can be used in independentIncrement(). ',
+             'Check your ... argument. ')
+      }
+
+      if(length(trt_arm) > 1){
+        stop('More than one treatment arm <',
+             paste0(trt_arm, collapse = ', '),
+             '> are passed into independentIncrement(). ',
+             'Check your ... argument. ')
+      }
+
+      rm(analysis_set)
 
       n_pbo <- c()
       n_trt <- c()
@@ -1604,8 +1676,17 @@ Trials <- R6::R6Class(
       milestone_name <- c()
       for(i in seq_along(milestones)){
         milestone_name[i] <- milestones[i]
+
+        ## We assume that placebo and only one treated arm are used in independentIncrement
+        ## thus lr_fit should be a data frame of one row
         lr_fit <- fitLogrank(formula, placebo, self$get_locked_data(milestones[i]),
-                             alternative, tidy = FALSE, ...)
+                             alternative, ..., tidy = FALSE)
+        if(nrow(lr_fit) > 1){
+          stop('Trials$independentIncrement() should be applied to one treated arm at a time. ',
+               'Check the entry where you call independentIncrement(). ',
+               'Usually you can use its subsetting argument ... to meet this assumption/requirement. ')
+        }
+
         info[i] <- lr_fit$info
         lr[i] <- lr_fit$z
         info_pbo[i] <- lr_fit$info_pbo
@@ -1614,11 +1695,13 @@ Trials <- R6::R6Class(
         n_pbo[i] <- lr_fit$n_pbo
         n_trt[i] <- lr_fit$n_trt
         trt_str[i] <- lr_fit$arm
+
         if(plan_best_info){
-          # planned_info[i] <- lr_fit$info
-          planned_info[i] <- lr_fit$n_pbo
+          planned_info[i] <- lr_fit$info
         }
       }
+
+      names(info) <- milestones
 
       if(any(diff(planned_info) < 0)){
         stop('milestones and planned_info should be in the same order. ')
@@ -1653,8 +1736,17 @@ Trials <- R6::R6Class(
         stage_n_trt[i] <- n_trt[i] - n_trt[i - 1]
         wt[i] <- sqrt(planned_info[i] - planned_info[i - 1])
 
-        if(stage_n_trt[i] == 0){
-          ## This means this treatment arm has been removed from the trial
+        arm_removal_time <- self$get_arm_removal_time(arm = trt_arm)
+        milestone_triggering_time <- self$get_milestone_time(milestone_name = names(info)[i])
+
+
+        ## Use "<", not "<="!!
+        ## When arm_removal_time == milestone_triggering_time, it means the arm
+        ## is just removed from the trial at that milestone. Thus, data from the
+        ## arm can still be used to update testing statistics, no need to be
+        ## specified as +/-Inf
+        if(arm_removal_time < milestone_triggering_time){
+          ## This means this treatment arm has been removed from the trial BEFORE milestone i
           ## Set z statistic of independent increment to be an extremely value
           ## so that inverse normal combination test would always accept
           ## the neutral null hypothesis (p-value is close or equal to 1.0)
@@ -1822,7 +1914,8 @@ Trials <- R6::R6Class(
         }
 
         if(ncol(planned_info) != length(treatments) + 1){
-          stop('length(planned_info) should be equal to length(treatments) + 1. ')
+          stop('length(planned_info) should be equal to length(treatments) + 1, i.e., ',
+               length(treatment) + 1, '. ')
         }
 
         if(!setequal(names(planned_info), c(placebo, treatments))){
@@ -1856,15 +1949,25 @@ Trials <- R6::R6Class(
       for(i in seq_along(treatments)){
         trt_str <- treatments[i]
 
+        if(identical(planned_info, 'default')){
+          planned_info_ <- 'oracle'
+        }else{
+          ## this is a vector named by milestone names
+          planned_info_ <- planned_info[milestones, , drop = FALSE] %>%
+            select(c(placebo, trt_str)) %>%
+            rowSums()
+        }
+
         ii[[trt_str]] <-
           self$independentIncrement(formula, placebo, milestones, alternative,
                                     ## it doesn't matter what is used for planned_info
                                     ## because we only use z_ii in returned object
                                     ## which is irrelevant to planned_info
-                                    planned_info = 'oracle',
+                                    planned_info = planned_info_,
                                     arm %in% c(placebo, trt_str), ...)
 
       }
+
 
       all_trt <- names(ii)
 
@@ -1904,7 +2007,12 @@ Trials <- R6::R6Class(
             ## we expect stage_n_pbo is a constant vector
             stage_n_pbo <- c(stage_n_pbo, ii0$stage_n_pbo)
 
-            if(ii0$stage_n_trt != 0){
+
+            arm_removal_time <- self$get_arm_removal_time(arm = trt)
+            milestone_triggering_time <- self$get_milestone_time(milestone_name = milestone_name)
+
+
+            if(arm_removal_time >= milestone_triggering_time){
               z_ii <- c(z_ii, ii0$z_ii)
               ratio_trt <- c(ratio_trt,
                              sqrt(ii0$stage_n_trt / (ii0$stage_n_pbo + ii0$stage_n_trt)))
@@ -2005,13 +2113,13 @@ Trials <- R6::R6Class(
 
         tmp$z_inverse_normal <- cumsum(tmp$wt * qnorm(1 - tmp$stage_p)) / sqrt(cumsum(tmp$wt^2))
         tmp$p_inverse_normal <- 1 - pnorm(tmp$z_inverse_normal)
-        tmp$observed_info <- cumsum(tmp$stage_planned_info) ## used as observed_info in GroupSequentialTest
+        tmp$planned_info <- cumsum(tmp$stage_planned_info) ## used as observed_info in GroupSequentialTest
         ## the last entry in is_final should be set to TRUE when calling GroupSequentialTest
         ## However, we don't do this here because not all rows in inverse_normal_dunnett_pvalue
         ## will be used to test a specific endpoint (e.g., PFS may not be tested
         ## at all milestone time). Instead, set the last entry to TRUE before
         ## performing the significance test
-        tmp$is_final <- FALSE
+        # tmp$is_final <- FALSE
         inverse_normal_dunnett_pvalue[[i]] <- tmp
         rm(tmp)
       }
@@ -2034,18 +2142,32 @@ Trials <- R6::R6Class(
     #' \code{"asOF"}. Note that theoretically it can be \code{"asUser"}, but
     #' it is not tested. It may be supported in the future.
     #'
-    #' @return a data frame of columns \code{arm}, \code{decision},
+    #' @return a data frame of columns \code{arm}, \code{decision}
+    #' (final decision on a hypothesis at the end of trial, \code{"accept"} or \code{"reject"}),
     #' \code{milestone_at_reject}, and \code{reject_time}.
+    #' If a hypothesis is accepted at then end of a trial,
+    #' \code{milestone_at_reject} is \code{NA}, and \code{reject_time} is \code{Inf}.
+    #'
+    #' Note that if a hypothesis is tested at multiple milestones, the final
+    #' \code{decision} will be \code{"accept"} if it is accepted at at least
+    #' one milestone. The \code{decision} is \code{"reject"} only if the hypothesis
+    #' is rejected at all milestones.
     #'
     #' @examples
     #' \dontrun{
     #' dt <- trial$dunnettTest(
-    #'   'pfs', 'pbo', c('high dose', 'low dose'),
-    #'   listener$get_milestone_names(), 'default')
+    #'   Surv(pfs, pfs_event) ~ arm,
+    #'   placebo = 'pbo',
+    #'   treatments = c('high dose', 'low dose'),
+    #'   milestones = c('dose selection', 'interim', 'final'),
+    #'   data.frame(pbo = c(100, 160, 80),
+    #'              low = c(100, 160, 80),
+    #'              high = c(100, 160, 80),
+    #'              row.names = c('dose selection', 'interim', 'final'))
     #'
-    #' trial$closedTest(dt, c('high dose', 'low dose'),
-    #'                  c('pfs interim', 'pfs final'),
-    #'                  0.025, 'asOF')
+    #' trial$closedTest(dt, treatments = c('high dose', 'low dose'),
+    #'                  milestones = c('interim', 'final'),
+    #'                  alpha = 0.025, alpha_spending = 'asOF')
     #' }
     #'
     closedTest = function(dunnett_test, treatments, milestones, alpha, alpha_spending = c('asP', 'asOF')){
@@ -2068,18 +2190,18 @@ Trials <- R6::R6Class(
 
       for(i in seq_along(dunnett_test)){
 
-          if(all(milestones %in% dunnett_test[[i]]$milestone)){
-            dunnett_test[[i]] <- dunnett_test[[i]] %>%
-              dplyr::filter(milestone %in% milestones) %>%
-              arrange(milestone_time) %>%
-              mutate(is_final = FALSE)
+        if(all(milestones %in% dunnett_test[[i]]$milestone)){
+          dunnett_test[[i]] <- dunnett_test[[i]] %>%
+            dplyr::filter(milestone %in% milestones) %>%
+            arrange(milestone_time) %>%
+            mutate(is_final = FALSE)
 
-            dunnett_test[[i]]$is_final[nrow(dunnett_test[[i]])] <- TRUE
-          }else{
-            stop('Milestones <',
-                 paste0(setdiff(milestones, dunnett_test[[i]]$milestone), collapse = ', '),
-                 '> are not in dunnett_test. ')
-          }
+          dunnett_test[[i]]$is_final[nrow(dunnett_test[[i]])] <- TRUE
+        }else{
+          stop('Milestones <',
+               paste0(setdiff(milestones, dunnett_test[[i]]$milestone), collapse = ', '),
+               '> are not in dunnett_test. ')
+        }
       }
 
       createArmCombination <- function(comb){
@@ -2103,12 +2225,12 @@ Trials <- R6::R6Class(
         gst[[comb]] <- GroupSequentialTest$new(
           name = comb,
           alpha = alpha, alpha_spending = alpha_spending,
-          planned_max_info = max(dunnett_test[[comb]]$observed_info)
+          planned_max_info = max(dunnett_test[[comb]]$planned_info)
         )
 
-        gst[[comb]]$test(observed_info = dunnett_test[[comb]]$observed_info,
-                      is_final = dunnett_test[[comb]]$is_final,
-                      p_values = dunnett_test[[comb]]$p_inverse_normal)
+        gst[[comb]]$test(observed_info = dunnett_test[[comb]]$planned_info,
+                         is_final = dunnett_test[[comb]]$is_final,
+                         p_values = dunnett_test[[comb]]$p_inverse_normal)
 
         gst_res[[comb]] <- gst[[comb]]$get_trajectory() %>%
           mutate(milestone = dunnett_test[[comb]]$milestone) %>%
@@ -2294,6 +2416,64 @@ Trials <- R6::R6Class(
         do.call(self$add_arms, c(list(sample_ratio), arms))
       }
 
+    },
+
+    #' @description
+    #' save time when an arm is added to the trial
+    #' @param arm name of added arm.
+    #' @param time time when an arm is added.
+    set_arm_added_time = function(arm, time){
+      if(!is.null(private$arm_time[[arm]][['time_added']])){
+        stop('The time the arm <', arm, '> was added to the trial has already been recorded <',
+             private$arm_time[[arm]][['time_added']], '>. You cannot overwrite it. ',
+             'Usually this indicates an error in your codes. ')
+      }
+      stopifnot(time >= 0)
+      private$arm_time[[arm]][['time_added']] <- time
+    },
+
+    #' @description
+    #' get time when an arm is added to the trial
+    #' @param arm arm name.
+    get_arm_added_time = function(arm){
+      ## arm is not in the trial
+      if(is.null(private$arm_time[[arm]][['time_added']])){
+        if(!private$silent){
+          message('Arm <', arm, '> is not in the trial. ')
+        }
+        return(Inf)
+      }else{
+        return(private$arm_time[[arm]][['time_added']])
+      }
+    },
+
+    #' @description
+    #' save time when an arm is removed to the trial
+    #' @param arm name of removed arm.
+    #' @param time time when an arm is removed.
+    set_arm_removal_time = function(arm, time){
+      if(!is.null(private$arm_time[[arm]][['time_removed']])){
+        stop('The time the arm <', arm, '> was removed from the trial has already been recorded <',
+             private$arm_time[[arm]][['time_removed']], '>. You cannot overwrite it. ',
+             'Usually this indicates an error in your codes. ')
+      }
+      stopifnot(time >= 0)
+      private$arm_time[[arm]][['time_removed']] <- time
+    },
+
+    #' @description
+    #' get time when an arm is removed from the trial
+    #' @param arm arm name.
+    get_arm_removal_time = function(arm){
+      ## arm is not in the trial
+      if(is.null(private$arm_time[[arm]][['time_removed']])){
+        if(!private$silent){
+          message('Arm <', arm, '> is still in the trial. ')
+        }
+        return(Inf)
+      }else{
+        return(private$arm_time[[arm]][['time_removed']])
+      }
     }
 
   ),
@@ -2327,6 +2507,7 @@ Trials <- R6::R6Class(
     locked_data = list(),
 
     milestone_time = c(),
+    arm_time = list(), # time when arms are added to or removed from the trial
 
     silent = FALSE,
 
