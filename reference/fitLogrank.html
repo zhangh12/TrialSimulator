@@ -47,7 +47,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fitLogrank</span><span class="op">(</span><span class="va">formula</span>, <span class="va">placebo</span>, <span class="va">data</span>, <span class="va">alternative</span>, tidy <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fitLogrank</span><span class="op">(</span><span class="va">formula</span>, <span class="va">placebo</span>, <span class="va">data</span>, <span class="va">alternative</span>, <span class="va">...</span>, tidy <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -76,11 +76,6 @@ must be one of <code>"greater"</code> or <code>"less"</code>. No default value.
 by an hazard ratio greater than 1.</p></dd>
 
 
-<dt id="arg-tidy">tidy<a class="anchor" aria-label="anchor" href="#arg-tidy"></a></dt>
-<dd><p>logical. <code>FALSE</code> if more information are returned.
-Default <code>TRUE</code>.</p></dd>
-
-
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>subset condition that is compatible with <code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter</a></code>.
 <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code> with <code>ties = "exact"</code> will be fitted on this
@@ -91,6 +86,11 @@ can be specified in <code>...</code>, e.g.,
 <code>fitLogrank(formula, data, arm %in% c('pbo', 'low dose'), pfs &gt; 0.5)</code>,
 which is equivalent to
 <code>fitLogrank(formula, data, arm %in% c('pbo', 'low dose') &amp; pfs &gt; 0.5)</code>.</p></dd>
+
+
+<dt id="arg-tidy">tidy<a class="anchor" aria-label="anchor" href="#arg-tidy"></a></dt>
+<dd><p>logical. <code>FALSE</code> if more information are returned.
+Default <code>TRUE</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
