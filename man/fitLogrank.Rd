@@ -4,7 +4,7 @@
 \alias{fitLogrank}
 \title{Carry out log rank test}
 \usage{
-fitLogrank(formula, placebo, data, alternative, tidy = TRUE, ...)
+fitLogrank(formula, placebo, data, alternative, ..., tidy = TRUE)
 }
 \arguments{
 \item{formula}{An object of class \code{formula} that can be used with
@@ -21,9 +21,6 @@ must be one of \code{"greater"} or \code{"less"}. No default value.
 \code{"greater"} means superiority of treatment over placebo is established
 by an hazard ratio greater than 1.}
 
-\item{tidy}{logical. \code{FALSE} if more information are returned.
-Default \code{TRUE}.}
-
 \item{...}{subset condition that is compatible with \code{dplyr::filter}.
 \code{survival::coxph} with \code{ties = "exact"} will be fitted on this
 subset only. This argument could be useful to create a subset of data for
@@ -33,6 +30,9 @@ can be specified in \code{...}, e.g.,
 \code{fitLogrank(formula, data, arm \%in\% c('pbo', 'low dose'), pfs > 0.5)},
 which is equivalent to
 \code{fitLogrank(formula, data, arm \%in\% c('pbo', 'low dose') & pfs > 0.5)}.}
+
+\item{tidy}{logical. \code{FALSE} if more information are returned.
+Default \code{TRUE}.}
 }
 \value{
 a data frame with three columns:

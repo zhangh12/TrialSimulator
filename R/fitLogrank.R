@@ -36,7 +36,7 @@
 #'
 #' @export
 #'
-fitLogrank <- function(formula, placebo, data, alternative, tidy = TRUE, ...) {
+fitLogrank <- function(formula, placebo, data, alternative, ..., tidy = TRUE) {
 
   if(!inherits(formula, 'formula')){
     stop('formula must be a formula object with "arm" indicating the column arm in data. ')
@@ -132,6 +132,7 @@ fitLogrank <- function(formula, placebo, data, alternative, tidy = TRUE, ...) {
     ret <- rbind(ret, res)
   }
 
+  rownames(ret) <- NULL
   class(ret) <- c('fit_logrank', class(ret))
   ret
 }

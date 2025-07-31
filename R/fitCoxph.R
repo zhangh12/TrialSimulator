@@ -40,7 +40,7 @@
 #'
 #' @export
 #'
-fitCoxph <- function(formula, placebo, data, alternative, scale, tidy = TRUE, ...) {
+fitCoxph <- function(formula, placebo, data, alternative, scale, ..., tidy = TRUE) {
 
   if(!inherits(formula, 'formula')){
     stop('formula must be a formula object with "arm" indicating the column arm in data. ')
@@ -149,6 +149,7 @@ fitCoxph <- function(formula, placebo, data, alternative, scale, tidy = TRUE, ..
 
   }
 
+  rownames(ret) <- NULL
   class(ret) <- c('fit_coxph', class(ret))
   ret
 }

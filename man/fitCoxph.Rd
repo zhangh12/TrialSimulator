@@ -4,7 +4,7 @@
 \alias{fitCoxph}
 \title{Fit Cox proportional hazard ratio model}
 \usage{
-fitCoxph(formula, placebo, data, alternative, scale, tidy = TRUE, ...)
+fitCoxph(formula, placebo, data, alternative, scale, ..., tidy = TRUE)
 }
 \arguments{
 \item{formula}{An object of class \code{formula} that can be used with
@@ -25,9 +25,6 @@ by an hazard ratio greater than 1.}
 \item{scale}{character. The type of estimate in the output. Must be one
 of \code{"log hazard ratio"} or \code{"hazard ratio"}. No default value.}
 
-\item{tidy}{logical. \code{FALSE} if more information are returned.
-Default \code{TRUE}.}
-
 \item{...}{Subset conditions compatible with \code{dplyr::filter}.
 \code{coxph} will be fitted on this subset only. This argument can be useful
 to create a subset of data for analysis when a trial consists of more
@@ -37,6 +34,9 @@ specified in \code{...}, e.g.,
 \code{fitCoxph(formula, 'pbo', data, 'less', 'log hazard ratio', arm \%in\% c('pbo', 'low dose'), pfs > 0.5)},
 which is equivalent to:
 \code{fitCoxph(formula, 'pbo', data, 'less', 'log hazard ratio', arm \%in\% c('pbo', 'low dose') & pfs > 0.5)}.}
+
+\item{tidy}{logical. \code{FALSE} if more information are returned.
+Default \code{TRUE}.}
 }
 \value{
 a data frame with three columns:

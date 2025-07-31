@@ -122,6 +122,7 @@ fitFarringtonManning <- function(endpoint, placebo, data, alternative, delta = 0
     )
   }
 
+  rownames(ret) <- NULL
   class(ret) <- c('fit_fm', class(ret))
   ret
 }
