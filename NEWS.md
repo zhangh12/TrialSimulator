@@ -5,6 +5,10 @@
 - Save event counts per arm in simulation output. 
 - No long stop the program when all planned patients are already randomized into the trial when calling the function `enroll_patients`. This is useful when a milestone is triggered after all patients are recruited. 
 
+## Bug Fix
+
+- Fix a bug that affects functions \code{dunnettTest} and \code{closedTest} when patient recruitment is completed fast thus no sample increment between some milestones. This bug can substantially reduce testing powers.  
+
 # TrialSimulator 0.89.0
 
 ## New Feature

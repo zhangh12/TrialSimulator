@@ -49,12 +49,18 @@ trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'),
 
 \dontrun{
 dt <- trial$dunnettTest(
-  'pfs', 'pbo', c('high dose', 'low dose'),
-  listener$get_milestone_names(), 'default')
+  Surv(pfs, pfs_event) ~ arm,
+  placebo = 'pbo',
+  treatments = c('high dose', 'low dose'),
+  milestones = c('dose selection', 'interim', 'final'),
+  data.frame(pbo = c(100, 160, 80),
+             low = c(100, 160, 80),
+             high = c(100, 160, 80),
+             row.names = c('dose selection', 'interim', 'final'))
 
-trial$closedTest(dt, c('high dose', 'low dose'),
-                 c('pfs interim', 'pfs final'),
-                 0.025, 'asOF')
+trial$closedTest(dt, treatments = c('high dose', 'low dose'),
+                 milestones = c('interim', 'final'),
+                 alpha = 0.025, alpha_spending = 'asOF')
 }
 
 }
@@ -116,6 +122,10 @@ trial$closedTest(dt, c('high dose', 'low dose'),
 \item \href{#method-Trials-make_snapshot}{\code{Trials$make_snapshot()}}
 \item \href{#method-Trials-make_arms_snapshot}{\code{Trials$make_arms_snapshot()}}
 \item \href{#method-Trials-reset}{\code{Trials$reset()}}
+\item \href{#method-Trials-set_arm_added_time}{\code{Trials$set_arm_added_time()}}
+\item \href{#method-Trials-get_arm_added_time}{\code{Trials$get_arm_added_time()}}
+\item \href{#method-Trials-set_arm_removal_time}{\code{Trials$set_arm_removal_time()}}
+\item \href{#method-Trials-get_arm_removal_time}{\code{Trials$get_arm_removal_time()}}
 \item \href{#method-Trials-clone}{\code{Trials$clone()}}
 }
 }
@@ -756,13 +766,14 @@ save time of a new milestone.
 \subsection{Method \code{get_milestone_time()}}{
 return milestone time when triggering a given milestone
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_milestone_time(milestone_name)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_milestone_time(milestone_name = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{milestone_name}}{character. Name of milestone.}
+\item{\code{milestone_name}}{character. Name of milestone. If \code{NULL},
+time of all triggered milestones are returned.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1026,7 +1037,8 @@ must be one of \code{"greater"} or \code{"less"}. No default value.
 by an hazard ratio greater than 1 when a log-rank test is used.}
 
 \item{\code{planned_info}}{a vector of planned accumulative number of event of
-time-to-event endpoint. Note: \code{planned_info} can also be a character
+time-to-event endpoint. It is named by milestone names.
+Note: \code{planned_info} can also be a character
 \code{"oracle"} so that planned number of events are set to be observed
 number of events, in that case inverse normal z statistics equal to
 one-sided logrank statistics. This is for the purpose of debugging only.
@@ -1239,19 +1251,33 @@ it is not tested. It may be supported in the future.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-a data frame of columns \code{arm}, \code{decision},
+a data frame of columns \code{arm}, \code{decision}
+(final decision on a hypothesis at the end of trial, \code{"accept"} or \code{"reject"}),
 \code{milestone_at_reject}, and \code{reject_time}.
+If a hypothesis is accepted at then end of a trial,
+\code{milestone_at_reject} is \code{NA}, and \code{reject_time} is \code{Inf}.
+
+Note that if a hypothesis is tested at multiple milestones, the final
+\code{decision} will be \code{"accept"} if it is accepted at at least
+one milestone. The \code{decision} is \code{"reject"} only if the hypothesis
+is rejected at all milestones.
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{\dontrun{
 dt <- trial$dunnettTest(
-  'pfs', 'pbo', c('high dose', 'low dose'),
-  listener$get_milestone_names(), 'default')
+  Surv(pfs, pfs_event) ~ arm,
+  placebo = 'pbo',
+  treatments = c('high dose', 'low dose'),
+  milestones = c('dose selection', 'interim', 'final'),
+  data.frame(pbo = c(100, 160, 80),
+             low = c(100, 160, 80),
+             high = c(100, 160, 80),
+             row.names = c('dose selection', 'interim', 'final'))
 
-trial$closedTest(dt, c('high dose', 'low dose'),
-                 c('pfs interim', 'pfs final'),
-                 0.025, 'asOF')
+trial$closedTest(dt, treatments = c('high dose', 'low dose'),
+                 milestones = c('interim', 'final'),
+                 alpha = 0.025, alpha_spending = 'asOF')
 }
 
 }
@@ -1324,6 +1350,78 @@ recruit patients again.
 \if{html}{\out{<div class="r">}}\preformatted{Trials$reset()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-set_arm_added_time"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-set_arm_added_time}{}}}
+\subsection{Method \code{set_arm_added_time()}}{
+save time when an arm is added to the trial
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$set_arm_added_time(arm, time)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{arm}}{name of added arm.}
+
+\item{\code{time}}{time when an arm is added.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-get_arm_added_time"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-get_arm_added_time}{}}}
+\subsection{Method \code{get_arm_added_time()}}{
+get time when an arm is added to the trial
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_arm_added_time(arm)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{arm}}{arm name.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-set_arm_removal_time"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-set_arm_removal_time}{}}}
+\subsection{Method \code{set_arm_removal_time()}}{
+save time when an arm is removed to the trial
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$set_arm_removal_time(arm, time)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{arm}}{name of removed arm.}
+
+\item{\code{time}}{time when an arm is removed.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-get_arm_removal_time"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-get_arm_removal_time}{}}}
+\subsection{Method \code{get_arm_removal_time()}}{
+get time when an arm is removed from the trial
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_arm_removal_time(arm)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{arm}}{arm name.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Trials-clone"></a>}}
