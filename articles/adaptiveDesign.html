@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.89.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.90.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -386,8 +386,8 @@ replicates is run to save time.</p>
 <span><span class="co">#&gt; Data is locked at time = 11.3138461538462 for milestone &lt;dose selection&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('dose selection'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
-<span><span class="co">#&gt;   patient pfs os surrogate                           arms</span></span>
-<span><span class="co">#&gt; 1     366 142 65       300 &lt;low dose, high dose, placebo&gt;</span></span>
+<span><span class="co">#&gt;   patient pfs os surrogate         arms</span></span>
+<span><span class="co">#&gt; 1     366 142 65       300 c(122, 4....</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Arm &lt;high dose&gt; is removed.</span></span>
 <span><span class="co">#&gt; Sample ratio is updated to be &lt;low dose: 1, placebo: 1&gt;.</span></span>
@@ -399,16 +399,29 @@ replicates is run to save time.</p>
 <span><span class="co">#&gt; Data is locked at time = 19.1658431016631 for milestone &lt;interim&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('interim'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
-<span><span class="co">#&gt;   patient pfs  os surrogate                arms</span></span>
-<span><span class="co">#&gt; 1     637 300 146       534 &lt;low dose, placebo&gt;</span></span>
+<span><span class="co">#&gt;   patient pfs  os surrogate         arms</span></span>
+<span><span class="co">#&gt; 1     637 300 146       534 c(319, 1....</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;final&gt; is being checked.</span></span>
 <span><span class="co">#&gt; Data is locked at time = 29.4476342734663 for milestone &lt;final&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('final'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
-<span><span class="co">#&gt;   patient pfs  os surrogate                arms</span></span>
-<span><span class="co">#&gt; 1     878 542 300       744 &lt;low dose, placebo&gt;</span></span>
-<span><span class="co">#&gt; </span></span></code></pre></div>
+<span><span class="co">#&gt;   patient pfs  os surrogate         arms</span></span>
+<span><span class="co">#&gt; 1     878 542 300       744 c(439, 2....</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial.</span></span></code></pre></div>
 <p><img src="adaptiveDesign_files/figure-html/eiaaf-1.png" width="100%"></p>
 <p>In custom action functions, we can use <code>Trial$save()</code> to
 save intermediate results for summary purpose, which can be accessed
@@ -528,7 +541,7 @@ Trial-3415
 300
 </td>
 <td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
+c(122, 4….
 </td>
 <td style="text-align:left;">
 low
@@ -549,7 +562,7 @@ low
 534
 </td>
 <td style="text-align:left;">
-&lt;low dose, placebo&gt;
+c(319, 1….
 </td>
 <td style="text-align:left;">
 negative
@@ -570,7 +583,7 @@ negative
 744
 </td>
 <td style="text-align:left;">
-&lt;low dose, placebo&gt;
+c(439, 2….
 </td>
 <td style="text-align:left;">
 accept
@@ -604,6 +617,14 @@ make use of locked data at multiple stages (through the
 <span>                            milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'interim'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                            alternative <span class="op">=</span> <span class="st">'less'</span>, </span>
 <span>                            planned_info <span class="op">=</span> <span class="st">'default'</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial.</span></span>
 <span><span class="va">ct_pfs</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span><span class="va">dt_pfs</span>, treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
 <span>                           milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'interim'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                           alpha <span class="op">=</span> <span class="fl">.005</span>, alpha_spending <span class="op">=</span> <span class="st">'asOF'</span><span class="op">)</span></span>
@@ -614,6 +635,11 @@ make use of locked data at multiple stages (through the
 <span>                           milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                           alternative <span class="op">=</span> <span class="st">'less'</span>, </span>
 <span>                           planned_info <span class="op">=</span> <span class="st">'default'</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
+<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial.</span></span>
 <span><span class="va">ct_os</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span><span class="va">dt_pfs</span>, treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
 <span>                          milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                          alpha <span class="op">=</span> <span class="fl">.02</span>, alpha_spending <span class="op">=</span> <span class="st">'asOF'</span><span class="op">)</span></span>

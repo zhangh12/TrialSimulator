@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.89.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.90.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -107,6 +107,10 @@
 <li><p><a href="#method-Trials-make_snapshot"><code>Trials$make_snapshot()</code></a></p></li>
 <li><p><a href="#method-Trials-make_arms_snapshot"><code>Trials$make_arms_snapshot()</code></a></p></li>
 <li><p><a href="#method-Trials-reset"><code>Trials$reset()</code></a></p></li>
+<li><p><a href="#method-Trials-set_arm_added_time"><code>Trials$set_arm_added_time()</code></a></p></li>
+<li><p><a href="#method-Trials-get_arm_added_time"><code>Trials$get_arm_added_time()</code></a></p></li>
+<li><p><a href="#method-Trials-set_arm_removal_time"><code>Trials$set_arm_removal_time()</code></a></p></li>
+<li><p><a href="#method-Trials-get_arm_removal_time"><code>Trials$get_arm_removal_time()</code></a></p></li>
 <li><p><a href="#method-Trials-clone"><code>Trials$clone()</code></a></p></li>
 </ul></div><p></p><hr><a id="method-Trials-new"></a><div class="section">
 <h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
@@ -726,13 +730,14 @@ if <code>NULL</code>.</p></dd>
 <h3 id="method-get-milestone-time-">Method <code>get_milestone_time()</code><a class="anchor" aria-label="anchor" href="#method-get-milestone-time-"></a></h3>
 <p>return milestone time when triggering a given milestone</p><div class="section">
 <h4 id="usage-35">Usage<a class="anchor" aria-label="anchor" href="#usage-35"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">get_milestone_time</span><span class="op">(</span><span class="va">milestone_name</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">get_milestone_time</span><span class="op">(</span>milestone_name <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-19">Arguments<a class="anchor" aria-label="anchor" href="#arguments-19"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>milestone_name</code></dt>
-<dd><p>character. Name of milestone.</p></dd>
+<dd><p>character. Name of milestone. If <code>NULL</code>,
+time of all triggered milestones are returned.</p></dd>
 
 
 </dl><p></p></div>
@@ -1010,7 +1015,8 @@ by an hazard ratio greater than 1 when a log-rank test is used.</p></dd>
 
 <dt><code>planned_info</code></dt>
 <dd><p>a vector of planned accumulative number of event of
-time-to-event endpoint. Note: <code>planned_info</code> can also be a character
+time-to-event endpoint. It is named by milestone names.
+Note: <code>planned_info</code> can also be a character
 <code>"oracle"</code> so that planned number of events are set to be observed
 number of events, in that case inverse normal z statistics equal to
 one-sided logrank statistics. This is for the purpose of debugging only.
@@ -1258,19 +1264,32 @@ it is not tested. It may be supported in the future.</p></dd>
 </div>
 <div class="section">
 <h4 id="returns-4">Returns<a class="anchor" aria-label="anchor" href="#returns-4"></a></h4>
-<p>a data frame of columns <code>arm</code>, <code>decision</code>,
-<code>milestone_at_reject</code>, and <code>reject_time</code>.</p>
+<p>a data frame of columns <code>arm</code>, <code>decision</code>
+(final decision on a hypothesis at the end of trial, <code>"accept"</code> or <code>"reject"</code>),
+<code>milestone_at_reject</code>, and <code>reject_time</code>.
+If a hypothesis is accepted at then end of a trial,
+<code>milestone_at_reject</code> is <code>NA</code>, and <code>reject_time</code> is <code>Inf</code>.</p>
+<p>Note that if a hypothesis is tested at multiple milestones, the final
+<code>decision</code> will be <code>"accept"</code> if it is accepted at at least
+one milestone. The <code>decision</code> is <code>"reject"</code> only if the hypothesis
+is rejected at all milestones.</p>
 </div>
 <div class="section">
 <h4 id="examples-4">Examples<a class="anchor" aria-label="anchor" href="#examples-4"></a></h4>
 <p></p><div class="r example copy"><div class="sourceCode"><pre><code>\dontrun{
 dt &lt;- trial$dunnettTest(
-  'pfs', 'pbo', c('high dose', 'low dose'),
-  listener$get_milestone_names(), 'default')
+  Surv(pfs, pfs_event) ~ arm,
+  placebo = 'pbo',
+  treatments = c('high dose', 'low dose'),
+  milestones = c('dose selection', 'interim', 'final'),
+  data.frame(pbo = c(100, 160, 80),
+             low = c(100, 160, 80),
+             high = c(100, 160, 80),
+             row.names = c('dose selection', 'interim', 'final'))
 
-trial$closedTest(dt, c('high dose', 'low dose'),
-                 c('pfs interim', 'pfs final'),
-                 0.025, 'asOF')
+trial$closedTest(dt, treatments = c('high dose', 'low dose'),
+                 milestones = c('interim', 'final'),
+                 alpha = 0.025, alpha_spending = 'asOF')
 }
 
 </code></pre></div><p></p></div>
@@ -1330,15 +1349,87 @@ recruit patients again.</p><div class="section">
 </div>
 
 
-</div><p></p><hr><a id="method-Trials-clone"></a><div class="section">
-<h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
-<p>The objects of this class are cloneable with this method.</p><div class="section">
+</div><p></p><hr><a id="method-Trials-set_arm_added_time"></a><div class="section">
+<h3 id="method-set-arm-added-time-">Method <code>set_arm_added_time()</code><a class="anchor" aria-label="anchor" href="#method-set-arm-added-time-"></a></h3>
+<p>save time when an arm is added to the trial</p><div class="section">
 <h4 id="usage-55">Usage<a class="anchor" aria-label="anchor" href="#usage-55"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">set_arm_added_time</span><span class="op">(</span><span class="va">arm</span>, <span class="va">time</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-32">Arguments<a class="anchor" aria-label="anchor" href="#arguments-32"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>arm</code></dt>
+<dd><p>name of added arm.</p></dd>
+
+
+<dt><code>time</code></dt>
+<dd><p>time when an arm is added.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-Trials-get_arm_added_time"></a><div class="section">
+<h3 id="method-get-arm-added-time-">Method <code>get_arm_added_time()</code><a class="anchor" aria-label="anchor" href="#method-get-arm-added-time-"></a></h3>
+<p>get time when an arm is added to the trial</p><div class="section">
+<h4 id="usage-56">Usage<a class="anchor" aria-label="anchor" href="#usage-56"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">get_arm_added_time</span><span class="op">(</span><span class="va">arm</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-33">Arguments<a class="anchor" aria-label="anchor" href="#arguments-33"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>arm</code></dt>
+<dd><p>arm name.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-Trials-set_arm_removal_time"></a><div class="section">
+<h3 id="method-set-arm-removal-time-">Method <code>set_arm_removal_time()</code><a class="anchor" aria-label="anchor" href="#method-set-arm-removal-time-"></a></h3>
+<p>save time when an arm is removed to the trial</p><div class="section">
+<h4 id="usage-57">Usage<a class="anchor" aria-label="anchor" href="#usage-57"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">set_arm_removal_time</span><span class="op">(</span><span class="va">arm</span>, <span class="va">time</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-34">Arguments<a class="anchor" aria-label="anchor" href="#arguments-34"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>arm</code></dt>
+<dd><p>name of removed arm.</p></dd>
+
+
+<dt><code>time</code></dt>
+<dd><p>time when an arm is removed.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-Trials-get_arm_removal_time"></a><div class="section">
+<h3 id="method-get-arm-removal-time-">Method <code>get_arm_removal_time()</code><a class="anchor" aria-label="anchor" href="#method-get-arm-removal-time-"></a></h3>
+<p>get time when an arm is removed from the trial</p><div class="section">
+<h4 id="usage-58">Usage<a class="anchor" aria-label="anchor" href="#usage-58"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">get_arm_removal_time</span><span class="op">(</span><span class="va">arm</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-35">Arguments<a class="anchor" aria-label="anchor" href="#arguments-35"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>arm</code></dt>
+<dd><p>arm name.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-Trials-clone"></a><div class="section">
+<h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
+<p>The objects of this class are cloneable with this method.</p><div class="section">
+<h4 id="usage-59">Usage<a class="anchor" aria-label="anchor" href="#usage-59"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-36">Arguments<a class="anchor" aria-label="anchor" href="#arguments-36"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 
@@ -1352,56 +1443,7 @@ recruit patients again.</p><div class="section">
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Instead of using Trial$new, please use trial(), a user-friendly</span></span></span>
-<span class="r-in"><span><span class="co"># wrapper. See examples in ?trial.</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">## ------------------------------------------------</span></span></span>
-<span class="r-in"><span><span class="co">## Method `Trials$get_data_lock_time_by_event_number`</span></span></span>
-<span class="r-in"><span><span class="co">## ------------------------------------------------</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">## trial$get_data_lock_time_by_event_number(c('pfs','orr'), c(200,500), 'any')</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">## ------------------------------------------------</span></span></span>
-<span class="r-in"><span><span class="co">## Method `Trials$get_data_lock_time_by_calendar_time`</span></span></span>
-<span class="r-in"><span><span class="co">## ------------------------------------------------</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">## trial$get_data_lock_time_by_calendar_time(20)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">## ------------------------------------------------</span></span></span>
-<span class="r-in"><span><span class="co">## Method `Trials$independentIncrement`</span></span></span>
-<span class="r-in"><span><span class="co">## ------------------------------------------------</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="va">trial</span><span class="op">$</span><span class="fu">independentIncrement</span><span class="op">(</span><span class="st">'pfs'</span>, <span class="st">'pbo'</span>, <span class="va">listener</span><span class="op">$</span><span class="fu">get_milestone_names</span><span class="op">(</span><span class="op">)</span>, <span class="st">'less'</span>, <span class="st">'oracle'</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">## ------------------------------------------------</span></span></span>
-<span class="r-in"><span><span class="co">## Method `Trials$dunnettTest`</span></span></span>
-<span class="r-in"><span><span class="co">## ------------------------------------------------</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="va">trial</span><span class="op">$</span><span class="fu">dunnettTest</span><span class="op">(</span><span class="st">'pfs'</span>, <span class="st">'pbo'</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>                  <span class="va">listener</span><span class="op">$</span><span class="fu">get_milestone_names</span><span class="op">(</span><span class="op">)</span>, <span class="st">'default'</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">## ------------------------------------------------</span></span></span>
-<span class="r-in"><span><span class="co">## Method `Trials$closedTest`</span></span></span>
-<span class="r-in"><span><span class="co">## ------------------------------------------------</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="va">dt</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">dunnettTest</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="st">'pfs'</span>, <span class="st">'pbo'</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  <span class="va">listener</span><span class="op">$</span><span class="fu">get_milestone_names</span><span class="op">(</span><span class="op">)</span>, <span class="st">'default'</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">trial</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span><span class="va">dt</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>                 <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'pfs interim'</span>, <span class="st">'pfs final'</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>                 <span class="fl">0.025</span>, <span class="st">'asOF'</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
-<span class="r-in"><span></span></span>
-</code></pre></div>
+
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
