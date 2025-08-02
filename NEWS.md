@@ -1,3 +1,9 @@
+# TrialSimulator 0.91.0
+
+## New Feature
+
+- Add function \code[solveThreeStateModel] that maps medians of PFS and OS, and their correlation to the hazard parameters. The induced hazard parameters can be used with PFS-OS generator \code{CorrelatedPfsAndOs3}. 
+
 # TrialSimulator 0.90.0
 
 ## New Feature
