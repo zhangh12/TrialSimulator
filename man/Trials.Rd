@@ -13,24 +13,12 @@ Create a class of trial.
 
 
 ## ------------------------------------------------
-## Method `Trials$get_data_lock_time_by_event_number`
-## ------------------------------------------------
-
-## trial$get_data_lock_time_by_event_number(c('pfs','orr'), c(200,500), 'any')
-
-## ------------------------------------------------
-## Method `Trials$get_data_lock_time_by_calendar_time`
-## ------------------------------------------------
-
-## trial$get_data_lock_time_by_calendar_time(20)
-
-## ------------------------------------------------
 ## Method `Trials$independentIncrement`
 ## ------------------------------------------------
 
 
 \dontrun{
-trial$independentIncrement('pfs', 'pbo', listener$get_milestone_names(), 'less', 'oracle')
+trial$independentIncrement(Surv(pfs, pfs_event) ~ arm, 'pbo', listener$get_milestone_names(), 'less', 'oracle')
 }
 
 ## ------------------------------------------------
@@ -38,7 +26,7 @@ trial$independentIncrement('pfs', 'pbo', listener$get_milestone_names(), 'less',
 ## ------------------------------------------------
 
 \dontrun{
-trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'),
+trial$dunnettTest(Surv(pfs, pfs_event) ~ arm, 'pbo', c('high dose', 'low dose'),
                   listener$get_milestone_names(), 'default')
 }
 
@@ -654,14 +642,6 @@ Time of milestone is based on event counts on the subset of trial data.}
 \subsection{Returns}{
 data lock time
 }
-\subsection{Examples}{
-\if{html}{\out{<div class="r example copy">}}
-\preformatted{## trial$get_data_lock_time_by_event_number(c('pfs','orr'), c(200,500), 'any')
-}
-\if{html}{\out{</div>}}
-
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Trials-get_data_lock_time_by_calendar_time"></a>}}
@@ -686,14 +666,6 @@ counted.}
 \subsection{Returns}{
 data lock time
 }
-\subsection{Examples}{
-\if{html}{\out{<div class="r example copy">}}
-\preformatted{## trial$get_data_lock_time_by_calendar_time(20)
-}
-\if{html}{\out{</div>}}
-
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Trials-get_locked_data"></a>}}
@@ -1079,7 +1051,7 @@ Accumulative data is used. }
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{
 \dontrun{
-trial$independentIncrement('pfs', 'pbo', listener$get_milestone_names(), 'less', 'oracle')
+trial$independentIncrement(Surv(pfs, pfs_event) ~ arm, 'pbo', listener$get_milestone_names(), 'less', 'oracle')
 }
 }
 \if{html}{\out{</div>}}
@@ -1205,7 +1177,7 @@ significance test.
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{\dontrun{
-trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'),
+trial$dunnettTest(Surv(pfs, pfs_event) ~ arm, 'pbo', c('high dose', 'low dose'),
                   listener$get_milestone_names(), 'default')
 }
 
