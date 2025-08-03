@@ -69,7 +69,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints in Clinical Trials</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/v0.91.0/vignettes/simulatePfsAndOs.Rmd" class="external-link"><code>vignettes/simulatePfsAndOs.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/vignettes/simulatePfsAndOs.Rmd" class="external-link"><code>vignettes/simulatePfsAndOs.Rmd</code></a></small>
       <div class="d-none name"><code>simulatePfsAndOs.Rmd</code></div>
     </div>
 
@@ -98,8 +98,8 @@ are constant over time. A data generator of this model is implemented in
 <code><a href="../reference/CorrelatedPfsAndOs3.html">TrialSimulator::CorrelatedPfsAndOs3()</a></code>, which can be used to
 define endpoints in <code><a href="../reference/endpoint.html">TrialSimulator::endpoint()</a></code>.</p>
 <p>Marginally, the survival functions of PFS and OS are given by</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mrow><mo stretchy="true" form="prefix">(</mo><mtext mathvariant="normal">PFS</mtext><mo>&gt;</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mo>exp</mo><mo stretchy="false" form="prefix">{</mo><mo>−</mo><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>h</mi><mn>01</mn></msub><mo>+</mo><msub><mi>h</mi><mn>02</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mi>t</mi><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">
-P(\mbox{PFS} &gt; t) = \exp\{-(h_{01} + h_{02})t\}
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>Pr</mo><mrow><mo stretchy="true" form="prefix">(</mo><mtext mathvariant="normal">PFS</mtext><mo>&gt;</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mo>exp</mo><mo stretchy="false" form="prefix">{</mo><mo>−</mo><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>h</mi><mn>01</mn></msub><mo>+</mo><msub><mi>h</mi><mn>02</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mi>t</mi><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">
+\Pr(\mbox{PFS} &gt; t) = \exp\{-(h_{01} + h_{02})t\}
 </annotation></semantics></math></p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>Pr</mo><mrow><mo stretchy="true" form="prefix">(</mo><mtext mathvariant="normal">OS</mtext><mo>&gt;</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mo>exp</mo><mo stretchy="false" form="prefix">{</mo><mo>−</mo><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>h</mi><mn>01</mn></msub><mo>+</mo><msub><mi>h</mi><mn>02</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mi>t</mi><mo stretchy="false" form="postfix">}</mo><mo>+</mo><mfrac><msub><mi>h</mi><mn>01</mn></msub><mrow><msub><mi>h</mi><mn>12</mn></msub><mo>−</mo><msub><mi>h</mi><mn>01</mn></msub><mo>−</mo><msub><mi>h</mi><mn>02</mn></msub></mrow></mfrac><mo>exp</mo><mo stretchy="false" form="prefix">{</mo><mo>−</mo><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>h</mi><mn>01</mn></msub><mo>+</mo><msub><mi>h</mi><mn>02</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mi>t</mi><mo stretchy="false" form="postfix">}</mo><mo>−</mo><mo>exp</mo><mo stretchy="false" form="prefix">{</mo><mo>−</mo><msub><mi>h</mi><mn>12</mn></msub><mi>t</mi><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">
 \Pr(\mbox{OS} &gt; t) = \exp\{-(h_{01} + h_{02})t\} + \frac{h_{01}}{h_{12}-h_{01}-h_{02}}\exp\{-(h_{01} + h_{02})t\} - \exp\{-h_{12}t\}
@@ -229,7 +229,9 @@ framework, you can generate PFS and OS directly by calling
 <span><span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">dat</span>, <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">pfs</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 4.965547</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">dat</span>, <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">os</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 12.06319</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 12.06319</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">dat</span>, <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">pfs</span> <span class="op">&lt;=</span> <span class="va">os</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="further-discussion">Further Discussion<a class="anchor" aria-label="anchor" href="#further-discussion"></a>
