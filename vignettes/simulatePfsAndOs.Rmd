@@ -35,7 +35,7 @@ We consider the simplest case of the illness-death model, where all transition h
 Marginally, the survival functions of PFS and OS are given by
 
 $$
-P(\mbox{PFS} > t) = \exp\{-(h_{01} + h_{02})t\}
+\Pr(\mbox{PFS} > t) = \exp\{-(h_{01} + h_{02})t\}
 $$
 
 $$
@@ -108,6 +108,7 @@ head(dat, 2)
 with(dat, cor(pfs, os))
 with(dat, median(pfs))
 with(dat, median(os))
+with(dat, all(pfs <= os))
 ```
 
 ## Further Discussion
