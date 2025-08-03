@@ -3,6 +3,7 @@
 ## New Feature
 
 - Add function \code[solveThreeStateModel] that maps medians of PFS and OS, and their correlation to the hazard parameters. The induced hazard parameters can be used with PFS-OS generator \code{CorrelatedPfsAndOs3}. 
+- Add vignette of simulating PFS and OS. 
 
 # TrialSimulator 0.90.0
 
