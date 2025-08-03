@@ -1,6 +1,8 @@
 ---
 title: "Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints in Clinical Trials"
 output: rmarkdown::html_vignette
+resource_files: 
+  - images/three_state_ill_death_model.png
 vignette: >
   %\VignetteIndexEntry{Simulate correlated progression free survival and overall survival as endpoints in clinical trials}
   %\VignetteEngine{knitr::rmarkdown}
@@ -28,7 +30,7 @@ Progression-free survival (PFS) and overall survival (OS) are commonly used as c
 Several methods have been proposed to achieve this, but many rely on latent variables or copula-based approaches, making it difficult to interpret and specify model parameters in practical settings. In this vignette, we do not aim to provide a comprehensive review of existing methods. Instead, we focus on a three-state illness-death model consisting of the following states: stable (initial, 0), progression (1), and death (2). For more details, refer to Meller, Beyersmann, and Rufibach (2019).
 
 
-![](three_state_ill_death_model.png){width=80% style="display: block; margin: auto;"}
+![](images/three_state_ill_death_model.png){width=80% style="display: block; margin: auto;"}
 
 We consider the simplest case of the illness-death model, where all transition hazards $h(t)$ are constant over time. A data generator of this model is implemented in `TrialSimulator::CorrelatedPfsAndOs3()`, which can be used to define endpoints in `TrialSimulator::endpoint()`.
 
