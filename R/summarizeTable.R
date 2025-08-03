@@ -40,7 +40,9 @@ summarizeDataFrame <- function(data,
                                exclude_vars = NULL,
                                tte_vars = NULL,
                                event_vars = NULL,
-                               categorical_vars = NULL) {
+                               categorical_vars = NULL,
+                               title = 'Summary',
+                               sub_title = '') {
 
   if(length(tte_vars) != length(event_vars)){
     stop('tte_vars should be of same length as of event_vars. ')
@@ -193,7 +195,7 @@ summarizeDataFrame <- function(data,
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Data Frame Summary</title>
+    <title>', title, '</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -264,11 +266,9 @@ summarizeDataFrame <- function(data,
     </style>
 </head>
 <body>
-    <h1>Data Frame Summary</h1>
+    <h1>', title, '</h1>
     <div class="subtitle" style="text-align: left;">
-        Data frame: ', deparse(substitute(data)), '<br>
-        Dimensions: ', nrow(data), ' x ', length(setdiff(names(data), exclude_vars)), '<br>
-        Duplicates: ', sum(duplicated(data)), '
+        ', sub_title, '<br>
     </div>
 
     <table>
