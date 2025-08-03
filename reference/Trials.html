@@ -38,7 +38,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Class of Trial</h1>
-      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/v0.91.0/R/Trials.R" class="external-link"><code>R/Trials.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/R/Trials.R" class="external-link"><code>R/Trials.R</code></a></small>
       <div class="d-none name"><code>Trials.Rd</code></div>
     </div>
 
@@ -628,11 +628,6 @@ Time of milestone is based on event counts on the subset of trial data.</p></dd>
 <h4 id="returns">Returns<a class="anchor" aria-label="anchor" href="#returns"></a></h4>
 <p>data lock time</p>
 </div>
-<div class="section">
-<h4 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a></h4>
-<p></p><div class="r example copy"><div class="sourceCode"><pre><code><span><span class="co">## trial$get_data_lock_time_by_event_number(c('pfs','orr'), c(200,500), 'any')</span></span></code></pre></div><p></p></div>
-</div>
-
 
 </div><p></p><hr><a id="method-Trials-get_data_lock_time_by_calendar_time"></a><div class="section">
 <h3 id="method-get-data-lock-time-by-calendar-time-">Method <code>get_data_lock_time_by_calendar_time()</code><a class="anchor" aria-label="anchor" href="#method-get-data-lock-time-by-calendar-time-"></a></h3>
@@ -659,11 +654,6 @@ counted.</p></dd>
 <h4 id="returns-1">Returns<a class="anchor" aria-label="anchor" href="#returns-1"></a></h4>
 <p>data lock time</p>
 </div>
-<div class="section">
-<h4 id="examples-1">Examples<a class="anchor" aria-label="anchor" href="#examples-1"></a></h4>
-<p></p><div class="r example copy"><div class="sourceCode"><pre><code><span><span class="co">## trial$get_data_lock_time_by_calendar_time(20)</span></span></code></pre></div><p></p></div>
-</div>
-
 
 </div><p></p><hr><a id="method-Trials-get_locked_data"></a><div class="section">
 <h3 id="method-get-locked-data-">Method <code>get_locked_data()</code><a class="anchor" aria-label="anchor" href="#method-get-locked-data-"></a></h3>
@@ -1075,10 +1065,10 @@ Accumulative data is used.</p></dd>
 
 </dl></div>
 <div class="section">
-<h4 id="examples-2">Examples<a class="anchor" aria-label="anchor" href="#examples-2"></a></h4>
+<h4 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a></h4>
 <p></p><div class="r example copy"><div class="sourceCode"><pre><code>
 \dontrun{
-trial$independentIncrement('pfs', 'pbo', listener$get_milestone_names(), 'less', 'oracle')
+trial$independentIncrement(Surv(pfs, pfs_event) ~ arm, 'pbo', listener$get_milestone_names(), 'less', 'oracle')
 }
 </code></pre></div><p></p></div>
 </div>
@@ -1211,9 +1201,9 @@ the columns <code>p_inverse_normal</code>, <code>observed_info</code>,
 significance test.</p>
 </div>
 <div class="section">
-<h4 id="examples-3">Examples<a class="anchor" aria-label="anchor" href="#examples-3"></a></h4>
+<h4 id="examples-1">Examples<a class="anchor" aria-label="anchor" href="#examples-1"></a></h4>
 <p></p><div class="r example copy"><div class="sourceCode"><pre><code>\dontrun{
-trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'),
+trial$dunnettTest(Surv(pfs, pfs_event) ~ arm, 'pbo', c('high dose', 'low dose'),
                   listener$get_milestone_names(), 'default')
 }
 
@@ -1276,7 +1266,7 @@ one milestone. The <code>decision</code> is <code>"reject"</code> only if the hy
 is rejected at all milestones.</p>
 </div>
 <div class="section">
-<h4 id="examples-4">Examples<a class="anchor" aria-label="anchor" href="#examples-4"></a></h4>
+<h4 id="examples-2">Examples<a class="anchor" aria-label="anchor" href="#examples-2"></a></h4>
 <p></p><div class="r example copy"><div class="sourceCode"><pre><code>\dontrun{
 dt &lt;- trial$dunnettTest(
   Surv(pfs, pfs_event) ~ arm,
