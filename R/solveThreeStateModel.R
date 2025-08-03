@@ -64,6 +64,12 @@ solveThreeStateModel <- function(median_pfs, median_os, corr,
                                  h12 = seq(.05, .2, length.out = 50)){
 
 
+  stopifnot(is.numeric(median_pfs) && length(median_pfs) == 1)
+  stopifnot(is.numeric(median_os) && length(median_os) == 1)
+  stopifnot(is.numeric(corr))
+  stopifnot(all(corr > 0) && all(corr < 1))
+  stopifnot(all(h12 > 0))
+
   .compute_h01_given_h12 <- function(h12, median_pfs, median_os){
 
     all_cause_hazard <- log(2)/median_pfs

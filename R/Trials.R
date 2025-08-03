@@ -2468,7 +2468,7 @@ Trials <- R6::R6Class(
       ## arm is not in the trial
       if(is.null(private$arm_time[[arm]][['time_removed']])){
         if(!private$silent){
-          message('Arm <', arm, '> is still in the trial. ')
+          # message('Arm <', arm, '> is still in the trial. ')
         }
         return(Inf)
       }else{
