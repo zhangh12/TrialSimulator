@@ -44,6 +44,7 @@
     <li><a class="dropdown-item" href="../articles/defineLongitudinalEndpoints.html">Define Longitudinal Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints in Clinical Trials</a></li>
+    <li><a class="dropdown-item" href="../articles/simulatePfsAndOs.html">Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints in Clinical Trials</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -408,20 +409,7 @@ replicates is run to save time.</p>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   patient pfs  os surrogate         arms</span></span>
 <span><span class="co">#&gt; 1     878 542 300       744 c(439, 2....</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial.</span></span></code></pre></div>
+<span><span class="co">#&gt; </span></span></code></pre></div>
 <p><img src="adaptiveDesign_files/figure-html/eiaaf-1.png" width="100%"></p>
 <p>In custom action functions, we can use <code>Trial$save()</code> to
 save intermediate results for summary purpose, which can be accessed
@@ -617,14 +605,6 @@ make use of locked data at multiple stages (through the
 <span>                            milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'interim'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                            alternative <span class="op">=</span> <span class="st">'less'</span>, </span>
 <span>                            planned_info <span class="op">=</span> <span class="st">'default'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial.</span></span>
 <span><span class="va">ct_pfs</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span><span class="va">dt_pfs</span>, treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
 <span>                           milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'interim'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                           alpha <span class="op">=</span> <span class="fl">.005</span>, alpha_spending <span class="op">=</span> <span class="st">'asOF'</span><span class="op">)</span></span>
@@ -635,11 +615,6 @@ make use of locked data at multiple stages (through the
 <span>                           milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                           alternative <span class="op">=</span> <span class="st">'less'</span>, </span>
 <span>                           planned_info <span class="op">=</span> <span class="st">'default'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial. </span></span>
-<span><span class="co">#&gt; Arm &lt;low dose&gt; is still in the trial.</span></span>
 <span><span class="va">ct_os</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span><span class="va">dt_pfs</span>, treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
 <span>                          milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                          alpha <span class="op">=</span> <span class="fl">.02</span>, alpha_spending <span class="op">=</span> <span class="st">'asOF'</span><span class="op">)</span></span>
