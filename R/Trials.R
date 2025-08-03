@@ -764,8 +764,7 @@ Trials <- R6::R6Class(
     #' @param ... subset conditions compatible with \code{dplyr::filter}. Number
     #' Time of milestone is based on event counts on the subset of trial data.
     #' @return data lock time
-    #' @examples
-    #' ## trial$get_data_lock_time_by_event_number(c('pfs','orr'), c(200,500), 'any')
+    #'
     get_data_lock_time_by_event_number = function(endpoints, arms,
                                                   target_n_events,
                                                   type = c('all', 'any'),
@@ -867,8 +866,7 @@ Trials <- R6::R6Class(
     #' @param arms a vector of arms' name on which number of events will be
     #' counted.
     #' @return data lock time
-    #' @examples
-    #' ## trial$get_data_lock_time_by_calendar_time(20)
+    #'
     get_data_lock_time_by_calendar_time = function(calendar_time, arms){
 
       stopifnot(is.numeric(calendar_time) && length(calendar_time) && calendar_time >= 0)
@@ -1611,7 +1609,7 @@ Trials <- R6::R6Class(
     #' @examples
     #'
     #' \dontrun{
-    #' trial$independentIncrement('pfs', 'pbo', listener$get_milestone_names(), 'less', 'oracle')
+    #' trial$independentIncrement(Surv(pfs, pfs_event) ~ arm, 'pbo', listener$get_milestone_names(), 'less', 'oracle')
     #' }
     independentIncrement = function(formula, placebo, milestones, alternative,
                                     planned_info,
@@ -1896,7 +1894,7 @@ Trials <- R6::R6Class(
     #'
     #' @examples
     #' \dontrun{
-    #' trial$dunnettTest('pfs', 'pbo', c('high dose', 'low dose'),
+    #' trial$dunnettTest(Surv(pfs, pfs_event) ~ arm, 'pbo', c('high dose', 'low dose'),
     #'                   listener$get_milestone_names(), 'default')
     #' }
     #'
