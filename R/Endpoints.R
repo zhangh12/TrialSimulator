@@ -138,8 +138,11 @@ Endpoints <- R6::R6Class(
       reset <- "" ## "\033[0m"  # Reset to default color
       logo <- '\u2695\u2695' ## stringi::stri_escape_unicode('⚕')
 
-      cat(white_text_blue_bg, logo, 'Endpoint Name: ', paste0(self$get_name(), collapse = ', '), reset, '\n')
-      cat(white_text_blue_bg, logo, '# of Endpoints: ', length(self$get_name()), reset, '\n')
+      # cat(white_text_blue_bg, logo, 'Endpoint Name: ', paste0(self$get_name(), collapse = ', '), reset, '\n')
+      # cat(white_text_blue_bg, logo, '# of Endpoints: ', length(self$get_name()), reset, '\n')
+
+      title <- paste0('Endpoints (', length(self$get_name()), ')')
+      sub_title <- paste0(self$get_name(), collapse = ', ')
 
       dat <- self$test_generator(n = 1e4)
       vars <- self$get_name()
@@ -151,7 +154,8 @@ Endpoints <- R6::R6Class(
          isTRUE(getOption('knitr.in.progress'))) {
         summary_html <- summarizeDataFrame(dat, exclude_vars = exclude_vars,
                                            tte_vars = tte_vars, event_vars = event_vars,
-                                           categorical_vars = categorical_vars)
+                                           categorical_vars = categorical_vars,
+                                           title = title, sub_title = sub_title)
 
         temp_file <- tempfile(fileext = ".html")
         writeLines(summary_html, temp_file, useBytes = TRUE)
@@ -173,7 +177,8 @@ Endpoints <- R6::R6Class(
       } else {
         summarizeDataFrame(dat, exclude_vars = exclude_vars,
                            tte_vars = tte_vars, event_vars = event_vars,
-                           categorical_vars = categorical_vars)
+                           categorical_vars = categorical_vars,
+                           title = title, sub_title = sub_title)
       }
 
       invisible(self)

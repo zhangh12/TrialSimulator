@@ -9,7 +9,9 @@ summarizeDataFrame(
   exclude_vars = NULL,
   tte_vars = NULL,
   event_vars = NULL,
-  categorical_vars = NULL
+  categorical_vars = NULL,
+  title = "Summary",
+  sub_title = ""
 )
 }
 \arguments{
