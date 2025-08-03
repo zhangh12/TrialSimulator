@@ -1,8 +1,6 @@
 ---
 title: "Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints in Clinical Trials"
 output: rmarkdown::html_vignette
-resource_files: 
-  - man/figures/three_state_ill_death_model.png
 vignette: >
   %\VignetteIndexEntry{Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints in Clinical Trials}
   %\VignetteEngine{knitr::rmarkdown}
@@ -21,6 +19,7 @@ knitr::opts_chunk$set(
 
 ```{r setup, echo = FALSE, message = FALSE}
 library(dplyr)
+library(knitr)
 library(ggplot2)
 library(TrialSimulator)
 ```
@@ -29,8 +28,14 @@ Progression-free survival (PFS) and overall survival (OS) are commonly used as c
 
 Several methods have been proposed to achieve this, but many rely on latent variables or copula-based approaches, making it difficult to interpret and specify model parameters in practical settings. In this vignette, we do not aim to provide a comprehensive review of existing methods. Instead, we focus on a three-state illness-death model consisting of the following states: stable (initial, 0), progression (1), and death (2). For more details, refer to Meller, Beyersmann, and Rufibach (2019).
 
+```{r pplloott}
+#| fig-alt: |
+#|   A three-state ill-death model for PFS and OS.
+#| out-width: 80%
+#| echo: false
+knitr::include_graphics('three_state_ill_death_model.png')
+```
 
-![](../man/figures/three_state_ill_death_model.png){width=80% style="display: block; margin: auto;"}
 
 We consider the simplest case of the illness-death model, where all transition hazards $h(t)$ are constant over time. A data generator of this model is implemented in `TrialSimulator::CorrelatedPfsAndOs3()`, which can be used to define endpoints in `TrialSimulator::endpoint()`.
 
@@ -40,9 +45,12 @@ $$
 \Pr(\mbox{PFS} > t) = \exp\{-(h_{01} + h_{02})t\}
 $$
 
+and 
+
 $$
-\Pr(\mbox{OS} > t) = \exp\{-(h_{01} + h_{02})t\} + \frac{h_{01}}{h_{12}-h_{01}-h_{02}}\exp\{-(h_{01} + h_{02})t\} - \exp\{-h_{12}t\}
+\Pr(\mbox{OS} > t)  = \exp\{-(h_{01} + h_{02})t\} + \frac{h_{01}}{h_{12}-h_{01}-h_{02}}\exp\{-(h_{01} + h_{02})t\} - \exp\{-h_{12}t\}
 $$
+
 Thus, PFS follows an exponential distribution with rate $h_{01} + h_{02}$, which is also referred to as the all-cause hazard. Given the transition hazards $h_{01}, h_{02}, h_{12}$, a patient’s trajectory can be simulated using the following algorithm:
 
 - **Step 1**. Generate the time to progression $t_{01}$ from an exponential distribution with rate $h_{01} + h_{02}$.
@@ -54,7 +62,7 @@ Thus, PFS follows an exponential distribution with rate $h_{01} + h_{02}$, which
 
 ## Reparameterization
 
-Although statistical methods exist for estimating transition hazards when data are available, in simulation studies for trial planning, it is common to specify these hazard parameters based on limited information. A more intuitive way to define PFS and OS is through their medians and correlation coefficient. In this section, we describe a reparameterization strategy that maps the medians and correlation to the transition hazards.
+Although statistical methods exist for estimating transition hazards when data are available (e.g., the R package `simIDM`), in simulation studies for trial planning, it is common to specify these hazard parameters based on limited information. A more intuitive way to define PFS and OS is through their medians and correlation coefficient. In this section, we describe a reparameterization strategy that maps the medians and correlation to the transition hazards.
 
 Let $m_1$ and $m_2$ denote the medians of PFS and OS, respectively. Then we have
 
