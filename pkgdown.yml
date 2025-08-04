@@ -10,7 +10,8 @@ articles:
   defineTimeToEventEndpoints: defineTimeToEventEndpoints.html
   fixedDesign: fixedDesign.html
   simulatePfsAndOs: simulatePfsAndOs.html
-last_built: 2025-08-04T19:06Z
+  wrappers: wrappers.html
+last_built: 2025-08-04T21:17Z
 urls:
   reference: https://zhangh12.github.io/TrialSimulator/reference
   article: https://zhangh12.github.io/TrialSimulator/articles
