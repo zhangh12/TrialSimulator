@@ -255,16 +255,16 @@ hazard ratio for `PFS`.
 ```{r hghgale}
 output %>% 
   summarise(
-    across(matches('_<decision>$'), ~ mean(. == 'reject'), .names = 'Power_{.col}'), 
+    across(matches('_<decision>$'), ~ mean(. == 'reject') * 100, .names = 'Power_{.col}'), 
     across(matches('_<estimate>$'), ~ mean(.x), .names = 'HR_{.col}')
   ) %>%
   rename_with(~ sub('_<decision>$', '', .), starts_with('Power_')) %>%
   rename_with(~ sub('_<estimate>$', '', .), starts_with('HR_')) %>% 
-  kable(escape = FALSE) %>% 
-  kable_styling(bootstrap_options = "striped", 
-                full_width = FALSE,
-                position = "left") %>%
-  scroll_box(width = "100%")
+  kable(col.name = NULL, digits = 3, align = 'r') %>% 
+  add_header_above(c('Low', 'High', 'Low', 'High', 'Low', 'High'), align = 'r') %>% 
+  add_header_above(c('PFS' = 2, 'OS' = 2, 'PFS' = 2)) %>% 
+  add_header_above(c('Power (%)' = 4, 'Hazard Ratio' = 2)) %>% 
+  kable_styling(full_width = TRUE)
 ```
 
 Note that `OS` does not satisfy the proportional hazard assumption, and a 
