@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.91.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.92.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,6 +44,7 @@
     <li><a class="dropdown-item" href="../articles/defineLongitudinalEndpoints.html">Define Longitudinal Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints in Clinical Trials</a></li>
+    <li><a class="dropdown-item" href="../articles/fixedDesign.html">An Example of Fixed Design with Two Correlated Endpoints</a></li>
     <li><a class="dropdown-item" href="../articles/simulatePfsAndOs.html">Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints in Clinical Trials</a></li>
   </ul>
 </li>
@@ -193,7 +194,7 @@ median of 12, targeting a correlation of 0.6 between them.</p>
 <code class="sourceCode R"><span><span class="va">pars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/solveThreeStateModel.html">solveThreeStateModel</a></span><span class="op">(</span>median_pfs <span class="op">=</span> <span class="fl">5</span>, median_os <span class="op">=</span> <span class="fl">12</span>, </span>
 <span>                             corr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">.55</span>, <span class="fl">.65</span>, by <span class="op">=</span> <span class="fl">.05</span><span class="op">)</span>, </span>
 <span>                             h12 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">.05</span>, <span class="fl">.15</span>, length.out <span class="op">=</span> <span class="fl">50</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">pars</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">pars</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   corr       h01        h02        h12       error</span></span>
 <span><span class="co">#&gt; 1 0.55 0.0997785 0.03885093 0.08877551 0.001158721</span></span>
 <span><span class="co">#&gt; 2 0.60 0.1080742 0.03055522 0.10102041 0.003826014</span></span>

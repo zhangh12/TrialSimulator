@@ -37,7 +37,7 @@ endpoints in TrialSimulator."><meta property="og:image" content="https://zhangh1
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.91.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.92.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,6 +54,7 @@ endpoints in TrialSimulator."><meta property="og:image" content="https://zhangh1
     <li><a class="dropdown-item" href="../articles/defineLongitudinalEndpoints.html">Define Longitudinal Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints in Clinical Trials</a></li>
+    <li><a class="dropdown-item" href="../articles/fixedDesign.html">An Example of Fixed Design with Two Correlated Endpoints</a></li>
     <li><a class="dropdown-item" href="../articles/simulatePfsAndOs.html">Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints in Clinical Trials</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -114,7 +115,7 @@ endpoints in <code>TrialSimulator</code>.</p>
 
 
 <dt id="arg-corr">corr<a class="anchor" aria-label="anchor" href="#arg-corr"></a></dt>
-<dd><p>numeric vector. Pearson's correlation coefficients between PFS and OS.</p></dd>
+<dd><p>numeric vector. Pearson correlation coefficients between PFS and OS.</p></dd>
 
 
 <dt id="arg-h-">h12<a class="anchor" aria-label="anchor" href="#arg-h-"></a></dt>
@@ -171,9 +172,6 @@ derived from <code>h01</code>, <code>h02</code>, and <code>h12</code>.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.60 0.09334966 0.05733451 0.10510204 0.0027808278</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4 0.65 0.10091413 0.04977004 0.12040816 0.0055098914</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 5 0.70 0.11388735 0.03679682 0.14489796 0.0002066345</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Removed 5 rows containing missing values or values outside the scale range</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> (`geom_segment()`).</span>
-<span class="r-plt img"><img src="solveThreeStateModel-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
