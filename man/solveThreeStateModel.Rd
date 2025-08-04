@@ -16,7 +16,7 @@ solveThreeStateModel(
 
 \item{median_os}{numeric. Median of OS.}
 
-\item{corr}{numeric vector. Pearson's correlation coefficients between PFS and OS.}
+\item{corr}{numeric vector. Pearson correlation coefficients between PFS and OS.}
 
 \item{h12}{numeric vector. A set of hazard from progression to
 death that may induce the target correlation \code{corr} given \code{median_pfs}
