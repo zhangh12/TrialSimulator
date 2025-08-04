@@ -3,6 +3,7 @@
 ## Update
 
 -Add vignette of fixed design. 
+-Add vignette of wrapper functions of commom statistical tests. 
 
 # TrialSimulator 0.91.0
 

@@ -1,0 +1,241 @@
+---
+title: "Wrapper Functions of Common Statistical Methods in TrialSimulator"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Wrapper Functions of Common Statistical Methods in TrialSimulator}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  cache.path = 'cache/wrapper/',
+  comment = '#>',
+  dpi = 300,
+  out.width = '100%'
+)
+```
+
+```{r setup, echo = FALSE, message = FALSE}
+library(dplyr)
+library(TrialSimulator)
+```
+
+`TrialSimulator` provides a set of wrapper functions of common statistical methods used in clinical trial simulations. If more than one active arm exist, the wrapper functions perform pairwise analysis to compare each of the active arms with reference (placebo, control, standard-of-care, etc.). The interface and output are similar across wrapper functions. The statistical model can be specified by R formula, where covariate adjustment is supported in some of the functions. The wrapper functions call the package `emmeans` in pairwise comparison when estimating average treatment effects (ATE). One-sided tests are enforced. Ellipsis argument `...` is supported for subset analysis, which is particularly useful in enrichment design.
+
+The wrapper functions covered in this vignette are summarized in the table below.
+
++------------------------+-------------------------+------------------------+------------------------+
+| Function               | Method                  | Statistics in Outputs  | Covariate adjustment   |
++:=======================+:========================+:=======================+:=======================+
+| `fitLinear`            | Linear model            | ATE                    | Yes                    |
++------------------------+-------------------------+------------------------+------------------------+
+| `fitLogistic`          | Logistic model          | regression coefficient | Yes                    |
+|                        |                         |                        |                        |
+|                        |                         | log odds ratio         |                        |
+|                        |                         |                        |                        |
+|                        |                         | odds ratio             |                        |
+|                        |                         |                        |                        |
+|                        |                         | risk ratio             |                        |
+|                        |                         |                        |                        |
+|                        |                         | risk difference        |                        |
++------------------------+-------------------------+------------------------+------------------------+
+| `fitCoxph`             | Cox PH model            | log hazard ratio       | Yes                    |
+|                        |                         |                        |                        |
+|                        |                         | hazard ratio           |                        |
++------------------------+-------------------------+------------------------+------------------------+
+| `fitLogrank`           | logrank test            |                        | No but supports strata |
++------------------------+-------------------------+------------------------+------------------------+
+| `fitFarringtonManning` | Farrington-Manning test |                        | No                     |
++------------------------+-------------------------+------------------------+------------------------+
+
+
+## Example
+
+To illustrate the wrapper functions, we simulate a hypothetical trials with a 
+covariate and endpoints of various of types. A biomarker is also simulated to
+define sub-groups. The placebo arm is defined as follows. 
+
+```{r ioeajfls}
+## time-to-event endpoint
+pfs <- endpoint(name = 'pfs', type = 'tte', generator = rexp, rate = .07)
+## continuous endpoint
+cep <- endpoint(name = 'cep', type = 'non-tte', 
+                readout = c(cep = 0), generator = rnorm)
+## binary endpoint
+bep <- endpoint(name = 'bep', type = 'non-tte', 
+                readout = c(bep = 0), generator = rbinom, size = 1, prob = .1)
+
+## biomarker
+bm <- endpoint(name = 'biomarker', type = 'non-tte', 
+               readout = c(biomarker = 0), generator = rbinom, 
+               size = 1, prob = .7)
+
+## covariate
+covar <- endpoint(name = 'x', type = 'non-tte', 
+                  readout = c(x = 0), generator = rnorm)
+
+pbo <- arm(name = 'pbo')
+pbo$add_endpoints(pfs, cep, bep, bm, covar)
+```
+
+To make this vignette short, we hide codes that define the two active arms 
+of `low` or `high` dose, trial. We only define one milestone for final analysis 
+with an empty action function `doNothing`, this is because we are going to 
+request for locked data outside of action function when illustrating the 
+wrapper functions. Note that full codes are available in the source code of this 
+vignette. 
+
+```{r eualgha, echo=FALSE}
+## time-to-event endpoint
+pfs <- endpoint(name = 'pfs', type = 'tte', generator = rexp, rate = .06)
+## continuous endpoint
+cep <- endpoint(name = 'cep', type = 'non-tte', 
+                readout = c(cep = 0), generator = rnorm, mean = 1.2)
+## binary endpoint
+bep <- endpoint(name = 'bep', type = 'non-tte', 
+                readout = c(bep = 0), generator = rbinom, size = 1, prob = .2)
+
+## biomarker
+bm <- endpoint(name = 'biomarker', type = 'non-tte', 
+               readout = c(biomarker = 0), generator = rbinom, 
+               size = 1, prob = .7)
+
+## covariate
+covar <- endpoint(name = 'x', type = 'non-tte', 
+                  readout = c(x = 0), generator = rnorm)
+
+low <- arm(name = 'low')
+low$add_endpoints(pfs, cep, bep, bm, covar)
+
+## time-to-event endpoint
+pfs <- endpoint(name = 'pfs', type = 'tte', generator = rexp, rate = .04)
+## continuous endpoint
+cep <- endpoint(name = 'cep', type = 'non-tte', 
+                readout = c(cep = 0), generator = rnorm, mean = 1.3)
+## binary endpoint
+bep <- endpoint(name = 'bep', type = 'non-tte', 
+                readout = c(bep = 0), generator = rbinom, size = 1, prob = .35)
+
+## biomarker
+bm <- endpoint(name = 'biomarker', type = 'non-tte', 
+               readout = c(biomarker = 0), generator = rbinom, 
+               size = 1, prob = .7)
+
+## covariate
+covar <- endpoint(name = 'x', type = 'non-tte', 
+                  readout = c(x = 0), generator = rnorm)
+
+high <- arm(name = 'high')
+high$add_endpoints(pfs, cep, bep, bm, covar)
+
+accrual_rate <- data.frame(end_time = c(10, Inf),
+                           piecewise_rate = c(30, 50))
+trial <- trial(
+  name = 'Trial-3415', n_patients = 300,
+  seed = 1727811904, duration = 1000,
+  enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
+  dropout = rexp, rate = -log(1 - 0.1)/18, ## 10% by month 18
+  silent = TRUE
+)
+
+trial$add_arms(sample_ratio = c(1, 1, 1), pbo, low, high)
+
+final <- milestone(name = 'final', action = doNothing, when = calendarTime(1000))
+
+listener <- listener()
+listener$add_milestones(final)
+
+controller <- controller(trial, listener)
+```
+
+Now we execute a trial. Trial data is now available in the object `trial`, and 
+can be accessed by calling the member function `get_locked_data()` with milestone 
+name `final`. 
+
+```{r ieoajf}
+controller$run(n = 1, plot_event = FALSE, silent = TRUE)
+locked_data <- trial$get_locked_data('final')
+head(locked_data)
+
+table(locked_data$arm)
+```
+
+## Analyze Time-to-Event Endpoint
+
+We analyze `pfs` by fitting Cox proportional hazard model and logrank test
+```{r ghkaljf}
+## adjust for covariate x
+fitCoxph(Surv(pfs, pfs_event) ~ arm + x, placebo = 'pbo', 
+         data = locked_data, alternative = 'less', 
+         scale = 'hazard ratio')
+
+fitLogrank(Surv(pfs, pfs_event) ~ arm, placebo = 'pbo', 
+           data = locked_data, alternative = 'less')
+
+## more details
+fitLogrank(Surv(pfs, pfs_event) ~ arm, placebo = 'pbo', 
+           data = locked_data, alternative = 'less', tidy = FALSE)
+
+## with strata
+fitLogrank(Surv(pfs, pfs_event) ~ arm + strata(biomarker), placebo = 'pbo', 
+           data = locked_data, alternative = 'less')
+```
+
+## Analyze Continuous Endpoint
+
+We fit linear regression model for `cep`, the continuous endpoint
+```{r saljfh}
+## ATE accounting for covariate x
+fitLinear(cep ~ arm * x, placebo = 'pbo', 
+          data = locked_data, alternative = 'greater')
+
+## marginal model
+fitLinear(cep ~ arm, placebo = 'pbo', 
+          data = locked_data, alternative = 'greater')
+```
+
+## Analyze Binary Endpoint
+
+We fit different logistic regression models for the binary endpoint `bep`, and 
+compute different types of statistics. 
+
+```{r pqeir}
+## compute regression coefficient of arm
+fitLogistic(bep ~ arm * x + biomarker, placebo = 'pbo', 
+            data = locked_data, alternative = 'greater', 
+            scale = 'coefficient')
+
+## compute odds ratio (ATE)
+fitLogistic(bep ~ arm + x*biomarker, placebo = 'pbo', 
+            data = locked_data, alternative = 'greater', 
+            scale = 'odds ratio')
+
+## compute risk ratio (ATE)
+fitLogistic(bep ~ arm + x + biomarker, placebo = 'pbo', 
+            data = locked_data, alternative = 'greater', 
+            scale = 'risk ratio')
+```
+
+The risk difference can be tested by logistic regression and the 
+Farrington-Manning test. However, the Farrington-Manning test cannot account for 
+covariates. 
+
+```{r uyta}
+## compute risk difference (ATE)
+fitLogistic(bep ~ arm + x * biomarker, placebo = 'pbo', 
+            data = locked_data, alternative = 'greater', 
+            scale = 'risk difference')
+
+## compute risk difference without covariate
+fitLogistic(bep ~ arm, placebo = 'pbo', 
+            data = locked_data, alternative = 'greater', 
+            scale = 'risk difference')
+
+fitFarringtonManning(endpoint = 'bep', placebo = 'pbo', 
+                     data = locked_data, alternative = 'greater')
+```
+
+
+
