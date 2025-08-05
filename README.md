@@ -59,7 +59,7 @@ To efficiently utilize `TrialSimulator` for clinical trial simulations, we recom
 - Define actions for milestones
   - [Action function]
 - Examples: fixed design
-  - [Fixed design]
+  - [Design with correlated endpoints, and custom data generator](https://zhangh12.github.io/TrialSimulator/articles/fixedDesign.html)
 - Examples: adaptive design
   - [Design with dose selection, interim, and multiple endpoints](https://zhangh12.github.io/TrialSimulator/articles/adaptiveDesign.html)
 - Built-in methods supported in `TrialSimulator`

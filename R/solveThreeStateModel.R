@@ -25,7 +25,7 @@
 #'
 #' @param median_pfs numeric. Median of PFS.
 #' @param median_os numeric. Median of OS.
-#' @param corr numeric vector. Pearson's correlation coefficients between PFS and OS.
+#' @param corr numeric vector. Pearson correlation coefficients between PFS and OS.
 #' @param h12 numeric vector. A set of hazard from progression to
 #' death that may induce the target correlation \code{corr} given \code{median_pfs}
 #' and \code{median_os}. \code{solveThreeStateModel} will do a grid search to
@@ -128,7 +128,7 @@ solveThreeStateModel <- function(median_pfs, median_os, corr,
 }
 
 #' @export
-print.three_state_model <- function(obj){
+plot.three_state_model <- function(obj){
 
   data_points <- attr(obj, 'data')
   data_lines <- obj %>%
@@ -158,7 +158,9 @@ print.three_state_model <- function(obj){
                 aes(x = corr, y = h12, label = label),
               vjust = 2, hjust = -.2, inherit.aes = FALSE) +
 
-    xlim(min(data_points$corr)*.9, max(data_points$corr)*1.1)
+    xlim(min(data_points$corr)*.9, max(data_points$corr)*1.1) +
+    xlab("Pearson Correlation") +
+    ylab(expression(h[12]))
   )
 
   print.data.frame(obj)

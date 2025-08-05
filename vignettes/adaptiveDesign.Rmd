@@ -92,6 +92,14 @@ weibullDropout(time = c(12, 18), dropout_rate = c(.08, .18))
 
 ## Define Three Arms
 
+In this example, we call `endpoint()` twice for each arm to define `PFS` 
+and `OS`. This implicitly assumes independence between the two time-to-event 
+endpoints. `TrialSimulator` offers a built-in generator `CorrelatedPfsAndOs3()` 
+to generate `PFS` and `OS` with correlation based on the ill-death model, 
+which enjoys several nice properties. For selection of its arguments (i.e. 
+transition hazards), refer to vignette 
+[Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints in Clinical Trials](simulatePfsAndOs.html). 
+
 ```{r ljgai, class.source="fold-show"}
 #' define three arms
 pbo <- arm(name = 'placebo')
@@ -390,7 +398,7 @@ output <- TrialSimulator:::getAdaptiveDesignOutput()
 
 ```{r liefa}
 output %>% 
-  head(10) %>% 
+  head(5) %>% 
   kable(escape = FALSE) %>% 
   kable_styling(bootstrap_options = "striped", 
                 full_width = FALSE,

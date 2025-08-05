@@ -2,8 +2,8 @@
 
 S3method("&",Condition)
 S3method("|",Condition)
+S3method(plot,three_state_model)
 S3method(print,dynamic_rng_function)
-S3method(print,three_state_model)
 export(Arms)
 export(Controllers)
 export(CorrelatedPfsAndOs3)

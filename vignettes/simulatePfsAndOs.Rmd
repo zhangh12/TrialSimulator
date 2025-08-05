@@ -95,7 +95,7 @@ Suppose we aim to simulate PFS with a median of 5 and OS with a median of 12, ta
 pars <- solveThreeStateModel(median_pfs = 5, median_os = 12, 
                              corr = seq(.55, .65, by = .05), 
                              h12 = seq(.05, .15, length.out = 50))
-pars
+plot(pars)
 ```
 
 The result suggests that using $h_{01} = 0.11$, $h_{02} = 0.03$, and $h_{12} = 0.10$ may achieve the desired specifications. To verify this, we simulate PFS and OS data using
