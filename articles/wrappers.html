@@ -77,20 +77,26 @@
 
     
     
-<p><code>TrialSimulator</code> provides a set of wrapper functions of
-common statistical methods used in clinical trial simulations. If more
-than one active arm exist, the wrapper functions perform pairwise
-analysis to compare each of the active arms with reference (placebo,
-control, standard-of-care, etc.). The interface and output are similar
-across wrapper functions. The statistical model can be specified by R
-formula, where covariate adjustment is supported in some of the
-functions. The wrapper functions call the package <code>emmeans</code>
-in pairwise comparison when estimating average treatment effects (ATE).
-One-sided tests are enforced. Ellipsis argument <code>...</code> is
-supported for subset analysis, which is particularly useful in
-enrichment design.</p>
-<p>The wrapper functions covered in this vignette are summarized in the
-table below.</p>
+<p>The <code>TrialSimulator</code> package provides a unified set of
+wrapper functions that encapsulate statistical methods commonly used in
+clinical trial simulations. These functions facilitate model fitting,
+treatment comparisons, and covariate adjustments within a standardized
+interface.</p>
+<p>When multiple active treatment arms are present, each wrapper
+function automatically performs pairwise comparisons between each active
+arm and the designated reference (e.g., placebo, control, or
+standard-of-care). All wrapper functions share a consistent syntax and
+output structure. Most of them support model specification via an R
+formula interface, and covariate adjustment is available where
+appropriate.</p>
+<p>Pairwise average treatment effects (ATEs) are estimated using the
+<code>emmeans</code> package under the hood. All tests are one-sided,
+and the ellipsis (<code>...</code>) argument can be used to define data
+subsets, enabling flexible analyses such as those needed in enrichment
+designs.</p>
+<p>Below is a summary of the available wrapper functions included in
+this vignette, along with their corresponding statistical methods,
+output metrics, and support for covariate adjustment.</p>
 <table style="width:98%;" class="table">
 <colgroup>
 <col width="24%">
@@ -149,10 +155,13 @@ table below.</p>
 <div class="section level2">
 <h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h2>
-<p>To illustrate the wrapper functions, we simulate a hypothetical
-trials with a covariate and endpoints of various of types. A biomarker
-is also simulated to define sub-groups. The placebo arm is defined as
-follows.</p>
+<p>To demonstrate the usage of the wrapper functions, we simulate a
+hypothetical three-arm trial with one control (<code>pbo</code>) and two
+active doses (<code>low</code> and <code>high</code>). The trial
+includes a continuous covariate <code>x</code>, three endpoint types
+(time-to-event, continuous, and binary), and a binary biomarker used to
+define subgroups.</p>
+<p>The placebo arm is constructed as follows:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## time-to-event endpoint</span></span>
 <span><span class="va">pfs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endpoint.html">endpoint</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'pfs'</span>, type <span class="op">=</span> <span class="st">'tte'</span>, generator <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="fl">.07</span><span class="op">)</span></span>
@@ -174,18 +183,16 @@ follows.</p>
 <span></span>
 <span><span class="va">pbo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/arm.html">arm</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'pbo'</span><span class="op">)</span></span>
 <span><span class="va">pbo</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">pfs</span>, <span class="va">cep</span>, <span class="va">bep</span>, <span class="va">bm</span>, <span class="va">covar</span><span class="op">)</span></span></code></pre></div>
-<p>To make this vignette short, we hide codes that define the two active
-arms of <code>low</code> or <code>high</code> dose, trial. We only
-define one milestone for final analysis with an empty action function
-<code>doNothing</code>, this is because we are going to request for
-locked data outside of action function when illustrating the wrapper
-functions. Note that full codes are available in the source code of this
-vignette.</p>
+<p>For brevity, the code for the low and high dose arms and the trial
+definition are hidden in this vignette. Refer to the source of this
+vignette for full code. A single milestone for final analysis is
+defined, with an empty action <code>doNothing.</code> This is because we
+will explicitly request locked data outside of the action function when
+demonstrating the wrapper functions.</p>
 <pre><code><span><span class="co">#&gt; A milestone &lt;final&gt; is registered.</span></span></code></pre>
-<p>Now we execute a trial. Trial data is now available in the object
-<code>trial</code>, and can be accessed by calling the member function
-<code>get_locked_data()</code> with milestone name
-<code>final</code>.</p>
+<p>Now we execute the trial. After simulation, locked data can be
+retrieved using the <code>get_locked_data()</code> method with the
+milestone name <code>"final"</code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1</span>, plot_event <span class="op">=</span> <span class="cn">FALSE</span>, silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'final'</span><span class="op">)</span></span>
@@ -220,8 +227,11 @@ vignette.</p>
 <div class="section level2">
 <h2 id="analyze-time-to-event-endpoint">Analyze Time-to-Event Endpoint<a class="anchor" aria-label="anchor" href="#analyze-time-to-event-endpoint"></a>
 </h2>
-<p>We analyze <code>pfs</code> by fitting Cox proportional hazard model
-and logrank test</p>
+<p>We begin by analyzing the time-to-event endpoint <code>pfs</code>
+using both a Cox proportional hazards model and a log-rank test. When
+performing analysis on a subset defined via the <code>...</code>
+argument, the syntax must be compatible with that of
+<code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter()</a></code>.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## adjust for covariate x</span></span>
 <span><span class="fu"><a href="../reference/fitCoxph.html">fitCoxph</a></span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">pfs</span>, <span class="va">pfs_event</span><span class="op">)</span> <span class="op">~</span> <span class="va">arm</span> <span class="op">+</span> <span class="va">x</span>, placebo <span class="op">=</span> <span class="st">'pbo'</span>, </span>
@@ -249,13 +259,22 @@ and logrank test</p>
 <span>           data <span class="op">=</span> <span class="va">locked_data</span>, alternative <span class="op">=</span> <span class="st">'less'</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    arm placebo            p info         z</span></span>
 <span><span class="co">#&gt; 1 high     pbo 1.789899e-07  167 -5.090044</span></span>
-<span><span class="co">#&gt; 2  low     pbo 1.407320e-02  173 -2.195240</span></span></code></pre></div>
+<span><span class="co">#&gt; 2  low     pbo 1.407320e-02  173 -2.195240</span></span>
+<span></span>
+<span><span class="co">## analyze a subset</span></span>
+<span><span class="fu"><a href="../reference/fitCoxph.html">fitCoxph</a></span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">pfs</span>, <span class="va">pfs_event</span><span class="op">)</span> <span class="op">~</span> <span class="va">arm</span> <span class="op">+</span> <span class="fu">strata</span><span class="op">(</span><span class="va">biomarker</span><span class="op">)</span>, placebo <span class="op">=</span> <span class="st">'pbo'</span>, </span>
+<span>         data <span class="op">=</span> <span class="va">locked_data</span>, alternative <span class="op">=</span> <span class="st">'less'</span>, </span>
+<span>         scale <span class="op">=</span> <span class="st">'log hazard ratio'</span>, </span>
+<span>         <span class="va">x</span> <span class="op">&gt;</span> <span class="op">-</span><span class="fl">2</span> <span class="op">&amp;</span> <span class="va">x</span> <span class="op">&lt;</span> <span class="fl">3</span><span class="op">)</span> <span class="co">## define a subset</span></span>
+<span><span class="co">#&gt;    arm placebo   estimate            p info         z</span></span>
+<span><span class="co">#&gt; 1 high     pbo -0.8510466 2.447367e-07  163 -5.030394</span></span>
+<span><span class="co">#&gt; 2  low     pbo -0.3432222 1.346787e-02  173 -2.212448</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="analyze-continuous-endpoint">Analyze Continuous Endpoint<a class="anchor" aria-label="anchor" href="#analyze-continuous-endpoint"></a>
 </h2>
-<p>We fit linear regression model for <code>cep</code>, the continuous
-endpoint</p>
+<p>We analyze the continuous endpoint <code>cep</code> using linear
+models, with and without covariate adjustment.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## ATE accounting for covariate x</span></span>
 <span><span class="fu"><a href="../reference/fitLinear.html">fitLinear</a></span><span class="op">(</span><span class="va">cep</span> <span class="op">~</span> <span class="va">arm</span> <span class="op">*</span> <span class="va">x</span>, placebo <span class="op">=</span> <span class="st">'pbo'</span>, </span>
@@ -271,13 +290,23 @@ endpoint</p>
 <span>          data <span class="op">=</span> <span class="va">locked_data</span>, alternative <span class="op">=</span> <span class="st">'greater'</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    arm placebo estimate            p info        z</span></span>
 <span><span class="co">#&gt; 1 high     pbo 1.145586 1.754152e-14  194 8.193172</span></span>
-<span><span class="co">#&gt; 2  low     pbo 1.247526 0.000000e+00  194 9.315158</span></span></code></pre></div>
+<span><span class="co">#&gt; 2  low     pbo 1.247526 0.000000e+00  194 9.315158</span></span>
+<span></span>
+<span><span class="co">## analyze a sub-group</span></span>
+<span><span class="fu"><a href="../reference/fitLinear.html">fitLinear</a></span><span class="op">(</span><span class="va">cep</span> <span class="op">~</span> <span class="va">arm</span>, placebo <span class="op">=</span> <span class="st">'pbo'</span>, </span>
+<span>          data <span class="op">=</span> <span class="va">locked_data</span>, alternative <span class="op">=</span> <span class="st">'greater'</span>, </span>
+<span>          <span class="va">biomarker</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="co">## define the subgroup</span></span>
+<span><span class="co">#&gt;    arm placebo estimate            p info        z</span></span>
+<span><span class="co">#&gt; 1 high     pbo 1.238680 1.408973e-11  137 7.256348</span></span>
+<span><span class="co">#&gt; 2  low     pbo 1.260001 8.829826e-12  130 7.380675</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="analyze-binary-endpoint">Analyze Binary Endpoint<a class="anchor" aria-label="anchor" href="#analyze-binary-endpoint"></a>
 </h2>
-<p>We fit different logistic regression models for the binary endpoint
-<code>bep</code>, and compute different types of statistics.</p>
+<p>We analyze the binary endpoint <code>bep</code> using logistic
+regression. Multiple estimands (e.g., odds ratio, risk ratio, risk
+difference) can be computed by specifying the <code>scale</code>
+argument.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## compute regression coefficient of arm</span></span>
 <span><span class="fu"><a href="../reference/fitLogistic.html">fitLogistic</a></span><span class="op">(</span><span class="va">bep</span> <span class="op">~</span> <span class="va">arm</span> <span class="op">*</span> <span class="va">x</span> <span class="op">+</span> <span class="va">biomarker</span>, placebo <span class="op">=</span> <span class="st">'pbo'</span>, </span>
@@ -302,9 +331,9 @@ endpoint</p>
 <span><span class="co">#&gt;    arm placebo estimate            p info        z</span></span>
 <span><span class="co">#&gt; 1 high     pbo 3.384617 6.180414e-05  194 3.838857</span></span>
 <span><span class="co">#&gt; 2  low     pbo 1.485317 1.428753e-01  194 1.067490</span></span></code></pre></div>
-<p>The risk difference can be tested by logistic regression and the
-Farrington-Manning test. However, the Farrington-Manning test cannot
-account for covariates.</p>
+<p>The risk difference can also be estimated using logistic regression
+or the Farrington-Manning test. Note that the latter does not support
+covariate adjustment.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## compute risk difference (ATE)</span></span>
 <span><span class="fu"><a href="../reference/fitLogistic.html">fitLogistic</a></span><span class="op">(</span><span class="va">bep</span> <span class="op">~</span> <span class="va">arm</span> <span class="op">+</span> <span class="va">x</span> <span class="op">*</span> <span class="va">biomarker</span>, placebo <span class="op">=</span> <span class="st">'pbo'</span>, </span>
@@ -322,11 +351,23 @@ account for covariates.</p>
 <span><span class="co">#&gt; 1 high     pbo 0.26296769 3.839441e-06  194 4.4739469</span></span>
 <span><span class="co">#&gt; 2  low     pbo 0.04868197 1.627120e-01  194 0.9833727</span></span>
 <span></span>
+<span><span class="co">## analyze a sub-group</span></span>
+<span><span class="fu"><a href="../reference/fitLogistic.html">fitLogistic</a></span><span class="op">(</span><span class="va">bep</span> <span class="op">~</span> <span class="va">arm</span>, placebo <span class="op">=</span> <span class="st">'pbo'</span>, </span>
+<span>            data <span class="op">=</span> <span class="va">locked_data</span>, alternative <span class="op">=</span> <span class="st">'greater'</span>, </span>
+<span>            scale <span class="op">=</span> <span class="st">'risk difference'</span>, </span>
+<span>            <span class="va">x</span> <span class="op">&lt;</span> <span class="fl">2</span> <span class="op">&amp;</span> <span class="va">biomarker</span> <span class="op">!=</span> <span class="fl">1</span><span class="op">)</span> <span class="co">## define a subgroup</span></span>
+<span><span class="co">#&gt;    arm placebo  estimate          p info        z</span></span>
+<span><span class="co">#&gt; 1 high     pbo 0.3037037 0.00167036   57 2.934513</span></span>
+<span><span class="co">#&gt; 2  low     pbo 0.1151515 0.07789713   63 1.419359</span></span>
+<span></span>
+<span><span class="co">## analyze the same sub-group using the FM test,</span></span>
+<span><span class="co">## same estimate but different p-values</span></span>
 <span><span class="fu"><a href="../reference/fitFarringtonManning.html">fitFarringtonManning</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'bep'</span>, placebo <span class="op">=</span> <span class="st">'pbo'</span>, </span>
-<span>                     data <span class="op">=</span> <span class="va">locked_data</span>, alternative <span class="op">=</span> <span class="st">'greater'</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    arm placebo            p info         z</span></span>
-<span><span class="co">#&gt; 1 high     pbo 1.098834e-05  194 4.2437995</span></span>
-<span><span class="co">#&gt; 2  low     pbo 1.636815e-01  194 0.9794394</span></span></code></pre></div>
+<span>                     data <span class="op">=</span> <span class="va">locked_data</span>, alternative <span class="op">=</span> <span class="st">'greater'</span>, </span>
+<span>                     <span class="va">x</span> <span class="op">&lt;</span> <span class="fl">2</span> <span class="op">&amp;</span> <span class="va">biomarker</span> <span class="op">!=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    arm placebo  estimate           p info        z</span></span>
+<span><span class="co">#&gt; 1 high     pbo 0.3037037 0.002490708   57 2.808233</span></span>
+<span><span class="co">#&gt; 2  low     pbo 0.1151515 0.085190560   63 1.370980</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
