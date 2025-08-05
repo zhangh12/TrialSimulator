@@ -4,7 +4,7 @@
 \alias{fitFarringtonManning}
 \title{Farrington-Manning test for rate difference}
 \usage{
-fitFarringtonManning(endpoint, placebo, data, alternative, delta = 0, ...)
+fitFarringtonManning(endpoint, placebo, data, alternative, ..., delta = 0)
 }
 \arguments{
 \item{endpoint}{Character. Name of the endpoint in \code{data}.}
@@ -18,9 +18,6 @@ must be one of \code{"greater"} or \code{"less"}. No default value.
 \code{"greater"} means superiority of treatment over placebo is established
 by rate difference greater than `delta`.}
 
-\item{delta}{the rate difference between a treatment arm and placebo under
-the null.}
-
 \item{...}{Subset conditions compatible with \code{dplyr::filter}.
 \code{glm} will be fitted on this subset only. This argument can be useful
 to create a subset of data for analysis when a trial consists of more
@@ -33,10 +30,16 @@ which is equivalent to:
 Note that if more than one treatment arm are present in the data after
 applying filter in \code{...}, models are fitted for placebo verse
 each of the treatment arms.}
+
+\item{delta}{the rate difference between a treatment arm and placebo under
+the null. 0 by default.}
 }
 \value{
 a data frame with three columns:
 \describe{
+\item{\code{arm}}{name of the treatment arm. }
+\item{\code{placebo}}{name of the placebo arm. }
+\item{\code{estimate}}{estimate of rate difference. }
 \item{\code{p}}{one-sided p-value for log odds ratio (treated vs placebo). }
 \item{\code{info}}{sample size in the subset with \code{NA} being removed. }
 \item{\code{z}}{the z statistics of log odds ratio (treated vs placebo). }

@@ -11,8 +11,6 @@
 #' must be one of \code{"greater"} or \code{"less"}. No default value.
 #' \code{"greater"} means superiority of treatment over placebo is established
 #' by rate difference greater than `delta`.
-#' @param delta the rate difference between a treatment arm and placebo under
-#' the null.
 #' @param ... Subset conditions compatible with \code{dplyr::filter}.
 #' \code{glm} will be fitted on this subset only. This argument can be useful
 #' to create a subset of data for analysis when a trial consists of more
@@ -25,9 +23,14 @@
 #' Note that if more than one treatment arm are present in the data after
 #' applying filter in \code{...}, models are fitted for placebo verse
 #' each of the treatment arms.
+#' @param delta the rate difference between a treatment arm and placebo under
+#' the null. 0 by default.
 #'
 #' @returns a data frame with three columns:
 #' \describe{
+#' \item{\code{arm}}{name of the treatment arm. }
+#' \item{\code{placebo}}{name of the placebo arm. }
+#' \item{\code{estimate}}{estimate of rate difference. }
 #' \item{\code{p}}{one-sided p-value for log odds ratio (treated vs placebo). }
 #' \item{\code{info}}{sample size in the subset with \code{NA} being removed. }
 #' \item{\code{z}}{the z statistics of log odds ratio (treated vs placebo). }
@@ -37,7 +40,7 @@
 #'
 #' @export
 #'
-fitFarringtonManning <- function(endpoint, placebo, data, alternative, delta = 0, ...) {
+fitFarringtonManning <- function(endpoint, placebo, data, alternative, ..., delta = 0) {
 
   if(!is.character(endpoint) || length(endpoint) != 1){
     stop("endpoint must be a single character string")
@@ -84,7 +87,7 @@ fitFarringtonManning <- function(endpoint, placebo, data, alternative, delta = 0
     stop("No data remaining after applying subset condition. ")
   }
 
-  treatment_arms <- setdiff(unique(filtered_data$arm), placebo)
+  treatment_arms <- setdiff(unique(filtered_data$arm), placebo) %>% sort()
 
   ret <- NULL
 
@@ -118,6 +121,7 @@ fitFarringtonManning <- function(endpoint, placebo, data, alternative, delta = 0
     info <- nrow(sub_data)
 
     ret <- rbind(ret, data.frame(arm = trt_arm, placebo = placebo,
+                                 estimate = p1 - p2,
                                  p = p, info = info, z = z)
     )
   }
