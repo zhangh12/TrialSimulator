@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.91.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.92.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,6 +44,7 @@
     <li><a class="dropdown-item" href="../articles/defineLongitudinalEndpoints.html">Define Longitudinal Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints in Clinical Trials</a></li>
+    <li><a class="dropdown-item" href="../articles/fixedDesign.html">An Example of Fixed Design with Two Correlated Endpoints</a></li>
     <li><a class="dropdown-item" href="../articles/simulatePfsAndOs.html">Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints in Clinical Trials</a></li>
   </ul>
 </li>
@@ -166,6 +167,15 @@ closed test with Dunnett’s test for intersection hypotheses.</li>
 <div class="section level2">
 <h2 id="define-three-arms">Define Three Arms<a class="anchor" aria-label="anchor" href="#define-three-arms"></a>
 </h2>
+<p>In this example, we call <code><a href="../reference/endpoint.html">endpoint()</a></code> twice for each arm
+to define <code>PFS</code> and <code>OS</code>. This implicitly assumes
+independence between the two time-to-event endpoints.
+<code>TrialSimulator</code> offers a built-in generator
+<code><a href="../reference/CorrelatedPfsAndOs3.html">CorrelatedPfsAndOs3()</a></code> to generate <code>PFS</code> and
+<code>OS</code> with correlation based on the ill-death model, which
+enjoys several nice properties. For selection of its arguments (i.e. 
+transition hazards), refer to vignette <a href="simulatePfsAndOs.html">Simulate Correlated Progression-Free
+Survival and Overall Survival as Endpoints in Clinical Trials</a>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' define three arms</span></span>
 <span><span class="va">pbo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/arm.html">arm</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'placebo'</span><span class="op">)</span></span>
@@ -657,7 +667,7 @@ time.</p>
 <span><span class="va">output</span> <span class="op">&lt;-</span> <span class="va">controller</span><span class="op">$</span><span class="fu">get_output</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">output</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu">kable</span><span class="op">(</span>escape <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu">kable_styling</span><span class="op">(</span>bootstrap_options <span class="op">=</span> <span class="st">"striped"</span>, </span>
 <span>                full_width <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -772,7 +782,7 @@ Trial-3415
 300
 </td>
 <td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
+c(122, 4….
 </td>
 <td style="text-align:left;">
 low
@@ -793,7 +803,7 @@ low
 534
 </td>
 <td style="text-align:left;">
-&lt;low dose, placebo&gt;
+c(319, 1….
 </td>
 <td style="text-align:left;">
 negative
@@ -814,7 +824,7 @@ negative
 744
 </td>
 <td style="text-align:left;">
-&lt;low dose, placebo&gt;
+c(439, 2….
 </td>
 <td style="text-align:left;">
 accept
@@ -854,7 +864,7 @@ Trial-3415
 300
 </td>
 <td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
+c(123, 4….
 </td>
 <td style="text-align:left;">
 high
@@ -875,7 +885,7 @@ high
 544
 </td>
 <td style="text-align:left;">
-&lt;high dose, placebo&gt;
+c(327, 1….
 </td>
 <td style="text-align:left;">
 negative
@@ -896,7 +906,7 @@ negative
 748
 </td>
 <td style="text-align:left;">
-&lt;high dose, placebo&gt;
+c(439, 2….
 </td>
 <td style="text-align:left;">
 reject
@@ -936,7 +946,7 @@ Trial-3415
 300
 </td>
 <td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
+c(124, 4….
 </td>
 <td style="text-align:left;">
 low
@@ -957,7 +967,7 @@ low
 554
 </td>
 <td style="text-align:left;">
-&lt;low dose, placebo&gt;
+c(339, 1….
 </td>
 <td style="text-align:left;">
 negative
@@ -978,7 +988,7 @@ negative
 740
 </td>
 <td style="text-align:left;">
-&lt;low dose, placebo&gt;
+c(439, 2….
 </td>
 <td style="text-align:left;">
 accept
@@ -1018,7 +1028,7 @@ Trial-3415
 300
 </td>
 <td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
+c(122, 4….
 </td>
 <td style="text-align:left;">
 high
@@ -1039,7 +1049,7 @@ high
 547
 </td>
 <td style="text-align:left;">
-&lt;high dose, placebo&gt;
+c(326, 1….
 </td>
 <td style="text-align:left;">
 negative
@@ -1060,7 +1070,7 @@ negative
 755
 </td>
 <td style="text-align:left;">
-&lt;high dose, placebo&gt;
+c(439, 2….
 </td>
 <td style="text-align:left;">
 reject
@@ -1100,7 +1110,7 @@ Trial-3415
 300
 </td>
 <td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
+c(120, 4….
 </td>
 <td style="text-align:left;">
 low
@@ -1121,7 +1131,7 @@ low
 550
 </td>
 <td style="text-align:left;">
-&lt;low dose, placebo&gt;
+c(334, 1….
 </td>
 <td style="text-align:left;">
 negative
@@ -1142,423 +1152,13 @@ negative
 743
 </td>
 <td style="text-align:left;">
-&lt;low dose, placebo&gt;
+c(440, 2….
 </td>
 <td style="text-align:left;">
 accept
 </td>
 <td style="text-align:left;">
 reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Trial-3415
-</td>
-<td style="text-align:right;">
-1214982489
-</td>
-<td style="text-align:right;">
-11.21385
-</td>
-<td style="text-align:right;">
-361
-</td>
-<td style="text-align:right;">
-146
-</td>
-<td style="text-align:right;">
-66
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-high
-</td>
-<td style="text-align:right;">
-19.47266
-</td>
-<td style="text-align:right;">
-654
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-139
-</td>
-<td style="text-align:right;">
-533
-</td>
-<td style="text-align:left;">
-&lt;high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-negative
-</td>
-<td style="text-align:right;">
-29.53156
-</td>
-<td style="text-align:right;">
-880
-</td>
-<td style="text-align:right;">
-540
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-742
-</td>
-<td style="text-align:left;">
-&lt;high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Trial-3415
-</td>
-<td style="text-align:right;">
-1159524289
-</td>
-<td style="text-align:right;">
-11.35385
-</td>
-<td style="text-align:right;">
-368
-</td>
-<td style="text-align:right;">
-150
-</td>
-<td style="text-align:right;">
-74
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-high
-</td>
-<td style="text-align:right;">
-19.35884
-</td>
-<td style="text-align:right;">
-645
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-140
-</td>
-<td style="text-align:right;">
-534
-</td>
-<td style="text-align:left;">
-&lt;high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-negative
-</td>
-<td style="text-align:right;">
-30.35872
-</td>
-<td style="text-align:right;">
-877
-</td>
-<td style="text-align:right;">
-541
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-734
-</td>
-<td style="text-align:left;">
-&lt;high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Trial-3415
-</td>
-<td style="text-align:right;">
-14594745
-</td>
-<td style="text-align:right;">
-11.39385
-</td>
-<td style="text-align:right;">
-370
-</td>
-<td style="text-align:right;">
-129
-</td>
-<td style="text-align:right;">
-73
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-high
-</td>
-<td style="text-align:right;">
-19.46822
-</td>
-<td style="text-align:right;">
-651
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-150
-</td>
-<td style="text-align:right;">
-545
-</td>
-<td style="text-align:left;">
-&lt;high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-negative
-</td>
-<td style="text-align:right;">
-27.78101
-</td>
-<td style="text-align:right;">
-877
-</td>
-<td style="text-align:right;">
-523
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-749
-</td>
-<td style="text-align:left;">
-&lt;high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Trial-3415
-</td>
-<td style="text-align:right;">
-267680632
-</td>
-<td style="text-align:right;">
-11.29385
-</td>
-<td style="text-align:right;">
-365
-</td>
-<td style="text-align:right;">
-133
-</td>
-<td style="text-align:right;">
-66
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-both
-</td>
-<td style="text-align:right;">
-17.00115
-</td>
-<td style="text-align:right;">
-651
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-165
-</td>
-<td style="text-align:right;">
-544
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-negative
-</td>
-<td style="text-align:right;">
-24.31141
-</td>
-<td style="text-align:right;">
-1000
-</td>
-<td style="text-align:right;">
-520
-</td>
-<td style="text-align:right;">
-302
-</td>
-<td style="text-align:right;">
-808
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Trial-3415
-</td>
-<td style="text-align:right;">
-236356855
-</td>
-<td style="text-align:right;">
-11.29385
-</td>
-<td style="text-align:right;">
-365
-</td>
-<td style="text-align:right;">
-139
-</td>
-<td style="text-align:right;">
-65
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:left;">
-&lt;low dose, high dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-low
-</td>
-<td style="text-align:right;">
-19.15550
-</td>
-<td style="text-align:right;">
-636
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-148
-</td>
-<td style="text-align:right;">
-527
-</td>
-<td style="text-align:left;">
-&lt;low dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-negative
-</td>
-<td style="text-align:right;">
-28.28298
-</td>
-<td style="text-align:right;">
-878
-</td>
-<td style="text-align:right;">
-544
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-753
-</td>
-<td style="text-align:left;">
-&lt;low dose, placebo&gt;
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-accept
 </td>
 <td style="text-align:left;">
 accept
