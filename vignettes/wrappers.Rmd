@@ -22,9 +22,13 @@ library(dplyr)
 library(TrialSimulator)
 ```
 
-`TrialSimulator` provides a set of wrapper functions of common statistical methods used in clinical trial simulations. If more than one active arm exist, the wrapper functions perform pairwise analysis to compare each of the active arms with reference (placebo, control, standard-of-care, etc.). The interface and output are similar across wrapper functions. The statistical model can be specified by R formula, where covariate adjustment is supported in some of the functions. The wrapper functions call the package `emmeans` in pairwise comparison when estimating average treatment effects (ATE). One-sided tests are enforced. Ellipsis argument `...` is supported for subset analysis, which is particularly useful in enrichment design.
+The `TrialSimulator` package provides a unified set of wrapper functions that encapsulate statistical methods commonly used in clinical trial simulations. These functions facilitate model fitting, treatment comparisons, and covariate adjustments within a standardized interface.
 
-The wrapper functions covered in this vignette are summarized in the table below.
+When multiple active treatment arms are present, each wrapper function automatically performs pairwise comparisons between each active arm and the designated reference (e.g., placebo, control, or standard-of-care). All wrapper functions share a consistent syntax and output structure. Most of them support model specification via an R formula interface, and covariate adjustment is available where appropriate.
+
+Pairwise average treatment effects (ATEs) are estimated using the `emmeans` package under the hood. All tests are one-sided, and the ellipsis (`...`) argument can be used to define data subsets, enabling flexible analyses such as those needed in enrichment designs.
+
+Below is a summary of the available wrapper functions included in this vignette, along with their corresponding statistical methods, output metrics, and support for covariate adjustment.
 
 +------------------------+-------------------------+------------------------+------------------------+
 | Function               | Method                  | Statistics in Outputs  | Covariate adjustment   |
@@ -50,12 +54,11 @@ The wrapper functions covered in this vignette are summarized in the table below
 | `fitFarringtonManning` | Farrington-Manning test |                        | No                     |
 +------------------------+-------------------------+------------------------+------------------------+
 
-
 ## Example
 
-To illustrate the wrapper functions, we simulate a hypothetical trials with a 
-covariate and endpoints of various of types. A biomarker is also simulated to
-define sub-groups. The placebo arm is defined as follows. 
+To demonstrate the usage of the wrapper functions, we simulate a hypothetical three-arm trial with one control (`pbo`) and two active doses (`low` and `high`). The trial includes a continuous covariate `x`, three endpoint types (time-to-event, continuous, and binary), and a binary biomarker used to define subgroups.
+
+The placebo arm is constructed as follows:
 
 ```{r ioeajfls}
 ## time-to-event endpoint
@@ -80,12 +83,8 @@ pbo <- arm(name = 'pbo')
 pbo$add_endpoints(pfs, cep, bep, bm, covar)
 ```
 
-To make this vignette short, we hide codes that define the two active arms 
-of `low` or `high` dose, trial. We only define one milestone for final analysis 
-with an empty action function `doNothing`, this is because we are going to 
-request for locked data outside of action function when illustrating the 
-wrapper functions. Note that full codes are available in the source code of this 
-vignette. 
+For brevity, the code for the low and high dose arms and the trial definition are hidden in this vignette. Refer to the source of this vignette for full code. A single milestone for final analysis is defined, with an empty action `doNothing.` This is because we will explicitly request locked data outside of the action function when demonstrating the wrapper functions.
+
 
 ```{r eualgha, echo=FALSE}
 ## time-to-event endpoint
@@ -150,9 +149,7 @@ listener$add_milestones(final)
 controller <- controller(trial, listener)
 ```
 
-Now we execute a trial. Trial data is now available in the object `trial`, and 
-can be accessed by calling the member function `get_locked_data()` with milestone 
-name `final`. 
+Now we execute the trial. After simulation, locked data can be retrieved using the `get_locked_data()` method with the milestone name `"final"`.
 
 ```{r ieoajf}
 controller$run(n = 1, plot_event = FALSE, silent = TRUE)
@@ -164,7 +161,8 @@ table(locked_data$arm)
 
 ## Analyze Time-to-Event Endpoint
 
-We analyze `pfs` by fitting Cox proportional hazard model and logrank test
+We begin by analyzing the time-to-event endpoint `pfs` using both a Cox proportional hazards model and a log-rank test. When performing analysis on a subset defined via the `...` argument, the syntax must be compatible with that of `dplyr::filter()`.
+
 ```{r ghkaljf}
 ## adjust for covariate x
 fitCoxph(Surv(pfs, pfs_event) ~ arm + x, placebo = 'pbo', 
@@ -181,11 +179,18 @@ fitLogrank(Surv(pfs, pfs_event) ~ arm, placebo = 'pbo',
 ## with strata
 fitLogrank(Surv(pfs, pfs_event) ~ arm + strata(biomarker), placebo = 'pbo', 
            data = locked_data, alternative = 'less')
+
+## analyze a subset
+fitCoxph(Surv(pfs, pfs_event) ~ arm + strata(biomarker), placebo = 'pbo', 
+         data = locked_data, alternative = 'less', 
+         scale = 'log hazard ratio', 
+         x > -2 & x < 3) ## define a subset
 ```
 
 ## Analyze Continuous Endpoint
 
-We fit linear regression model for `cep`, the continuous endpoint
+We analyze the continuous endpoint `cep` using linear models, with and without covariate adjustment.
+
 ```{r saljfh}
 ## ATE accounting for covariate x
 fitLinear(cep ~ arm * x, placebo = 'pbo', 
@@ -194,12 +199,16 @@ fitLinear(cep ~ arm * x, placebo = 'pbo',
 ## marginal model
 fitLinear(cep ~ arm, placebo = 'pbo', 
           data = locked_data, alternative = 'greater')
+
+## analyze a sub-group
+fitLinear(cep ~ arm, placebo = 'pbo', 
+          data = locked_data, alternative = 'greater', 
+          biomarker == 1) ## define the subgroup
 ```
 
 ## Analyze Binary Endpoint
 
-We fit different logistic regression models for the binary endpoint `bep`, and 
-compute different types of statistics. 
+We analyze the binary endpoint `bep` using logistic regression. Multiple estimands (e.g., odds ratio, risk ratio, risk difference) can be computed by specifying the `scale` argument.
 
 ```{r pqeir}
 ## compute regression coefficient of arm
@@ -218,9 +227,7 @@ fitLogistic(bep ~ arm + x + biomarker, placebo = 'pbo',
             scale = 'risk ratio')
 ```
 
-The risk difference can be tested by logistic regression and the 
-Farrington-Manning test. However, the Farrington-Manning test cannot account for 
-covariates. 
+The risk difference can also be estimated using logistic regression or the Farrington-Manning test. Note that the latter does not support covariate adjustment.
 
 ```{r uyta}
 ## compute risk difference (ATE)
@@ -233,9 +240,15 @@ fitLogistic(bep ~ arm, placebo = 'pbo',
             data = locked_data, alternative = 'greater', 
             scale = 'risk difference')
 
+## analyze a sub-group
+fitLogistic(bep ~ arm, placebo = 'pbo', 
+            data = locked_data, alternative = 'greater', 
+            scale = 'risk difference', 
+            x < 2 & biomarker != 1) ## define a subgroup
+
+## analyze the same sub-group using the FM test,
+## same estimate but different p-values
 fitFarringtonManning(endpoint = 'bep', placebo = 'pbo', 
-                     data = locked_data, alternative = 'greater')
+                     data = locked_data, alternative = 'greater', 
+                     x < 2 & biomarker != 1)
 ```
-
-
-
