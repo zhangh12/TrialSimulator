@@ -711,60 +711,115 @@ hazard ratio for <code>PFS</code>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">output</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">matches</a></span><span class="op">(</span><span class="st">'_&lt;decision&gt;$'</span><span class="op">)</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">.</span> <span class="op">==</span> <span class="st">'reject'</span><span class="op">)</span>, .names <span class="op">=</span> <span class="st">'Power_{.col}'</span><span class="op">)</span>, </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">matches</a></span><span class="op">(</span><span class="st">'_&lt;decision&gt;$'</span><span class="op">)</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">.</span> <span class="op">==</span> <span class="st">'reject'</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>, .names <span class="op">=</span> <span class="st">'Power_{.col}'</span><span class="op">)</span>, </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">matches</a></span><span class="op">(</span><span class="st">'_&lt;estimate&gt;$'</span><span class="op">)</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">.x</span><span class="op">)</span>, .names <span class="op">=</span> <span class="st">'HR_{.col}'</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename_with</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">'_&lt;decision&gt;$'</span>, <span class="st">''</span>, <span class="va">.</span><span class="op">)</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">'Power_'</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename_with</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">'_&lt;estimate&gt;$'</span>, <span class="st">''</span>, <span class="va">.</span><span class="op">)</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">'HR_'</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
-<span>  <span class="fu">kable</span><span class="op">(</span>escape <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
-<span>  <span class="fu">kable_styling</span><span class="op">(</span>bootstrap_options <span class="op">=</span> <span class="st">"striped"</span>, </span>
-<span>                full_width <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>                position <span class="op">=</span> <span class="st">"left"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu">scroll_box</span><span class="op">(</span>width <span class="op">=</span> <span class="st">"100%"</span><span class="op">)</span></span></code></pre></div>
-<div style="border: 1px solid #ddd; padding: 5px; overflow-x: scroll; width:100%; ">
-<table class="table table table-striped" style="width: auto !important; ">
-<thead><tr>
+<span>  <span class="fu">kable</span><span class="op">(</span>col.name <span class="op">=</span> <span class="cn">NULL</span>, digits <span class="op">=</span> <span class="fl">3</span>, align <span class="op">=</span> <span class="st">'r'</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">add_header_above</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Low'</span>, <span class="st">'High'</span>, <span class="st">'Low'</span>, <span class="st">'High'</span>, <span class="st">'Low'</span>, <span class="st">'High'</span><span class="op">)</span>, align <span class="op">=</span> <span class="st">'r'</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">add_header_above</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'PFS'</span> <span class="op">=</span> <span class="fl">2</span>, <span class="st">'OS'</span> <span class="op">=</span> <span class="fl">2</span>, <span class="st">'PFS'</span> <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">add_header_above</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Power (%)'</span> <span class="op">=</span> <span class="fl">4</span>, <span class="st">'Hazard Ratio'</span> <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">kable_styling</span><span class="op">(</span>full_width <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<table class="table table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="4">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Power (%)
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Hazard Ratio
+</div>
+</th>
+</tr>
+<tr>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+PFS
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+OS
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+PFS
+</div>
+</th>
+</tr>
+<tr>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Low
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+High
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Low
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+High
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Low
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: right; " colspan="1">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+High
+</div>
+</th>
+</tr>
+<tr>
 <th style="text-align:right;">
-Power_pfs_low
 </th>
 <th style="text-align:right;">
-Power_pfs_high
 </th>
 <th style="text-align:right;">
-Power_os_low
 </th>
 <th style="text-align:right;">
-Power_os_high
 </th>
 <th style="text-align:right;">
-HR_pfs_low
 </th>
 <th style="text-align:right;">
-HR_pfs_high
 </th>
-</tr></thead>
+</tr>
+</thead>
 <tbody><tr>
 <td style="text-align:right;">
-0.69
+69
 </td>
 <td style="text-align:right;">
-0.96
+96
 </td>
 <td style="text-align:right;">
-0.66
+66
 </td>
 <td style="text-align:right;">
-0.84
+84
 </td>
 <td style="text-align:right;">
-0.785356
+0.785
 </td>
 <td style="text-align:right;">
-0.7073538
+0.707
 </td>
 </tr></tbody>
 </table>
-</div>
 <p>Note that <code>OS</code> does not satisfy the proportional hazard
 assumption, and a composite condition on event numbers is used to
 trigger the final analysis. Thus, the powers in the table above would
