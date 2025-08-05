@@ -53,7 +53,7 @@ Farrington-Manning test</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fitFarringtonManning</span><span class="op">(</span><span class="va">endpoint</span>, <span class="va">placebo</span>, <span class="va">data</span>, <span class="va">alternative</span>, delta <span class="op">=</span> <span class="fl">0</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fitFarringtonManning</span><span class="op">(</span><span class="va">endpoint</span>, <span class="va">placebo</span>, <span class="va">data</span>, <span class="va">alternative</span>, <span class="va">...</span>, delta <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -79,11 +79,6 @@ must be one of <code>"greater"</code> or <code>"less"</code>. No default value.
 by rate difference greater than `delta`.</p></dd>
 
 
-<dt id="arg-delta">delta<a class="anchor" aria-label="anchor" href="#arg-delta"></a></dt>
-<dd><p>the rate difference between a treatment arm and placebo under
-the null.</p></dd>
-
-
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Subset conditions compatible with <code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter</a></code>.
 <code>glm</code> will be fitted on this subset only. This argument can be useful
@@ -98,10 +93,24 @@ Note that if more than one treatment arm are present in the data after
 applying filter in <code>...</code>, models are fitted for placebo verse
 each of the treatment arms.</p></dd>
 
+
+<dt id="arg-delta">delta<a class="anchor" aria-label="anchor" href="#arg-delta"></a></dt>
+<dd><p>the rate difference between a treatment arm and placebo under
+the null. 0 by default.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>a data frame with three columns:</p><dl><dt><code>p</code></dt>
+    <p>a data frame with three columns:</p><dl><dt><code>arm</code></dt>
+<dd><p>name of the treatment arm.</p></dd>
+
+<dt><code>placebo</code></dt>
+<dd><p>name of the placebo arm.</p></dd>
+
+<dt><code>estimate</code></dt>
+<dd><p>estimate of rate difference.</p></dd>
+
+<dt><code>p</code></dt>
 <dd><p>one-sided p-value for log odds ratio (treated vs placebo).</p></dd>
 
 <dt><code>info</code></dt>
