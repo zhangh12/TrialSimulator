@@ -63,10 +63,7 @@ To efficiently utilize `TrialSimulator` for clinical trial simulations, we recom
 - Examples: adaptive design
   - [Design with dose selection, interim, and multiple endpoints](https://zhangh12.github.io/TrialSimulator/articles/adaptiveDesign.html)
 - Built-in methods supported in `TrialSimulator`
-  - [The logrank test]
-  - [Cox proportional hazard model]
-  - [Linear regression model]
-  - [Logistic regression model]
+  - [Wrapper functions of common statistical methods](https://zhangh12.github.io/TrialSimulator/articles/wrappers.html)
   - [Group sequential test]
   - [Graphical testing procedure]
   - [Combination test based on independent increment]
