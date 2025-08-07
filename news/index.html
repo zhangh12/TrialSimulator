@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.92.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.93.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,6 +43,14 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.93.0" id="trialsimulator-0930">TrialSimulator 0.93.0<a class="anchor" aria-label="anchor" href="#trialsimulator-0930"></a></h2>
+<div class="section level3">
+<h3 id="new-feature-0-93-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-0-93-0"></a></h3>
+<ul><li>
+<code>update_sample_ratio()</code> now supports updating multiple arms simultaneously. When ratio is not a whole number, <code><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample()</a></code> is used to replace the permuted block algorithm to randomize patients to arms. This enable response-adaptive design.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.92.0" id="trialsimulator-0920">TrialSimulator 0.92.0<a class="anchor" aria-label="anchor" href="#trialsimulator-0920"></a></h2>
 <div class="section level3">
