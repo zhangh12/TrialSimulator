@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.92.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.93.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -228,10 +228,16 @@ framework, you can generate PFS and OS directly by calling
 <span><span class="co">#&gt;        pfs        os pfs_event os_event</span></span>
 <span><span class="co">#&gt; 1 4.263915 12.997581         1        1</span></span>
 <span><span class="co">#&gt; 2 4.257848  4.257848         1        1</span></span>
+<span></span>
+<span><span class="co">## should be close to 0.6</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">dat</span>, <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">pfs</span>, <span class="va">os</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 0.58961</span></span>
+<span></span>
+<span><span class="co">## should be close to 5.0</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">dat</span>, <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">pfs</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 4.965547</span></span>
+<span></span>
+<span><span class="co">## should be close to 12.0</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">dat</span>, <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">os</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 12.06319</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">dat</span>, <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">pfs</span> <span class="op">&lt;=</span> <span class="va">os</span><span class="op">)</span><span class="op">)</span></span>

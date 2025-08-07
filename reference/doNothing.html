@@ -3,21 +3,25 @@
 is triggered. When the listener is monitoring a trial and determining the
 time to trigger a milestone, data is automatically locked with other necessary
 data manipulation being executed. If the users have no intent to modify the
-trial adaptively at the milestone, e.g., adding (Trial$add_arms()) or
-removing (Trial$remove_arms()) arm(s),
-changing sampling ratio(s) (Trial$update_sample_ratio()),
+trial adaptively at the milestone, e.g., adding (add_arms()) or
+removing (remove_arms()) arm(s),
+changing sampling ratio(s) (update_sample_ratio()),
 modifying trial duration, carrying out statistical testing,
-or saving intermediate results (Trial$save()), then this function
-can be used to set the argument action when creating a new milestone."><meta property="og:description" content="This is an action function that does nothing when the corresponding milestone
+or saving intermediate results (save()), then this function
+can be used to set the argument action when creating a new milestone.
+Note that the triggering time of a milestone with action = doNothing
+is still recorded in output automatically."><meta property="og:description" content="This is an action function that does nothing when the corresponding milestone
 is triggered. When the listener is monitoring a trial and determining the
 time to trigger a milestone, data is automatically locked with other necessary
 data manipulation being executed. If the users have no intent to modify the
-trial adaptively at the milestone, e.g., adding (Trial$add_arms()) or
-removing (Trial$remove_arms()) arm(s),
-changing sampling ratio(s) (Trial$update_sample_ratio()),
+trial adaptively at the milestone, e.g., adding (add_arms()) or
+removing (remove_arms()) arm(s),
+changing sampling ratio(s) (update_sample_ratio()),
 modifying trial duration, carrying out statistical testing,
-or saving intermediate results (Trial$save()), then this function
-can be used to set the argument action when creating a new milestone."><meta property="og:image" content="https://zhangh12.github.io/TrialSimulator/logo.png"></head><body>
+or saving intermediate results (save()), then this function
+can be used to set the argument action when creating a new milestone.
+Note that the triggering time of a milestone with action = doNothing
+is still recorded in output automatically."><meta property="og:image" content="https://zhangh12.github.io/TrialSimulator/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -25,7 +29,7 @@ can be used to set the argument action when creating a new milestone."><meta pro
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.92.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.93.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -67,12 +71,14 @@ can be used to set the argument action when creating a new milestone."><meta pro
 is triggered. When the listener is monitoring a trial and determining the
 time to trigger a milestone, data is automatically locked with other necessary
 data manipulation being executed. If the users have no intent to modify the
-trial adaptively at the milestone, e.g., adding (<code>Trial$add_arms()</code>) or
-removing (<code>Trial$remove_arms()</code>) arm(s),
-changing sampling ratio(s) (<code>Trial$update_sample_ratio()</code>),
+trial adaptively at the milestone, e.g., adding (<code>add_arms()</code>) or
+removing (<code>remove_arms()</code>) arm(s),
+changing sampling ratio(s) (<code>update_sample_ratio()</code>),
 modifying trial duration, carrying out statistical testing,
-or saving intermediate results (<code>Trial$save()</code>), then this function
-can be used to set the argument <code>action</code> when creating a new milestone.</p>
+or saving intermediate results (<code><a href="https://rdrr.io/r/base/save.html" class="external-link">save()</a></code>), then this function
+can be used to set the argument <code>action</code> when creating a new milestone.
+Note that the triggering time of a milestone with <code>action = doNothing</code>
+is still recorded in output automatically.</p>
     </div>
 
     <div class="section level2">
