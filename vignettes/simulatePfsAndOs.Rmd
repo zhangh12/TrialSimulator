@@ -115,8 +115,14 @@ If you are not familiar with the `TrialSimulator` framework, you can generate PF
 ```{r llea}
 dat <- CorrelatedPfsAndOs3(n = 1e6, h01 = .11, h02 = .03, h12 = .10)
 head(dat, 2)
+
+## should be close to 0.6
 with(dat, cor(pfs, os))
+
+## should be close to 5.0
 with(dat, median(pfs))
+
+## should be close to 12.0
 with(dat, median(os))
 with(dat, all(pfs <= os))
 ```

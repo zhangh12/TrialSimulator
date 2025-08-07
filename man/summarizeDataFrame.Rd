@@ -27,6 +27,10 @@ variable should be corresponding to an event indicator.}
 \item{categorical_vars}{character. Vector of categorical variables. This can
 be used to specify variables with limited distinct values as categorical
 variables in summary.}
+
+\item{title}{title of the summary report.}
+
+\item{sub_title}{sub-title.}
 }
 \value{
 a data frame of summary

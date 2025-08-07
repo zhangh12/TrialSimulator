@@ -16,7 +16,7 @@
 #' The event indicators are all 1s.
 #' @export
 #'
-#' @importFrom stats model.frame model.response rexp
+#' @importFrom stats model.frame model.response rexp cor
 #'
 #' @examples
 #'

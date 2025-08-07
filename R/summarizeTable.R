@@ -11,6 +11,8 @@
 #' @param categorical_vars character. Vector of categorical variables. This can
 #' be used to specify variables with limited distinct values as categorical
 #' variables in summary.
+#' @param title title of the summary report.
+#' @param sub_title sub-title.
 #'
 #' @returns a data frame of summary
 #' @export
