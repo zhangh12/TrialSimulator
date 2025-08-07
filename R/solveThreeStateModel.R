@@ -127,35 +127,40 @@ solveThreeStateModel <- function(median_pfs, median_os, corr,
 
 }
 
+#' Plot result of three-state ill-death model
+#'
+#' @param x an object returned by \code{solveThreeStateModel()}.
+#' @param ... currently not supported.
+#'
 #' @export
-plot.three_state_model <- function(obj){
+plot.three_state_model <- function(x, ...){
 
-  data_points <- attr(obj, 'data')
-  data_lines <- obj %>%
-    mutate(label = sprintf("(%.2f, %.4f)", corr, h12))
+  data_points <- attr(x, 'data')
+  data_lines <- x %>%
+    mutate(label = sprintf("(%.2f, %.4f)", .data$corr, .data$h12))
 
   suppressWarnings(
   p <- ggplot(data_points,
-              aes(x = corr, y = h12)) +
+              aes(x = .data$corr, y = .data$h12)) +
     geom_point() +
 
     geom_segment(data_lines,
                  mapping =
-                   aes(x = corr, xend = corr,
-                       y = 0, yend = h12),
+                   aes(x = .data$corr, xend = .data$corr,
+                       y = 0, yend = .data$h12),
                  linetype = 'dashed',
                  color = 'blue', inherit.aes = FALSE) +
 
     geom_segment(data_lines,
                  mapping =
-                   aes(x = 0, xend = corr,
-                       y = h12, yend = h12),
+                   aes(x = 0, xend = .data$corr,
+                       y = .data$h12, yend = .data$h12),
                  linetype = 'dashed',
                  color = 'blue', inherit.aes = FALSE) +
 
     geom_text(data_lines,
               mapping =
-                aes(x = corr, y = h12, label = label),
+                aes(x = .data$corr, y = .data$h12, label = .data$label),
               vjust = 2, hjust = -.2, inherit.aes = FALSE) +
 
     xlim(min(data_points$corr)*.9, max(data_points$corr)*1.1) +
@@ -163,7 +168,7 @@ plot.three_state_model <- function(obj){
     ylab(expression(h[12]))
   )
 
-  print.data.frame(obj)
+  print.data.frame(x)
 
   print(p)
 

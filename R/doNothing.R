@@ -4,12 +4,14 @@
 #' is triggered. When the listener is monitoring a trial and determining the
 #' time to trigger a milestone, data is automatically locked with other necessary
 #' data manipulation being executed. If the users have no intent to modify the
-#' trial adaptively at the milestone, e.g., adding (\code{Trial$add_arms()}) or
-#' removing (\code{Trial$remove_arms()}) arm(s),
-#' changing sampling ratio(s) (\code{Trial$update_sample_ratio()}),
+#' trial adaptively at the milestone, e.g., adding (\code{add_arms()}) or
+#' removing (\code{remove_arms()}) arm(s),
+#' changing sampling ratio(s) (\code{update_sample_ratio()}),
 #' modifying trial duration, carrying out statistical testing,
-#' or saving intermediate results (\code{Trial$save()}), then this function
+#' or saving intermediate results (\code{save()}), then this function
 #' can be used to set the argument \code{action} when creating a new milestone.
+#' Note that the triggering time of a milestone with \code{action = doNothing}
+#' is still recorded in output automatically.
 #'
 #' @param trial a \code{Trial} object.
 #' @param milestone_name character. Name of milestone being triggered.

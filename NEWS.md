@@ -1,3 +1,9 @@
+# TrialSimulator 0.93.0
+
+## New Feature
+
+- `update_sample_ratio()` now supports updating multiple arms simultaneously. When ratio is not a whole number, `sample()` is used to replace the permuted block algorithm to randomize patients to arms. This enable response-adaptive design. 
+
 # TrialSimulator 0.92.0
 
 ## Update

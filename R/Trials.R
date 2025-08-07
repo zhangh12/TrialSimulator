@@ -299,30 +299,38 @@ Trials <- R6::R6Class(
     },
 
     #' @description
-    #' update sample ratio of an arm. This could happen after an arm is added
-    #' or removed. We may want to update sample ratio of unaffected arms as
-    #' well. This function can only update sample ratio for one arm at a time.
-    #' Once sample ratio is updated, trial data should be rolled back with
+    #' update sample ratios of arms. This could happen after an arm is added
+    #' or removed. Note that we may update sample ratios of unaffected arms as
+    #' well. Once sample ratio is updated, trial data should be rolled back with
     #' updated randomization queue. Data of unenrolled patients should be
     #' re-sampled as well.
-    #' @param arm_name character. Name of an arm of length 1.
-    #' @param sample_ratio integer. Sample ratio of the arm.
-    update_sample_ratio = function(arm_name, sample_ratio){
+    #' @param arm_names character vector. Name of arms.
+    #' @param sample_ratios numeric vector. New sample ratios of arms. If
+    #' sample ratio is a whole number, the permuted block randomization is
+    #' adopted; otherwise, \code{sample()} will be used instead, which can
+    #' cause imbalance between arms by chance. However, this is fine for
+    #' simulation.
+    update_sample_ratio = function(arm_names, sample_ratios){
 
-      stopifnot(is.character(arm_name))
-      stopifnot(length(arm_name) == 1)
-      stopifnot(is.numeric(sample_ratio) && all(is.wholenumber(sample_ratio)))
-      stopifnot(length(sample_ratio) == 1)
-      if(is.null(private$arms[[arm_name]])){
-        stop('Arm ', arm_name, ' is not in the trial. ')
+      stopifnot(is.character(arm_names))
+      # stopifnot(length(arm_name) == 1)
+      # stopifnot(is.numeric(sample_ratio) && all(is.wholenumber(sample_ratio)))
+      stopifnot(is.numeric(sample_ratios) && all(sample_ratios > 0))
+      # stopifnot(length(sample_ratio) == 1)
+
+      for(arm_name in arm_names){
+        if(is.null(private$arms[[arm_name]])){
+          stop('Arm ', arm_name, ' is not in the trial. ')
+        }
+
+        if(!(arm_name %in% names(self$get_sample_ratio()))){
+          stop('Sample ratio of arm ', arm_name, ' is not in the trial.')
+        }
       }
 
-      if(!(arm_name %in% names(self$get_sample_ratio()))){
-        stop('Sample ratio of arm ', arm_name, ' is not in the trial. \n',
-             'Usually this means issue in the package. Debug it. ')
+      for(i in seq_along(arm_names)){
+        private$sample_ratio[arm_names[i]] <- sample_ratios[i]
       }
-
-      private$sample_ratio[arm_name] <- sample_ratio
 
       if(!private$silent){
         message('Sample ratio has been udpated to be <',
@@ -336,7 +344,9 @@ Trials <- R6::R6Class(
       self$roll_back()
 
       ## update data for unrolled patients based on new arms and possibly
-      ## new sample ratio.
+      ## new sample ratio. Note that if sample ratio is not whole number,
+      ## the permuted block algorithm will be switched to sample() because
+      ## it is not easy to specify a block with proper size automatically.
       self$enroll_patients()
     },
 
@@ -1609,7 +1619,9 @@ Trials <- R6::R6Class(
     #' @examples
     #'
     #' \dontrun{
-    #' trial$independentIncrement(Surv(pfs, pfs_event) ~ arm, 'pbo', listener$get_milestone_names(), 'less', 'oracle')
+    #' trial$independentIncrement(Surv(pfs, pfs_event) ~ arm, 'pbo',
+    #'                            listener$get_milestone_names(),
+    #'                            'less', 'oracle')
     #' }
     independentIncrement = function(formula, placebo, milestones, alternative,
                                     planned_info,
@@ -2553,10 +2565,6 @@ Trials <- R6::R6Class(
             self$get_number_unenrolled_patients())
       }
 
-      if(is.null(block_size)){
-        block_size <- sum(self$get_sample_ratio())
-      }
-
       if(self$get_number_unenrolled_patients() == 0){
         stop('All patients are enrolled. No further randomization is needed. \n',
              'If you see this message, there is probably an unexpected issue with your code. \n',
@@ -2567,6 +2575,35 @@ Trials <- R6::R6Class(
              'so that a new arm can be removed or added. \n',
              'Those patients will be randomized again. \n')
       }
+
+
+      if(!all(is.wholenumber(private$sample_ratio))){
+        if(!private$silent){
+          message('Permuted block randomization is replaced with sample() ',
+                  'as not all sample ratios are whole numbers. ',
+                  'This is useful if response-adaptive randomization is adopted. ')
+        }
+
+        arm_names <- names(private$sample_ratio)
+        private$randomization_queue <- sample(arm_names,
+                                              size = self$get_number_unenrolled_patients(),
+                                              replace = TRUE,
+                                              prob = private$sample_ratio)
+
+        if(!private$silent){
+          message('Randomization is done for ',
+                  self$get_number_unenrolled_patients(),
+                  ' potential patients. \n')
+        }
+
+        return(invisible(NULL))
+      }
+
+
+      if(is.null(block_size)){
+        block_size <- sum(self$get_sample_ratio())
+      }
+
       block <- rep(seq(private$sample_ratio), times = private$sample_ratio)
       blocks <- rep(block, length.out = self$get_number_unenrolled_patients())
       randomization_queue <-
@@ -2582,10 +2619,7 @@ Trials <- R6::R6Class(
 
       if(!private$silent){
         message('Randomization is done for ', length(randomization_queue),
-                ' potential patients. \n') #,
-                # 'Make sure that you only see this message when initializing a trial, \n',
-                # 'or after adding/removing an arm from the trial. \n',
-                # 'Otherwise it may indicator a potential issue. \n')
+                ' potential patients. \n')
       }
     },
 

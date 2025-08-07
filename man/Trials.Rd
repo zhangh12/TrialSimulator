@@ -18,7 +18,9 @@ Create a class of trial.
 
 
 \dontrun{
-trial$independentIncrement(Surv(pfs, pfs_event) ~ arm, 'pbo', listener$get_milestone_names(), 'less', 'oracle')
+trial$independentIncrement(Surv(pfs, pfs_event) ~ arm, 'pbo',
+                           listener$get_milestone_names(),
+                           'less', 'oracle')
 }
 
 ## ------------------------------------------------
@@ -307,22 +309,25 @@ interim analysis (early stop for efficacy)
 \if{html}{\out{<a id="method-Trials-update_sample_ratio"></a>}}
 \if{latex}{\out{\hypertarget{method-Trials-update_sample_ratio}{}}}
 \subsection{Method \code{update_sample_ratio()}}{
-update sample ratio of an arm. This could happen after an arm is added
-or removed. We may want to update sample ratio of unaffected arms as
-well. This function can only update sample ratio for one arm at a time.
-Once sample ratio is updated, trial data should be rolled back with
+update sample ratios of arms. This could happen after an arm is added
+or removed. Note that we may update sample ratios of unaffected arms as
+well. Once sample ratio is updated, trial data should be rolled back with
 updated randomization queue. Data of unenrolled patients should be
 re-sampled as well.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$update_sample_ratio(arm_name, sample_ratio)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$update_sample_ratio(arm_names, sample_ratios)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{arm_name}}{character. Name of an arm of length 1.}
+\item{\code{arm_names}}{character vector. Name of arms.}
 
-\item{\code{sample_ratio}}{integer. Sample ratio of the arm.}
+\item{\code{sample_ratios}}{numeric vector. New sample ratios of arms. If
+sample ratio is a whole number, the permuted block randomization is
+adopted; otherwise, \code{sample()} will be used instead, which can
+cause imbalance between arms by chance. However, this is fine for
+simulation.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1051,7 +1056,9 @@ Accumulative data is used. }
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{
 \dontrun{
-trial$independentIncrement(Surv(pfs, pfs_event) ~ arm, 'pbo', listener$get_milestone_names(), 'less', 'oracle')
+trial$independentIncrement(Surv(pfs, pfs_event) ~ arm, 'pbo',
+                           listener$get_milestone_names(),
+                           'less', 'oracle')
 }
 }
 \if{html}{\out{</div>}}
