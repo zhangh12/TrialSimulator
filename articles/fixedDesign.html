@@ -45,6 +45,7 @@
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/fixedDesign.html">An Example of Fixed Design with Two Correlated Endpoints</a></li>
+    <li><a class="dropdown-item" href="../articles/responseAdaptive.html">Designs with Response-Adaptive Randomization</a></li>
     <li><a class="dropdown-item" href="../articles/simulatePfsAndOs.html">Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/wrappers.html">Wrapper Functions of Common Statistical Methods in TrialSimulator</a></li>
   </ul>
@@ -285,7 +286,16 @@ a seed for the purpose of reproducibility.</p>
 <span>  silent <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, <span class="va">soc</span>, <span class="va">low</span>, <span class="va">high</span><span class="op">)</span> <span class="co">## 1:1:1</span></span></code></pre></div>
+<span><span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, <span class="va">soc</span>, <span class="va">low</span>, <span class="va">high</span><span class="op">)</span> <span class="co">## 1:1:1</span></span>
+<span><span class="va">trial</span></span>
+<span><span class="co">#&gt;  ⚕⚕ Trial Name:  Trial-3415  </span></span>
+<span><span class="co">#&gt;  ⚕⚕ Description:  Trial-3415  </span></span>
+<span><span class="co">#&gt;  ⚕⚕ # of Arms:  3  </span></span>
+<span><span class="co">#&gt;  ⚕⚕ Registered Arms:  soc, low, high  </span></span>
+<span><span class="co">#&gt;  ⚕⚕ Sample Ratio:  1, 1, 1  </span></span>
+<span><span class="co">#&gt;  ⚕⚕ # of Patients:  1000  </span></span>
+<span><span class="co">#&gt;  ⚕⚕ Planned Duration:  500  </span></span>
+<span><span class="co">#&gt;  ⚕⚕ Random Seed:  1727811904</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="define-milestone-and-action-for-final-analysis">Define Milestone and Action for Final Analysis<a class="anchor" aria-label="anchor" href="#define-milestone-and-action-for-final-analysis"></a>

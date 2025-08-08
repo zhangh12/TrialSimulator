@@ -25,6 +25,7 @@
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/fixedDesign.html">An Example of Fixed Design with Two Correlated Endpoints</a></li>
+    <li><a class="dropdown-item" href="../articles/responseAdaptive.html">Designs with Response-Adaptive Randomization</a></li>
     <li><a class="dropdown-item" href="../articles/simulatePfsAndOs.html">Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/wrappers.html">Wrapper Functions of Common Statistical Methods in TrialSimulator</a></li>
   </ul></li>
@@ -49,6 +50,7 @@
 <h3 id="new-feature-0-93-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-0-93-0"></a></h3>
 <ul><li>
 <code>update_sample_ratio()</code> now supports updating multiple arms simultaneously. When ratio is not a whole number, <code><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample()</a></code> is used to replace the permuted block algorithm to randomize patients to arms. This enable response-adaptive design.</li>
+<li>Add a vignette of response-adaptive design using <code>update_sample_ratio()</code>.</li>
 </ul></div>
 </div>
     <div class="section level2">
