@@ -152,7 +152,7 @@ trial <- trial(
 )
 
 trial$add_arms(sample_ratio = c(1, 1, 1), soc, low, high) ## 1:1:1
-
+trial
 ```
 
 
