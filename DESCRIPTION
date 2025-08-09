@@ -24,6 +24,7 @@ Authors@R:
     person("Han", "Zhang", , "zhangh.ustc@gmail.com", role = c("cre", "aut"))
 RoxygenNote: 7.3.2
 Suggests: 
+    DoseFinding,
     graphicalMCP,
     kableExtra,
     knitr,
