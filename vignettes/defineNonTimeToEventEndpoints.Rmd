@@ -24,15 +24,15 @@ library(TrialSimulator)
 set.seed(12345)
 ```
 
-`TrialSimulator` provides a flexible framework for defining and simulating a variety of clinical trial endpoints by specifying the `type` parameter in `endpoints`. This vignette covers non-time-to-event (non-TTE) endpoints, demonstrating how they can be defined, integrated into trial arms, and analyzed at pre-specified milestone triggers. For time-to-event endpoints, please refer to the vignette [Define Time-to-Event Endpoints in Clinical Trials](defineTimeToEventEndpoints.html).
+`TrialSimulator` provides a flexible framework for defining and simulating a variety of clinical trial endpoints by specifying the `type` parameter in `endpoint`. This vignette covers non-time-to-event (non-TTE) endpoints, demonstrating how they can be defined, integrated into trial arms, and analyzed at pre-specified milestones. For time-to-event endpoints, please refer to the vignette [Define Time-to-Event Endpoints in Clinical Trials](defineTimeToEventEndpoints.html). For longitudinal endpoints, please refer to the vignette [Define Longitudinal Endpoints in Clinical Trials](defineLongitudinalEndpoints.html)
 
-This vignette demonstrates how to use the following key functions to define time-to-event endpoints. For the sake of completeness, we also demonstrates how to define arms and trial with the created endpoints
+This vignette demonstrates how to use the following key functions to define non-TTE endpoints. For the sake of completeness, we also demonstrates how to define arms and trial with the created endpoints
 
-- `endpoint`: Creates one or more endpoints
-- `test_generator`: Generates an example dataset from an Endpoint object
+- `endpoint`: Creates one or more endpoints. It can also be used to define covariates, bio-markers, sub-group indicators, etc. 
+- `test_generator`: Generates an example dataset from an endpoint object
 - `arm`: Creates one or more arms
-- `add_endpoints`: Add one or more endpoints into an arm
-- `milestone`: Defines one or more milestones when data snapshots are created for analysis
+- `add_endpoints`: Add one or more endpoints to an arm
+- `milestone`: Defines one or more milestones when data snapshots are needed for analysis
 
 
 ## Define endpoints with random number generators
