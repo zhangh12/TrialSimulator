@@ -29,7 +29,6 @@ set.seed(12345)
 This vignette demonstrates how to use the following key functions to define non-TTE endpoints. For the sake of completeness, we also demonstrates how to define arms and trial with the created endpoints
 
 - `endpoint`: Creates one or more endpoints. It can also be used to define covariates, bio-markers, sub-group indicators, etc. 
-- `test_generator`: Generates an example dataset from an endpoint object
 - `arm`: Creates one or more arms
 - `add_endpoints`: Add one or more endpoints to an arm
 - `milestone`: Defines one or more milestones when data snapshots are needed for analysis
