@@ -1,3 +1,9 @@
+# TrialSimulator 0.94.0
+
+## New Feature
+
+- Add function `summarizeMilestoneTime` and its plot method to summarize triggering time of milestones. 
+
 # TrialSimulator 0.93.0
 
 ## New Feature
