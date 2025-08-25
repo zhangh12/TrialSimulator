@@ -49,7 +49,7 @@ gst$test(285, FALSE, .006)
 ## print testing trajectory by now
 gst
 
-gst$test(393, TRUE, 002)
+gst$test(393, TRUE, .002)
 
 ## print all testing trajectory
 gst

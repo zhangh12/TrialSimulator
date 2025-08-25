@@ -1,3 +1,9 @@
+# TrialSimulator 0.95.0
+
+## Update
+
+- Add vignette of action function. 
+
 # TrialSimulator 0.94.0
 
 ## New Feature
