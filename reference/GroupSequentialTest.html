@@ -25,7 +25,7 @@ supported which should be sufficient for common use in clinical design."><meta p
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.94.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,7 +36,8 @@ supported which should be sufficient for common use in clinical design."><meta p
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/actionFunctions.html">Specify Actions to Execute at Trial Milestones</a></li>
+    <li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
     <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
     <li><a class="dropdown-item" href="../articles/defineArms.html">Define and Summarize Arms in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineLongitudinalEndpoints.html">Define Longitudinal Endpoints in Clinical Trials</a></li>
@@ -442,7 +443,7 @@ function is <code>"asUser"</code>. Otherwise <code>NULL</code>.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.002072584       0.090   accept         H0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.008355905       0.006   reject         H0</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">gst</span><span class="op">$</span><span class="fu">test</span><span class="op">(</span><span class="fl">393</span>, <span class="cn">TRUE</span>, <span class="fl">002</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">gst</span><span class="op">$</span><span class="fu">test</span><span class="op">(</span><span class="fl">393</span>, <span class="cn">TRUE</span>, <span class="fl">.002</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## print all testing trajectory</span></span></span>
 <span class="r-in"><span><span class="va">gst</span></span></span>
@@ -453,7 +454,7 @@ function is <code>"asUser"</code>. Otherwise <code>NULL</code>.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   stageLevels obs_p_value decision hypothesis</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.002072584       0.090   accept         H0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.008355905       0.006   reject         H0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.022021239       2.000   accept         H0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.022021239       0.002   reject         H0</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## you can also test all stages at once</span></span></span>
 <span class="r-in"><span><span class="co">## the result is the same as calling test() for each of the stages</span></span></span>
