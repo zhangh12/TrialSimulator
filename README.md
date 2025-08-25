@@ -54,10 +54,10 @@ To efficiently utilize `TrialSimulator` for clinical trial simulations, we recom
   - [Longitudinal endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineLongitudinalEndpoints.html)
   - [Define and summarize arms](https://zhangh12.github.io/TrialSimulator/articles/defineArms.html)
   - [Simulate correlated PFS and OS](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOs.html)
-- Condition system
+- Condition system for milestones
   - [Triggering trial milestones](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html)
 - Define actions for milestones
-  - [Action function]
+  - [Action function](https://zhangh12.github.io/TrialSimulator/articles/actionFunctions.html)
 - Examples: fixed design
   - [Design with correlated endpoints, and custom data generator](https://zhangh12.github.io/TrialSimulator/articles/fixedDesign.html)
 - Examples: adaptive design
@@ -65,9 +65,9 @@ To efficiently utilize `TrialSimulator` for clinical trial simulations, we recom
   - [Response-Adaptive Design](https://zhangh12.github.io/TrialSimulator/articles/responseAdaptive.html)
 - Built-in methods supported in `TrialSimulator`
   - [Wrapper functions of common statistical methods for estimating treatment effect](https://zhangh12.github.io/TrialSimulator/articles/wrappers.html)
-  - [Group sequential test]
-  - [Graphical testing procedure]
-  - [Combination test based on independent increment]
+  - [Group sequential test] See `?GroupSequentialTest`. 
+  - [Graphical testing procedure] See `?GraphicalTesting`. 
+  - [Combination test based on independent increment] Vignette is under development. 
 
 
 

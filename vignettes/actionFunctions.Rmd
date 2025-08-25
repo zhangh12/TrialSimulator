@@ -1,0 +1,448 @@
+---
+title: "Specify Actions to Execute at Trial Milestones"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Specify Actions to Execute at Trial Milestones}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  cache = TRUE,
+  cache.path = 'cache/defineActionFunctions/',
+  comment = '#>',
+  dpi = 300,
+  out.width = '100%'
+)
+```
+
+```{r setup, message = FALSE, echo=FALSE}
+library(dplyr)
+library(TrialSimulator)
+set.seed(12345)
+```
+
+In `TrialSimulator`, we can define custom action functions that will be executed automatically whenever a trial milestone is reached. This mechanism provides a flexible way to simulate adaptive and dynamic trial behaviors, such as:
+
+-   Conducting interim analyses
+
+-   Early stopping for efficacy or futility
+
+-   Dropping or selecting treatment arms
+
+-   Adjusting enrollment rules adaptively
+
+-   Logging or tracking intermediate results
+
+-   Locking and exporting trial data snapshot at specific points
+
+This vignette demonstrates how to define such actions, associate them with milestones, and make use of them to enrich trial simulations.
+
+## Define Trial Milestones
+
+A milestone represents a pre-specified time point or condition during the trial at which a snapshot of accumulated data becomes available for custom analysis. Each milestone consists of three key elements:
+
+-   `name`: the label of the milestone. A data snapshot at the triggering time can be retrieved by calling `trial$get_locked_data(milestone_name)`.
+
+-   `when`: the logical conditions that trigger the milestone. Refer to the vignette [Condition System for Triggering Milestones in a Trial](conditionSystem.html) for more information.
+
+-   `action`: a function to be executed once the milestone is reached. Within this function, we can analyze data snapshot, make decisions, and store analysis results for later summary.
+
+For example, consider an interim analysis that is triggered once the trial has been running for at least 20 months and at least 450 events have occurred for the endpoint `PFS`.
+
+``` r
+interim <- milestone(name = 'interim analysis', 
+                     action = doNothing, 
+                     when = calendarTime(time = 20) & 
+                       eventNumber('PFS', n = 450)
+                     )
+```
+
+Note that in this example, `action` is set to the default `doNothing` function. In such cases, `TrialSimulator` will not perform additional computations but will still record the triggering time of the milestone. This can be useful when the sole interest is in timing of interim analysis given recruitment and dropout assumptions.
+
+Importantly, whenever a milestone is reached, `TrialSimulator` **automatically** records a set of standard outputs, even when `doNothing` is used. These are summarized in the following table:
+
++-----------------------------------------------------------------------+------------+------------------------------------------------------------+-----------------------------------+
+| Type of Results                                                       | Format     | Column Naming Convention                                   | Examples                          |
++=======================================================================+============+============================================================+===================================+
+| Time of triggering a milestone                                        | scalar     | `milestone_time_<...>`                                     | `milestone_name_<interim>`        |
+|                                                                       |            |                                                            |                                   |
+|                                                                       |            | where `...` is milestone name                              |                                   |
++-----------------------------------------------------------------------+------------+------------------------------------------------------------+-----------------------------------+
+| Number of observed events for a time-to-event endpoint                | scalar     | `n_events_<...1>_<...2>`                                   | `n_events_<interim>_<PFS>`        |
+|                                                                       |            |                                                            |                                   |
+|                                                                       |            | where `...1` is milestone name and `...2` is endpoint name |                                   |
++-----------------------------------------------------------------------+------------+------------------------------------------------------------+-----------------------------------+
+| Number of observed non-missing readouts for a non-TTE endpoint        | scalar     | `n_events_<...1>_<...2>`                                   | `n_events_<final>_<ORR>`          |
+|                                                                       |            |                                                            |                                   |
+|                                                                       |            | where `...1` is milestone name and `...2` is endpoint name |                                   |
++-----------------------------------------------------------------------+------------+------------------------------------------------------------+-----------------------------------+
+| Number of enrolled patients                                           | scalar     | `n_events_<...>_<patient_id>`                              | `n_events_<interim>_<patient_id>` |
+|                                                                       |            |                                                            |                                   |
+|                                                                       |            | where `...` is milestone name                              |                                   |
++-----------------------------------------------------------------------+------------+------------------------------------------------------------+-----------------------------------+
+| Number of observed events/readouts per arm for a TTE/non-TTE endpoint | data frame | `n_events_<...>_<arms>`                                    | `n_events_<final>_<arms>`         |
+|                                                                       |            |                                                            |                                   |
+|                                                                       |            | where `...` is milestone name                              |                                   |
++-----------------------------------------------------------------------+------------+------------------------------------------------------------+-----------------------------------+
+
+: Automatically Saved Results At Triggered Milestones
+
+We can define arbitrary number of milestones in a trial. For example, the final analysis might be triggered when both `PFS` and `OS` events reach their required numbers:
+
+``` r
+final <- milestone(name = 'final analysis', 
+                   action = doNothing, 
+                   when = eventNumber('PFS', n = 800) & 
+                     eventNumber('OS', n = 500))
+```
+
+Here the trial is considered complete once sufficient events are observed for both endpoints to ensure targeted statistical power.
+
+Note that a milestone is only triggered if
+
+-   its `when` condition is satisfied, **and**
+
+-   the milestone has been registered to a `listener`.
+
+The following code snippet shows how to register milestones and run a trial with a controller. You may have seen it in many of the documents of this package:
+
+```{r eval=FALSE, include=TRUE}
+listener <- listener()
+#' register milestones with listener
+listener$add_milestones(interim, final)
+controller <- controller(trial, listener)
+controller$run()
+```
+
+## Custom Action Functions
+
+In most realistic scenarios, we do not simply want to record the timing of a milestone and number of events/readouts. Instead, we want to analyze the data snapshot available at that time and possibly take actions based on the results. To achieve this, we define a custom action function and assign it to the `action` argument of a milestone.
+
+A custom action function must always takes two arguments
+
+-   `trial`: a trial object created by the function `trial()`.
+-   `milestone_name`: a character string indicating the milestone being triggered.
+
+The first step inside every action function should be to call `trial$get_locked_data()` to retrieve the data snapshot. After this, we are free to perform any analyses or decision-making steps.
+
+For example, the following action function illustrates how one might analyze survival data at an interim milestone. Here, hazard ratios are estimated from proportional hazard models, and p-values (or other statistics) can also be calculated if desired.
+
+``` r
+action_at_interim <- function(trial, milestone_name){
+  
+  locked_data <- trial$get_locked_data(milestone_name)
+  
+  ## write your own codes to fit coxph model on locked_data
+  ## extract estimate and p-value of hazard ratio
+  
+  ## no return value is needed in an action function
+  
+}
+```
+
+By default, `TrialSimulator` prints the return value of an action function to the console. Since this is often unnecessary, it is good practice to end the function with `invisible(NULL)` to suppress output. However, we can still return something for debugging purpose.
+
+One the functions is defined, it can be passed to the `action` argument of a milestone:
+
+``` r
+interim <- milestone(name = 'interim analysis', 
+                     action = action_at_interim, 
+                     when = calendarTime(time = 20) & 
+                       eventNumber('PFS', n = 450)
+                     )
+```
+
+Thus, whenever the milestone is triggered, the action function will be executed.
+
+Within a custom action function, we can go beyond simple data access. The main possibilities include
+
+-   performing statistical analyses;
+
+-   saving intermediate results;
+
+-   altering the trial through adaptation.
+
+Each of these topics will be discussed in the following sections.
+
+### Perform statistical analyses on data snapshot
+
+Statisticians rarely stop at just locking the data–we want to analyze it!
+
+A milestone provide an opportunity to perform formal analysis on the accumulated data, guiding decisions such as continuing, adapting, or stopping the trial.
+
+Let's revisit the interim milestone. The following example shows how one might compute hazard ratios for two active arms (low and high dose) compared against placebo. The action function extracts the snapshot of patient-level data, fits separate Cox proportional hazards models, and then computes the hazard ratios.
+
+``` r
+action_at_interim <- function(trial, milestone_name){
+  
+  locked_data <- trial$get_locked_data(milestone_name)
+  
+  ## write your own codes to fit coxph model on locked_data
+  fit_high <- coxph(Surv(PFS, PFS_event) ~ arm, 
+                    data = locked_data %>% 
+                      filter(arm %in% c('pbo', 'high'))
+                    )
+  
+  fit_low <- coxph(Surv(PFS, PFS_event) ~ arm, 
+                   data = locked_data %>% 
+                     filter(arm %in% c('pbo', 'low'))
+                   )
+  
+  hr <- data.frame(high = exp(coef(fit_high)), 
+                   low = exp(coef(fit_low)))
+  
+  ## write more codes to compute one- or two-sided p-values, etc. 
+  
+  invisible(NULL)
+  
+}
+```
+
+This function illustrates the flexibility of action functions: any valid R code can be executed at the milestone. However, writing such functions from scratch may become **cumbersome** and **error-prone**, especially when:
+
+-   multiple treatment arms exist,
+
+-   one-sided tests are required, or
+
+-   different trial scenarios have varying arm names or endpoints
+
+To reduce coding burden and promote standardization, `TrialSimulator` provides a collection of **helper functions** for common statistical analyses. These wrappers ensure consistent inputs and outputs, making downstream use (such as saving or combining results) much easier.
+
+Here is a rewritten version of the interim action function using these helper functions:
+
+``` r
+action_at_interim <- function(trial, milestone_name){
+  
+  locked_data <- trial$get_locked_data(milestone_name)
+  
+  fit_PFS <- fitCoxph(Surv(PFS, PFS_event) ~ arm, 
+                      placebo = 'pbo', 
+                      data = locked_data, 
+                      alternative = 'less', 
+                      scale = 'hazard ratio') # also also request other scales
+  
+  fit_OS <- fitLogrank(Surv(OS, OS_event) ~ arm, 
+                       placebo = 'pbo', 
+                       data = locked_data, 
+                       alternative = 'less', 
+                       biomarker1 == 'positive' & 
+                         biomarker2 == 'negative') # specify subgroup through ...
+  
+  invisible(NULL)
+  
+}
+```
+
+In this example,
+
+-   `fitCoxph` estimates hazard ratio for `PFS` against placebo, with a one-sided test.
+
+-   `figLogrank` performs logrank test for `OS`, restricted to a biomarker-defined subgroup through the argument `...` in helper functions.
+
+Both helper functions return results in a standardized format, which integrates seamlessly with other utilities of `TrialSimulator`. This is particularly useful when saving outputs across milestones or performing multiplicity adjustments.
+
+For more complete description of these helper functions for common statistical analyses, see the vignette [Wrapper Functions of Common Statistical Methods in TrialSimulator](wrappers.html).
+
+At this stage, we are only calculating statistics. In the next section, we will show how to save these results for later use—either to summarize operating characteristics or to carry information forward into future milestones.
+
+### Save intermediate results
+
+`TrialSimulator` offers dedicated member functions for saving intermediate results during a trial. The stored information can be broadly classified into two categories:
+
+-   **Trial output**—results that directly contribute to the summary of trial operating characteristics (e.g., effect estimates, test decisions) or anything that we need for each simulated trial. They are stored in a private single-row data frame within the `trial` object. We cannot access or modify it directly. Instead, they should be inserted and accessed using member functions `trial$save()` and `trial$get_output()`. Since outputs are stored in a single-row data frame, only scalars or single-row data frame are accepted by `trial$save()`
+
+-   **auxiliary information**—results that may be useful in subsequent analysis (e.g., in action functions of other milestones). Any results that are not directly part of trial-level summaries should be considered as auxiliary information. These are stored using member function `trial$save_custom_data()`. To retrieve it later, simply call `trial$get()`. This mechanism provides a safe way to pass data across milestones without relying on global variables. Unlike `trial$save()`, `trial$save_custom_data()` can save any objects, which provides flexibility.
+
+In addition, a convenience function `trial$bind()` is provided for sequentially appending rows to a stored data frame—useful when accumulating results across milestones.
+
+Here we give more details of those member functions. We can also refer to their manuals by running `?Trials` in R console.
+
+-   `save(value, name)`: saves a scalar or a single-row data frame into the trial's output.
+
+    -   later retrieved with `trial$get_output(cols = name)`.
+
+    -   calling `trial$get_output()` without argument returns all saved outputs available so far.
+
+-   `save_custom_data(value, name)`: saves an object of any type as auxiliary information as a temporary and private list within the trial.
+
+    -   retrieved later by calling `trial$get(name)`.
+
+-   `bind(value, name)`: a special case of `save_custom_data` for data frames.
+
+    -   If the named data frame already exists, the new `value` is row-bound to it. Otherwise, a new data frame is created and saved.
+
+    -   retrieved later by `trial$get_custom_data(name)`.
+
+    -   particularly useful for accumulating results across multiple milestones in group sequential designs. For example, we may want to save estimates, p-values, etc. across milestones to a data frame, so that we can test it with a graphical testing strategy when all p-values are collected (i.e. at the last milestone).
+
+#### Example 1: saving hazard ratio and p-value
+
+Below, the interim action function computes a hazard ratio `hr` and its p-value `pval`, then saves them as part of the trial output:
+
+``` r
+action_at_interim <- function(trial, milestone_name){
+  
+  locked_data <- trial$get_locked_data(milestone_name)
+  
+  ## fit coxph model on locked_data
+  ## extract estimate and p-value of hazard ratio
+  ## assume that hr is estimate, and pval is p-value
+  trial$save(value = hr, name = 'pfs_interim_hazard_ratio')
+  trial$save(value = pval, name = 'pfs_interim_p_value')
+  
+  ## values of hr and pval can be accessed anywhere later by calling
+  ## trial$get_output(cols = 'pfs_interim_hazard_ratio')
+  ## trial$get_output(cols = 'pfs_interim_p_value')
+  ## trial$get_output(cols = c('pfs_interim_hazard_ratio', 'pfs_interim_hazard_ratio'))
+  ## If a colum specified in cols does not exist (e.g., typo in codes), 
+  ## an informative error message will be prompted. 
+  
+  invisible(NULL)
+  
+}
+```
+
+#### Example 2: passing complex objects between milestones
+
+Sometimes we want to carry more complex information forward, such as lists of results, which cannot be stored in the single-row output. In this case, we use `save_custom_data()`.
+
+``` r
+action_at_interim <- function(trial, milestone_name){
+  
+  locked_data <- trial$get_locked_data(milestone_name)
+  
+  ## fit coxph model on locked_data
+  ## extract estimate and p-value of hazard ratio
+  ## assume that hr is estimate, and pval is p-value
+  trial$save(value = hr, name = 'pfs_interim_hazard_ratio')
+  trial$save(value = pval, name = 'pfs_interim_p_value')
+  
+  ## assume that we also compute other values that may be useful in later milestone, 
+  ## we save them in a list and call
+  more_results <- list(numeric = 1, 
+                       string = 'abc', 
+                       list = list(e1 = 100, e2 = 'AA'))
+  
+  trial$save_custom_data(value = more_results, name = 'more_results')
+  ## value of more_results can be accessed anywhere later by calling
+  ## tmp <- trial$get(name = 'more_results')
+  
+  ## no return value is needed in an action function
+  
+}
+```
+
+In the final analysis, we can then retrieve both the saved trial outputs and the auxiliary information:
+
+``` r
+action_at_final <- function(trial, milestone_name){
+  
+  locked_data <- trial$get_locked_data(milestone_name)
+  
+  ## extract outputs
+  pfs_hr_interim <- trial$get_output(cols = 'pfs_interim_hazard_ratio')
+  pfs_hr_pval <- trial$get_output(cols = 'pfs_interim_p_value')
+  
+  ## extract auxiliary information
+  custom_list <- trial$get('more_results')
+  
+  invisible(NULL)
+  
+}
+```
+
+#### Example 3: defining auxiliary information before the trial runs
+
+All member functions discussed in this section can be called before any milestone is triggered, as long as the `trial` object has been created by calling the function `trial()`. For example, we may want to define the level of family-wise error rate (FWER) once, and then use it later in interim and final analysis:
+
+``` r
+trial <- trial(...) ## initialize a trial with necessary arguments in ...
+trial$add_arms(sample_ratio = c(1, 2, 1), pbo, low, high)
+
+trial$save_custom_data(value = 0.025, name = 'fwer')
+```
+
+This auxiliary information can then be retrieved in later action functions to adjust boundaries or multiplicity procedures:
+
+``` r
+action_at_interim <- function(trial, milestone_name){
+  
+  locked_data <- trial$get_locked_data(milestone_name)
+  
+  ## compute p-values of PFS and OS at interim
+  ## then extract FWER
+  alpha <- trial$get(name = 'fwer')
+  
+  ## compute decision boundaries at interim based on FWER
+  ## then test PFS and OS
+  
+  ## save testing results for interim
+  # trial$save(...)
+  
+  invisible(NULL)
+  
+}
+
+action_at_final <- function(trial, milestone_name){
+  
+  locked_data <- trial$get_locked_data(milestone_name)
+  
+  ## compute p-values of PFS and OS at final
+  ## then extract FWER and testing result at interim to adjust boundaries
+  alpha <- trial$get(name = 'fwer')
+  # interim_results <- trial$get_output(...)
+  
+  ## test PFS and OS again
+  
+  ## save testing results for final
+  # trial$save(...)
+  
+  invisible(NULL)
+  
+}
+```
+
+In summary, `TrialSimulator` provides a structured saving system that allows users to:
+
+-   record scalar results directly into trial outputs;
+
+-   carry forward complex objects across milestones, and
+
+-   accumulate data frames across multiple milestones.
+
+This ensures smooth information flow between milestones and avoids ad-hoc workarounds such as global variables.
+
+### Alter a trial via adaptation
+
+Beyond analyzing data and saving results, one of the most powerful uses of action functions is the ability to adapt the ongoing trial.
+
+Adaptation means that trial features—such as randomization ratios, sample size, trial duration, or active arms—can be modified in response to accumulated data. This reflects how many modern clinical trials are designed in practice, aiming to increase efficiency, ethical and cost balance.
+
+In `TrialSimulator`, such adaptations are implemented directly within action functions. At a milestone, after retrieving the locked data and performing statistical analyses, the action function can call methods of the `trial` object to alter its internal state. These changes will then influence the subsequent course of the trial simulation.
+
+Adaptations that are currently supported are summarized below:
+
++------------------------------+--------------------------------------------------------+---------------------------------------------------------+
+| Adaptation                   | Member Function                                        | Use Case                                                |
++==============================+========================================================+=========================================================+
+| Remove an arm                | `trial$remove_arms()`                                  | dose selection; seamless design                         |
++------------------------------+--------------------------------------------------------+---------------------------------------------------------+
+| Add an arm                   | `trial$add_arms()`                                     | adaptive platform trials                                |
++------------------------------+--------------------------------------------------------+---------------------------------------------------------+
+| Update sample ratio          | `trial$update_sample_ratio()`                          | response-adaptive design                                |
++------------------------------+--------------------------------------------------------+---------------------------------------------------------+
+| Extend trial duration        | `trial$set_duration()` or add a event-driven milestone | actual patient or event accrual is slower than expected |
++------------------------------+--------------------------------------------------------+---------------------------------------------------------+
+| Increase sample size[^1]     | `trial$set_sample_size()`                              | sample size reassessment                                |
++------------------------------+--------------------------------------------------------+---------------------------------------------------------+
+| Eliminate sub-population[^2] | `trial$update_generator()`                             | enrichment design                                       |
++------------------------------+--------------------------------------------------------+---------------------------------------------------------+
+
+[^1]: experimental
+
+[^2]: work in progress
+
+These adaptive features allow users to simulate complex, data-driven designs where trial conduct is not static but evolves in response to accumulating evidence. At the time of writing, the vignette dedicated to trial adaptation is still under development. Detailed examples will be provided in that vignette.

@@ -46,7 +46,7 @@ summarizeMilestoneTime <- function(output){
                     n = sum(!is.na(vals))
                   )
                 }) %>%
-    do.call(rbind, .)
+    bind_rows()
 
   class(res) <- c('milestone_time_summary', class(res))
   time <- output[cols]
