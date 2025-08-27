@@ -397,31 +397,31 @@ replicates is run to save time.</p>
 <code class="sourceCode R"><span><span class="va">controller</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/controller.html">controller</a></span><span class="op">(</span><span class="va">trial</span>, <span class="va">listener</span><span class="op">)</span></span>
 <span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>plot_event <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;dose selection&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 11.3138461538462 for milestone &lt;dose selection&gt;.</span></span>
+<span><span class="co">#&gt; Data is locked at time = 11.1205128205128 for milestone &lt;dose selection&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('dose selection'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   patient pfs os surrogate         arms</span></span>
-<span><span class="co">#&gt; 1     366 142 65       300 c(122, 4....</span></span>
+<span><span class="co">#&gt; 1     357 141 65       300 c(119, 4....</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Arm &lt;high dose&gt; is removed.</span></span>
 <span><span class="co">#&gt; Sample ratio is updated to be &lt;low dose: 1, placebo: 1&gt;.</span></span>
-<span><span class="co">#&gt; Trial data is rolling back to time = 11.3138461538462. </span></span>
+<span><span class="co">#&gt; Trial data is rolling back to time = 11.1205128205128. </span></span>
 <span><span class="co">#&gt; Randomization will be carried out again for unenrolled patients.</span></span>
-<span><span class="co">#&gt; Randomization is done for 634 potential patients.</span></span>
-<span><span class="co">#&gt; Data of 634 potential patients are generated for the trial with 2 arm(s) &lt;low dose, placebo&gt;.</span></span>
+<span><span class="co">#&gt; Randomization is done for 643 potential patients.</span></span>
+<span><span class="co">#&gt; Data of 643 potential patients are generated for the trial with 2 arm(s) &lt;low dose, placebo&gt;.</span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;interim&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 19.1658431016631 for milestone &lt;interim&gt;.</span></span>
+<span><span class="co">#&gt; Data is locked at time = 17.9949397642942 for milestone &lt;interim&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('interim'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   patient pfs  os surrogate         arms</span></span>
-<span><span class="co">#&gt; 1     637 300 146       534 c(319, 1....</span></span>
+<span><span class="co">#&gt; 1     581 300 138       524 c(290, 1....</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;final&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 29.4476342734663 for milestone &lt;final&gt;.</span></span>
+<span><span class="co">#&gt; Data is locked at time = 25.7475563250256 for milestone &lt;final&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('final'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   patient pfs  os surrogate         arms</span></span>
-<span><span class="co">#&gt; 1     878 542 300       744 c(439, 2....</span></span>
+<span><span class="co">#&gt; 1     881 596 300       880 c(441, 2....</span></span>
 <span><span class="co">#&gt; </span></span></code></pre></div>
 <p><img src="adaptiveDesign_files/figure-html/eiaaf-1.png" width="100%"></p>
 <p>In custom action functions, we can use <code>Trial$save()</code> to
@@ -527,13 +527,13 @@ Trial-3415
 1727811904
 </td>
 <td style="text-align:right;">
-11.31385
+11.12051
 </td>
 <td style="text-align:right;">
-366
+357
 </td>
 <td style="text-align:right;">
-142
+141
 </td>
 <td style="text-align:right;">
 65
@@ -542,49 +542,49 @@ Trial-3415
 300
 </td>
 <td style="text-align:left;">
-c(122, 4….
+c(119, 4….
 </td>
 <td style="text-align:left;">
 low
 </td>
 <td style="text-align:right;">
-19.16584
+17.99494
 </td>
 <td style="text-align:right;">
-637
+581
 </td>
 <td style="text-align:right;">
 300
 </td>
 <td style="text-align:right;">
-146
+138
 </td>
 <td style="text-align:right;">
-534
+524
 </td>
 <td style="text-align:left;">
-c(319, 1….
+c(290, 1….
 </td>
 <td style="text-align:left;">
 negative
 </td>
 <td style="text-align:right;">
-29.44763
+25.74756
 </td>
 <td style="text-align:right;">
-878
+881
 </td>
 <td style="text-align:right;">
-542
+596
 </td>
 <td style="text-align:right;">
 300
 </td>
 <td style="text-align:right;">
-744
+880
 </td>
 <td style="text-align:left;">
-c(439, 2….
+c(441, 2….
 </td>
 <td style="text-align:left;">
 accept
@@ -635,11 +635,11 @@ make use of locked data at multiple stages (through the
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ct_pfs</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         arm decision milestone_at_reject reject_time</span></span>
 <span><span class="co">#&gt; 1 high dose   accept                &lt;NA&gt;         Inf</span></span>
-<span><span class="co">#&gt; 2  low dose   reject               final    29.44763</span></span>
+<span><span class="co">#&gt; 2  low dose   reject               final    25.74756</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ct_os</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         arm decision milestone_at_reject reject_time</span></span>
 <span><span class="co">#&gt; 1 high dose   accept                &lt;NA&gt;         Inf</span></span>
-<span><span class="co">#&gt; 2  low dose   reject               final    29.44763</span></span></code></pre></div>
+<span><span class="co">#&gt; 2  low dose   reject               final    25.74756</span></span></code></pre></div>
 <p>The two null hypotheses of <code>PFS</code> and <code>OS</code> are
 both accepted for the high dose because it is dropped at dose selection.
 Thus, <code>milestone_at_reject</code> is <code>NA</code>, and the
@@ -648,7 +648,7 @@ Thus, <code>milestone_at_reject</code> is <code>NA</code>, and the
 <code>PFS</code> are tested at interim and final, one cannot claim its
 significance until the final analysis
 (<code>milestone_at_reject</code>). The <code>reject_time</code>
-(29.4476343) can be saved to the output using the member function
+(25.7475563) can be saved to the output using the member function
 <code>Trial$save</code>.</p>
 <p><code>TrialSimulator</code> abstracts the data generation and
 management to allow user focus on implementing the statistical analysis.
