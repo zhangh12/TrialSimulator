@@ -1,3 +1,9 @@
+# TrialSimulator 0.96.0
+
+## Update
+
+- Update mechanism of simulating dropout time. Switching from trial level to patient level, i.e. dropout time is now the time from a patient is enrolled until leaving a trial. This aligns with common practice and popular softwares. 
+
 # TrialSimulator 0.95.0
 
 ## Update
