@@ -73,7 +73,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Define and Summarize Arms in Clinical Trials</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/v0.95.0/vignettes/defineArms.Rmd" class="external-link"><code>vignettes/defineArms.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/vignettes/defineArms.Rmd" class="external-link"><code>vignettes/defineArms.Rmd</code></a></small>
       <div class="d-none name"><code>defineArms.Rmd</code></div>
     </div>
 
@@ -100,7 +100,7 @@ clinical trial setting.</p>
 <h2 id="define-arm-with-mulitple-sets-of-endpoints">Define Arm with Mulitple Sets of Endpoints<a class="anchor" aria-label="anchor" href="#define-arm-with-mulitple-sets-of-endpoints"></a>
 </h2>
 <p>The function <code>endpoint</code> can be used to define one or
-multiple endpoints simultaneously. These endpoints can be independent
+multiple endpoints simultaneously. These endpoints can be independent or
 correlated, depending on the <code>generator</code> provided. In the
 following hypothetical example, we construct a custom generator that
 simulates PFS, OS, PSA levels at baseline and year 1. A pre-specified
@@ -133,7 +133,10 @@ We also ensure that PFS is always less than or equal to OS.</p>
 8.</li>
 <li>PFS and OS are exponentially distributed with median times of 2.5
 and 4.5 years, respectively.</li>
-<li>A constraint ensures that PFS does not exceed OS.</li>
+<li>A constraint ensures that PFS does not exceed OS. To define
+correlated PFS and OS that satisfy this constraint in a more natural
+way, refer to the vignette of <a href="simulatePfsAndOs.html">multi-state model</a>
+</li>
 <li>PSA readout times are 0 (at baseline) and 1 (at year 1).</li>
 </ul>
 <p>The following code defines the endpoints and uses the
