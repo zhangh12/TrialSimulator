@@ -34,7 +34,7 @@ In `TrialSimulator`, a trial arm is defined as a collection of endpoints (and po
 
 ## Define Arm with Mulitple Sets of Endpoints
 
-The function `endpoint` can be used to define one or multiple endpoints simultaneously. These endpoints can be independent correlated, depending on the `generator` provided. In the following hypothetical example, we construct a custom generator that simulates PFS, OS, PSA levels at baseline and year 1. A pre-specified correlation matrix ensures the endpoints are appropriately correlated. We also ensure that PFS is always less than or equal to OS. 
+The function `endpoint` can be used to define one or multiple endpoints simultaneously. These endpoints can be independent or correlated, depending on the `generator` provided. In the following hypothetical example, we construct a custom generator that simulates PFS, OS, PSA levels at baseline and year 1. A pre-specified correlation matrix ensures the endpoints are appropriately correlated. We also ensure that PFS is always less than or equal to OS. 
 
 ```{r garalbaiola}
 rng <- function(n, pfs_rate, os_rate, psa_mean, psa_sd, corr_matrix){
@@ -62,7 +62,7 @@ In this generator,
 - Baseline PSA follows a normal distribution with mean 20 and SD 4.0.
 - After one year of treatment, the average PSA level decreases to 8. 
 - PFS and OS are exponentially distributed with median times of 2.5 and 4.5 years, respectively. 
-- A constraint ensures that PFS does not exceed OS. 
+- A constraint ensures that PFS does not exceed OS. To define correlated PFS and OS that satisfy this constraint in a more natural way, refer to the vignette of [multi-state model](simulatePfsAndOs.html)
 - PSA readout times are 0 (at baseline) and 1 (at year 1). 
 
 The following code defines the endpoints and uses the `print` method to generate a summary report based on 10,000 samples from the generator `rng`. 

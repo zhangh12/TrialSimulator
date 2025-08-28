@@ -24,7 +24,7 @@ library(TrialSimulator)
 set.seed(12345)
 ```
 
-The · package provides a flexible framework for defining endpoints in clinical trial simulations. Users can choose to generate endpoints using either built-in random number generators from standard probability distributions or custom user-defined functions. The ability to specify custom generators is particularly useful when simulating correlated endpoints, which often arise in longitudinal settings.
+The `TrialSimulator` package provides a flexible framework for defining endpoints in clinical trial simulations. Users can choose to generate endpoints using either built-in random number generators from standard probability distributions or custom user-defined functions. The ability to specify custom generators is particularly useful when simulating correlated endpoints, which often arise in longitudinal settings.
 
 Longitudinal endpoints refer to outcomes measured repeatedly over time for the same subject, such as blood pressure, biomarker levels, or symptom severity scores. These repeated measures typically exhibit within-subject correlation as well as correlation with baseline values. Accurately simulating such correlation structures is essential for realistic trial design and evaluation.
 
