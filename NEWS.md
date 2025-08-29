@@ -1,3 +1,9 @@
+# TrialSimulator 1.0.0
+
+## Update
+
+- Fix issues to meet CRAN submission conditions. 
+
 # TrialSimulator 0.97.0
 
 ## Bug Fix

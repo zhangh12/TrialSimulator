@@ -78,7 +78,8 @@ summarizeDataFrame <- function(data,
 
       temp_file <- tempfile(fileext = ".png")
       png(temp_file, width = 120, height = 80, res = 96, bg = "white")
-      par(mar = c(1.5, 1.5, 0.5, 0.5), cex = 0.5)
+      opar <- par(mar = c(1.5, 1.5, 0.5, 0.5), cex = 0.5)
+      on.exit(par(opar))
       plot(km_fit,
            conf.int = FALSE,
            col = "black",
@@ -126,7 +127,8 @@ summarizeDataFrame <- function(data,
       temp_file <- tempfile(fileext = ".png")
       png(temp_file, width = 120, height = total_height, res = 96, bg = "white")
 
-      par(mar = c(0, 0, 0, 0), oma = c(0, 0, 0, 0))
+      opar <- par(mar = c(0, 0, 0, 0), oma = c(0, 0, 0, 0))
+      on.exit(par(opar))
 
       barplot(cnt, horiz = TRUE,
               main = "", xlab = "", ylab = "",
@@ -171,7 +173,8 @@ summarizeDataFrame <- function(data,
 
       temp_file <- tempfile(fileext = ".png")
       png(temp_file, width = 120, height = 80, res = 96, bg = "white")
-      par(mar = c(0, 0, 0, 0), cex = 0.5)
+      opar <- par(mar = c(0, 0, 0, 0), cex = 0.5)
+      on.exit(par(opar))
       hist(var_data, main = "", xlab = "", ylab = "", axes = FALSE,
            col = "lightgray", border = "gray60", breaks = 10, lwd = 0.5)
       dev.off()
