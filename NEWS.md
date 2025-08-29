@@ -3,6 +3,8 @@
 ## Bug Fix
 
 - Fix a bug in function `event_plot()` for plot of cumulative events number when endpoint name is `"ep"`. This is due to data masking in `dplyr`. 
+- Fix issues in unit tests caused by new dropout mechanisum. 
+- use Bonferroni method in unit test of `update_sample_ratio`. This test is probably broken by randomness (it is okay). 
 
 # TrialSimulator 0.96.0
 

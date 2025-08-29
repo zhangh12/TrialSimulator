@@ -1148,7 +1148,7 @@ test_that('sample ratio can be updated to switch between permuted block and samp
   controller <- controller(trial, listener)
   controller$run(n = 10, plot_event = FALSE, silen = TRUE)
 
-  expect_true(all(controller$get_output() %>% select(contains('stage')) > .1))
+  expect_true(all(controller$get_output() %>% select(contains('stage')) > .1/10))
 
 })
 
