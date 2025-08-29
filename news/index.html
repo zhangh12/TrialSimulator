@@ -50,6 +50,8 @@
 <div class="section level3">
 <h3 id="bug-fix-0-97-0">Bug Fix<a class="anchor" aria-label="anchor" href="#bug-fix-0-97-0"></a></h3>
 <ul><li>Fix a bug in function <code>event_plot()</code> for plot of cumulative events number when endpoint name is <code>"ep"</code>. This is due to data masking in <code>dplyr</code>.</li>
+<li>Fix issues in unit tests caused by new dropout mechanisum.</li>
+<li>use Bonferroni method in unit test of <code>update_sample_ratio</code>. This test is probably broken by randomness (it is okay).</li>
 </ul></div>
 </div>
     <div class="section level2">
