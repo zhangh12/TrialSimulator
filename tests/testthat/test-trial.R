@@ -58,7 +58,7 @@ test_that('trial milestone timing and endpoint event count work as expected', {
   expect_equal(
     dat2 %>%
       filter(enroll_time + or_readout <= time1 &
-               enroll_time + or_readout < dropout_time &
+               or_readout < dropout_time &
                !is.na(or)) %>%
       nrow(),
     200)
@@ -66,7 +66,7 @@ test_that('trial milestone timing and endpoint event count work as expected', {
   expect_equal(
     dat3 %>%
       filter(enroll_time + or_readout <= time1 &
-               enroll_time + or_readout < dropout_time &
+               or_readout < dropout_time &
                !is.na(or)) %>%
       nrow(),
     200)
@@ -77,12 +77,12 @@ test_that('trial milestone timing and endpoint event count work as expected', {
 
   n_pfs_events <- dat3 %>%
     filter(enroll_time + pfs <= time2 &
-             enroll_time + pfs < dropout_time &
+             pfs < dropout_time &
              pfs_event %in% 1) %>% nrow()
 
   n_os_events <- dat3 %>%
     filter(enroll_time + os <= time2 &
-             enroll_time + os < dropout_time &
+             os < dropout_time &
              os_event %in% 1) %>% nrow()
 
   expect_true(n_pfs_events == 240 || n_os_events == 170)
@@ -321,11 +321,11 @@ test_that('endpoint event counts work as expected when duration is adapted', {
     dat2 %>%
       filter(patient_id %in% dat1$patient_id) %>%
       summarise(os = all((enroll_time + os < 30 &
-                            enroll_time + os < dropout_time - tol) == (os_event == 1)),
+                            os < dropout_time - tol) == (os_event == 1)),
                 pfs = all((enroll_time + pfs < 30 &
-                             enroll_time + pfs < dropout_time - tol) == (pfs_event == 1)),
+                             pfs < dropout_time - tol) == (pfs_event == 1)),
                 or = all((enroll_time + or_readout < 30 &
-                            enroll_time + or_readout < dropout_time - tol) == !is.na(or))) %>%
+                            or_readout < dropout_time - tol) == !is.na(or))) %>%
       apply(1, function(x){all(x)})
   )
 
