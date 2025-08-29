@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.97.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,15 +72,55 @@ returned by <code>controller$get_output()</code>.</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co">## simulate trials</span></span></span>
-<span class="r-in"><span><span class="co"># ...</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># a minimum, meaningful, and executable example,</span></span></span>
+<span class="r-in"><span><span class="co"># where a randomized trial with two arms is simulated and analyzed.</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">control</span> <span class="op">&lt;-</span> <span class="fu"><a href="arm.html">arm</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'control arm'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">active</span> <span class="op">&lt;-</span> <span class="fu"><a href="arm.html">arm</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'active arm'</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">pfs_in_control</span> <span class="op">&lt;-</span> <span class="fu"><a href="endpoint.html">endpoint</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'PFS'</span>, type <span class="op">=</span> <span class="st">'tte'</span>, generator <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="fl">5</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">control</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">pfs_in_control</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">pfs_in_active</span> <span class="op">&lt;-</span> <span class="fu"><a href="endpoint.html">endpoint</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'PFS'</span>, type <span class="op">=</span> <span class="st">'tte'</span>, generator <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="fl">6</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">active</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">pfs_in_active</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">accrual_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>end_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="cn">Inf</span><span class="op">)</span>, piecewise_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">30</span>, <span class="fl">50</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">trial</span> <span class="op">&lt;-</span> <span class="fu"><a href="trial.html">trial</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'trial'</span>,</span></span>
+<span class="r-in"><span>               n_patients <span class="op">=</span> <span class="fl">1000</span>,</span></span>
+<span class="r-in"><span>               duration <span class="op">=</span> <span class="fl">40</span>,</span></span>
+<span class="r-in"><span>               enroller <span class="op">=</span> <span class="va">StaggeredRecruiter</span>,</span></span>
+<span class="r-in"><span>               accrual_rate <span class="op">=</span> <span class="va">accrual_rate</span>,</span></span>
+<span class="r-in"><span>               dropout <span class="op">=</span> <span class="va">rweibull</span>, shape <span class="op">=</span> <span class="fl">2</span>, scale <span class="op">=</span> <span class="fl">38</span>,</span></span>
+<span class="r-in"><span>               silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, <span class="va">control</span>, <span class="va">active</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">action_at_final</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">milestone_name</span><span class="op">)</span><span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">milestone_name</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="fitLogrank.html">fitLogrank</a></span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">PFS</span>, <span class="va">PFS_event</span><span class="op">)</span> <span class="op">~</span> <span class="va">arm</span>, placebo <span class="op">=</span> <span class="st">'control arm'</span>,</span></span>
+<span class="r-in"><span>             data <span class="op">=</span> <span class="va">locked_data</span>, alternative <span class="op">=</span> <span class="st">'less'</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="cn">NULL</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">final</span> <span class="op">&lt;-</span> <span class="fu"><a href="milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'final analysis'</span>,</span></span>
+<span class="r-in"><span>                   action <span class="op">=</span> <span class="va">action_at_final</span>,</span></span>
+<span class="r-in"><span>                   when <span class="op">=</span> <span class="fu"><a href="eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'PFS'</span>, n <span class="op">=</span> <span class="fl">300</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">listener</span> <span class="op">&lt;-</span> <span class="fu"><a href="listener.html">listener</a></span><span class="op">(</span>silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">listener</span><span class="op">$</span><span class="fu">add_milestones</span><span class="op">(</span><span class="va">final</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">controller</span> <span class="op">&lt;-</span> <span class="fu"><a href="controller.html">controller</a></span><span class="op">(</span><span class="va">trial</span>, <span class="va">listener</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">10</span>, plot_event <span class="op">=</span> <span class="cn">FALSE</span>, silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">output</span> <span class="op">&lt;-</span> <span class="va">controller</span><span class="op">$</span><span class="fu">get_output</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">time</span> <span class="op">&lt;-</span> <span class="fu">summarizeMilestoneTime</span><span class="op">(</span><span class="va">output</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">time</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        milestone     mean   median       sd  n</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 final analysis 15.88651 15.85284 0.197101 10</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">time</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-plt img"><img src="summarizeMilestoneTime-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
