@@ -1,3 +1,9 @@
+# TrialSimulator 0.97.0
+
+## Bug Fix
+
+- Fix a bug in function `event_plot()` for plot of cumulative events number when endpoint name is `"ep"`. This is due to data masking in `dplyr`. 
+
 # TrialSimulator 0.96.0
 
 ## Update
