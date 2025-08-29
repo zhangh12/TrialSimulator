@@ -794,7 +794,7 @@ Trials <- R6::R6Class(
 
       missed_endpoints <- setdiff(endpoints, names(event_counts))
       if(length(missed_endpoints) > 0){
-        Stop('Endpoints <',
+        stop('Endpoints <',
              paste0(missed_endpoints, collapse = ', '),
              '> are missing in event_counts when determining data lock time. ')
       }
@@ -1213,8 +1213,17 @@ Trials <- R6::R6Class(
         ep <- ifelse(is_tte, tte_col, ep_col)
 
         for(arm_ in arms){
+          ## Using filter(endpoint %in% ep & ...) is dangerous because all_data
+          ## has a column named ep. This will apply %in% between the two columns
+          ## endpoint and ep in the data frame, rather than comparing column
+          ## endpoint with the character vector ep. Using pronoun .env$ep
+          ## forces R to look for ep in environment, not in the data frame columns
+          ## Consider this example:
+          ## x <- 'x'
+          ## data.frame(x = rnorm(4), y = c('x', 'b', 'a', 'x'), z = 1:4) %>%
+          ##   filter(y %in% x)
           dat <- all_data %>%
-            dplyr::filter(endpoint %in% ep & arm %in% arm_) %>%
+            dplyr::filter(endpoint %in% .env$ep & arm %in% .env$arm_) %>%
             dplyr::select(c('arm', col, 'calendar_time', 'endpoint')) %>%
             rename(has_event = !!sym(col))
 
