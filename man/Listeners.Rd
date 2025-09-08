@@ -8,6 +8,15 @@
 Create a class of listener. A listener monitors the trial while checking
 condition of pre-defined milestones. Actions are triggered and executed
 automatically.
+
+Public methods in this R6 class are used in developing
+this package. Thus, I have to export the whole R6 class which exposures all
+public methods. However, only the public methods in the list below are
+useful to end users.
+
+\itemize{
+\item \code{$add_milestones()}
+}
 }
 \examples{
 ##
