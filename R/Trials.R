@@ -2,6 +2,26 @@
 #' @description
 #' Create a class of trial.
 #'
+#' Public methods in this R6 class are used in developing
+#' this package. Thus, I have to export the whole R6 class which exposures all
+#' public methods. However, only the public methods in the list below are
+#' useful to end users.
+#'
+#' \itemize{
+#' \item \code{$set_duration()}
+#' \item \code{$remove_arms()}
+#' \item \code{$update_sample_ratio()}
+#' \item \code{$add_arms()}
+#' \item \code{$get_locked_data()}
+#' \item \code{$save()}
+#' \item \code{$bind()}
+#' \item \code{$save_custom_data()}
+#' \item \code{$get()}
+#' \item \code{$get_output()}
+#' \item \code{$dunnettTest()}
+#' \item \code{$closedTest()}
+#' }
+#'
 #' @docType class
 #' @examples
 #' # Instead of using Trial$new, please use trial(), a user-friendly

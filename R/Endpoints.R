@@ -3,6 +3,14 @@
 #' Create a class of endpoint to specify its name, type and assign a random number
 #' generator.
 #'
+#' Public methods in this R6 class are used in developing
+#' this package. Thus, I have to export the whole R6 class which exposures all
+#' public methods. However, none of the public methods is useful to end users.
+#'
+#' \itemize{
+#' \item \code{$print()}
+#' }
+#'
 #' @docType class
 #' @importFrom R6 R6Class
 #' @import dplyr survival

@@ -1,3 +1,9 @@
+# TrialSimulator 1.1.0
+
+## Update
+
+- Add notes to R6 class indicating public methods that can be used by end users. 
+
 # TrialSimulator 1.0.0
 
 ## Update
