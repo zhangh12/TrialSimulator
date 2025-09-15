@@ -3,7 +3,7 @@
 condition of pre-defined milestones. Actions are triggered and executed
 automatically.
 Public methods in this R6 class are used in developing
-this package. Thus, I have to export the whole R6 class which exposures all
+this package. Thus, we have to export the whole R6 class which exposures all
 public methods. However, only the public methods in the list below are
 useful to end users.
 
@@ -13,7 +13,7 @@ $add_milestones()
 condition of pre-defined milestones. Actions are triggered and executed
 automatically.
 Public methods in this R6 class are used in developing
-this package. Thus, I have to export the whole R6 class which exposures all
+this package. Thus, we have to export the whole R6 class which exposures all
 public methods. However, only the public methods in the list below are
 useful to end users.
 
@@ -71,7 +71,7 @@ $add_milestones()
 condition of pre-defined milestones. Actions are triggered and executed
 automatically.</p>
 <p>Public methods in this R6 class are used in developing
-this package. Thus, I have to export the whole R6 class which exposures all
+this package. Thus, we have to export the whole R6 class which exposures all
 public methods. However, only the public methods in the list below are
 useful to end users.</p>
 <ul><li><p><code>$add_milestones()</code></p></li>
@@ -111,9 +111,9 @@ useful to end users.</p>
 </div><p></p><hr><a id="method-Listeners-add_milestones"></a><div class="section">
 <h3 id="method-add-milestones-">Method <code>add_milestones()</code><a class="anchor" aria-label="anchor" href="#method-add-milestones-"></a></h3>
 <p>register milestones with listener. Order in <code>...</code> matter
-as they are scanned in that order. It is user's responsibility
-to use reasonable order when calling this function, otherwise,
-the result of <code>Listener$monitor()</code> can be problematic.</p><div class="section">
+as they are scanned and triggered in that order. It is users'
+responsibility to use reasonable order when calling this function,
+otherwise, the result of <code>Listeners$monitor()</code> can be problematic.</p><div class="section">
 <h4 id="usage-1">Usage<a class="anchor" aria-label="anchor" href="#usage-1"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Listeners</span><span class="op">$</span><span class="fu">add_milestones</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -121,11 +121,24 @@ the result of <code>Listener$monitor()</code> can be problematic.</p><div class=
 <div class="section">
 <h4 id="arguments-1">Arguments<a class="anchor" aria-label="anchor" href="#arguments-1"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>...</code></dt>
-<dd><p>milestones</p></dd>
+<dd><p>one or more objects returned from <code><a href="milestone.html">milestone()</a></code>.</p></dd>
 
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a></h4>
+<p></p><div class="r example copy"><div class="sourceCode"><pre><code><span><span class="va">listener</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/listener.html">listener</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">interim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'interim'</span>,</span>
+<span>                     when <span class="op">=</span> <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span><span class="st">'endpoint'</span>, n <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
+<span>                    <span class="op">)</span></span>
+<span><span class="va">final</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'final'</span>,</span>
+<span>                   when <span class="op">=</span> <span class="fu"><a href="../reference/calendarTime.html">calendarTime</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fl">24</span><span class="op">)</span></span>
+<span>                  <span class="op">)</span></span>
+<span><span class="va">listener</span><span class="op">$</span><span class="fu">add_milestones</span><span class="op">(</span><span class="va">interim</span>, <span class="va">final</span><span class="op">)</span></span>
+<span></span></code></pre></div><p></p></div>
+</div>
+
 
 </div><p></p><hr><a id="method-Listeners-get_milestones"></a><div class="section">
 <h3 id="method-get-milestones-">Method <code>get_milestones()</code><a class="anchor" aria-label="anchor" href="#method-get-milestones-"></a></h3>
@@ -222,6 +235,22 @@ before a controller can run additional replicates of simulation.</p><div class="
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">##</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## ------------------------------------------------</span></span></span>
+<span class="r-in"><span><span class="co">## Method `Listeners$add_milestones`</span></span></span>
+<span class="r-in"><span><span class="co">## ------------------------------------------------</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">listener</span> <span class="op">&lt;-</span> <span class="fu"><a href="listener.html">listener</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">interim</span> <span class="op">&lt;-</span> <span class="fu"><a href="milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'interim'</span>,</span></span>
+<span class="r-in"><span>                     when <span class="op">=</span> <span class="fu"><a href="eventNumber.html">eventNumber</a></span><span class="op">(</span><span class="st">'endpoint'</span>, n <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                    <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">final</span> <span class="op">&lt;-</span> <span class="fu"><a href="milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'final'</span>,</span></span>
+<span class="r-in"><span>                   when <span class="op">=</span> <span class="fu"><a href="calendarTime.html">calendarTime</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fl">24</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                  <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">listener</span><span class="op">$</span><span class="fu">add_milestones</span><span class="op">(</span><span class="va">interim</span>, <span class="va">final</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> A milestone &lt;interim&gt; is registered. </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> A milestone &lt;final&gt; is registered. </span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
