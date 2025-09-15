@@ -2,24 +2,43 @@
 % Please edit documentation in R/PiecewiseConstantExponentialRNG.R
 \name{PiecewiseConstantExponentialRNG}
 \alias{PiecewiseConstantExponentialRNG}
-\title{Generate time-to-event endpoint from piecewise constant exponential distribution}
+\title{Generate Time-to-Event Endpoint from Piecewise Constant Exponential Distribution}
 \usage{
 PiecewiseConstantExponentialRNG(n, risk, endpoint_name)
 }
 \arguments{
-\item{n}{number of random numbers}
+\item{n}{integer. Number of random numbers}
 
 \item{risk}{a data frame of columns
 \describe{
-\item{\code{end_time}}{ End time for a constant risk in a time window. The start time of the first time window is 0.}
-\item{\code{piecewise_risk}}{ A constant risk in a time window, which is absolute risk * relative risk, or (h0 * g) in the link.}
-\item{\code{hazard_ratio}}{ An optional column for simulating an active arm. If absent, a column of 1s will be added. Equivalently, user can multiply piecewise_risk by hazard_ratio manually and ignore this column.}
+\item{\code{end_time}}{ End time for a constant risk in a time window.
+The start time of the first time window is 0.}
+\item{\code{piecewise_risk}}{ A constant risk in a time window, which is
+absolute risk * relative risk, or (h0 * g) in the link.}
+\item{\code{hazard_ratio}}{ An optional column for simulating an active arm.
+If absent, a column of 1s will be added. Equivalently, user can multiply
+\code{piecewise_risk} by \code{hazard_ratio} manually and ignore this column.}
 }}
 
-\item{endpoint_name}{name of endpoint}
+\item{endpoint_name}{character. Name of endpoint. This should be the same as
+the \code{name} argument when calling function \code{endpoint()}.}
+}
+\value{
+a data frame of \code{n} rows and two columns
+\describe{
+\item{\code{<endpoint_name>}}{name of endpoint specified by users in
+\code{endpoint_name}. }
+\item{<endpoint_name>_event}{event indicator with 0/1 as censoring and
+event, respectively. Note that due to the nature of the algorithm to
+generate data from this distribution, it is possible to have the endpoint
+being censoring at the last \code{end_time} unless it is set to \code{Inf}.}
+}
 }
 \description{
-Implementation is based on \href{https://www.demogr.mpg.de/papers/technicalreports/tr-2010-003.pdf}{this algorithm}.
+This function can be used as generator to define endpoint.
+Implementation is based on
+\href{https://www.demogr.mpg.de/papers/technicalreports/tr-2010-003.pdf}{this algorithm}.
+This distribution can be used to simulate delayed treatment effect.
 }
 \examples{
 # example code

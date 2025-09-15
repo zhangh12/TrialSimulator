@@ -2,7 +2,7 @@
 % Please edit documentation in R/CorrelatedPfsAndOs4.R
 \name{CorrelatedPfsAndOs4}
 \alias{CorrelatedPfsAndOs4}
-\title{Generate PFS, OS and objective response using the four-states model}
+\title{Generate Correlated PFS, OS and Objective Response}
 \usage{
 CorrelatedPfsAndOs4(
   n,
@@ -25,21 +25,31 @@ integer in practice to cover the duration of the trial (potentially be
 extended).}
 
 \item{death_name}{column name of OS in returned data frame. It must be
-consistent with `name` in the function `endpoint()`.}
+consistent with \code{name} in the function \code{endpoint()}.}
 
 \item{progression_name}{column name of PFS in returned data frame. It must be
-consistent with `name` in the function `endpoint()`.}
+consistent with \code{name} in the function \code{endpoint()}.}
 
 \item{response_name}{column name of objective response in returned data frame. It must be
-consistent with `name` in the function `endpoint()`.}
+consistent with \code{name} in the function \code{endpoint()}.}
 }
 \value{
 A data frame of \code{n} rows and 6 columns (response, progression,
-death, and their event indicators response_event, progression_event,
-death_event with 1 means event and 0 means censored at duration).
+death, and their event indicators with 1 means event and 0 means censored
+at duration). The column names are
+\code{<death_name>}, \code{<death_name>_event}, \code{<progression_name>},
+\code{<progression_name>_event}, \code{<response_name>} and
+\code{<response_name>_event}.
+
+Note that it returns time-to-response for each patients with status of
+censoring at pre-set duration. If a binary indicator of response at
+a time point is needed as an endpoint, we may write a wrapper function to
+convert the column \code{<response_name>} to binary and remove the column
+\code{<response_name>_event} from return value.
 }
 \description{
-Generate PFS, OS and objective response using the four-states model
+Generate correlated PFS, OS and objective response using the
+four-states model. It can be used as custom generator of \code{endpoint()}.
 }
 \examples{
 m <- matrix(c(0.99, 0.0035, 0.0055, 0.0010,
@@ -48,6 +58,21 @@ m <- matrix(c(0.99, 0.0035, 0.0055, 0.0010,
                  0,      0,      0,      1),
              nrow = 4, byrow = TRUE)
 
-pfs_and_os <- CorrelatedPfsAndOs4(1e4, m, 365 * 3)
+## use as function (if you don't use TrialSimulator for simulation)
+
+dat <- CorrelatedPfsAndOs4(1e4, m, 365 * 3)
+
+## use as generator (if you use TrialSimulator for simulation)
+
+ep <- endpoint(name = c('pfs', 'os', 'or'),
+               type = c('tte', 'tte', 'tte'), ## OR is TTE, not binary
+               generator = CorrelatedPfsAndOs4,
+               transition_probability = m,
+               duration = 365 * 3,
+               death_name = 'os', ## rename output from generator to match with "name"
+               progression_name = 'pfs',
+               response_name = 'or')
+
+ep # run it in console to see summary report
 
 }

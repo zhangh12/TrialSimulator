@@ -2,35 +2,49 @@
 % Please edit documentation in R/CorrelatedPfsAndOs3.R
 \name{CorrelatedPfsAndOs3}
 \alias{CorrelatedPfsAndOs3}
-\title{Generate PFS and OS using the three-states model}
+\title{Generate Correlated PFS and OS}
 \usage{
 CorrelatedPfsAndOs3(n, h01, h02, h12, pfs_name = "pfs", os_name = "os")
 }
 \arguments{
 \item{n}{integer. Number of observations.}
 
-\item{h01}{constant transition hazard from state "stable" to state "progression".}
+\item{h01}{constant transition hazard from state "initial" to state "progression".}
 
-\item{h02}{constant transition hazard from state "stable" to state "death".}
+\item{h02}{constant transition hazard from state "initial" to state "death".}
 
 \item{h12}{constant transition hazard from state "progression" to state "death".}
 
 \item{pfs_name}{column name of PFS in returned data frame. It must be
-consistent with `name` in the function `endpoint()`.}
+consistent with \code{name} in the function \code{endpoint()}.}
 
 \item{os_name}{column name of OS in returned data frame. It must be
-consistent with `name` in the function `endpoint()`.}
+consistent with \code{name} in the function \code{endpoint()}.}
 }
 \value{
-A data frame of four columns, including PFS, OS and their event indicators.
-The event indicators are all 1s.
+A data frame of \code{n} rows and four columns, including PFS, OS and their
+event indicators. The event indicators are all 1s. The column names are
+\code{<pfs_name>}, \code{<pfs_name>_event}, \code{<os_name>},
+and \code{<os_name>_event}.
 }
 \description{
-Generate PFS and OS using the three-states model
+Generate correlated PFS and OS endpoints using the three-states model. This
+function can be used as custom \code{generator} in the function
+\code{endpoint()}.
 }
 \examples{
-
+## use as function (if you don't use TrialSimulator for simulation)
 pfs_and_os_trt <- CorrelatedPfsAndOs3(1e4, 0.06, 0.30, 0.30, 'PFS', 'OS')
 pfs_and_os_pbo <- CorrelatedPfsAndOs3(1e4, 0.10, 0.40, 0.30, 'PFS', 'OS')
+
+## use as generator (if you use TrialSimulator for simulation)
+
+pfs_and_os <- endpoint(name = c('PFS', 'os'),
+                       type = c('tte', 'tte'),
+                       generator = CorrelatedPfsAndOs3,
+                       h01 = .06, h02 = .30, h12 = .30,
+                       pfs_name = 'PFS', os_name = 'os')
+
+pfs_and_os # run it in console to see summary report
 
 }

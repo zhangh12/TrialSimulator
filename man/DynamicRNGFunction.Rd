@@ -7,36 +7,45 @@
 DynamicRNGFunction(fn, ...)
 }
 \arguments{
-\item{fn}{random number generator, e.g., rnorm, rchisq, etc. It can be
-user-defined random number generator as well, e.g.,
-PiecewiseConstantExponentialRNG}
+\item{fn}{random number generator, e.g., \code{rnorm}, \code{rchisq},
+etc. It can be user-defined random number generator as well, e.g.,
+\code{PiecewiseConstantExponentialRNG}.}
 
 \item{...}{arguments for \code{fn}. Specifying invalid arguments can trigger error and
 be stopped. There are three exceptions. (1) \code{rng} can be passed through
-`...` to give true name of \code{fn}. This could be necessary as it may be
+\code{...} to give true name of \code{fn}. This could be necessary as it may be
 hard to parse it accurately in \code{DynamicRNGFunction}, or simply for a more
 informative purpose in some scenarios. (2) \code{var_name} can be passed
-through `...` to specify the name of generated variable. (3) \code{simplify}
-can be set to FALSE to convert a vector into a one-column data frame in returned
+through \code{...} to specify the name of generated variable. (3) \code{simplify}
+can be set to \code{FALSE} to convert a vector into a one-column data frame in returned
 object. This happens for built-in random number generators, e.g., \code{rnorm},
 \code{rbinom}, etc. These three arguments will not be passed into \code{fn}.}
 }
 \value{
-a function to generate random number based on `fn` and arguments in
-`...`. Specified arguments will be fixed and cannot be changed when invoking
-`DynamicRNGFunction(fn, ...)()`. For example, if `foo <- DynamicRNGFunction(rnorm, sd = 2)`,
-then `foo(n = 100)` will always generate data from normal distribution of
-variance 4. `foo(n = 100, sd = 1)` will trigger an error. However,
-if an argument is not specified in `DynamicRNGFunction`, then it can be specified
-later. For example, `foo(n = 100, mean = -1)` will generate data from N(-1, 4).
+a function to generate random number based on \code{fn} and arguments in
+\code{...}. Specified arguments will be fixed and cannot be changed when invoking
+\code{DynamicRNGFunction(fn, ...)()}. For example,
+if \code{foo <- DynamicRNGFunction(rnorm, sd = 2)},
+then \code{foo(n = 100)} will always generate data from normal distribution of
+variance 4. \code{foo(n = 100, sd = 1)} will trigger an error. However,
+if an argument is not specified in \code{DynamicRNGFunction}, then it can be specified
+later. For example, \code{foo(n = 100, mean = -1)} will generate data from N(-1, 4).
 }
 \description{
-A wrapper of random number generator.
+This function may be useful to advanced users of \code{TrialSimulator}. It
+creates a wrapper function of a random number generator, while fixing a
+subset or all of arguments. This function is design to prevent inadvertent
+changing to arguments of random number generator. See examples below.
 }
 \examples{
 # example code
 dfunc <- DynamicRNGFunction(rnorm, sd = 3.2)
-x <- dfunc(1e3)
+x <- dfunc(1e3) # mean 0 and sd 3.2
 hist(x)
+
+y <- dfunc(1e3, mean = 3.5) # mean can be changed
+mean(y)
+
+try(z <- dfunc(1e3, sd = 1)) # error because sd is fixed in dfunc
 
 }

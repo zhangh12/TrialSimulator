@@ -2,13 +2,17 @@
 #'
 #' @description
 #' Test rate difference by comparing it to a pre-specified value using the
-#' Farrington-Manning test
+#' Farrington-Manning test.
+#'
+#' Refer to \href{this vignette}{https://zhangh12.github.io/TrialSimulator/articles/wrappers.html}
+#' for more information and examples.
 #'
 #' @param endpoint Character. Name of the endpoint in \code{data}.
 #' @param placebo Character. String indicating the placebo in \code{data$arm}.
 #' @param data Data frame. Usually it is a locked data set.
 #' @param alternative a character string specifying the alternative hypothesis,
-#' must be one of \code{"greater"} or \code{"less"}. No default value.
+#' must be one of \code{"greater"} or \code{"less"}, i.e.,
+#' one-sided test is enforced. No default value.
 #' \code{"greater"} means superiority of treatment over placebo is established
 #' by rate difference greater than `delta`.
 #' @param ... Subset conditions compatible with \code{dplyr::filter}.

@@ -8,7 +8,7 @@
 Create a class of controller to run a trial.
 
 Public methods in this R6 class are used in developing
-this package. Thus, I have to export the whole R6 class which exposures all
+this package. Thus, we have to export the whole R6 class which exposures all
 public methods. However, only the public methods in the list below are
 useful to end users.
 
@@ -46,9 +46,9 @@ initialize a controller of the trial
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{trial}}{a \code{Trials} object.}
+\item{\code{trial}}{a trial object returned from \code{trial()}.}
 
-\item{\code{listener}}{a \code{Listeners} object.}
+\item{\code{listener}}{a listener object returned from \code{listener()}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -57,7 +57,7 @@ initialize a controller of the trial
 \if{html}{\out{<a id="method-Controllers-get_listener"></a>}}
 \if{latex}{\out{\hypertarget{method-Controllers-get_listener}{}}}
 \subsection{Method \code{get_listener()}}{
-return listener
+return listener in a controller.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Controllers$get_listener()}\if{html}{\out{</div>}}
 }
@@ -67,7 +67,7 @@ return listener
 \if{html}{\out{<a id="method-Controllers-get_trial"></a>}}
 \if{latex}{\out{\hypertarget{method-Controllers-get_trial}{}}}
 \subsection{Method \code{get_trial()}}{
-return trial
+return trial in a controller.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Controllers$get_trial()}\if{html}{\out{</div>}}
 }
@@ -77,7 +77,7 @@ return trial
 \if{html}{\out{<a id="method-Controllers-mute"></a>}}
 \if{latex}{\out{\hypertarget{method-Controllers-mute}{}}}
 \subsection{Method \code{mute()}}{
-mute all messages (not including warnings)
+mute all messages (not including warnings).
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Controllers$mute()}\if{html}{\out{</div>}}
 }
@@ -95,7 +95,8 @@ mute all messages (not including warnings)
 \if{latex}{\out{\hypertarget{method-Controllers-reset}{}}}
 \subsection{Method \code{reset()}}{
 reset the trial and listener registered to the controller before running
-additional replicate of simulation.
+additional replicate of simulation. This is usually done between two
+calls of \code{controller$run()}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Controllers$reset()}\if{html}{\out{</div>}}
 }
@@ -113,11 +114,11 @@ return a data frame of all current outputs saved by calling \code{save}.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{cols}}{columns to be returned from \code{Controller$output}. If
-\code{NULL}, all columns are returned.}
+\item{\code{cols}}{character vector. Columns to be returned from the data frame of simulation
+outputs. If \code{NULL}, all columns are returned.}
 
-\item{\code{simplify}}{logical. Return value rather than a data frame of one
-column when \code{length(col) == 1} and \code{simplify == TRUE}.}
+\item{\code{simplify}}{logical. Return vector rather than a data frame of one
+column when \code{length(cols) == 1} and \code{simplify == TRUE}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -126,7 +127,7 @@ column when \code{length(col) == 1} and \code{simplify == TRUE}.}
 \if{html}{\out{<a id="method-Controllers-run"></a>}}
 \if{latex}{\out{\hypertarget{method-Controllers-run}{}}}
 \subsection{Method \code{run()}}{
-run a trial
+run trial simulation.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Controllers$run(n = 1, plot_event = TRUE, silent = FALSE, dry_run = FALSE)}\if{html}{\out{</div>}}
 }
@@ -134,16 +135,19 @@ run a trial
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{n}}{number of replicates of simulation. \code{n = 1} by default.
-Simulation results can be accessed by \code{Controller$get_output()}.}
+\item{\code{n}}{integer. Number of replicates of simulation.
+\code{n = 1} by default. Simulation results can be accessed by
+\code{controller$get_output()}.}
 
-\item{\code{plot_event}}{create event plot}
+\item{\code{plot_event}}{logical. Create event plot if \code{FALSE}. Users
+should set it to be \code{FALSE} if \code{n > 1}.}
 
 \item{\code{silent}}{logical. \code{TRUE} if muting all messages during a
 trial. Note that warning messages are still displayed.}
 
-\item{\code{dry_run}}{\code{TRUE} if action function provided by users is
-ignored and a built-in default action \code{default_action} is called
+\item{\code{dry_run}}{logical. We are considering retire this argument.
+\code{TRUE} if action function provided by users is
+ignored and an internal default action \code{.default_action} is called
 instead. This default function only locks data when the milestone is
 triggered. Milestone time and number of endpoints' events or sample sizes
 are saved. It is suggested to set \code{dry_run = TRUE} to estimate
@@ -154,8 +158,8 @@ information for group sequential design and reasonable time of milestone
 of interest when planning a trial. Set it to \code{FALSE} for formal
 simulations. However, for an adaptive design where arm(s) could
 possibly be added or removed, setting \code{dry_run} to \code{TRUE}
-is usually not helpful because adaption should be actually applied
-to estimate milestone time.}
+is usually not helpful because adaption should be executed
+before estimating the milestone time.}
 }
 \if{html}{\out{</div>}}
 }

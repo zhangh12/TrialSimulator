@@ -17,5 +17,15 @@ a named vector for scale and shape parameters.
 }
 \description{
 Fit scale and shape parameters of the Weibull distribution to match
-dropout rates at two specified time points.
+dropout rates at two specified time points. Weibull distribution can be
+used as a dropout distribution because it has two parameters.
+
+Note that It is users' responsibility to assure that the units of dropout
+time, readout of non-tte endpoints, and trial duration are consistent.
+}
+\examples{
+## dropout rates are 8\% and 18\% at time 12 and 18.
+weibullDropout(time = c(12, 18), dropout_rate = c(.08, .18))
+
+
 }

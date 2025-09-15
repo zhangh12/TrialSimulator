@@ -14,7 +14,8 @@ fitFarringtonManning(endpoint, placebo, data, alternative, ..., delta = 0)
 \item{data}{Data frame. Usually it is a locked data set.}
 
 \item{alternative}{a character string specifying the alternative hypothesis,
-must be one of \code{"greater"} or \code{"less"}. No default value.
+must be one of \code{"greater"} or \code{"less"}, i.e.,
+one-sided test is enforced. No default value.
 \code{"greater"} means superiority of treatment over placebo is established
 by rate difference greater than `delta`.}
 
@@ -47,7 +48,10 @@ a data frame with three columns:
 }
 \description{
 Test rate difference by comparing it to a pre-specified value using the
-Farrington-Manning test
+Farrington-Manning test.
+
+Refer to \href{this vignette}{https://zhangh12.github.io/TrialSimulator/articles/wrappers.html}
+for more information and examples.
 }
 \references{
 Farrington, Conor P., and Godfrey Manning. "Test statistics and sample size formulae for comparative binomial trials with null hypothesis of non-zero risk difference or non-unity relative risk." Statistics in medicine 9.12 (1990): 1447-1454.

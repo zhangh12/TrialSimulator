@@ -2,23 +2,41 @@
 #'
 #' @description
 #' Define a trial. This is a user-friendly wrapper for
-#' the class constructor \code{Trial$new}. Users who are not familiar with
+#' the class constructor \code{Trial$new()}. Users who are not familiar with
 #' the concept of classes may consider using this wrapper directly.
 #'
-#' @param name character. Name of trial.
-#' @param n_patients integer. Maximum number of patients could be enrolled
-#' to the trial.
-#' @param duration Numeric. Trial duration.
+#' Trial's name, planned size/duration, enrollment plan,
+#' dropout mechanism and seeding are specified in this function. Note that
+#' many of these parameters can be altered adaptively during a trial.
+#'
+#' Note that It is users' responsibility to assure that the units of dropout
+#' time, trial duration, and readout of non-tte endpoints are consistent.
+#'
+#' @param name character. Name of trial. Usually, hmm..., useless.
+#' @param n_patients integer. Maximum (and initial) number of patients
+#' could be enrolled when planning the trial. It can be altered adaptively
+#' during a trial.
+#' @param duration Numeric. Trial duration. It can be altered adaptively
+#' during a trial.
 #' @param description character. Optional for description of the trial. By
-#' default it is set to be trial's \code{name}.
-#' @param seed random seed. If \code{NULL}, \code{set.seed()} will not be
-#' called, which uses seed set outside.
+#' default it is set to be trial's \code{name}. Usually useless.
+#' @param seed random seed. If \code{NULL}, seed is set for each simulated
+#' trial automatically and saved in output. It can be retrieved in the
+#' \code{seed} column in \code{$get_output()}. Setting it to be \code{NULL}
+#' is recommended. For debugging, set it to a specific integer.
 #' @param enroller a function returning a vector enrollment time for
-#' patients. Its first argument is the number of enrolled patients.
-#' @param dropout a function returning a vector of dropout time for
-#' patients. Its first argument is the number of enrolled patients.
-#' @param silent logical. \code{TRUE} to mute messages.
-#' @param ... arguments of \code{enroller} and \code{dropout}.
+#' patients. Its first argument \code{n} is the number of enrolled patients.
+#' Set it to \code{StaggeredRecruiter} can handle most of the use cases.
+#' See \code{?TrialSimulator::StaggeredRecruiter} for more information.
+#' @param dropout a function returning a vector of dropout time for patients.
+#' It can be any random number generator with first argument \code{n},
+#' the number of enrolled patients. Usually \code{rexp} if dropout rate
+#' is set at a single time point, or \code{rweibull} if dropout rates are
+#' set at two time points. See \code{?TrialSimulator::weibullDropout}.
+#' @param silent logical. \code{TRUE} to mute messages. However, warning
+#' message is still displayed. Usually set it to \code{TRUE} in formal
+#' simulation. Default: \code{FALSE}.
+#' @param ... (optional) arguments of \code{enroller} and \code{dropout}.
 #'
 #' @examples
 #' risk1 <- data.frame(
@@ -61,8 +79,12 @@
 #'   name = 'Trial-3415', n_patients = 100,
 #'   seed = 31415926, duration = 100,
 #'   enroller = rexp, rate = log(2) / 5)
+#'
+#' trial
+#'
 #' trial$add_arms(sample_ratio = c(1, 2), placebo, active)
 #'
+#' ## updated information after arms are registered
 #' trial
 #'
 #' @export

@@ -2,17 +2,20 @@
 % Please edit documentation in R/rconst.R
 \name{rconst}
 \alias{rconst}
-\title{Generate constant variable}
+\title{Generate Constant Variable}
 \usage{
 rconst(n, value)
 }
 \arguments{
 \item{n}{integer. Number of observations.}
 
-\item{value}{value of constant observations.}
+\item{value}{scalar. Value of constant observations.}
 }
 \description{
 A random number generator returning only a constant. This can be used to
-set dropout time. Currently it is default value of dropout time, with
-`value = Inf`.
+set dropout time. Currently it is the default value of dropout time, with
+\code{value = Inf}.
+
+This function can also be used as a generator of \code{endpoint()} if a
+constant endpoint is needed.
 }

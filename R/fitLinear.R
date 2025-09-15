@@ -3,12 +3,16 @@
 #' @description
 #' Fit linear regression model on a continuous endpoint.
 #'
+#' Refer to \href{this vignette}{https://zhangh12.github.io/TrialSimulator/articles/wrappers.html}
+#' for more information and examples.
+#'
 #' @param formula an object of class \code{formula}. Must include \code{arm} and
 #' endpoint in \code{data}. Covariates can be adjusted.
 #' @param placebo Character. String indicating the placebo arm in \code{data$arm}.
 #' @param data Data frame. Usually it is a locked data set.
 #' @param alternative a character string specifying the alternative hypothesis,
-#' must be one of \code{"greater"} or \code{"less"}. No default value.
+#' must be one of \code{"greater"} or \code{"less"},
+#' i.e., one-sided test is enforced. No default value.
 #' \code{"greater"} means superiority of treatment over placebo is established
 #' by a greater mean in treated arm.
 #' @param ... Subset conditions compatible with \code{dplyr::filter}.
@@ -21,7 +25,7 @@
 #' which is equivalent to:
 #' \code{fitLinear(cfb ~ arm, 'pbo', data, 'greater', arm \%in\% c('pbo', 'low dose') & cfb > 0.5)}.
 #' Note that if more than one treatment arm are present in the data after
-#' applying filter in \code{...}, models are fitted for placebo verse
+#' applying filter in \code{...}, models are fitted and tested for placebo verse
 #' each of the treatment arms.
 #'
 #' @returns a data frame with columns:

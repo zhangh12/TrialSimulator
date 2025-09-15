@@ -1,15 +1,12 @@
-
-
-
-#' Solve parameters in a three-state ill-death model
+#' Solve Parameters in a Three-State Ill-Death Model
 #'
 #' @description
-#' The ill-death model consists of three states, \code{stable}, \code{progression},
+#' The ill-death model consists of three states, \code{initial}, \code{progression},
 #' and \code{death}. It can be used to model the progression-free survival (PFS)
 #' and overall survival (OS) in clinical trial simulation. It models the
 #' correlation PFS and OS without assumptions on latent status and copula.
 #' Also, it does not assume PFS and OS satisfy the proportional hazard assumption
-#' simultaneously. The three-state ill-death model ensure the nice property that
+#' simultaneously. The three-state ill-death model ensures a nice property that
 #' PFS <= OS with probability one. However, it requires three hazard parameters
 #' under the homogeneous Markov assumption. In practice, hazard parameters are
 #' hard to specify intuitively especially when no trial data is available at
@@ -22,13 +19,15 @@
 #' the built-in data generator \code{CorrelatedPfsAndOs3()} when defining
 #' endpoints in \code{TrialSimulator}.
 #'
+#' For more information, refer to
+#' \href{https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOs.html}{this vignette}.
 #'
 #' @param median_pfs numeric. Median of PFS.
 #' @param median_os numeric. Median of OS.
 #' @param corr numeric vector. Pearson correlation coefficients between PFS and OS.
 #' @param h12 numeric vector. A set of hazard from progression to
 #' death that may induce the target correlation \code{corr} given \code{median_pfs}
-#' and \code{median_os}. \code{solveThreeStateModel} will do a grid search to
+#' and \code{median_os}. \code{solveThreeStateModel()} will do a grid search to
 #' find the best hazard parameters that matches to the medians of PFS and OS,
 #' and their correlations.
 #'

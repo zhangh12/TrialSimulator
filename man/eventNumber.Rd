@@ -2,21 +2,24 @@
 % Please edit documentation in R/eventNumber.R
 \name{eventNumber}
 \alias{eventNumber}
-\title{Triggering condition by number of events or observations of an endpoint}
+\title{Triggering Condition by Number of Events or Non-missing Observations of an Endpoint}
 \usage{
 eventNumber(endpoint, n, ..., arms = NULL)
 }
 \arguments{
-\item{endpoint}{character. Name of an endpoint.}
+\item{endpoint}{character. Name of an endpoint. It should be something that
+is specified in the argument \code{name} in \code{endpoint()}.}
 
-\item{n}{integer. Targeted number of events.}
+\item{n}{integer. Targeted number of events or non-missing obervations,
+depending on the type of endpoint.}
 
 \item{...}{subset conditions compatible with \code{dplyr::filter}. Number
-of events will be counted on subset of trial data only.}
+of events/observations will be counted on subset of trial data only.}
 
-\item{arms}{vector of character. Name of arms on which the number of events
-is counted. If \code{NULL}, use all arms that are not yet removed from the
-trial by the time of calculation.}
+\item{arms}{vector of character. Name of arms on which the number of
+events/observations is counted. If \code{NULL}, use all arms that are not yet
+removed from the trial (using \code{remove_arms()})
+by the time of calculation.}
 }
 \value{
 an object of class `Condition`
@@ -38,4 +41,11 @@ Number of non-missing observations for a non-time-to-event endpoint can vary
 at different milestones as more patients are randomized into a trial, or more
 patients have been treated until their readout time (thus, \code{NA} turns
 to a value).
+
+Both numbers are affected by dropout.
+
+Refer to the
+\href{https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html}{vignette}
+to learn how to define milestones when performing simulation using
+\code{TrialSimulator}.
 }
