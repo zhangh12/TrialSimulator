@@ -9,7 +9,7 @@
 #' dropout mechanism and seeding are specified in this function. Note that
 #' many of these parameters can be altered adaptively during a trial.
 #'
-#' Note that It is users' responsibility to assure that the units of dropout
+#' Note that it is users' responsibility to assure that the units of dropout
 #' time, trial duration, and readout of non-tte endpoints are consistent.
 #'
 #' @param name character. Name of trial. Usually, hmm..., useless.
