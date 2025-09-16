@@ -28,15 +28,18 @@ variable should be corresponding to an event indicator.}
 be used to specify variables with limited distinct values as categorical
 variables in summary.}
 
-\item{title}{title of the summary report.}
+\item{title}{character. Title of the summary report.}
 
-\item{sub_title}{sub-title.}
+\item{sub_title}{character. Sub-title.}
 }
 \value{
 a data frame of summary
 }
 \description{
-A minimum alternative to \code{summarytools::dfSummary} to avoid package dependency.
+A minimum alternative to \code{summarytools::dfSummary} to avoid package
+dependency. This function is used to generate summary reports of endpoints
+and arms. No meant to be used by end users. However, users may
+find it helpful in their own applications if the interface is okay with them.
 }
 \examples{
 

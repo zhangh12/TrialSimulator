@@ -1,41 +1,53 @@
-#' Define endpoints
+#' Define Endpoints
 #'
 #' @description
 #' Define one or multiple endpoints. This is a user-friendly wrapper for
 #' the class constructor \code{Endpoint$new}. Users who are not familiar with
 #' the concept of classes may consider using this wrapper directly.
-#' wrapper if
+#'
+#' Note that It is users' responsibility to assure that the units of
+#' readout of non-tte endpoints, dropout time, and trial duration are consistent.
+#'
 #' @param name character vector. Name(s) of endpoint(s)
 #' @param type character vector. Type(s) of endpoint(s). It supports
 #' \code{"tte"} for time-to-event endpoints, and \code{"non-tte"} for
-#' all other types of endpoints (e.g., continous, binary, categorical,
+#' all other types of endpoints (e.g., continuous, binary, categorical,
 #' or repeated measurement. \code{TrialSimulator} will do some verification if
 #' an endpoint is of type \code{"tte"}. However, no special
 #' manipulation is done for non-tte endpoints.
-#' @param generator a RNG function. Its first argument must be `n`, number of
-#' patients. It must return a data frame of `n` rows. It support all
-#' built-in random number generators in \code{stats}, e.g., \code{stats::rnorm},
-#' \code{stats::rexp}, etc. that with \code{n} as the argument for number of
+#' @param generator a RNG function. Its first argument must be \code{n},
+#' number of patients. It must return a data frame of \code{n} rows.
+#' It supports all univariate random number generators, like those in
+#' \code{stats}, e.g., \code{stats::rnorm}, \code{stats::rexp}, etc.
+#' that with \code{n} as the first argument for number of
 #' observations. \code{generator} could be any custom functions as long as
 #' (1) its first argument is \code{n}; and (2) it returns a vector of
 #' length \code{n} or a data frame of \code{n} rows. Custom random number
 #' generator can return data of more than one endpoint. This is useful
-#' when users need to simulate correlated endpoints. The column names of
-#' returned data frame should match to \code{name} exactly. If an endpoint
+#' when users need to simulate correlated endpoints (e.g., longitudinal
+#' endpoints, or PFS/OS). The column names of
+#' returned data frame should match to the argument \code{name} exactly,
+#' but order does not matter. If an endpoint
 #' is of type \code{"tte"}, the custom \code{generator} should also return
 #' a column as event indicator. For example, if \code{"pfs"} is \code{"tte"},
 #' then custom \code{generator} should return at least two columns
 #' \code{"pfs"} and \code{"pfs_event"}. Usually \code{pfs_event} can be
-#' all 1s if no censoring. Censoring can be specified later when defining
-#' the \code{Trial} through argument \code{dropout}. See \code{?Trial}.
+#' all 1s if no censoring. For other generators, e.g.,
+#' \code{TrialSimulator::PiecewiseConstantExponentialRNG} and
+#' \code{TrialSimulator::CorrelatedPfsAndOs4}, the event indicaotrs could
+#' take values 0 and 1 due the nature of their algorithm.
+#' Censoring can also be specified later in \code{trial()}
+#' through its argument \code{dropout}. See \code{?Trials}.
 #' Note that if covariates, e.g., biomarker, subgroup, are needed in
-#' generating and analyzing trial data, they can be defined as
-#' \code{Endpoint} as well.
-#' @param readout numeric vector with name to be the non-tte endpoint(s).
+#' generating and analyzing trial data, they can and should be defined as
+#' endpoints as well.
+#' @param readout numeric vector named by non-tte endpoint(s).
 #' \code{readout} should be specified for every non-tte endpoint. For
-#' example, \code{c(endpoint1 = 6, endpoint2 = 3)}.  If all
-#' endpoints are tte, \code{readout} can be \code{NULL}.
-#' @param ... optional arguments for \code{generator}.
+#' example, \code{c(endpoint1 = 6, endpoint2 = 3)}. Error will be triggered
+#' if readout is not specified for at least one non-tte endpoint, or it
+#' specified for any tte endpoints. If all
+#' endpoints are tte, \code{readout} should be its default value \code{NULL}.
+#' @param ... (optional) arguments of \code{generator}.
 #'
 #' @examples
 #' set.seed(12345)
@@ -50,9 +62,12 @@
 #' )
 #'
 #' pfs <- endpoint(name = 'pfs', type='tte',
-#' generator = PiecewiseConstantExponentialRNG,
-#' risk = risk, endpoint_name = 'pfs')
-#' pfs$get_generator()
+#'                 generator = PiecewiseConstantExponentialRNG,
+#'                 risk = risk, endpoint_name = 'pfs')
+#'
+#' # run it in R console to display a summary report
+#' # event indicator takes values 0/1
+#' pfs
 #'
 #' ## Example 2. Generate continuous and binary endpoints using R's built-in
 #' ## RNG functions, e.g. rnorm, rexp, rbinom, etc.
@@ -66,21 +81,19 @@
 #'          name = 'orr', type = 'non-tte', readout = c(orr=3), generator = rbinom,
 #'          size = 1, prob = .4)
 #'
-#' mean(ep1$get_generator()(1e4)[, 1]) # compared to 1.2
-#' sd(ep1$get_generator()(1e4)[, 1]) # compared to 1.0
+#' ep1 # run it in R console. Mean and sd should be comparable to (1.2, 1.0)
 #'
-#' log(2) / median(ep2$get_generator()(1e4)[, 1]) # compared to 4.5
+#' ep2 # run it in R console. Median should be comparable to log(2)/4.5 = 0.154
 #'
-#' mean(ep3$get_generator()(1e4)[, 1]) # compared to 0.4
+#' ep3 # run it in R console. Mean and sd should be comparable to 0.4 and 0.49
 #'
-#' ## print summary reports for endpoint objects in console
-#' # ep1
-#' # ep2
-#' # ep3
 #'
-#' ## An example of piecewise constant exponential random number generator
+#' ## Example3: delayed effect
+#' ## Use piecewise constant exponential random number generator
 #' ## Baseline hazards are piecewise constant
 #' ## Hazard ratios are piecewise constant, resulting a delayed effect.
+#' ## Note that this example is for explaining the concept of "endpoint".
+#' ## Generating endpoint data manually is not the recommended way to use this package.
 #'
 #' run <- TRUE
 #'
@@ -122,11 +135,15 @@
 #'            risk.table = TRUE,  # Add risk table
 #'            palette = c("blue", "red"))
 #'
+#'
 #' ## print summary reports for endpoint objects in console
-#' # ep1
-#' # ep2
+#' ep1
+#' ep2
 #'
 #' }
+#'
+#' ## Example 4: generate correlated pfs and os
+#' ## See vignette('simulatePfsAndOs')
 #'
 #' @export
 endpoint = function(

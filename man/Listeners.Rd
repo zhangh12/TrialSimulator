@@ -10,7 +10,7 @@ condition of pre-defined milestones. Actions are triggered and executed
 automatically.
 
 Public methods in this R6 class are used in developing
-this package. Thus, I have to export the whole R6 class which exposures all
+this package. Thus, we have to export the whole R6 class which exposures all
 public methods. However, only the public methods in the list below are
 useful to end users.
 
@@ -20,6 +20,20 @@ useful to end users.
 }
 \examples{
 ##
+
+## ------------------------------------------------
+## Method `Listeners$add_milestones`
+## ------------------------------------------------
+
+listener <- listener()
+interim <- milestone(name = 'interim',
+                     when = eventNumber('endpoint', n = 100)
+                    )
+final <- milestone(name = 'final',
+                   when = calendarTime(time = 24)
+                  )
+listener$add_milestones(interim, final)
+
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -56,9 +70,9 @@ initialize a listener
 \if{latex}{\out{\hypertarget{method-Listeners-add_milestones}{}}}
 \subsection{Method \code{add_milestones()}}{
 register milestones with listener. Order in \code{...} matter
-as they are scanned in that order. It is user's responsibility
-to use reasonable order when calling this function, otherwise,
-the result of \code{Listener$monitor()} can be problematic.
+as they are scanned and triggered in that order. It is users'
+responsibility to use reasonable order when calling this function,
+otherwise, the result of \code{Listeners$monitor()} can be problematic.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Listeners$add_milestones(...)}\if{html}{\out{</div>}}
 }
@@ -66,10 +80,26 @@ the result of \code{Listener$monitor()} can be problematic.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{milestones}
+\item{\code{...}}{one or more objects returned from \code{milestone()}.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{listener <- listener()
+interim <- milestone(name = 'interim',
+                     when = eventNumber('endpoint', n = 100)
+                    )
+final <- milestone(name = 'final',
+                   when = calendarTime(time = 24)
+                  )
+listener$add_milestones(interim, final)
+
+}
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Listeners-get_milestones"></a>}}

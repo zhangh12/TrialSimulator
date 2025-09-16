@@ -15,7 +15,8 @@ and endpoint in \code{data}. Covariates can be adjusted.}
 \item{data}{Data frame. Usually it is a locked data set.}
 
 \item{alternative}{a character string specifying the alternative hypothesis,
-must be one of \code{"greater"} or \code{"less"}. No default value.
+must be one of \code{"greater"} or \code{"less"},
+i.e., one-sided test is enforced. No default value.
 \code{"greater"} means superiority of treatment over placebo is established
 by an odds ratio greater than 1.}
 
@@ -49,4 +50,7 @@ a data frame with columns:
 }
 \description{
 Fit logistic regression model on an binary endpoint.
+
+Refer to \href{this vignette}{https://zhangh12.github.io/TrialSimulator/articles/wrappers.html}
+for more information and examples.
 }

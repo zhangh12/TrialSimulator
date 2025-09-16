@@ -5,15 +5,21 @@
 \alias{Milestones}
 \title{Class of Milestones}
 \description{
-Create a class of milestone. An milestone means the time point to take an action,
-e.g., carry out (futility, interim, final) analysis for add/remove arms,
-or stop a trial early. It can also be any more general time point where trial
+Create a class of milestone. A milestone means the time point to take an action,
+e.g., carrying out (futility, interim, final) analysis for
+adding/removing arms, or stopping a trial early.
+It can also be any more general time point where trial
 data is used in decision making or adaptation. For example, one can define a
 milestone for changing randomization scheme, sample size re-assessment, trial
 duration extension etc.
-}
-\examples{
-##
+
+Public methods in this R6 class are used in developing
+this package. Thus, we have to export the whole R6 class which exposures all
+public methods. However, none of the public methods on this page is
+useful to end users. Instead, refer to the
+\href{https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html}{vignette}
+to learn how to define milestones when performing simulation using
+\code{TrialSimulator}.
 }
 \section{Methods}{
 \subsection{Public methods}{

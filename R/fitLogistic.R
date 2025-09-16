@@ -3,12 +3,16 @@
 #' @description
 #' Fit logistic regression model on an binary endpoint.
 #'
+#' Refer to \href{this vignette}{https://zhangh12.github.io/TrialSimulator/articles/wrappers.html}
+#' for more information and examples.
+#'
 #' @param formula An object of class \code{formula}. Must include \code{arm}
 #' and endpoint in \code{data}. Covariates can be adjusted.
 #' @param placebo Character. String indicating the placebo in \code{data$arm}.
 #' @param data Data frame. Usually it is a locked data set.
 #' @param alternative a character string specifying the alternative hypothesis,
-#' must be one of \code{"greater"} or \code{"less"}. No default value.
+#' must be one of \code{"greater"} or \code{"less"},
+#' i.e., one-sided test is enforced. No default value.
 #' \code{"greater"} means superiority of treatment over placebo is established
 #' by an odds ratio greater than 1.
 #' @param scale character. The type of estimate in the output. Must be one

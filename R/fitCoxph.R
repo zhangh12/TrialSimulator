@@ -1,32 +1,40 @@
-#' Fit Cox proportional hazard ratio model
+#' Fit Cox Proportional Hazard Ratio model
 #'
 #' @description
 #' Fit Cox proportional hazards model on an time-to-event endpoint.
 #'
+#' Refer to \href{this vignette}{https://zhangh12.github.io/TrialSimulator/articles/wrappers.html}
+#' for more information and examples.
+#'
 #' @param formula An object of class \code{formula} that can be used with
-#' \code{survival::coxph}. Must consist \code{arm} and endpoint in \code{data}.
+#' \code{survival::coxph}. The data frame \code{data} must consist a column
+#' \code{arm} and a column of the endpoint specified in \code{formula}.
 #' Covariates can be adjusted. Interactions between \code{arm} and covariates are
 #' allowed in \code{formula}, but \code{arm} must has a term of main effect,
 #' and only estimate of that main effect is tested.
 #' @param placebo Character. String indicating the placebo in \code{data$arm}.
-#' @param data Data frame. Usually it is a locked data set.
+#' @param data Data frame. Usually it is a data snapshot locked at a milestone.
 #' @param alternative a character string specifying the alternative hypothesis,
-#' must be one of \code{"greater"} or \code{"less"}. No default value.
+#' must be one of \code{"greater"} or \code{"less"}, i.e., one-sided test is
+#' enforced. No default value.
 #' \code{"greater"} means superiority of treatment over placebo is established
 #' by an hazard ratio greater than 1.
 #' @param scale character. The type of estimate in the output. Must be one
 #' of \code{"log hazard ratio"} or \code{"hazard ratio"}. No default value.
 #' @param tidy logical. \code{FALSE} if more information are returned.
-#' Default \code{TRUE}.
-#' @param ... Subset conditions compatible with \code{dplyr::filter}.
+#' Default: \code{TRUE}.
+#' @param ... (optional) subset conditions compatible with \code{dplyr::filter}.
 #' \code{coxph} will be fitted on this subset only. This argument can be useful
 #' to create a subset of data for analysis when a trial consists of more
 #' than two arms. By default, it is not specified,
 #' all data will be used to fit the model. More than one condition can be
 #' specified in \code{...}, e.g.,
-#' \code{fitCoxph(formula, 'pbo', data, 'less', 'log hazard ratio', arm \%in\% c('pbo', 'low dose'), pfs > 0.5)},
+#' \code{fitCoxph(formula, 'pbo', data, 'less', 'log hazard ratio', arm \%in\% c('pbo', 'low dose'), x > 0.5)},
 #' which is equivalent to:
-#' \code{fitCoxph(formula, 'pbo', data, 'less', 'log hazard ratio', arm \%in\% c('pbo', 'low dose') & pfs > 0.5)}.
+#' \code{fitCoxph(formula, 'pbo', data, 'less', 'log hazard ratio', arm \%in\% c('pbo', 'low dose') & x > 0.5)}.
+#' Note that if more than one treatment arm are present in the data after
+#' applying filter in \code{...}, models are fitted and tested for placebo verse
+#' each of the treatment arms.
 #'
 #' @returns a data frame with three columns:
 #' \describe{

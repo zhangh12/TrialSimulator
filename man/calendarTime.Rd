@@ -2,7 +2,7 @@
 % Please edit documentation in R/calendarTime.R
 \name{calendarTime}
 \alias{calendarTime}
-\title{Triggering condition by calendar time}
+\title{Triggering Condition by Calendar Time}
 \usage{
 calendarTime(time)
 }
@@ -13,8 +13,18 @@ calendarTime(time)
 an object of class `Condition`
 }
 \description{
-Define a condition to trigger trial milestone by calendar time. The milestone will
-be trigger when a trial has been running for at least the specified
-duration. It can be used combined with conditions specified by
+Define a condition to trigger trial milestone by calendar time. The
+milestone will be triggered when a trial has been running for at least the
+specified duration since the first patient is enrolled.
+It can be used combined with conditions specified by
 \link[TrialSimulator]{enrollment} and \link[TrialSimulator]{eventNumber}.
+
+Refer to the
+\href{https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html}{vignette}
+to learn how to define milestones when performing simulation using
+\code{TrialSimulator}.
+}
+\examples{
+milestone(name = 'end of trial', when = calendarTime(time = 12))
+
 }

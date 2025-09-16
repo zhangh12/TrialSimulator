@@ -8,27 +8,46 @@
 Create a class of trial.
 
 Public methods in this R6 class are used in developing
-this package. Thus, I have to export the whole R6 class which exposures all
+this package. Thus, we have to export the whole R6 class which exposures all
 public methods. However, only the public methods in the list below are
 useful to end users.
 
 \itemize{
-\item \code{$set_duration()}
-\item \code{$remove_arms()}
-\item \code{$update_sample_ratio()}
-\item \code{$add_arms()}
-\item \code{$get_locked_data()}
-\item \code{$save()}
-\item \code{$bind()}
-\item \code{$save_custom_data()}
-\item \code{$get()}
-\item \code{$get_output()}
-\item \code{$dunnettTest()}
-\item \code{$closedTest()}
+\item \code{$set_duration()} set duration of a trial. This function can be
+used to extend duration under adaptive designs.
+\item \code{$remove_arms()} drop arms from a trial. This function can be
+used in adaptive designs, e.g., dose selection, enrichment design, etc.
+\item \code{$update_sample_ratio()} change sample ratio of arm. This function
+can be used under adaptive designs, e.g., response-adaptive design, etc.
+\item \code{$add_arms()} add arms to a trial. This function is used to add
+arms to a newly defined trial, or add arms under adaptive design, e.g.,
+dose-ranging, etc.
+\item \code{$get_locked_data()} request for data snapshot at a milestone.
+Calling this function is recommended as the first action in any action
+function as long as trial data is needed in statistical analysis or decision
+making.
+\item \code{$save()} save intermediate result for simulation summary.
+Results across multiple replicates of simulation are saved, which can be
+retrieved by calling \code{get_output()} anytime.
+\item \code{$bind()} row bind and save intermediate results across
+milestones if those results are data frames of similar formats. The life
+cycle of the save results is within a single replicate of simulation and
+is reset to NULL in next simulated trial. Saved results
+can be retrieved by calling \code{get()} anytime.
+\item \code{$save_custom_data()} save intermediate results of any format.
+The life cycle of the saved result is within a single replicate of simulation
+and is reset to NULL in next simulated trial. Saved results can be retrieved
+by calling \code{get()} anytime.
+\item \code{$get()} retrieve intermediate results saved by calling functions
+\code{save_custom_data()} or \code{bind()}.
+\item \code{$get_output()} retrieve intermediate results saved by calling
+function \code{save()}.
+\item \code{$dunnettTest()} perform Dunnett's test.
+\item \code{$closedTest()} perform combination test based on Dunnett's test.
 }
 }
 \examples{
-# Instead of using Trial$new, please use trial(), a user-friendly
+# Instead of using Trials$new, please use trial(), a user-friendly
 # wrapper. See examples in ?trial.
 
 
@@ -161,28 +180,38 @@ initialize a trial
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{name}}{character. Name of trial.}
+\item{\code{name}}{character. Name of trial. Usually, hmm..., useless.}
 
-\item{\code{n_patients}}{integer. Maximum number of patients could be enrolled
-to the trial.}
+\item{\code{n_patients}}{integer. Maximum (and initial) number of patients
+could be enrolled when planning the trial. It can be altered adaptively
+during a trial.}
 
-\item{\code{duration}}{Numeric. Trial duration.}
+\item{\code{duration}}{Numeric. Trial duration. It can be altered adaptively
+during a trial.}
 
 \item{\code{description}}{character. Optional for description of the trial. By
-default it is set to be trial's \code{name}.}
+default it is set to be trial's \code{name}. Usually useless.}
 
-\item{\code{seed}}{random seed. If \code{NULL}, \code{set.seed()} will not be
-called, which uses seed set outside.}
+\item{\code{seed}}{random seed. If \code{NULL}, seed is set for each simulated
+trial automatically and saved in output. It can be retrieved in the
+\code{seed} column in \code{$get_output()}. Setting it to be \code{NULL}
+is recommended. For debugging, set it to a specific integer.}
 
 \item{\code{enroller}}{a function returning a vector enrollment time for
-patients. Its first argument is the number of enrolled patients.}
+patients. Its first argument \code{n} is the number of enrolled patients.
+Set it to \code{StaggeredRecruiter} can handle most of the use cases.
+See \code{?TrialSimulator::StaggeredRecruiter} for more information.}
 
-\item{\code{dropout}}{a function returning a vector of dropout time for
-patients. Its first argument is the number of enrolled patients.}
+\item{\code{dropout}}{a function returning a vector of dropout time for patients.
+It can be any random number generator with first argument \code{n},
+the number of enrolled patients. Usually \code{rexp} if dropout rate
+is set at a single time point, or \code{rweibull} if dropout rates are
+set at two time points. See \code{?TrialSimulator::weibullDropout}.}
 
-\item{\code{silent}}{logical. \code{TRUE} to mute messages.}
+\item{\code{silent}}{logical. \code{TRUE} to mute messages. However, warning
+message is still displayed.}
 
-\item{\code{...}}{arguments of \code{enroller} and \code{dropout}.}
+\item{\code{...}}{(optional) arguments of \code{enroller} and \code{dropout}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -215,7 +244,7 @@ return maximum duration of a trial
 set trial duration in an adaptive designed trial. All patients enrolled
 before resetting the duration are truncated (non-tte endpoints) or
 censored (tte endpoints) at the original duration. Remaining patients
-are re-randomized. Now new duration must be longer than the old one.
+are re-randomized. New duration must be longer than the old one.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$set_duration(duration)}\if{html}{\out{</div>}}
 }
@@ -223,7 +252,7 @@ are re-randomized. Now new duration must be longer than the old one.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{duration}}{new duration of a trial. It must be longer than the
+\item{\code{duration}}{new duration of a trial. It must be greater than the
 current duration.}
 }
 \if{html}{\out{</div>}}
@@ -233,8 +262,7 @@ current duration.}
 \if{html}{\out{<a id="method-Trials-set_enroller"></a>}}
 \if{latex}{\out{\hypertarget{method-Trials-set_enroller}{}}}
 \subsection{Method \code{set_enroller()}}{
-set recruitment curve when initialize a
-trial.
+set recruitment curve when initialize a trial.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$set_enroller(func, ...)}\if{html}{\out{</div>}}
 }
@@ -245,7 +273,7 @@ trial.
 \item{\code{func}}{function to generate enrollment time. It can be built-in
 function like `rexp` or customized functions like `StaggeredRecruiter`.}
 
-\item{\code{...}}{arguments for \code{func}.}
+\item{\code{...}}{(optional) arguments for \code{func}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -276,7 +304,7 @@ trial, or when updating a trial in adaptive design.
 \item{\code{func}}{function to generate dropout time. It can be built-in
 function like `rexp` or customized functions.}
 
-\item{\code{...}}{arguments for \code{func}.}
+\item{\code{...}}{(optional) arguments for \code{func}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -308,11 +336,18 @@ kept unchanged because that is planned enrollment curve.
 \if{html}{\out{<a id="method-Trials-remove_arms"></a>}}
 \if{latex}{\out{\hypertarget{method-Trials-remove_arms}{}}}
 \subsection{Method \code{remove_arms()}}{
-remove arms from a trial. \code{enroll_patients()} will be always called
-at the end to enroll all remaining patients after
-\code{Trial$get_current_time()}. This function may be used with futility
-analysis, dose selection, enrichment analysis (sub-population) or
-interim analysis (early stop for efficacy)
+remove arms from a trial. \code{enroll_patients()} will be called
+at the end of this function to enroll all remaining patients after
+\code{Trials$get_current_time()}, i.e. no more unenrolled patients
+could be randomized to removed arms. This function may be used with
+futility analysis, dose selection, enrichment analysis (sub-population)
+or interim analysis (early stop for efficacy).
+
+Note that this function should only be called within action functions.
+It is users' responsibility to ensure it and \code{TrialSimulator} has
+no way to track this.
+In addition, data of the removed arms are censored or truncated by
+the time of arm removal.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$remove_arms(arms_name)}\if{html}{\out{</div>}}
 }
@@ -332,7 +367,7 @@ interim analysis (early stop for efficacy)
 update sample ratios of arms. This could happen after an arm is added
 or removed. Note that we may update sample ratios of unaffected arms as
 well. Once sample ratio is updated, trial data should be rolled back with
-updated randomization queue. Data of unenrolled patients should be
+updated randomization queue. Data of unenrolled patients are
 re-sampled as well.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$update_sample_ratio(arm_names, sample_ratios)}\if{html}{\out{</div>}}
@@ -359,11 +394,15 @@ simulation.}
 add one or more arms to the trial. \code{enroll_patients()} will be
 called at the end to enroll all remaining patients in
 \code{private$randomization_queue}. This function can be used in two
-scenarios.
-(1) add arms right after a trial is created (i.e., \code{Trial$new(...)}).
+scenarios:
+(1) add arms right after a trial is created (i.e., \code{Trials$new(...)}).
 \code{sample_ratio} and arms added through \code{...} should be of same
-length.
-(2) add arms to a trial already with arm(s)
+length;
+(2) add arms to a trial already with arm(s).
+
+Note that this function should only be called within action functions.
+It is users' responsibility to ensure it and \code{TrialSimulator} has
+no way to track this.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$add_arms(sample_ratio, ...)}\if{html}{\out{</div>}}
 }
@@ -374,15 +413,15 @@ length.
 \item{\code{sample_ratio}}{integer vector. Sample ratio for permuted block
 randomization. It will be appended to existing sample ratio in the trial.}
 
-\item{\code{...}}{one or more objects of class \code{Arm}. One exception in
+\item{\code{...}}{one or more objects returned from \code{arm()}. One exception in
 \code{...} is an argument \code{enforce}. When \code{enforce = TRUE},
 sample ratio of newly added arm. It rolls back all patients after
-\code{Trial$get_current_time()}, i.e. redo randomization for those
+\code{Trials$get_current_time()}, i.e. redo randomization for those
 patients. This can be useful to add arms one by one when creating a trial.
-Note that we can run \code{Trial$add_arm(sample_ratio1, arm1)} followed
-by \code{Trial$add_arm(sample_ratio2, enforce = TRUE, arm2)}.
+Note that we can run \code{Trials$add_arm(sample_ratio1, arm1)} followed
+by \code{Trials$add_arm(sample_ratio2, enforce = TRUE, arm2)}.
 We would expected similar result with
-\code{Trial$add_arms(c(sample_ratio1, sample_ratio2), arm1, arm2)}. Note
+\code{Trials$add_arms(c(sample_ratio1, sample_ratio2), arm1, arm2)}. Note
 that these two method won't return exactly the same trial because
 randomization_queue were generated twice in the first approach but only
 once in the second approach. But statistically, they are equivalent and
@@ -696,7 +735,9 @@ data lock time
 \if{html}{\out{<a id="method-Trials-get_locked_data"></a>}}
 \if{latex}{\out{\hypertarget{method-Trials-get_locked_data}{}}}
 \subsection{Method \code{get_locked_data()}}{
-return locked data for a milestone
+return locked data, i.e. snapshot at a milestone. TTE data is censored
+and non-TTE data is truncated accounting for readout time and dropout
+time simultaneously by the triggering time of milestone.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$get_locked_data(milestone_name)}\if{html}{\out{</div>}}
 }
@@ -704,8 +745,8 @@ return locked data for a milestone
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{milestone_name}}{character, milestone name of which the locked data to be
-extracted.}
+\item{\code{milestone_name}}{character. Milestone name of which the locked
+data to be extracted.}
 }
 \if{html}{\out{</div>}}
 }
@@ -853,7 +894,10 @@ is updated for multiple times.}
 \if{latex}{\out{\hypertarget{method-Trials-save}{}}}
 \subsection{Method \code{save()}}{
 save a single value or a one-row data frame to trial's output
-for further analysis/summary later.
+for further analysis/summary later. Results saved by calling this
+function have a life cycle of the whole simulation. This means that
+all results are accumulated across multiple simulated trial and can be
+used for summary later.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$save(value, name = "", overwrite = FALSE)}\if{html}{\out{</div>}}
 }
@@ -861,17 +905,17 @@ for further analysis/summary later.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{value}}{value to be saved. It can be a vector (of length 1) or
-a data frame (of one row).}
+\item{\code{value}}{value to be saved. It can be a scalar (vector of length 1)
+or a data frame (of one row).}
 
 \item{\code{name}}{character to name the saved object. It will be used to
-name a column in trial's output if \code{value} is a vector.
+name a column in trial's output if \code{value} is a scalar.
 If \code{value} is a data frame, \code{name} will be the prefix pasted
 with the column name of \code{value} in trial's output.
 If user want to use
 \code{value}'s column name as is in trial's output, set \code{name}
 to be \code{''} as default. Otherwise, column name would be, e.g.,
-\code{"{name}_<{names(value)}>"}.}
+\code{"{<name>}_<{colnames(value)}>"}.}
 
 \item{\code{overwrite}}{logic. \code{TRUE} if overwriting existing entries
 with warning, otherwise, throwing an error and stop.}
@@ -883,11 +927,25 @@ with warning, otherwise, throwing an error and stop.}
 \if{html}{\out{<a id="method-Trials-bind"></a>}}
 \if{latex}{\out{\hypertarget{method-Trials-bind}{}}}
 \subsection{Method \code{bind()}}{
-row bind a data frame to existing data frame. If \code{name} is not
-existing in \code{Trial}, then it is equivalent to \code{Trial$save}.
+row bind a data frame to existing data frame. If a data frame \code{name}
+is not existing in a trial, then it is equivalent to
+calling \code{Trials$save_custom_data()}.
 Extra columns in \code{value} are ignored. Columns in
-\code{Trial$custom_data[[name]]} but not in \code{value} are filled
+\code{Trials$custom_data[[name]]} but not in \code{value} are filled
 with \code{NA}.
+
+This function can be used to save results across multiple milestones.
+For example, p-values and effect estimates of endpoints may be computed
+at multiple milestones. Users may want to bind them into a data frame
+for combination test or graphical test. In this case, this function
+can be called repeatedly in milestones. Once the data frame is fully
+conducted, statistical test can be performed on its final version
+retrieved by calling \code{Trials$get()}.
+
+Note that data saved by calling this function has a short life cycle
+within a single simulated trial. It will be reset to \code{NULL} before
+simulated another trial. Thus, it cannot be used to save results that
+are used for summarizing the simulation.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$bind(value, name)}\if{html}{\out{</div>}}
 }
@@ -931,7 +989,8 @@ with warning, otherwise, throwing an error and stop.}
 \if{html}{\out{<a id="method-Trials-get_custom_data"></a>}}
 \if{latex}{\out{\hypertarget{method-Trials-get_custom_data}{}}}
 \subsection{Method \code{get_custom_data()}}{
-return saved custom data of specified name.
+return custom data saved by calling \code{Trials$save_custom_data()}
+or \code{Trials$bind()} with its name.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$get_custom_data(name)}\if{html}{\out{</div>}}
 }
@@ -965,7 +1024,9 @@ alias of function \code{get_custom_data} to make it short and cool.
 \if{html}{\out{<a id="method-Trials-get_output"></a>}}
 \if{latex}{\out{\hypertarget{method-Trials-get_output}{}}}
 \subsection{Method \code{get_output()}}{
-return a data frame of all current outputs saved by calling \code{save}.
+return a data frame of all current outputs saved by calling
+\code{Trials$save()}. Usually this function is call at the end of
+simulation for summary.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$get_output(cols = NULL, simplify = TRUE)}\if{html}{\out{</div>}}
 }

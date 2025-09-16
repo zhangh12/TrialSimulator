@@ -5,7 +5,7 @@
 #' automatically.
 #'
 #' Public methods in this R6 class are used in developing
-#' this package. Thus, I have to export the whole R6 class which exposures all
+#' this package. Thus, we have to export the whole R6 class which exposures all
 #' public methods. However, only the public methods in the list below are
 #' useful to end users.
 #'
@@ -38,10 +38,21 @@ Listeners <- R6::R6Class(
 
     #' @description
     #' register milestones with listener. Order in \code{...} matter
-    #' as they are scanned in that order. It is user's responsibility
-    #' to use reasonable order when calling this function, otherwise,
-    #' the result of \code{Listener$monitor()} can be problematic.
-    #' @param ... milestones
+    #' as they are scanned and triggered in that order. It is users'
+    #' responsibility to use reasonable order when calling this function,
+    #' otherwise, the result of \code{Listeners$monitor()} can be problematic.
+    #' @param ... one or more objects returned from \code{milestone()}.
+    #'
+    #' @examples
+        #' listener <- listener()
+        #' interim <- milestone(name = 'interim',
+        #'                      when = eventNumber('endpoint', n = 100)
+        #'                     )
+        #' final <- milestone(name = 'final',
+        #'                    when = calendarTime(time = 24)
+        #'                   )
+        #' listener$add_milestones(interim, final)
+        #'
     add_milestones = function(...){
       milestone_list <- list(...)
 

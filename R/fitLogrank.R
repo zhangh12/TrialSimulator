@@ -1,6 +1,10 @@
 #' Carry out log rank test
 #' @description
 #' Compute log rank test statistic on an endpoint.
+#'
+#' Refer to \href{this vignette}{https://zhangh12.github.io/TrialSimulator/articles/wrappers.html}
+#' for more information and examples.
+#'
 #' @param formula An object of class \code{formula} that can be used with
 #' \code{survival::coxph}. Must consist \code{arm} and endpoint in \code{data}.
 #' No covariate is allowed. Stratification variables are supported and can be
@@ -8,7 +12,8 @@
 #' @param placebo character. String of placebo in \code{data$arm}.
 #' @param data data frame. Usually it is a locked data.
 #' @param alternative a character string specifying the alternative hypothesis,
-#' must be one of \code{"greater"} or \code{"less"}. No default value.
+#' must be one of \code{"greater"} or \code{"less"},
+#' i.e., one-sided test is enforced. No default value.
 #' \code{"greater"} means superiority of treatment over placebo is established
 #' by an hazard ratio greater than 1.
 #' @param tidy logical. \code{FALSE} if more information are returned.
@@ -19,9 +24,12 @@
 #' analysis when a trial consists of more than two arms. By default it is not
 #' specified, all data will be used to fit the model. More than one conditions
 #' can be specified in \code{...}, e.g.,
-#' \code{fitLogrank(formula, data, arm \%in\% c('pbo', 'low dose'), pfs > 0.5)},
+#' \code{fitLogrank(formula, data, arm \%in\% c('pbo', 'low dose'), x > 0.5)},
 #' which is equivalent to
-#' \code{fitLogrank(formula, data, arm \%in\% c('pbo', 'low dose') & pfs > 0.5)}.
+#' \code{fitLogrank(formula, data, arm \%in\% c('pbo', 'low dose') & x > 0.5)}.
+#' Note that if more than one treatment arm are present in the data after
+#' applying filter in \code{...}, models are fitted for placebo verse
+#' each of the treatment arms.
 #'
 #' @returns a data frame with three columns:
 #' \describe{

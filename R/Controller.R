@@ -2,11 +2,17 @@
 #'
 #' @description
 #' Define a controller of a trial. This is a user-friendly wrapper for
-#' the class constructor \code{Controller$new}. Users who are not familiar with
+#' the class constructor \code{Controller$new()}. Users who are not familiar with
 #' the concept of classes may consider using this wrapper directly.
 #'
-#' @param trial a \code{Trial} object.
-#' @param listener a \code{Listener} object.
+#' \code{TrialSimulator} uses a controller to coordinate a trial object
+#' and a listener object to run simulations, in which the trial object defines
+#' endpoints, arms, and other settings of a trial, while the listener object
+#' monitors trials to triggered pre-defined milestones and execute action
+#' functions. See vignettes of this package for more examples.
+#'
+#' @param trial an object returned from \code{trial()}.
+#' @param listener an object returned from \code{listener()}.
 #'
 #' @examples
 #'
@@ -16,13 +22,16 @@
 #' control <- arm(name = 'control arm')
 #' active <- arm(name = 'active arm')
 #'
-#' pfs_in_control <- endpoint(name = 'PFS', type = 'tte', generator = rexp, rate = log(2) / 5)
+#' pfs_in_control <- endpoint(name = 'PFS', type = 'tte',
+#'                            generator = rexp, rate = log(2) / 5)
 #' control$add_endpoints(pfs_in_control)
 #'
-#' pfs_in_active <- endpoint(name = 'PFS', type = 'tte', generator = rexp, rate = log(2) / 6)
+#' pfs_in_active <- endpoint(name = 'PFS', type = 'tte',
+#'                           generator = rexp, rate = log(2) / 6)
 #' active$add_endpoints(pfs_in_active)
 #'
-#' accrual_rate <- data.frame(end_time = c(10, Inf), piecewise_rate = c(30, 50))
+#' accrual_rate <- data.frame(end_time = c(10, Inf),
+#'                            piecewise_rate = c(30, 50))
 #' trial <- trial(name = 'trial',
 #'                n_patients = 1000,
 #'                duration = 40,

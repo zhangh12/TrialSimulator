@@ -1,7 +1,10 @@
 #' Summarize A Data Frame
 #'
 #' @description
-#' A minimum alternative to \code{summarytools::dfSummary} to avoid package dependency.
+#' A minimum alternative to \code{summarytools::dfSummary} to avoid package
+#' dependency. This function is used to generate summary reports of endpoints
+#' and arms. No meant to be used by end users. However, users may
+#' find it helpful in their own applications if the interface is okay with them.
 #'
 #' @param data a data frame.
 #' @param exclude_vars columns to be excluded from summary.
@@ -11,8 +14,8 @@
 #' @param categorical_vars character. Vector of categorical variables. This can
 #' be used to specify variables with limited distinct values as categorical
 #' variables in summary.
-#' @param title title of the summary report.
-#' @param sub_title sub-title.
+#' @param title character. Title of the summary report.
+#' @param sub_title character. Sub-title.
 #'
 #' @returns a data frame of summary
 #' @export

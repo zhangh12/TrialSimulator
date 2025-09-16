@@ -1,4 +1,4 @@
-#' Triggering condition by number of events or observations of an endpoint
+#' Triggering Condition by Number of Events or Non-missing Observations of an Endpoint
 #'
 #' @description
 #' Define a condition to trigger trial milestone by the number of events of a
@@ -18,13 +18,23 @@
 #' patients have been treated until their readout time (thus, \code{NA} turns
 #' to a value).
 #'
-#' @param endpoint character. Name of an endpoint.
-#' @param n integer. Targeted number of events.
-#' @param arms vector of character. Name of arms on which the number of events
-#' is counted. If \code{NULL}, use all arms that are not yet removed from the
-#' trial by the time of calculation.
+#' Both numbers are affected by dropout.
+#'
+#' Refer to the
+#' \href{https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html}{vignette}
+#' to learn how to define milestones when performing simulation using
+#' \code{TrialSimulator}.
+#'
+#' @param endpoint character. Name of an endpoint. It should be something that
+#' is specified in the argument \code{name} in \code{endpoint()}.
+#' @param n integer. Targeted number of events or non-missing obervations,
+#' depending on the type of endpoint.
+#' @param arms vector of character. Name of arms on which the number of
+#' events/observations is counted. If \code{NULL}, use all arms that are not yet
+#' removed from the trial (using \code{remove_arms()})
+#' by the time of calculation.
 #' @param ... subset conditions compatible with \code{dplyr::filter}. Number
-#' of events will be counted on subset of trial data only.
+#' of events/observations will be counted on subset of trial data only.
 #'
 #' @returns an object of class `Condition`
 #'

@@ -3,7 +3,7 @@
 #' Create a class of controller to run a trial.
 #'
 #' Public methods in this R6 class are used in developing
-#' this package. Thus, I have to export the whole R6 class which exposures all
+#' this package. Thus, we have to export the whole R6 class which exposures all
 #' public methods. However, only the public methods in the list below are
 #' useful to end users.
 #'
@@ -45,8 +45,8 @@ Controllers <- R6::R6Class(
 
     #' @description
     #' initialize a controller of the trial
-    #' @param trial a \code{Trials} object.
-    #' @param listener a \code{Listeners} object.
+    #' @param trial a trial object returned from \code{trial()}.
+    #' @param listener a listener object returned from \code{listener()}.
     initialize = function(trial, listener){
       stopifnot(inherits(trial, 'Trials'))
       stopifnot(inherits(listener, 'Listeners'))
@@ -57,19 +57,19 @@ Controllers <- R6::R6Class(
     },
 
     #' @description
-    #' return listener
+    #' return listener in a controller.
     get_listener = function(){
       private$listener
     },
 
     #' @description
-    #' return trial
+    #' return trial in a controller.
     get_trial = function(){
       private$trial
     },
 
     #' @description
-    #' mute all messages (not including warnings)
+    #' mute all messages (not including warnings).
     #' @param silent logical.
     mute = function(){
       self$get_trial()$mute(private$silent)
@@ -78,7 +78,9 @@ Controllers <- R6::R6Class(
 
     #' @description
     #' reset the trial and listener registered to the controller before running
-    #' additional replicate of simulation.
+    #' additional replicate of simulation. This is usually done between two
+    #' calls of \code{controller$run()}.
+    #'
     reset = function(){
       self$get_trial()$reset()
       self$get_listener()$reset()
@@ -86,10 +88,10 @@ Controllers <- R6::R6Class(
 
     #' @description
     #' return a data frame of all current outputs saved by calling \code{save}.
-    #' @param cols columns to be returned from \code{Controller$output}. If
-    #' \code{NULL}, all columns are returned.
-    #' @param simplify logical. Return value rather than a data frame of one
-    #' column when \code{length(col) == 1} and \code{simplify == TRUE}.
+    #' @param cols character vector. Columns to be returned from the data frame of simulation
+    #' outputs. If \code{NULL}, all columns are returned.
+    #' @param simplify logical. Return vector rather than a data frame of one
+    #' column when \code{length(cols) == 1} and \code{simplify == TRUE}.
     get_output = function(cols = NULL, simplify = TRUE){
       if(is.null(cols)){
         cols <- colnames(private$output)
@@ -102,21 +104,24 @@ Controllers <- R6::R6Class(
 
       ret <- private$output[, cols, drop = FALSE]
       if(simplify && ncol(ret) == 1){
-        return(ret[1, 1])
+        return(ret[, 1])
       }else{
         return(ret)
       }
     },
 
     #' @description
-    #' run a trial
-    #' @param n number of replicates of simulation. \code{n = 1} by default.
-    #' Simulation results can be accessed by \code{Controller$get_output()}.
-    #' @param plot_event create event plot
+    #' run trial simulation.
+    #' @param n integer. Number of replicates of simulation.
+    #' \code{n = 1} by default. Simulation results can be accessed by
+    #' \code{controller$get_output()}.
+    #' @param plot_event logical. Create event plot if \code{FALSE}. Users
+    #' should set it to be \code{FALSE} if \code{n > 1}.
     #' @param silent logical. \code{TRUE} if muting all messages during a
     #' trial. Note that warning messages are still displayed.
-    #' @param dry_run \code{TRUE} if action function provided by users is
-    #' ignored and a built-in default action \code{default_action} is called
+    #' @param dry_run logical. We are considering retire this argument.
+    #' \code{TRUE} if action function provided by users is
+    #' ignored and an internal default action \code{.default_action} is called
     #' instead. This default function only locks data when the milestone is
     #' triggered. Milestone time and number of endpoints' events or sample sizes
     #' are saved. It is suggested to set \code{dry_run = TRUE} to estimate
@@ -127,8 +132,8 @@ Controllers <- R6::R6Class(
     #' of interest when planning a trial. Set it to \code{FALSE} for formal
     #' simulations. However, for an adaptive design where arm(s) could
     #' possibly be added or removed, setting \code{dry_run} to \code{TRUE}
-    #' is usually not helpful because adaption should be actually applied
-    #' to estimate milestone time.
+    #' is usually not helpful because adaption should be executed
+    #' before estimating the milestone time.
     run = function(n = 1, plot_event = TRUE, silent = FALSE, dry_run = FALSE){
 
       self$get_trial()$make_arms_snapshot()

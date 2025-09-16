@@ -1,22 +1,27 @@
-#' Generate enrollment time from piecewise constant uniform distribution
+#' Generate Enrollment Time from Piecewise Constant Uniform Distribution
 #' @description
-#' Accrual rate can be 10 patients/months for the first 2 months, 20 patients/
-#' months for the second 2 months, and eventually 30 patients/months until the
-#' end of trial.
-#' @param n number of random numbers
-#' @param accrual_rate a data frame of columns
-#'       \code{end_time}:
-#'           End time for a constant rate in a time window. The start time of
-#'           the first time window is 0.
-#'       \code{piecewise_rate}:
-#'           A constant rate in a time window. So the number of patients
-#'           being recruited in that window is window length x \code{piecewise_rate}
+#' It assumes a uniform enrollment with constant rate in each of the time
+#' windows. This function can be used as the \code{enroller} when calling
+#' \code{trial()} to define a trial.
 #'
+#' @param n integer. Number of random numbers.
+#' @param accrual_rate a data frame of columns
+#' \describe{
+#'       \item{\code{end_time}}{
+#'           End time for a constant rate in a time window. The start time of
+#'           the first time window is 0.}
+#'       \item{\code{piecewise_rate}}{
+#'           A constant rate in a time window. So the number of patients
+#'           being recruited in that window is window length x
+#'           \code{piecewise_rate}. }
+#' }
 #' @examples
 #' accrual_rate <- data.frame(
 #'   end_time = c(12, 13:17, Inf),
 #'   piecewise_rate = c(15, 15 + 6 * (1:5), 45)
 #' )
+#'
+#' StaggeredRecruiter(30, accrual_rate)
 #'
 #' accrual_rate <- data.frame(
 #'   end_time = c(3, 4, 5, 8, Inf),

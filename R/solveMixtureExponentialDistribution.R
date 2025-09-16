@@ -1,7 +1,10 @@
-#' Solve parameters in a mixture exponential distribution
+#' Solve Parameters in a Mixture Exponential Distribution
 #'
 #' @description
-#' Assume that the overall population is a mixture of two exponential
+#' This is a helper function to explore parameters for endpoint generator,
+#' likely in an enrichment design.
+#'
+#' Assume that the overall population in an arm is a mixture of two exponential
 #' distributions with medians \code{median1} (\eqn{m_1}) and
 #' \code{median2} (\eqn{m_2}). Given the proportion of the first component
 #' (\eqn{p_1}) and the overall median \eqn{m}, we have
@@ -9,6 +12,12 @@
 #' \deqn{p_1 (1 - e^{-\log(2)m/m_1}) + (1 - p_1) (1 - e^{-\log(2)m/m_2}) = 1/2}
 #'
 #' This function computes \eqn{m_2} or \eqn{m} given \eqn{p_1} and \eqn{m_1}.
+#' These parameters can be used in custom random number generator to define
+#' exponential distributed endpoints.
+#'
+#' Note that the math formula above may not be displayed correctly on a
+#' html page. You can read it with better format by running
+#' \code{?solveMixtureExponentialDistribution}.
 #'
 #' @param weight1 numeric. The proportion of the first component.
 #' @param median1 numeric. Median of the first component.

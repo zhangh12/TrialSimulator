@@ -5,20 +5,43 @@
 \alias{Endpoints}
 \title{Class of Endpoint}
 \description{
-Create a class of endpoint to specify its name, type and assign a random number
-generator.
+Create a class of endpoint to specify its name, type, readout time
+(optional) and assign a random number generator.
 
 Public methods in this R6 class are used in developing
 this package. Thus, I have to export the whole R6 class which exposures all
-public methods. However, none of the public methods is useful to end users.
+public methods. However, none of the public methods is useful to end users
+except for the one below.
 
 \itemize{
 \item \code{$print()}
 }
 }
 \examples{
-# Instead of using Endpoint$new, please use endpoint(), a user-friendly
-# wrapper. See examples in ?endpoint.
+# Instead of using Endpoints$new(), please use endpoint(), a user-friendly
+# wrapper to define endpoints. See examples in ?endpoint.
+
+
+## ------------------------------------------------
+## Method `Endpoints$print`
+## ------------------------------------------------
+
+
+rng <- function(n){
+  data.frame(x = sample(1:3, n, replace = TRUE),
+             y = sample(1:3, n, replace = TRUE)
+            )
+}
+ep <- endpoint(name = c('x', 'y'),
+               type = c('non-tte', 'non-tte'),
+               readout = c(x = 0, y = 0),
+               generator = rng)
+
+## x and y as continuous endpoints, thus mean and sd are reported
+ep
+
+## force y to be categorical to create barplot of it
+print(ep, categorical_vars = 'y')
 
 }
 \section{Methods}{
@@ -39,7 +62,7 @@ public methods. However, none of the public methods is useful to end users.
 \if{html}{\out{<a id="method-Endpoints-new"></a>}}
 \if{latex}{\out{\hypertarget{method-Endpoints-new}{}}}
 \subsection{Method \code{new()}}{
-initialize an endpoint
+initialize an endpoint.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Endpoints$new(name, type = c("tte", "non-tte"), readout = NULL, generator, ...)}\if{html}{\out{</div>}}
 }
@@ -56,30 +79,43 @@ or repeated measurement. \code{TrialSimulator} will do some verification if
 an endpoint is of type \code{"tte"}. However, no special
 manipulation is done for non-tte endpoints.}
 
-\item{\code{readout}}{numeric vector with name to be the non-tte endpoint(s).
-\code{readout} should be specified for every non-tte endpoint. For
-example, \code{c(endpoint1 = 6, endpoint2 = 3)}.  If all
-endpoints are tte, \code{readout} can be \code{NULL}.}
+\item{\code{readout}}{a named numeric vector with name to be non-tte endpoint(s).
+\code{readout} must be specified for every non-tte endpoint. For
+example, \code{c(endpoint1 = 6, endpoint2 = 3)}, which means that it
+takes 6 and 3 unit time to get readout of
+\code{endpoint1} and \code{endpoint2} of a patient since being
+randomized. Error message would be prompted if \code{readout} is not
+named or readout is not specified for some non-tte endpoint.
+If all endpoints are tte, \code{readout} should be \code{NULL} as default.}
 
-\item{\code{generator}}{a RNG function. Its first argument must be `n`, number of
-patients. It must return a data frame of `n` rows. It support all
-built-in random number generators in \code{stats}, e.g., \code{stats::rnorm},
-\code{stats::rexp}, etc. that with \code{n} as the argument for number of
-observations. \code{generator} could be any custom functions as long as
+\item{\code{generator}}{a random number generation (RNG) function.
+It supports all built-in random number generators in \code{stats}, e.g.,
+\code{stats::rnorm}, \code{stats::rexp}, etc. that with \code{n} as the
+argument for number of observations and returns a vector.
+A custom RNG function is also supported.
+\code{generator} could be any functions as long as
 (1) its first argument is \code{n}; and (2) it returns a vector of
-length \code{n} or a data frame of \code{n} rows. Custom random number
-generator can return data of more than one endpoint. This is useful
-when users need to simulate correlated endpoints. The column names of
-returned data frame should match to \code{name} exactly. If an endpoint
-is of type \code{"tte"}, the custom \code{generator} should also return
-a column as event indicator. For example, if \code{"pfs"} is \code{"tte"},
+length \code{n} (univariate endpoint) or a data frame of \code{n} rows
+(multiple endpoints), i.e., custom RNG can return data of more than one
+endpoint. This is useful when users need to simulate correlated endpoints
+or longitudinal data. The column names of returned data frame should
+match to \code{name} exactly, although order of columns does not matter.
+If an endpoint is of type \code{"tte"}, the custom \code{generator}
+should also return a column as its event indicator. For example,
+if \code{"pfs"} is \code{"tte"},
 then custom \code{generator} should return at least two columns
 \code{"pfs"} and \code{"pfs_event"}. Usually \code{pfs_event} can be
-all 1s if no censoring. Censoring can be specified later when defining
-the \code{Trial} through argument \code{dropout}. See \code{?Trial}.
+all 1s if no censoring. Some RNG functions, e.g.,
+\code{TrialSimulator::PiecewiseConstantExponentialRNG()} and
+\code{TrialSimulator::CorrelatedPfsAndOs4()}, simulate TTE endpoint
+data with censoring simultaneously, thus 0 exists in the columns of
+event indicators. Users can implement censorship in their own RNG.
+Censoring can also be specified later when
+defining a trial object through argument \code{dropout}.
+See \code{?trial}.
 Note that if covariates, e.g., biomarker, subgroup, are needed in
-generating and analyzing trial data, they can be defined as
-\code{Endpoint} as well.}
+generating and analyzing trial data, they can and should be defined as
+endpoints in \code{endpoint()} as well.}
 
 \item{\code{...}}{optional arguments for \code{generator}.}
 }
@@ -91,7 +127,14 @@ generating and analyzing trial data, they can be defined as
 \if{latex}{\out{\hypertarget{method-Endpoints-test_generator}{}}}
 \subsection{Method \code{test_generator()}}{
 test random number generator of the endpoints. It returns an example
-dataset.
+dataset of an endpoint object. Note that users of \code{TrialSimulator}
+does not need to call this function to generate trial data; instead,
+the package will call this function at milestone automatically.
+Users may see example in vignette where this function is called.
+However, it is for illustration purpose only. In practice, this function
+may be used for debugging if users suspect some issues in custom
+generator, otherwise, this function should never been called in formal
+simulation.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Endpoints$test_generator(n = 1000)}\if{html}{\out{</div>}}
 }
@@ -166,12 +209,40 @@ print an endpoint object
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{categorical_vars}}{categorical_vars character. Vector of categorical variables. This can
-be used to specify variables with limited distinct values as categorical
-variables in summary.}
+\item{\code{categorical_vars}}{a character vector of endpoints. This can
+be used to force variables with limited distinct values as categorical
+variables in summary report. For example, a numeric endpoint may take
+integer values 0, 1, 2. Instead of computing mean and standard derivation
+in the summary report, put this endpoint in \code{categorical_vars} can
+force it be a categorical variable and a barplot is generated in summary
+report instead.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{
+rng <- function(n){
+  data.frame(x = sample(1:3, n, replace = TRUE),
+             y = sample(1:3, n, replace = TRUE)
+            )
+}
+ep <- endpoint(name = c('x', 'y'),
+               type = c('non-tte', 'non-tte'),
+               readout = c(x = 0, y = 0),
+               generator = rng)
+
+## x and y as continuous endpoints, thus mean and sd are reported
+ep
+
+## force y to be categorical to create barplot of it
+print(ep, categorical_vars = 'y')
+
+}
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Endpoints-clone"></a>}}
