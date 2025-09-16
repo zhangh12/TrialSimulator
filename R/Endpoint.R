@@ -5,7 +5,7 @@
 #' the class constructor \code{Endpoint$new}. Users who are not familiar with
 #' the concept of classes may consider using this wrapper directly.
 #'
-#' Note that It is users' responsibility to assure that the units of
+#' Note that it is users' responsibility to assure that the units of
 #' readout of non-tte endpoints, dropout time, and trial duration are consistent.
 #'
 #' @param name character vector. Name(s) of endpoint(s)
