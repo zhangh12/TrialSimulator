@@ -1503,6 +1503,7 @@ Trials <- R6::R6Class(
       private$output$error_message <- NULL
       private$output$error_message <- error_message
 
+      invisible(NULL)
 
     },
 
@@ -1603,6 +1604,8 @@ Trials <- R6::R6Class(
 
       private$custom_data[[name]] <- value
       private$.snapshot[['custom_data']][[name]] <- value
+
+      invisible(NULL)
     },
 
     #' @description
