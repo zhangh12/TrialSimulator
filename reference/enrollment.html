@@ -23,7 +23,7 @@ TrialSimulator."><meta property="og:image" content="https://zhangh12.github.io/T
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -76,7 +76,7 @@ to learn how to define milestones when performing simulation using
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">enrollment</span><span class="op">(</span><span class="va">n</span>, <span class="va">...</span>, arms <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">enrollment</span><span class="op">(</span><span class="va">n</span>, <span class="va">...</span>, arms <span class="op">=</span> <span class="cn">NULL</span>, min_treatment_duration <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -97,6 +97,18 @@ of randomized patients will be counted on subset of trial data only.</p></dd>
 is counted. If <code>NULL</code>, use all arms that are not yet removed from the
 trial by the time of calculation.</p></dd>
 
+
+<dt id="arg-min-treatment-duration">min_treatment_duration<a class="anchor" aria-label="anchor" href="#arg-min-treatment-duration"></a></dt>
+<dd><p>numeric. Zero or positive value.
+minimum treatment duration of enrolled patients.
+Default is 0, i.e., looking for triggering time based on number of enrolled
+patients in population specified by <code>...</code> and <code>arms</code>. If positive,
+it means that milestone is triggered when a specific number of enrolled
+patients have received treatment for at least <code>min_treatment_duration</code>
+duration. It is users' responsibility to assure that the unit of
+<code>min_treatment_duration</code> are consistent with
+readout of non-tte endpoints, dropout time, and trial duration.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -116,7 +128,13 @@ trial by the time of calculation.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## ensure sufficient sample size in high dose + placebo</span></span></span>
 <span class="r-in"><span><span class="fu">enrollment</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1000</span>, arms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'placebo'</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Number of randomized patients &gt;=  1000 in arms &lt; high dose, placebo &gt;. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Number of randomized patients &gt;=  1000 in arms &lt; high dose, placebo &gt; </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## ensure sufficient treatment duration</span></span></span>
+<span class="r-in"><span><span class="fu">enrollment</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">500</span>, min_treatment_duration <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Number of randomized patients &gt;=  500 and all enrolled patients have been treated for &lt; 2 &gt; (unit time) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
