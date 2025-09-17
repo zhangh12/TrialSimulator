@@ -43,15 +43,15 @@ placebo <- arm(name = 'pbo')
 placebo$add_endpoints(pfs, orr)
 
 ## try to generate some data from the arm
-## it is not a recommended way to use the package in simulation
+## it is NOT a recommended way to use the package in simulation
 head(placebo$get_endpoints()[[1]]$get_generator()(n = 1e3))
 
 ## get name of endpoints in the arm
-## for illustration only, not recommended
+## for illustration only, NOT recommended
 placebo$get_endpoints()[[2]]$get_name()
 
-## print summary reports for endpoint objects in console
-## it is recommended way to view an arm
+## run it in console to get summary report
+## It is the recommended way to view an arm
 placebo
 
 }
