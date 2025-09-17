@@ -279,8 +279,6 @@ endpoint <code>surrogate</code> using helper function
 <span>    <span class="va">trial</span><span class="op">$</span><span class="fu">save</span><span class="op">(</span>value <span class="op">=</span> <span class="st">'both'</span>, name <span class="op">=</span> <span class="st">'kept_arm'</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
 <span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="cn">NULL</span><span class="op">)</span></span>
-<span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>At the interim, we test <code>PFS</code> using the logrank test to
 carry out a non-binding futility analysis in the following action
@@ -307,8 +305,6 @@ in <code>milestone</code>.</p>
 <span>  <span class="op">}</span><span class="kw">else</span><span class="op">{</span></span>
 <span>    <span class="va">trial</span><span class="op">$</span><span class="fu">save</span><span class="op">(</span>value <span class="op">=</span> <span class="st">'positive'</span>, name <span class="op">=</span> <span class="st">'futility'</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
-<span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="cn">NULL</span><span class="op">)</span></span>
 <span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>At final analysis, we conduct a closed test using Dunnett’s test for
@@ -353,8 +349,6 @@ intersection hypotheses. The action function is as follows.</p>
 <span>  </span>
 <span>  <span class="va">trial</span><span class="op">$</span><span class="fu">save</span><span class="op">(</span>value <span class="op">=</span> <span class="va">ct_os</span><span class="op">$</span><span class="va">decision</span><span class="op">[</span><span class="va">ct_os</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'low dose'</span><span class="op">]</span>, </span>
 <span>             name <span class="op">=</span> <span class="st">'os_low_dose_decision'</span><span class="op">)</span></span>
-<span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="cn">NULL</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>Next, we register three trial milestones to a listener</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
@@ -409,6 +403,7 @@ replicates is run to save time.</p>
 <span><span class="co">#&gt; Randomization will be carried out again for unenrolled patients.</span></span>
 <span><span class="co">#&gt; Randomization is done for 643 potential patients.</span></span>
 <span><span class="co">#&gt; Data of 643 potential patients are generated for the trial with 2 arm(s) &lt;low dose, placebo&gt;.</span></span>
+<span><span class="co">#&gt; Action for milestone &lt;dose selection&gt; is executed:</span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;interim&gt; is being checked.</span></span>
 <span><span class="co">#&gt; Data is locked at time = 17.9949397642942 for milestone &lt;interim&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('interim'). </span></span>
@@ -416,6 +411,7 @@ replicates is run to save time.</p>
 <span><span class="co">#&gt;   patient pfs  os surrogate         arms</span></span>
 <span><span class="co">#&gt; 1     581 300 138       524 c(290, 1....</span></span>
 <span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Action for milestone &lt;interim&gt; is executed:</span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;final&gt; is being checked.</span></span>
 <span><span class="co">#&gt; Data is locked at time = 25.7475563250256 for milestone &lt;final&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('final'). </span></span>
@@ -423,6 +419,7 @@ replicates is run to save time.</p>
 <span><span class="co">#&gt;   patient pfs  os surrogate         arms</span></span>
 <span><span class="co">#&gt; 1     881 596 300       880 c(441, 2....</span></span>
 <span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Action for milestone &lt;final&gt; is executed:</span></span>
 <span><span class="co">#&gt; Ignoring unknown labels:</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> <span style="color: #00BB00;">colour</span> : <span style="color: #0000BB;">""</span></span></span></code></pre></div>
 <p><img src="adaptiveDesign_files/figure-html/eiaaf-1.png" width="100%"></p>
