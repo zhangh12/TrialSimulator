@@ -1,8 +1,8 @@
 ---
-title: "Define Longitudinal Endpoints in Clinical Trials"
+title: "Define Longitudinal Endpoints"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Define Longitudinal Endpoints in Clinical Trials}
+  %\VignetteIndexEntry{Define Longitudinal Endpoints}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

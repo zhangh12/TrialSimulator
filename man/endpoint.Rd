@@ -9,8 +9,8 @@ endpoint(name, type = c("tte", "non-tte"), readout = NULL, generator, ...)
 \arguments{
 \item{name}{character vector. Name(s) of endpoint(s)}
 
-\item{type}{character vector. Type(s) of endpoint(s). It supports
-\code{"tte"} for time-to-event endpoints, and \code{"non-tte"} for
+\item{type}{character vector. Type(s) of endpoint(s) in \code{name}. It
+supports \code{"tte"} for time-to-event endpoints, and \code{"non-tte"} for
 all other types of endpoints (e.g., continuous, binary, categorical,
 or repeated measurement. \code{TrialSimulator} will do some verification if
 an endpoint is of type \code{"tte"}. However, no special
@@ -18,9 +18,14 @@ manipulation is done for non-tte endpoints.}
 
 \item{readout}{numeric vector named by non-tte endpoint(s).
 \code{readout} should be specified for every non-tte endpoint. For
-example, \code{c(endpoint1 = 6, endpoint2 = 3)}. Error will be triggered
-if readout is not specified for at least one non-tte endpoint, or it
-specified for any tte endpoints. If all
+example, \code{c(endpoint1 = 6, endpoint2 = 3)}, which means that it takes
+6 and 3 unit time to get readouts of \code{endpoint1} and \code{endpoint2}
+of a patient since being randomized. For readouts of a longitudinal endpoint
+being collected at baseline (\code{baseline}) and 2 (\code{ep1}), 4 (\code{ep2})
+unit time, its \code{readout} can be set as
+\code{c(baseline = 0, ep1 = 2, ep2 = 4)}.  Error message will be prompted
+if \code{readout} is not named or is not specified for all non-tte endpoint,
+or it is specified for any tte endpoints. If all
 endpoints are tte, \code{readout} should be its default value \code{NULL}.}
 
 \item{generator}{a RNG function. Its first argument must be \code{n},
@@ -37,13 +42,14 @@ endpoints, or PFS/OS). The column names of
 returned data frame should match to the argument \code{name} exactly,
 but order does not matter. If an endpoint
 is of type \code{"tte"}, the custom \code{generator} should also return
-a column as event indicator. For example, if \code{"pfs"} is \code{"tte"},
+a column as event indicator. The column name of event indicator is
+\code{<endpoint name>_event}. For example, if \code{"pfs"} is \code{"tte"},
 then custom \code{generator} should return at least two columns
 \code{"pfs"} and \code{"pfs_event"}. Usually \code{pfs_event} can be
 all 1s if no censoring. For other generators, e.g.,
 \code{TrialSimulator::PiecewiseConstantExponentialRNG} and
-\code{TrialSimulator::CorrelatedPfsAndOs4}, the event indicaotrs could
-take values 0 and 1 due the nature of their algorithm.
+\code{TrialSimulator::CorrelatedPfsAndOs4}, the event indicators could
+take values 0/1 due to the nature of their algorithms.
 Censoring can also be specified later in \code{trial()}
 through its argument \code{dropout}. See \code{?Trials}.
 Note that if covariates, e.g., biomarker, subgroup, are needed in
@@ -57,7 +63,7 @@ Define one or multiple endpoints. This is a user-friendly wrapper for
 the class constructor \code{Endpoint$new}. Users who are not familiar with
 the concept of classes may consider using this wrapper directly.
 
-Note that It is users' responsibility to assure that the units of
+Note that it is users' responsibility to assure that the units of
 readout of non-tte endpoints, dropout time, and trial duration are consistent.
 }
 \examples{
