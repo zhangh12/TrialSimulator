@@ -143,9 +143,7 @@ action_at_interim <- function(trial, milestone_name){
 }
 ```
 
-By default, `TrialSimulator` prints the return value of an action function to the console. Since this is often unnecessary, it is good practice to end the function with `invisible(NULL)` to suppress output. However, we can still return something for debugging purpose.
-
-One the functions is defined, it can be passed to the `action` argument of a milestone:
+Once the functions is defined, it can be passed to the `action` argument of a milestone:
 
 ``` r
 interim <- milestone(name = 'interim analysis', 
@@ -196,8 +194,6 @@ action_at_interim <- function(trial, milestone_name){
   
   ## write more codes to compute one- or two-sided p-values, etc. 
   
-  invisible(NULL)
-  
 }
 ```
 
@@ -230,8 +226,6 @@ action_at_interim <- function(trial, milestone_name){
                        alternative = 'less', 
                        biomarker1 == 'positive' & 
                          biomarker2 == 'negative') # specify subgroup through ...
-  
-  invisible(NULL)
   
 }
 ```
@@ -300,8 +294,6 @@ action_at_interim <- function(trial, milestone_name){
   ## If a colum specified in cols does not exist (e.g., typo in codes), 
   ## an informative error message will be prompted. 
   
-  invisible(NULL)
-  
 }
 ```
 
@@ -349,8 +341,6 @@ action_at_final <- function(trial, milestone_name){
   ## extract auxiliary information
   custom_list <- trial$get('more_results')
   
-  invisible(NULL)
-  
 }
 ```
 
@@ -382,8 +372,6 @@ action_at_interim <- function(trial, milestone_name){
   ## save testing results for interim
   # trial$save(...)
   
-  invisible(NULL)
-  
 }
 
 action_at_final <- function(trial, milestone_name){
@@ -399,8 +387,6 @@ action_at_final <- function(trial, milestone_name){
   
   ## save testing results for final
   # trial$save(...)
-  
-  invisible(NULL)
   
 }
 ```

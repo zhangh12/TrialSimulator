@@ -184,8 +184,6 @@ stage_action <- function(trial, milestone_name){
   data.frame(table(locked_data$arm), new_sample_ratio) %>%
     setNames(c('dose', 'total_n', 'new_ratio')) %>% print()
 
-  invisible(NULL)
-
 }
 
 final_action <- function(trial, milestone_name){
@@ -198,8 +196,6 @@ final_action <- function(trial, milestone_name){
 
   trial$save(value = multiple_contrast_test(locked_data),
              name = 'MC_test')
-
-  invisible(NULL)
 }
 ```
 
@@ -238,8 +234,6 @@ stage_action <- function(trial, milestone_name){
   data.frame(table(locked_data$arm), new_sample_ratio) %>%
     setNames(c('dose', 'total_n', 'new_ratio')) %>% print()
 
-  invisible(NULL)
-
 }
 
 ```
@@ -258,8 +252,6 @@ final_action <- function(trial, milestone_name){
 
   trial$save(value = multiple_contrast_test(locked_data),
              name = 'MC_test')
-
-  invisible(NULL)
 }
 ```
 

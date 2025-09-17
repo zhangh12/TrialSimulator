@@ -24,7 +24,18 @@ The validation documents for this R package are hosted [here](https://github.com
 
 ## Installation
 
-You can install the development version of `TrialSimulator` from [GitHub](https://github.com/zhangh12/TrialSimulator) with:
+### Release
+
+You can install the current release version from `CRAN` with: 
+
+``` r
+install.packages("TrialSimulator")
+```
+
+### Development
+
+You can install the development version from 
+[GitHub](https://github.com/zhangh12/TrialSimulator) with:
 
 ``` r
 if (!require("remotes")) {

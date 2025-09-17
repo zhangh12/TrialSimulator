@@ -202,8 +202,6 @@ action <- function(trial, milestone_name){
     value = os %>% filter(arm == 'high') %>% select(decision, info), 
     name = 'os_high')
   
-  invisible(NULL)
-  
 }
 ```
 

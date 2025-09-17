@@ -118,7 +118,7 @@ Milestones <- R6::R6Class(
 
       if(!private$silent && !is.null(action)){
         message('Action for milestone <', self$get_name(), '> is executed: \n')
-        print(action)
+        # print(action)
       }
 
     },

@@ -50,7 +50,7 @@ enrollment(n = 520)
 
 #### At least 400 patients have been enrolled, and each has received a minimum of 3 weeks of treatment
 
-```{ghafl}
+```{r ghafl}
 enrollment(n = 400, min_treatment_duration = 3)
 ```
 
