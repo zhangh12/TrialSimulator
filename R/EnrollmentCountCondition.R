@@ -9,17 +9,22 @@ EnrollmentCountCondition <- R6::R6Class(
     n = NULL,
     filter_conditions = NULL,
     arms = NULL,
+    min_treatment_duration = 0,
 
-    initialize = function(n, ..., arms = NULL){
+    initialize = function(n, ..., arms = NULL, min_treatment_duration = 0){
 
       stopifnot(is.wholenumber(n))
       stopifnot(length(n) == 1)
 
       stopifnot(is.null(arms) || is.character(arms))
 
+      stopifnot(is.numeric(min_treatment_duration))
+      stopifnot(min_treatment_duration >= 0)
+
       self$n <- n
       self$filter_conditions <- enquos(...) #filter_conditions
       self$arms <- arms
+      self$min_treatment_duration <- min_treatment_duration
     },
 
     get_trigger_time = function(trial){
@@ -32,6 +37,7 @@ EnrollmentCountCondition <- R6::R6Class(
         type = 'all'
       )
 
+      milestone_time <- milestone_time + self$min_treatment_duration
       milestone_time
     },
 
@@ -39,7 +45,12 @@ EnrollmentCountCondition <- R6::R6Class(
       cat('Number of randomized patients >= ', self$n)
 
       if(!is.null(self$arms)){
-        cat(' in arms <', paste0(self$arms, collapse = ', '), '>. ')
+        cat(' in arms <', paste0(self$arms, collapse = ', '), '> \n')
+      }
+
+      if(self$min_treatment_duration > 0){
+        cat(' and all enrolled patients have been treated for <',
+            self$min_treatment_duration, '> (unit time) \n')
       }
 
       if(length(self$filter_conditions) > 0) {

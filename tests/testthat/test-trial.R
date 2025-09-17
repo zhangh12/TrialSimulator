@@ -1152,5 +1152,40 @@ test_that('sample ratio can be updated to switch between permuted block and samp
 
 })
 
+test_that('milestone can be triggerd when all patients have received treatment for a while', {
+  ep <- endpoint(name = 'x', type = 'tte', generator = rexp, rate = log(2)/10)
+  pbo <- arm(name = 'pbo')
+  pbo$add_endpoints(ep)
+  ep <- endpoint(name = 'x', type = 'tte', generator = rexp, rate = log(2)/12)
+  trt <- arm(name = 'trt')
+  trt$add_endpoints(ep)
+
+  accrual_rate <- data.frame(end_time = c(6, 12, 16, Inf),
+                             piecewise_rate = c(20, 30, 40, 60))
+  ## enrollment of 580 patients will be done by the 18th month
+  ## if min treatment duration is 2 months, then triggering time would be 20
+
+  trial <- trial(
+    name = 'test', n_patients = 580, duration = 25,
+    enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
+    dropout = rexp, rate = -log(1 - .08)/2,
+    silent = TRUE
+  )
+
+  trial$add_arms(sample_ratio = c(1, 2), pbo, trt)
+
+  final <- milestone(name = 'final',
+                     when = enrollment(n = 580, min_treatment_duration = 2))
+
+  listener <- listener(silent = TRUE)
+  listener$add_milestones(final)
+
+  controller <- controller(trial, listener)
+  controller$run(n = 10, plot_event = FALSE, silen = TRUE)
+
+  expect_true(all(controller$get_output('milestone_time_<final>') - 19.98333 < .001))
+
+})
+
 
 

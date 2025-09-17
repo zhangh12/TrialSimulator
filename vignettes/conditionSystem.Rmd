@@ -30,9 +30,9 @@ Currently, `TrialSimulator` provides three key functions to define the earliest 
 
 - `calendarTime(time)`: Specifies a minimum trial duration before a milestone can occur.
 
-- `enrollment(n)`: Specifies a minimum number of patients that must be enrolled before a milestone can occur.
+- `enrollment(n, ..., arms, min_treatment_duration)`: Specifies a minimum number of patients that must be enrolled before a milestone can occur.
 
-- `eventNumber(endpoint, n, arms)`: Specifies a minimum number of observed events for a given endpoint before triggering a milestone This condition can apply to specific arms or the entire trial.
+- `eventNumber(endpoint, n, ..., arms)`: Specifies a minimum number of observed events for a given endpoint before triggering a milestone This condition can apply to specific arms or the entire trial.
 
 The following sections illustrate various ways to define milestone triggers using these functions, which could be passed to the argument `when` of `milestone()`. 
 
@@ -43,9 +43,15 @@ The following sections illustrate various ways to define milestone triggers usin
 calendarTime(time = 6)
 ```
 
-#### At least 520 patients are enrolled
+#### At least 520 patients have been enrolled
 ```{r ioea}
 enrollment(n = 520)
+```
+
+#### At least 400 patients have been enrolled, and each has received a minimum of 3 weeks of treatment
+
+```{ghafl}
+enrollment(n = 400, min_treatment_duration = 3)
 ```
 
 #### At least 340 PFS events are observed

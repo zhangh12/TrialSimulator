@@ -1,3 +1,9 @@
+# TrialSimulator 1.2.0
+
+## New Feature
+
+- `enrollment()` now supports `min_treatment_duration` to ensure minimum treatment duration received by patients at a milestone. With its default value 0, milestone is triggered when a specific number of patients are enrolled. 
+
 # TrialSimulator 1.1.0
 
 ## Update
