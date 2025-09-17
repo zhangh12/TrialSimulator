@@ -203,8 +203,6 @@ test_that('filters are supported when defining milestones', {
     locked_data <- trial$get_locked_data(milestone_name)
     trial$save(value = locked_data %>% filter(dll3 == 'high' & x > -2) %>% nrow(),
                name = 'n_at_lock')
-
-    invisible(NULL)
   }
 
   final_action <- function(trial, milestone_name){
@@ -216,8 +214,6 @@ test_that('filters are supported when defining milestones', {
 
     tmp2 <- locked_data %>% filter(dll3 != 'high')
     trial$save(value = sum(tmp2$os_event), name = 'n_os_low')
-
-    invisible(NULL)
   }
 
 
@@ -616,8 +612,6 @@ test_that('fitLinear works as expected', {
                  mutate(info = fit_$df.residual + fit_$rank),
                name = 'lm_output')
 
-    invisible(NULL)
-
   }
 
   final <- milestone(name = 'final',
@@ -679,8 +673,6 @@ test_that('fitLinear can compute ATE as expected in additive model', {
                  mutate(p = 1 - pt(z, df = fit_$df.residual - 2)) %>%
                  mutate(info = fit_$df.residual + fit_$rank),
                name = 'lm_output')
-
-    invisible(NULL)
 
   }
 
@@ -780,8 +772,6 @@ test_that('fitLogistic can compute ATE as expected in model without covariates',
     trial$save(value = probs$prob[probs$arm == 'trt'] - probs$prob[probs$arm == 'pbo'],
                name = 'glm_RD')
 
-    invisible(NULL)
-
   }
 
   final <- milestone(name = 'final',
@@ -871,8 +861,6 @@ test_that('fitLogistic can compute regression coefficient as expected in model w
                  mutate(info = fit$df.residual + fit$rank),
                name = 'glm_coef')
 
-    invisible(NULL)
-
   }
 
   final <- milestone(name = 'final',
@@ -939,7 +927,6 @@ test_that('fitLogrank works as expected', {
 
     trial$save(value = p, name = 'logrank_p')
     trial$save(value = p_, name = 'survdiff_p')
-    invisible(NULL)
 
   }
 
@@ -1000,8 +987,6 @@ test_that('fitCoxph can compute main effect of arm', {
                  mutate(p = pnorm(z)) %>%
                  mutate(info = sum(locked_data$ep_event)),
                name = 'coxph_output')
-
-    invisible(NULL)
 
   }
 
@@ -1071,8 +1056,6 @@ test_that('sample ratio can be updated to switch between permuted block and samp
 
     trial$update_sample_ratio(c('med', 'high'), c(2, 2))
 
-    invisible(NULL)
-
   }
 
   interim1 <- milestone(name = 'interim1',
@@ -1093,8 +1076,6 @@ test_that('sample ratio can be updated to switch between permuted block and samp
 
     trial$update_sample_ratio(c('low', 'high'), c(.5, 2.5))
 
-    invisible(NULL)
-
   }
 
   interim2 <- milestone(name = 'interim2',
@@ -1114,8 +1095,6 @@ test_that('sample ratio can be updated to switch between permuted block and samp
                name = 'stage3')
 
     trial$update_sample_ratio(c('low', 'high'), c(1.5, 3))
-
-    invisible(NULL)
   }
 
   interim3 <- milestone(name = 'interim3',
@@ -1134,8 +1113,6 @@ test_that('sample ratio can be updated to switch between permuted block and samp
 
     trial$save(value = chisq.test(table(dat4$arm)[names(prob)], p = prob)$p.value,
                name = 'stage4')
-
-    invisible(NULL)
 
   }
 

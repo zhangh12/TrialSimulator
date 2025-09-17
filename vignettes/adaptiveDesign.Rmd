@@ -196,8 +196,6 @@ action1 <- function(trial, milestone_name){
     trial$save(value = 'both', name = 'kept_arm')
   }
 
-  invisible(NULL)
-
 }
 ```
 
@@ -226,8 +224,6 @@ action2 <- function(trial, milestone_name){
   }else{
     trial$save(value = 'positive', name = 'futility')
   }
-
-  invisible(NULL)
 
 }
 ```
@@ -275,8 +271,6 @@ action3 <- function(trial, milestone_name){
   
   trial$save(value = ct_os$decision[ct_os$arm == 'low dose'], 
              name = 'os_low_dose_decision')
-
-  invisible(NULL)
 }
 ```
 

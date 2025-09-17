@@ -3,6 +3,7 @@
 ## New Feature
 
 - `enrollment()` now supports `min_treatment_duration` to ensure minimum treatment duration received by patients at a milestone. With its default value 0, milestone is triggered when a specific number of patients are enrolled. 
+- No longer print the return value of action function, thus `invisible(NULL)` is no longer recommended as return value of action function. 
 
 # TrialSimulator 1.1.0
 
