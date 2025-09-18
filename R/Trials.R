@@ -1093,8 +1093,11 @@ Trials <- R6::R6Class(
 
       event_cols <- grep('_event$', names(trial_data), value = TRUE)
 
+      tte_cols <- NULL
+
       for(event_col in event_cols){
         tte_col <- gsub('_event$', '', event_col)
+        tte_cols <- c(tte_cols, tte_col)
         trial_data <- trial_data %>%
           mutate(calendar_time := enroll_time + !!sym(tte_col)) %>%
           mutate(!!event_col := ifelse(calendar_time > at_calendar_time, 0, !!sym(event_col))) %>%
@@ -1107,8 +1110,11 @@ Trials <- R6::R6Class(
       }
 
       readout_cols <- grep('_readout$', names(trial_data), value = TRUE)
+
+      ep_cols <- NULL
       for(readout_col in readout_cols){
         ep_col <- gsub('_readout$', '', readout_col)
+        ep_cols <- c(ep_cols, ep_col)
         trial_data <- trial_data %>%
           mutate(calendar_time := enroll_time + !!sym(readout_col)) %>%
           ## in locked data, some patients may have been enrolled, but
@@ -1120,6 +1126,25 @@ Trials <- R6::R6Class(
         dplyr::filter(enroll_time <= at_calendar_time) %>%
         arrange(enroll_time) %>%
         dplyr::select(-calendar_time)
+
+      n_events_or_readouts <- NULL
+      for(tte_col in tte_cols){
+        n_events_or_readouts <- c(n_events_or_readouts, sum(locked_data[[tte_col]] != 0))
+      }
+
+      for(ep_col in ep_cols){
+        n_events_or_readouts <- c(n_events_or_readouts, sum(!is.na(locked_data[[ep_col]])))
+      }
+
+      if(all(n_events_or_readouts == 0)){
+        warning('No TTE event or non-TTE readout of endpoints <',
+                paste0(c(tte_cols, ep_cols), collapse = ', '),
+                '> in data snapshot locked at milestone <',
+                milestone_name, '>. Check: \n',
+                '(1) Is this milestone triggered too early?\n',
+                '(2) Is the dropout rate too high?\n',
+                '(3) Do you use the same unit for readout time, trial duration, and dropout time?')
+      }
 
       unenrolled_data <- trial_data %>%
         dplyr::filter(enroll_time > at_calendar_time) %>%
