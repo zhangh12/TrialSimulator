@@ -9,3 +9,4 @@ vignettes/cache
 ^docs$
 ^pkgdown$
 ^\.github$
+^py$
