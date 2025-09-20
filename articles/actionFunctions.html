@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -103,7 +103,9 @@ custom analysis. Each milestone consists of three key elements:</p>
 <ul>
 <li><p><code>name</code>: the label of the milestone. A data snapshot at
 the triggering time can be retrieved by calling
-<code>trial$get_locked_data(milestone_name)</code>.</p></li>
+<code>trial$get_locked_data(&lt;name&gt;)</code>, where
+<code>&lt;name&gt;</code> is a placeholder of
+<code>name</code>.</p></li>
 <li><p><code>when</code>: the logical conditions that trigger the
 milestone. Refer to the vignette <a href="conditionSystem.html">Condition System for Triggering Milestones
 in a Trial</a> for more information.</p></li>
@@ -230,28 +232,21 @@ timing of a milestone and number of events/readouts. Instead, we want to
 analyze the data snapshot available at that time and possibly take
 actions based on the results. To achieve this, we define a custom action
 function and assign it to the <code>action</code> argument of a
-milestone.</p>
-<p>A custom action function must always takes two arguments</p>
-<ul>
-<li>
-<code>trial</code>: a trial object created by the function
-<code><a href="../reference/trial.html">trial()</a></code>.</li>
-<li>
-<code>milestone_name</code>: a character string indicating the
-milestone being triggered.</li>
-</ul>
-<p>The first step inside every action function should be to call
-<code>trial$get_locked_data()</code> to retrieve the data snapshot.
-After this, we are free to perform any analyses or decision-making
-steps.</p>
+milestone. A custom action function must always takes <code>trial</code>
+as its first argument, which is returned from the function
+<code><a href="../reference/trial.html">trial()</a></code>.</p>
+<p>The first step inside every action function should be calling
+<code>trial$get_locked_data()</code> to retrieve data snapshot using
+milestone name. After this, we are free to perform any analyses or
+decision-making steps.</p>
 <p>For example, the following action function illustrates how one might
 analyze survival data at an interim milestone. Here, hazard ratios are
 estimated from proportional hazard models, and p-values (or other
 statistics) can also be calculated if desired.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">action_at_interim</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">milestone_name</span><span class="op">)</span><span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="va">action_at_interim</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span><span class="op">{</span></span>
 <span>  </span>
-<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">milestone_name</span><span class="op">)</span></span>
+<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'interim analysis'</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="co">## write your own codes to fit coxph model on locked_data</span></span>
 <span>  <span class="co">## extract estimate and p-value of hazard ratio</span></span>
@@ -291,9 +286,9 @@ compared against placebo. The action function extracts the snapshot of
 patient-level data, fits separate Cox proportional hazards models, and
 then computes the hazard ratios.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">action_at_interim</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">milestone_name</span><span class="op">)</span><span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="va">action_at_interim</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span><span class="op">{</span></span>
 <span>  </span>
-<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">milestone_name</span><span class="op">)</span></span>
+<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'interim analysis'</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="co">## write your own codes to fit coxph model on locked_data</span></span>
 <span>  <span class="va">fit_high</span> <span class="op">&lt;-</span> <span class="fu">coxph</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">PFS</span>, <span class="va">PFS_event</span><span class="op">)</span> <span class="op">~</span> <span class="va">arm</span>, </span>
@@ -330,9 +325,9 @@ saving or combining results) much easier.</p>
 <p>Here is a rewritten version of the interim action function using
 these helper functions:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">action_at_interim</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">milestone_name</span><span class="op">)</span><span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="va">action_at_interim</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span><span class="op">{</span></span>
 <span>  </span>
-<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">milestone_name</span><span class="op">)</span></span>
+<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'interim analysis'</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="va">fit_PFS</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fitCoxph.html">fitCoxph</a></span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">PFS</span>, <span class="va">PFS_event</span><span class="op">)</span> <span class="op">~</span> <span class="va">arm</span>, </span>
 <span>                      placebo <span class="op">=</span> <span class="st">'pbo'</span>, </span>
@@ -442,9 +437,9 @@ collected (i.e. at the last milestone).</p></li>
 <code>hr</code> and its p-value <code>pval</code>, then saves them as
 part of the trial output:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">action_at_interim</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">milestone_name</span><span class="op">)</span><span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="va">action_at_interim</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span><span class="op">{</span></span>
 <span>  </span>
-<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">milestone_name</span><span class="op">)</span></span>
+<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'interim analysis'</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="co">## fit coxph model on locked_data</span></span>
 <span>  <span class="co">## extract estimate and p-value of hazard ratio</span></span>
@@ -468,9 +463,9 @@ part of the trial output:</p>
 lists of results, which cannot be stored in the single-row output. In
 this case, we use <code>save_custom_data()</code>.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">action_at_interim</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">milestone_name</span><span class="op">)</span><span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="va">action_at_interim</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span><span class="op">{</span></span>
 <span>  </span>
-<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">milestone_name</span><span class="op">)</span></span>
+<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'interim analysis'</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="co">## fit coxph model on locked_data</span></span>
 <span>  <span class="co">## extract estimate and p-value of hazard ratio</span></span>
@@ -494,9 +489,9 @@ this case, we use <code>save_custom_data()</code>.</p>
 <p>In the final analysis, we can then retrieve both the saved trial
 outputs and the auxiliary information:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">action_at_final</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">milestone_name</span><span class="op">)</span><span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="va">action_at_final</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span><span class="op">{</span></span>
 <span>  </span>
-<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">milestone_name</span><span class="op">)</span></span>
+<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'final analysis'</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="co">## extract outputs</span></span>
 <span>  <span class="va">pfs_hr_interim</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_output</span><span class="op">(</span>cols <span class="op">=</span> <span class="st">'pfs_interim_hazard_ratio'</span><span class="op">)</span></span>
@@ -523,9 +518,9 @@ and then use it later in interim and final analysis:</p>
 <p>This auxiliary information can then be retrieved in later action
 functions to adjust boundaries or multiplicity procedures:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">action_at_interim</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">milestone_name</span><span class="op">)</span><span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="va">action_at_interim</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span><span class="op">{</span></span>
 <span>  </span>
-<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">milestone_name</span><span class="op">)</span></span>
+<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'interim analysis'</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="co">## compute p-values of PFS and OS at interim</span></span>
 <span>  <span class="co">## then extract FWER</span></span>
@@ -539,9 +534,9 @@ functions to adjust boundaries or multiplicity procedures:</p>
 <span>  </span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">action_at_final</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">milestone_name</span><span class="op">)</span><span class="op">{</span></span>
+<span><span class="va">action_at_final</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span><span class="op">{</span></span>
 <span>  </span>
-<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">milestone_name</span><span class="op">)</span></span>
+<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'final analysis'</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="co">## compute p-values of PFS and OS at final</span></span>
 <span>  <span class="co">## then extract FWER and testing result at interim to adjust boundaries</span></span>
