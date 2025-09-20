@@ -170,15 +170,15 @@ trial$add_arms(sample_ratio = c(1, 1, 1), low, high, pbo)
 
 Next, we define action functions for trial milestones, i.e., dose selection,
 interim and final analysis. Note that an action function should always
-has arguments `trial` of class `Trial` and a character `milestone_name`. We
+has argument `trial` returned from `trial()`. We
 calculate z statistics of the Farrington-Manning test for binary
 endpoint `surrogate` using helper function `fitFarringtonManning`, which
 returns a data frame (see `?fitFarringtonManning`).
 
 ```{r ieaong, class.source='fold-show'}
-action1 <- function(trial, milestone_name){
+action1 <- function(trial){
   
-  locked_data <- trial$get_locked_data(milestone_name)
+  locked_data <- trial$get_locked_data('dose selection')
   
   fit <- fitFarringtonManning(endpoint = 'surrogate', placebo = 'placebo',
                               data = locked_data, alternative = 'greater')
@@ -208,9 +208,9 @@ p-values. If no futility analysis is planned, we can simply set
 `action = doNothing` in `milestone`.
 
 ```{r aotel, class.source="fold-show"}
-action2 <- function(trial, milestone_name){
+action2 <- function(trial){
   
-  locked_data <- trial$get_locked_data(milestone_name)
+  locked_data <- trial$get_locked_data('interim')
 
   fit <- fitLogrank(Surv(pfs, pfs_event) ~ arm, placebo = 'placebo', 
                     data = locked_data, alternative = 'less')
@@ -232,9 +232,9 @@ At final analysis, we conduct a closed test using Dunnett's test for
 intersection hypotheses. The action function is as follows.
 
 ```{r alkdae, class.source="fold-show"}
-action3 <- function(trial, milestone_name){
+action3 <- function(trial){
   
-  locked_data <- trial$get_locked_data(milestone_name)
+  locked_data <- trial$get_locked_data('final')
 
   ## test PFS
   dt_pfs <- trial$dunnettTest(Surv(pfs, pfs_event) ~ arm, placebo = 'placebo',
@@ -332,7 +332,7 @@ analysis. We can literally execute the function line by line with locked
 data loaded. Note that the member functions `Trial$dunnettTest` and
 `Trial$closedTest` can make use of locked data at multiple stages
 (through the `milestones` argument) automatically, thus, unlike in
-`action3`, an explicit call of `Trial$get_locked_data(milestone_name)` is
+`action3`, an explicit call of `Trial$get_locked_data('final')` is
 unnecessary.
 
 ```{r aief, class.source='fold-show'}

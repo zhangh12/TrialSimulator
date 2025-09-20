@@ -170,9 +170,9 @@ model formula. Estimates of hazard ratio are also computed. Built-in functions
 for more details. 
 
 ```{r wewfal}
-action <- function(trial, milestone_name){
+action <- function(trial){
   
-  locked_data <- trial$get_locked_data(milestone_name)
+  locked_data <- trial$get_locked_data('final')
   
   pfs <- fitCoxph((Surv(pfs, pfs_event) ~ arm), placebo = 'soc', 
                   data = locked_data, alternative = 'less', 

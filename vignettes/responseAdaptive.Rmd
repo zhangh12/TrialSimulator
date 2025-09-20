@@ -186,9 +186,9 @@ stage_action <- function(trial, milestone_name){
 
 }
 
-final_action <- function(trial, milestone_name){
+final_action <- function(trial){
 
-  locked_data <- trial$get_locked_data(milestone_name)
+  locked_data <- trial$get_locked_data('final')
   
   message('final: ')
   data.frame(table(locked_data$arm)) %>%
@@ -207,11 +207,11 @@ Three milestones are defined: two interim analyses and one final analysis. The s
 ```{r gfdassfl}
 stage1 <- milestone(name = 'stage 1',
                     when = eventNumber('fev1', n = 50),
-                    action = stage_action)
+                    action = stage_action, milestone_name = 'stage 1')
 
 stage2 <- milestone(name = 'stage 2',
                     when = eventNumber('fev1', n = 120),
-                    action = stage_action)
+                    action = stage_action, milestone_name = 'stage 2')
 
 final <- milestone(name = 'final',
                    when = eventNumber('fev1', n = 200),
@@ -242,9 +242,9 @@ stage_action <- function(trial, milestone_name){
 At the final milestone, the function `final_action()` performs the multiple contrast test and stores the result. It calls a helper function `multiple_contrast_test()`, which can be found in the Appendix below. 
 
 ```{r vnbnvz, eval=FALSE}
-final_action <- function(trial, milestone_name){
+final_action <- function(trial){
 
-  locked_data <- trial$get_locked_data(milestone_name)
+  locked_data <- trial$get_locked_data('final')
   
   message('final: ')
   data.frame(table(locked_data$arm)) %>%

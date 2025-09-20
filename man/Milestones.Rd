@@ -44,7 +44,7 @@ to learn how to define milestones when performing simulation using
 \subsection{Method \code{new()}}{
 initialize milestone
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Milestones$new(name, type = name, trigger_condition, action = doNothing)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Milestones$new(name, type = name, trigger_condition, action = doNothing, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -60,6 +60,8 @@ can be any string.}
 trigger. See vignette \code{Condition System for Triggering Milestones in a Trial}.}
 
 \item{\code{action}}{function to execute when the milestone triggers.}
+
+\item{\code{...}}{(optional) arguments of \code{action}.}
 }
 \if{html}{\out{</div>}}
 }

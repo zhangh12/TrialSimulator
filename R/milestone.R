@@ -27,6 +27,7 @@
 #' number of events/non-missing observations of endpoints at
 #' a milestone, \code{action} can be its default value, a built-in function
 #' \code{doNothing}.
+#' @param ... (optional) arguments of \code{action}.
 #'
 #' @examples
 #' ## See vignette('conditionSystem')
@@ -34,13 +35,14 @@
 #'
 #' @export
 #'
-milestone = function(name, when, action = doNothing){
+milestone = function(name, when, action = doNothing, ...){
 
   Milestones$new(
     name = name,
     type = name,
     trigger_condition = when,
-    action = action
+    action = action,
+    ...
   )
 
 }

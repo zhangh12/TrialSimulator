@@ -4,7 +4,7 @@
 \alias{milestone}
 \title{Define a Milestone}
 \usage{
-milestone(name, when, action = doNothing)
+milestone(name, when, action = doNothing, ...)
 }
 \arguments{
 \item{name}{character. Name of milestone.}
@@ -18,6 +18,8 @@ If no action to be executed but simply need to record triggering time and
 number of events/non-missing observations of endpoints at
 a milestone, \code{action} can be its default value, a built-in function
 \code{doNothing}.}
+
+\item{...}{(optional) arguments of \code{action}.}
 }
 \description{
 Define a milestone of a trial. This is a user-friendly wrapper for
