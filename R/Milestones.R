@@ -27,6 +27,7 @@ Milestones <- R6::R6Class(
     type = NULL,
     trigger_condition = NULL,
     action = NULL,
+    action_args = list(),
     triggered = FALSE, ## logical. Whether this milestone has been triggered
                       ## (to avoid repeated execution)
     silent = FALSE,
@@ -44,7 +45,12 @@ Milestones <- R6::R6Class(
     #' @param trigger_condition function to check if this milestone should
     #' trigger. See vignette \code{Condition System for Triggering Milestones in a Trial}.
     #' @param action function to execute when the milestone triggers.
-    initialize = function(name, type = name, trigger_condition, action = doNothing){
+    #' @param ... (optional) arguments of \code{action}.
+    initialize = function(name,
+                          type = name,
+                          trigger_condition,
+                          action = doNothing,
+                          ...){
       stopifnot(is.character(name) && (length(name) == 1))
       stopifnot(is.character(type))
       if(!('Condition' %in% class(trigger_condition))){
@@ -55,11 +61,41 @@ Milestones <- R6::R6Class(
       # allow no specified action, for testing purpose.
       stopifnot(is.function(action) || is.null(action))
 
+      # Capture fixed arguments for action
+      dots <- list(...)
+      if(length(dots) && (is.null(names(dots)) || any(names(dots) == ''))){
+        stop('All extra arguments to milestone(...) must be named; ',
+             'they are passed to `action`.')
+      }
+
       if(is.function(action)){
         args_in_action <- names(formals(action))
-        if(!all(c('trial', 'milestone_name') %in% args_in_action)){
-          stop('action function ', deparse(substitute(action)), ' must use ',
-               'arguments \'trial\' and \'milestone_name\'.')
+        if(length(args_in_action) == 0 || args_in_action[1] != 'trial'){
+          stop('Action function ', deparse(substitute(action)), ' must have ',
+               '\'trial\' as its first argument.')
+        }
+      }
+
+      if(!('...' %in% args_in_action)){
+        allowed_args <- setdiff(args_in_action, 'trial')
+        unknown_args <- setdiff(names(dots), allowed_args)
+        if(length(unknown_args)){
+          stop('Unknown argument(s) <',
+               paste0(unknown_args, collapse = ', '),
+               '> in the action function of milestone <',
+               name, '>. ')
+        }
+
+        req_mask <- vapply(formals(action)[allowed_args],
+                           function(x)
+                             identical(x, quote(expr=)), logical(1))
+        required <- allowed_args[req_mask]
+        missing_req <- setdiff(required, names(dots))
+        if(length(missing_req)){
+          stop('Missing required argument(s) <',
+               paste0(missing_req, collapse = ', '),
+               '> in action function of milestone <',
+               name, '>. ')
         }
       }
 
@@ -69,6 +105,7 @@ Milestones <- R6::R6Class(
       private$trigger_condition <- trigger_condition
 
       private$action <- action
+      private$action_args <- dots
       private$triggered <- FALSE
       private$is_dry_run <- FALSE
     },
@@ -113,7 +150,7 @@ Milestones <- R6::R6Class(
       if(private$is_dry_run){
         action <- .default_action()
       }else{
-        action <- self$get_action()(trial, self$get_name())
+        action <- do.call(self$get_action(), c(list(trial), private$action_args))
       }
 
       if(!private$silent && !is.null(action)){

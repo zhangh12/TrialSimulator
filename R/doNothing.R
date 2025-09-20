@@ -17,16 +17,14 @@
 #' automatically.
 #'
 #' @param trial an object returned from \code{trial()}
-#' @param milestone_name character. Name of milestone being triggered.
 #'
 #' @returns
 #' This function returns \code{NULL}. Actually, nothing is done in this function.
 #'
 #' @export
 #'
-doNothing <- function(trial, milestone_name){
+doNothing <- function(trial){
 
-  # locked_data <- trial$get_locked_data(milestone_name)
   invisible(NULL)
 
 }

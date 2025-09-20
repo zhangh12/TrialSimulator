@@ -4,12 +4,10 @@
 \alias{doNothing}
 \title{An Action Function that Does Nothing}
 \usage{
-doNothing(trial, milestone_name)
+doNothing(trial)
 }
 \arguments{
 \item{trial}{an object returned from \code{trial()}}
-
-\item{milestone_name}{character. Name of milestone being triggered.}
 }
 \value{
 This function returns \code{NULL}. Actually, nothing is done in this function.

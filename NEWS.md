@@ -1,3 +1,11 @@
+# TrialSimulator 1.3.0
+
+## Major Updates
+
+- Action function no longer needs argument `milestone_name`. Now action function only requires argument `trial` and supports optional arguments. 
+- `milestone()` now support `...` to pass arguments to action functions. 
+- Documents and vignettes are updated. 
+
 # TrialSimulator 1.2.0
 
 ## New Feature

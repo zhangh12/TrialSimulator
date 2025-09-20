@@ -44,7 +44,8 @@ This vignette demonstrates how to define such actions, associate them with miles
 
 A milestone represents a pre-specified time point or condition during the trial at which a snapshot of accumulated data becomes available for custom analysis. Each milestone consists of three key elements:
 
--   `name`: the label of the milestone. A data snapshot at the triggering time can be retrieved by calling `trial$get_locked_data(milestone_name)`.
+-   `name`: the label of the milestone. A data snapshot at the triggering time can be retrieved by calling `trial$get_locked_data(<name>)`, where `<name>` is a 
+placeholder of `name`. 
 
 -   `when`: the logical conditions that trigger the milestone. Refer to the vignette [Condition System for Triggering Milestones in a Trial](conditionSystem.html) for more information.
 
@@ -119,21 +120,16 @@ controller$run()
 
 ## Custom Action Functions
 
-In most realistic scenarios, we do not simply want to record the timing of a milestone and number of events/readouts. Instead, we want to analyze the data snapshot available at that time and possibly take actions based on the results. To achieve this, we define a custom action function and assign it to the `action` argument of a milestone.
+In most realistic scenarios, we do not simply want to record the timing of a milestone and number of events/readouts. Instead, we want to analyze the data snapshot available at that time and possibly take actions based on the results. To achieve this, we define a custom action function and assign it to the `action` argument of a milestone. A custom action function must always takes `trial` as its first argument, which is returned from the function `trial()`.
 
-A custom action function must always takes two arguments
-
--   `trial`: a trial object created by the function `trial()`.
--   `milestone_name`: a character string indicating the milestone being triggered.
-
-The first step inside every action function should be to call `trial$get_locked_data()` to retrieve the data snapshot. After this, we are free to perform any analyses or decision-making steps.
+The first step inside every action function should be calling `trial$get_locked_data()` to retrieve data snapshot using milestone name. After this, we are free to perform any analyses or decision-making steps.
 
 For example, the following action function illustrates how one might analyze survival data at an interim milestone. Here, hazard ratios are estimated from proportional hazard models, and p-values (or other statistics) can also be calculated if desired.
 
 ``` r
-action_at_interim <- function(trial, milestone_name){
+action_at_interim <- function(trial){
   
-  locked_data <- trial$get_locked_data(milestone_name)
+  locked_data <- trial$get_locked_data('interim analysis')
   
   ## write your own codes to fit coxph model on locked_data
   ## extract estimate and p-value of hazard ratio
@@ -174,9 +170,9 @@ A milestone provide an opportunity to perform formal analysis on the accumulated
 Let's revisit the interim milestone. The following example shows how one might compute hazard ratios for two active arms (low and high dose) compared against placebo. The action function extracts the snapshot of patient-level data, fits separate Cox proportional hazards models, and then computes the hazard ratios.
 
 ``` r
-action_at_interim <- function(trial, milestone_name){
+action_at_interim <- function(trial){
   
-  locked_data <- trial$get_locked_data(milestone_name)
+  locked_data <- trial$get_locked_data('interim analysis')
   
   ## write your own codes to fit coxph model on locked_data
   fit_high <- coxph(Surv(PFS, PFS_event) ~ arm, 
@@ -210,9 +206,9 @@ To reduce coding burden and promote standardization, `TrialSimulator` provides a
 Here is a rewritten version of the interim action function using these helper functions:
 
 ``` r
-action_at_interim <- function(trial, milestone_name){
+action_at_interim <- function(trial){
   
-  locked_data <- trial$get_locked_data(milestone_name)
+  locked_data <- trial$get_locked_data('interim analysis')
   
   fit_PFS <- fitCoxph(Surv(PFS, PFS_event) ~ arm, 
                       placebo = 'pbo', 
@@ -277,9 +273,9 @@ Here we give more details of those member functions. We can also refer to their 
 Below, the interim action function computes a hazard ratio `hr` and its p-value `pval`, then saves them as part of the trial output:
 
 ``` r
-action_at_interim <- function(trial, milestone_name){
+action_at_interim <- function(trial){
   
-  locked_data <- trial$get_locked_data(milestone_name)
+  locked_data <- trial$get_locked_data('interim analysis')
   
   ## fit coxph model on locked_data
   ## extract estimate and p-value of hazard ratio
@@ -302,9 +298,9 @@ action_at_interim <- function(trial, milestone_name){
 Sometimes we want to carry more complex information forward, such as lists of results, which cannot be stored in the single-row output. In this case, we use `save_custom_data()`.
 
 ``` r
-action_at_interim <- function(trial, milestone_name){
+action_at_interim <- function(trial){
   
-  locked_data <- trial$get_locked_data(milestone_name)
+  locked_data <- trial$get_locked_data('interim analysis')
   
   ## fit coxph model on locked_data
   ## extract estimate and p-value of hazard ratio
@@ -330,9 +326,9 @@ action_at_interim <- function(trial, milestone_name){
 In the final analysis, we can then retrieve both the saved trial outputs and the auxiliary information:
 
 ``` r
-action_at_final <- function(trial, milestone_name){
+action_at_final <- function(trial){
   
-  locked_data <- trial$get_locked_data(milestone_name)
+  locked_data <- trial$get_locked_data('final analysis')
   
   ## extract outputs
   pfs_hr_interim <- trial$get_output(cols = 'pfs_interim_hazard_ratio')
@@ -358,9 +354,9 @@ trial$save_custom_data(value = 0.025, name = 'fwer')
 This auxiliary information can then be retrieved in later action functions to adjust boundaries or multiplicity procedures:
 
 ``` r
-action_at_interim <- function(trial, milestone_name){
+action_at_interim <- function(trial){
   
-  locked_data <- trial$get_locked_data(milestone_name)
+  locked_data <- trial$get_locked_data('interim analysis')
   
   ## compute p-values of PFS and OS at interim
   ## then extract FWER
@@ -374,9 +370,9 @@ action_at_interim <- function(trial, milestone_name){
   
 }
 
-action_at_final <- function(trial, milestone_name){
+action_at_final <- function(trial){
   
-  locked_data <- trial$get_locked_data(milestone_name)
+  locked_data <- trial$get_locked_data('final analysis')
   
   ## compute p-values of PFS and OS at final
   ## then extract FWER and testing result at interim to adjust boundaries
