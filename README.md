@@ -14,6 +14,8 @@ It follows principle of modularity to isolate codes of statistical testing from 
 It provides a set of tools to sample endpoints of common or custom distributions, manage trial data, and summarize simulation results under fixed or adaptive designs. 
 It also provides functions of group sequential design, graphical testing procedure, combination test, and closed test that are widely used in analyzing complex trial designs. 
 
+https://github.com/user-attachments/assets/018a28e1-f708-45b6-8a5e-1c625e07d7ae
+
 ## Shiny App
 
 An online version of this app is hosted on [shinyapps.io](https://bx7ttm-han-zhang.shinyapps.io/trialsimulatorstarter/). 
