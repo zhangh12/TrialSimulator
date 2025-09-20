@@ -23,7 +23,7 @@ TrialSimulator."><meta property="og:image" content="https://zhangh12.github.io/T
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -104,13 +104,14 @@ to learn how to define milestones when performing simulation using
 <span class="r-out co"><span class="r-pr">#&gt;</span>     get_trigger_condition: function () </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     get_trigger_status: function () </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     get_type: function () </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     initialize: function (name, type = name, trigger_condition, action = doNothing) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     initialize: function (name, type = name, trigger_condition, action = doNothing, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     mute: function (silent) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     reset: function () </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     set_dry_run: function (dry_run) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     trigger_milestone: function (trial) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Private:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     action: function (trial, milestone_name) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     action: function (trial) </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     action_args: list</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     is_dry_run: FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     name: end of trial</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     silent: FALSE</span>

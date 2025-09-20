@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -100,8 +100,8 @@ run simulation under the <code>targets</code> framework).</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, <span class="va">control</span>, <span class="va">active</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">action_at_final</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">milestone_name</span><span class="op">)</span><span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">milestone_name</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">action_at_final</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span><span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'final analysis'</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="fitLogrank.html">fitLogrank</a></span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">PFS</span>, <span class="va">PFS_event</span><span class="op">)</span> <span class="op">~</span> <span class="va">arm</span>, placebo <span class="op">=</span> <span class="st">'control arm'</span>,</span></span>
 <span class="r-in"><span>             data <span class="op">=</span> <span class="va">locked_data</span>, alternative <span class="op">=</span> <span class="st">'less'</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="cn">NULL</span><span class="op">)</span></span></span>

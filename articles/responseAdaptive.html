@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -236,11 +236,11 @@ one is used for the final.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">stage1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'stage 1'</span>,</span>
 <span>                    when <span class="op">=</span> <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span><span class="st">'fev1'</span>, n <span class="op">=</span> <span class="fl">50</span><span class="op">)</span>,</span>
-<span>                    action <span class="op">=</span> <span class="va">stage_action</span><span class="op">)</span></span>
+<span>                    action <span class="op">=</span> <span class="va">stage_action</span>, milestone_name <span class="op">=</span> <span class="st">'stage 1'</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">stage2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'stage 2'</span>,</span>
 <span>                    when <span class="op">=</span> <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span><span class="st">'fev1'</span>, n <span class="op">=</span> <span class="fl">120</span><span class="op">)</span>,</span>
-<span>                    action <span class="op">=</span> <span class="va">stage_action</span><span class="op">)</span></span>
+<span>                    action <span class="op">=</span> <span class="va">stage_action</span>, milestone_name <span class="op">=</span> <span class="st">'stage 2'</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">final</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'final'</span>,</span>
 <span>                   when <span class="op">=</span> <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span><span class="st">'fev1'</span>, n <span class="op">=</span> <span class="fl">200</span><span class="op">)</span>,</span>
@@ -269,9 +269,9 @@ performs the multiple contrast test and stores the result. It calls a
 helper function <code>multiple_contrast_test()</code>, which can be
 found in the Appendix below.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">final_action</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">milestone_name</span><span class="op">)</span><span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="va">final_action</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span><span class="op">{</span></span>
 <span></span>
-<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">milestone_name</span><span class="op">)</span></span>
+<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'final'</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">'final: '</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">locked_data</span><span class="op">$</span><span class="va">arm</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>

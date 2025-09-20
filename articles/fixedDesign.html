@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -315,9 +315,9 @@ hazard ratio are also computed. Built-in functions <code>fitCoxph</code>
 and <code>fitLogrank</code> return data frames. Refer to their help
 documants for more details.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">action</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span>, <span class="va">milestone_name</span><span class="op">)</span><span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="va">action</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span><span class="op">{</span></span>
 <span>  </span>
-<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="va">milestone_name</span><span class="op">)</span></span>
+<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'final'</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="va">pfs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fitCoxph.html">fitCoxph</a></span><span class="op">(</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">pfs</span>, <span class="va">pfs_event</span><span class="op">)</span> <span class="op">~</span> <span class="va">arm</span><span class="op">)</span>, placebo <span class="op">=</span> <span class="st">'soc'</span>, </span>
 <span>                  data <span class="op">=</span> <span class="va">locked_data</span>, alternative <span class="op">=</span> <span class="st">'less'</span>, </span>
