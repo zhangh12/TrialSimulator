@@ -1,4 +1,4 @@
-# trial_flow.py — TrialFlowV5 (E-gate centered vertically; R→E seamless; uniform wrap; slow intervals)
+# trial_flow.py — TrialFlowV5 (icons refined: delayed KM split thinner & mid-split; PFS/OS double calendars; Custom = pencil+paper+triangle)
 # Manim Community Edition >= 0.19
 
 from manim import *
@@ -12,12 +12,12 @@ MIN_FRAMES = 2  # enforce >=2 frames per segment so updaters advance
 
 class TrialFlowV5(MovingCameraScene):
     """
-    • Uniform one-lane patient flow; pauses only during R-gate/E-gate close-ups and milestones.
-    • Start: no one past R-gate at t=0. R→E close-ups are chained (no main-stage flash).
-    • E-gate: dose label below gates; endpoint label above middle gates with underline ~ text width.
-    • Milestones: stage visible but lane PAUSED; steps centered in one row; proper cleanup.
-    • FIX: uniform wrap (SPACING*N) so spacing never drifts.
-    • NEW: E-gate close-up is vertically centered on screen (camera at origin, lane y=0).
+    • Single-lane flow; R-gate scan then per-arm E-gate close-ups; milestones pause lane but keep stage visible.
+    • Arm A: 4 gates [binary, continuous, time-to-event, longitudinal], dwell = 1×T
+      Arm B: 2 gates [delayed effect, PFS/OS], labels above each gate, dwell = 2×T
+      Arm C: 1 gate [custom], label above gate, dwell = 4×T
+    • E-gate close-up centered vertically (camera at origin, lane y=0).
+    • Uniform wrap so spacing never drifts; R→E chaining without flash.
     """
 
     # palette
@@ -29,34 +29,28 @@ class TrialFlowV5(MovingCameraScene):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # ------- Preview knobs -------
+        # preview knobs
         self.preview = True             # set False for final
         self.preview_level = 1
         self.time_scale = 0.55          # set 1.0 for final
         self.flow_speed = 1.00
         self.flow_running = True
+        self.interval_scale = 4.0       # global linger scaler
 
-        # Global interval scaler (ALL waits / lingers / gaps × this factor)
-        self.interval_scale = 4.0
-
-        # R-gate event plumbing
+        # R-gate events
         self.force_next_arm = None
         self.last_cross_event = None    # {"id": int, "arm": "A/B/C", "person": Mobject}
         self.event_id = 0
-
-        # Stage cache to chain R→E without black frames
         self.hidden_stage = None
 
-        # ===== E-gate layout: centered composition =====
-        self.egate_y = 0.0            # lane y for E-gate close-up (center line)
-        self.ep_label_offset = 0.50   # label offset above gates
+        # E-gate centered layout
+        self.egate_y = 0.0
+        self.ep_label_offset = 0.50
 
-    # helper: scale any interval consistently
+    # helpers
     def I(self, t): return t * self.interval_scale
-
     def is_fast(self, level=1): return self.preview and self.preview_level >= level
 
-    # global time scaling + 2-frame floor
     def play(self, *args, **kwargs):
         rt = kwargs.get("run_time", None)
         if rt is not None:
@@ -85,21 +79,22 @@ class TrialFlowV5(MovingCameraScene):
         self.camera.frame.width = 15
 
         baseline = Line([self.x_min, self.y0, 0], [self.x_max, self.y0, 0], stroke_opacity=0.18)
-        title = Text("Trial flow — single lane • R-gate • 4 endpoints • 2 milestones", weight=BOLD).scale(0.45).to_edge(UP)
+        title = Text("Trial flow — single lane • per-arm endpoints • 2 milestones", weight=BOLD)\
+            .scale(0.45).to_edge(UP)
         self.add(baseline, title)
 
-        # R-gate with three lamps
+        # R-gate
         r_gate, lamps = self._build_random_gate(self.x_rg, self.y0)
         self.r_gate_lamps = lamps
         self.add(r_gate)
 
-        # lane (fixed spacing; uniform speed; ensure no one past R-gate at t=0)
+        # lane (fixed spacing; uniform speed; no one past R at t=0)
         SPACING = 0.56
         N = 26 if self.is_fast(1) else 34
-        LANE_CYCLE = SPACING * N  # exact wrap distance to preserve spacing
+        LANE_CYCLE = SPACING * N
         self.lane_offset = ValueTracker(0.0)
         self.persons = VGroup(*[self._make_person(self.COL_GRAY).scale(0.95) for _ in range(N)])
-        base_start = self.x_rg - N * SPACING - 0.6  # small margin; max initial x < x_rg
+        base_start = self.x_rg - N * SPACING - 0.6
         x_anchors = [base_start + i * SPACING for i in range(N)]
 
         def lane_updater(group, dt):
@@ -125,34 +120,52 @@ class TrialFlowV5(MovingCameraScene):
         self.persons.add_updater(lane_updater)
         self.add(self.persons)
 
-        # short calm start; the long "pre-demo" wait happens before the FIRST R-cutaway below
+        # short calm start; the long wait is right before first R-cutaway
         self.wait(self.I(0.8))
 
-        seq_arms = ["A", "B", "C"]
+        arms_seq = ["A", "B", "C"]
         color_of = {"A": self.COL_A, "B": self.COL_B, "C": self.COL_C}
 
-        for idx, arm in enumerate(seq_arms):
-            # wait for next assignment of this arm at R-gate
+        for idx, arm in enumerate(arms_seq):
+            # wait until this arm reaches R-gate
             if idx == 0:
                 self._wait_for_arm_at_gate(arm, min_gap=self.I(0.6))
-                self.wait(self.I(2.2))   # extra long delay before first R-cutaway (let many get colored)
+                self.wait(self.I(2.2))
             else:
                 self._wait_for_arm_at_gate(arm, min_gap=self.I(1.8))
 
-            # R-gate cutaway (do NOT restore stage, so we can jump to E-gate seamlessly)
+            # R-gate cutaway; keep stage hidden to chain into E-gate
             self._rg_cutaway(color_of[arm], scan_rt=1.1, dwell_rt=self.I(0.70), restore_stage=False)
 
-            # E-gate close-up; stage already hidden by R-gate
-            self._zoom_endpoints_for_arm(label=f"Dose {arm}", color=color_of[arm], pre_hidden=True)
+            # E-gate close-up by arm
+            if arm == "A":
+                plan = [
+                    {"x": -3.0, "kind": "binary", "label": "binary"},
+                    {"x": -1.0, "kind": "gauss",  "label": "continuous"},
+                    {"x":  1.0, "kind": "tte",    "label": "time-to-event"},
+                    {"x":  3.0, "kind": "spark",  "label": "longitudinal"},
+                ]
+                self._zoom_endpoints_for_arm(f"Dose {arm}", color_of[arm], pre_hidden=True,
+                                             gate_plan=plan, dwell_factor=1.0, label_over_each=False)
+            elif arm == "B":
+                plan = [
+                    {"x": -1.0, "kind": "delayed", "label": "delayed effect"},
+                    {"x":  1.0, "kind": "pfsos",   "label": "PFS/OS"},
+                ]
+                self._zoom_endpoints_for_arm(f"Dose {arm}", color_of[arm], pre_hidden=True,
+                                             gate_plan=plan, dwell_factor=2.0, label_over_each=True)
+            else:  # "C"
+                plan = [{"x": 0.0, "kind": "custom", "label": "custom"}]
+                self._zoom_endpoints_for_arm(f"Dose {arm}", color_of[arm], pre_hidden=True,
+                                             gate_plan=plan, dwell_factor=4.0, label_over_each=True)
 
-        # Listener 1 -> MS1 (drop C)
+        # Milestones
         listener1 = self._spawn_listener(target_x=self.x_l1, rt=self.I(1.6))
         self._milestone_bubble_sequential(anchor_x=self.x_l1, ms_index=1, drop_C=True)
         anchor1 = self._listener_to_anchor(listener1, color=self.COL_A); self.add(anchor1)
 
-        self.wait(self.I(1.6))  # longer gap
+        self.wait(self.I(1.6))
 
-        # Listener 2 -> MS2
         listener2 = self._spawn_listener(target_x=self.x_l2, rt=self.I(1.6))
         self._milestone_bubble_sequential(anchor_x=self.x_l2, ms_index=2, drop_C=False)
         anchor2 = self._listener_to_anchor(listener2, color=self.COL_B); self.add(anchor2)
@@ -166,7 +179,7 @@ class TrialFlowV5(MovingCameraScene):
         self.force_next_arm = arm
         self.flow_running = True
         while True:
-            self.wait(0.02)  # tiny polling tick
+            self.wait(0.02)
             ev = self.last_cross_event
             if ev and ev["id"] > prev_id and ev["arm"] == arm:
                 break
@@ -192,10 +205,10 @@ class TrialFlowV5(MovingCameraScene):
         chest_y = torso_top[1] - 0.12
         base_x = person.get_center()[0]
         offsets_x = [-0.21, -0.07, 0.07, 0.21]
-        return np.array([base_x + offsets_x[idx], chest_y, 0.0])
+        return np.array([base_x + offsets_x[idx % 4], chest_y, 0.0])
 
     # ======================================================================
-    # R-gate & cutaway (optionally NOT restoring stage)
+    # R-gate & cutaway
     # ======================================================================
     def _build_random_gate(self, x, y):
         frame = RoundedRectangle(corner_radius=0.2, width=1.1, height=1.6,
@@ -211,12 +224,10 @@ class TrialFlowV5(MovingCameraScene):
         return VGroup(frame, band, lamp_A, lamp_B, lamp_C), {"A": lamp_A, "B": lamp_B, "C": lamp_C}
 
     def _rg_cutaway(self, arm_color_hex, scan_rt=1.1, dwell_rt=0.70, restore_stage=True):
-        # pause & hide main stage
         self.flow_running = False
         stage = Group(*[m for m in self.mobjects if m is not self.camera.frame])
         self.play(FadeOut(stage, run_time=0.2))
 
-        # remember what we hid (so E-gate can restore later)
         if not restore_stage:
             self.hidden_stage = stage
         else:
@@ -238,19 +249,19 @@ class TrialFlowV5(MovingCameraScene):
 
         self.play(FadeOut(VGroup(frame, band, demo, scan), run_time=0.2))
 
-        # optional immediate restore (normally we skip to chain into E-gate)
         if restore_stage:
             self.play(FadeIn(stage, run_time=0.2))
             self.flow_running = True
 
     # ======================================================================
-    # Endpoint plaques & per-arm close-up (stage may already be hidden)
+    # Endpoint icons
     # ======================================================================
     def _endpoint_icon(self, kind):
         if kind == "binary":
             return Text("+/-", weight=BOLD, color=WHITE).scale(0.7)
+
         if kind == "gauss":
-            # Q1 axes + slightly higher Gaussian
+            # First-quadrant Gaussian with light axes
             x0, y0 = -0.30, -0.18; x1, y1 = 0.30, 0.18
             x_axis = Line([x0, y0, 0], [x1, y0, 0], stroke_width=2, color=GREY_D)
             y_axis = Line([x0, y0, 0], [x0, y1, 0], stroke_width=2, color=GREY_D)
@@ -262,22 +273,124 @@ class TrialFlowV5(MovingCameraScene):
             area_pts = [*pts, np.array([x0 + xs[-1], y0, 0]), np.array([x0 + xs[0], y0, 0])]
             area = VMobject(fill_color=GREY_B, fill_opacity=0.18, stroke_opacity=0.0).set_points_as_corners(area_pts)
             return VGroup(area, curve, x_axis, y_axis)
+
         if kind == "tte":
-            outer = RoundedRectangle(corner_radius=0.10, width=0.90, height=0.62,
-                                     stroke_color=WHITE, stroke_width=4, fill_opacity=0)
-            header = Rectangle(width=0.90, height=0.16, fill_color=WHITE, fill_opacity=1, stroke_width=0)\
-                .move_to(outer.get_top() + DOWN * 0.08)
-            grid = VGroup()
-            for dx in [-0.24, 0.0, 0.24]:
-                grid.add(Line([dx, -0.18, 0], [dx, 0.14, 0], stroke_color=WHITE, stroke_width=3))
-            for dy in [-0.02, 0.18]:
-                grid.add(Line([-0.40, dy, 0], [0.40, dy, 0], stroke_color=WHITE, stroke_width=3))
-            return VGroup(outer, header, grid)
+            # single calendar
+            return self._calendar_base()
+
         if kind == "spark":
             pts = [LEFT*0.30+DOWN*0.08, LEFT*0.15+UP*0.10, ORIGIN+DOWN*0.02,
                    RIGHT*0.15+UP*0.12, RIGHT*0.30+DOWN*0.05]
             return VMobject(stroke_color=WHITE, stroke_width=5).set_points_as_corners(pts)
+
+        if kind == "delayed":
+            # KM split: early overlap, mid-point split; one solid, one dashed; thinner lines
+            x0, x1 = -0.38, 0.38
+            y_top, y_mid, y_low = 0.16, 0.06, -0.04
+            mid = (x0 + x1) / 2.0
+
+            def step_path(high=True):
+                # early overlap: small step then horizontal to mid
+                pts = [
+                    np.array([x0, y_top, 0]),
+                    np.array([x0+0.16, y_top, 0]),
+                    np.array([x0+0.16, y_mid if not high else y_top-0.02, 0]),
+                    np.array([mid,   y_mid if not high else y_top-0.02, 0]),
+                ]
+                # after mid: split into different levels
+                if high:
+                    pts += [np.array([mid, y_mid+0.04, 0]), np.array([x1, y_mid+0.04, 0])]
+                else:
+                    pts += [np.array([mid, y_low, 0]), np.array([x1, y_low, 0])]
+                return pts
+
+            solid = VMobject(stroke_color=WHITE, stroke_width=3).set_points_as_corners(step_path(high=False))
+            dashed_curve = VMobject(stroke_color=WHITE, stroke_width=3).set_points_as_corners(step_path(high=True))
+            dashed = DashedVMobject(dashed_curve, num_dashes=18, dashed_ratio=0.55)
+            x_axis = Line([x0, -0.12, 0], [x1, -0.12, 0], stroke_color=GREY_D, stroke_width=2)
+            return VGroup(x_axis, solid, dashed)
+
+        if kind == "pfsos":
+            # double calendars side by side with headers "PFS" and "OS"
+            cal_pfs = self._calendar_base()
+            cal_os  = self._calendar_base()
+            # headers are second submobject (index 1) in _calendar_base
+            hdr_p = cal_pfs[1]; hdr_o = cal_os[1]
+            tag_p = Text("PFS", weight=BOLD, color=BLACK).scale(0.28).move_to(hdr_p.get_center())
+            tag_o = Text("OS",  weight=BOLD, color=BLACK).scale(0.28).move_to(hdr_o.get_center())
+            cal_pfs = VGroup(cal_pfs, tag_p)
+            cal_os  = VGroup(cal_os, tag_o)
+            g = VGroup(cal_pfs, cal_os).arrange(RIGHT, buff=0.16).scale(0.92)
+            return g
+
+        if kind == "custom":
+            # pencil + paper + triangle (clearer strokes)
+            paper = RoundedRectangle(corner_radius=0.05, width=0.95, height=0.60,
+                                     stroke_color=WHITE, stroke_width=3, fill_color=WHITE, fill_opacity=1.0)
+            fold = Polygon(
+                paper.get_top()+RIGHT*0.30+DOWN*0.02,
+                paper.get_top()+RIGHT*0.12+DOWN*0.02,
+                paper.get_top()+RIGHT*0.30+DOWN*0.20,
+                stroke_color=GREY_B, fill_color="#eaeaea", stroke_width=1.8
+            )
+            # triangle (set square)
+            tri = Polygon(
+                paper.get_left()+RIGHT*0.10+UP*0.08,
+                paper.get_left()+RIGHT*0.38+UP*0.08,
+                paper.get_left()+RIGHT*0.10+DOWN*0.20,
+                stroke_color=WHITE, stroke_width=3,
+                fill_color=GREY_B, fill_opacity=0.15
+            )
+            inner = Polygon(
+                tri.get_vertices()[0]+RIGHT*0.06+DOWN*0.06,
+                tri.get_vertices()[1]+LEFT*0.06+DOWN*0.06,
+                tri.get_vertices()[2]+RIGHT*0.06+UP*0.06,
+                stroke_color=WHITE, stroke_width=2,
+                fill_color=BLACK, fill_opacity=0.0
+            )
+            tri_group = VGroup(tri, inner)
+
+            # pencil (body + ferrule + eraser + wood + graphite)
+            angle = 22*DEGREES
+            body = Rectangle(width=0.46, height=0.07, stroke_width=0,
+                             fill_color="#f1c232", fill_opacity=1).rotate(angle)
+            ferrule = Rectangle(width=0.08, height=0.072, stroke_width=0,
+                                fill_color="#c0c0c0", fill_opacity=1).rotate(angle)\
+                      .next_to(body, RIGHT, buff=0.0)
+            eraser = Rectangle(width=0.10, height=0.072, stroke_width=0,
+                               fill_color="#f6a5b5", fill_opacity=1).rotate(angle)\
+                     .next_to(ferrule, RIGHT, buff=0.0)
+            wood = Polygon(
+                body.get_left()+LEFT*0.08+UP*0.00,
+                body.get_left()+LEFT*0.00+UP*0.06,
+                body.get_left()+LEFT*0.00+DOWN*0.06,
+                stroke_color="#c4a484", fill_color="#c4a484", stroke_width=0
+            ).rotate(angle)
+            lead = Polygon(
+                wood.get_vertices()[0]+LEFT*0.04,
+                wood.get_vertices()[1],
+                wood.get_vertices()[2],
+                stroke_color=BLACK, fill_color=BLACK, stroke_width=0
+            ).rotate(angle)
+            pencil = VGroup(body, wood, lead, ferrule, eraser)\
+                     .move_to(paper.get_center()+RIGHT*0.12+UP*0.02)
+
+            group = VGroup(paper, fold, tri_group, pencil)
+            return group
+
         return Square(0.2, color=WHITE, stroke_width=5)
+
+    def _calendar_base(self):
+        outer = RoundedRectangle(corner_radius=0.10, width=0.90, height=0.62,
+                                 stroke_color=WHITE, stroke_width=4, fill_opacity=0)
+        header = Rectangle(width=0.90, height=0.16, fill_color=WHITE, fill_opacity=1, stroke_width=0)\
+            .move_to(outer.get_top() + DOWN * 0.08)
+        grid = VGroup()
+        for dx in [-0.24, 0.0, 0.24]:
+            grid.add(Line([dx, -0.18, 0], [dx, 0.14, 0], stroke_color=WHITE, stroke_width=3))
+        for dy in [-0.02, 0.18]:
+            grid.add(Line([-0.40, dy, 0], [0.40, dy, 0], stroke_color=WHITE, stroke_width=3))
+        return VGroup(outer, header, grid)
 
     def _build_endpoint_gate(self, x, y, kind):
         frame = RoundedRectangle(corner_radius=0.2, width=1.3, height=1.9,
@@ -288,39 +401,54 @@ class TrialFlowV5(MovingCameraScene):
         ico = self._endpoint_icon(kind).scale(0.60).move_to(plaque.get_center())
         return VGroup(frame, plaque, ico)
 
-    def _zoom_endpoints_for_arm(self, label, color, pre_hidden=False):
-        # if stage not already hidden by R-gate, hide it now and remember
+    def _zoom_endpoints_for_arm(self, label, color, pre_hidden=False,
+                                gate_plan=None, dwell_factor=1.0, label_over_each=False):
+        # hide stage if not already
         if not pre_hidden:
             self.flow_running = False
             stage_hidden_now = Group(*[m for m in self.mobjects if m is not self.camera.frame])
             self.play(FadeOut(stage_hidden_now, run_time=0.2))
             self.hidden_stage = stage_hidden_now
 
-        # camera centered (landscape-friendly): aim at origin, fixed width
+        # camera centered
         self.camera.frame.save_state()
         target_rect = Rectangle(width=8.8, height=4.2, stroke_opacity=0).move_to(ORIGIN)
         self.play(self.camera.frame.animate.move_to(target_rect).set(width=9.2), run_time=0.35)
 
-        # lane & gates (centered y)
+        # lane & gates
         y = self.egate_y
         lane = Line(LEFT * 4.4 + UP * y, RIGHT * 4.4 + UP * y, stroke_opacity=0.15)
         self.add(lane)
 
-        xs = [-3.0, -1.0, 1.0, 3.0]
-        kinds = ["binary", "gauss", "tte", "spark"]
+        if gate_plan is None:
+            gate_plan = [
+                {"x": -3.0, "kind": "binary", "label": "binary"},
+                {"x": -1.0, "kind": "gauss",  "label": "continuous"},
+                {"x":  1.0, "kind": "tte",    "label": "time-to-event"},
+                {"x":  3.0, "kind": "spark",  "label": "longitudinal"},
+            ]
+
+        xs = [d["x"] for d in gate_plan]
+        kinds = [d["kind"] for d in gate_plan]
+        labels = [d["label"] for d in gate_plan]
+
         gates = VGroup(*[self._build_endpoint_gate(x, y, k) for x, k in zip(xs, kinds)])
         self.add(gates)
 
-        # Dose label fully BELOW the gates
+        # Dose label below gates
         gates_bottom = min(g.get_bottom()[1] for g in gates)
         tag = Text(label, weight=BOLD, color=color).scale(0.5)
         tag.move_to([0, gates_bottom - 0.40, 0])
         self.add(tag)
 
-        # Endpoint type label ABOVE middle gates with underline ~ label width + padding
-        def show_ep_label(txt, arm_color):
-            center_x = (xs[1] + xs[2]) / 2
-            mid_top_y = max(gates[1].get_top()[1], gates[2].get_top()[1])
+        # label helpers
+        def show_ep_label_midpair(txt, arm_color):
+            if len(gates) >= 3:
+                mid_top_y = max(gates[len(gates)//2 - 0].get_top()[1], gates[len(gates)//2 - 1].get_top()[1]) \
+                    if len(gates) >= 4 else gates[0].get_top()[1]
+                center_x = (xs[len(xs)//2 - 1] + xs[len(xs)//2]) / 2 if len(xs) >= 4 else xs[0]
+            else:
+                mid_top_y = gates[0].get_top()[1]; center_x = xs[0]
             lbl = Text(txt, weight=BOLD, color=WHITE).scale(0.56)
             pad = 0.18
             L = lbl.width + 2 * pad
@@ -330,11 +458,21 @@ class TrialFlowV5(MovingCameraScene):
             self.play(FadeIn(group, run_time=0.18))
             return group
 
+        def show_ep_label_above_gate(idx, txt, arm_color):
+            g = gates[idx]; top_y = g.get_top()[1]; center_x = xs[idx]
+            lbl = Text(txt, weight=BOLD, color=WHITE).scale(0.56)
+            pad = 0.18; L = lbl.width + 2 * pad
+            underline = Line([0 - L/2, 0, 0], [0 + L/2, 0, 0], stroke_width=6, color=arm_color, stroke_opacity=0.9)
+            group = VGroup(lbl, underline).arrange(DOWN, buff=0.06)
+            group.move_to([center_x, top_y + self.ep_label_offset, 0])
+            self.play(FadeIn(group, run_time=0.18))
+            return group
+
         # demo patient
         demo = self._make_person(color).scale(1.05).move_to([xs[0] - 1.2, y, 0])
         self.add(demo)
 
-        # chest badge flash (then disappear)
+        # badge flash (then disappear)
         def flash_badge(idx):
             badge = Circle(radius=0.11, fill_color=WHITE, fill_opacity=1, stroke_width=0)
             badge.move_to(self._badge_anchor_on_chest_idx(demo, idx))
@@ -343,17 +481,20 @@ class TrialFlowV5(MovingCameraScene):
             self.play(Flash(badge, flash_radius=0.25, line_length=0.10), run_time=0.12)
             self.play(FadeOut(badge, run_time=0.14))
 
-        ep_names = ["binary", "continuous", "time-to-event", "longitudinal"]
+        base_T = self.I(0.40) * dwell_factor
 
-        # arrive → dwell → label + badge → clear → next
-        for i, (x, k) in enumerate(zip(xs, kinds)):
+        for i, x in enumerate(xs):
             self.play(demo.animate.move_to([x, y, 0]), run_time=0.42, rate_func=linear)
-            self.wait(self.I(0.40))
-            lbl_grp = show_ep_label(ep_names[i], color)
+            self.wait(base_T * 0.40)
+            if label_over_each:
+                lbl_grp = show_ep_label_above_gate(i, labels[i], color)
+            else:
+                lbl_grp = show_ep_label_midpair(labels[i], color)
             flash_badge(i)
+            self.wait(base_T * 0.60)
             self.play(FadeOut(lbl_grp, run_time=0.18))
 
-        # clean up & restore stage & flow
+        # cleanup & restore
         self.play(FadeOut(VGroup(lane, tag, gates, demo), run_time=0.25))
         self.play(self.camera.frame.animate.restore(), run_time=0.35)
         if self.hidden_stage is not None:
@@ -362,7 +503,7 @@ class TrialFlowV5(MovingCameraScene):
         self.flow_running = True
 
     # ======================================================================
-    # Listener & milestone (keep stage visible; pause flow)
+    # Listener & milestones
     # ======================================================================
     def _build_listener(self):
         head = Circle(radius=0.10, fill_color=WHITE, fill_opacity=1, stroke_color=self.COL_BLACK, stroke_width=2)
@@ -425,7 +566,7 @@ class TrialFlowV5(MovingCameraScene):
             if not keep: self.play(FadeOut(row, run_time=0.18))
             return row
 
-        # 1) Data snapshot (camera + table) + local flash
+        # 1) Data snapshot
         def snapshot_icon():
             cam = VGroup(Rectangle(width=0.62, height=0.36, fill_color=BLACK, fill_opacity=1, stroke_width=0),
                          Circle(radius=0.11, color=WHITE, fill_opacity=0, stroke_width=3))
@@ -440,11 +581,11 @@ class TrialFlowV5(MovingCameraScene):
         self.play(flash.animate.set_fill(opacity=0.0), run_time=0.12)
         self.play(FadeOut(row, run_time=0.18))
 
-        # 2) Stat analysis (bar plot)
+        # 2) Stat analysis
         def stat_icon(): return self._bars_icon().scale(0.92)
         show_step_centered("Stat analysis", stat_icon, linger=1.40)
 
-        # 3) Decision (MS1 only) — drop C (dot crossed and grayed) + lamp C grayed + allowed_arms -> A/B
+        # 3) Decision (MS1 only)
         if drop_C:
             def decision_icon_dots():
                 dotA = Circle(radius=0.22, fill_color=self.COL_A, fill_opacity=1, stroke_width=0)
@@ -469,7 +610,7 @@ class TrialFlowV5(MovingCameraScene):
             else:
                 self.play(FadeOut(row, run_time=0.18))
 
-        # 4) Save results (folder + page slide-in)
+        # 4) Save results
         def save_icon(): return self._save_folder_icon().scale(1.0)
         row = show_step_centered("Save results", save_icon, linger=1.45, keep=True)
         folder = row[0]
@@ -478,7 +619,6 @@ class TrialFlowV5(MovingCameraScene):
         self.wait(self.I(0.30))
         self.play(FadeOut(row, run_time=0.18))
 
-        # close bubble & restore camera; RESUME flow
         self.play(FadeOut(panel, run_time=0.20))
         self.play(self.camera.frame.animate.restore(), run_time=0.32)
         self.flow_running = prev
@@ -513,7 +653,6 @@ class TrialFlowV5(MovingCameraScene):
         g.add(base, b1, b2, b3, e1, e1c, e2, e2c, e3, e3c)
         return g
 
-    # save: folder + page slide-in
     def _save_folder_icon(self):
         body = Rectangle(width=1.2, height=0.60, stroke_color=GREY, stroke_width=2,
                          fill_color="#f5f5f5", fill_opacity=1).shift(DOWN * 0.05)
