@@ -1,29 +1,28 @@
-# trial_flow.py — TrialFlowV11
-# Manim Community v0.19+
-# Updates:
-# - Title card (Scheme A): deep green background, accent green underline, warm-gray subtitle
-# - Subtitle text: "Empowering clinical trial design with simulations"
-# - Slower title pacing (1.6/0.8/0.9 + 2.4 hold + 0.8 fade + 0.5 gap)
-# - Keep: one pink flag after Milestone 2
-# - Minor syntax fixes
+# trial_flow.py — TrialFlowV14
+# Changes vs V13:
+# - Milestone bubble: softer pastel background + subtle drop shadow; remove "Milestone 1/2" title text
+# - MS2 Stat analysis growth curve: richer elements (grid, ticks, dashed target, endpoints), dark strokes for clarity
+# - Global pacing: time_scale = 0.73 (≈ 12% faster than V13; target total ≈ 2m20s depending on FPS/config)
 
 from manim import *
 import numpy as np
 import random
 from manim import config, rate_functions
 
-# -------- Scheme A palette --------
+# -------- Scheme A palette (deep near-black green + accent) --------
 DARK_BG     = "#0B1F17"   # deep near-black green
 ACCENT_GRN  = "#00E47C"   # bright accent green
-WARM_GRAY   = "#E5E3DE"   # warm light gray for subtitle
+WARM_GRAY   = "#E5E3DE"   # subtitle
+SOFT_PANEL  = "#DDEEE7"   # softer milestone bubble fill (pastel green)
+SOFT_SHADOW = "#000000"   # shadow (low opacity)
 
 config.disable_caching  = True
 config.background_color = DARK_BG
 MIN_FRAMES = 2  # ensure >=2 frames/segment so updaters advance
 
 
-class TrialFlowV11(MovingCameraScene):
-    # lane / arms colors (kept from previous confirmed design)
+class TrialFlowV14(MovingCameraScene):
+    # lane / arms colors
     COL_A = "#377eb8"      # Dose A
     COL_B = "#ff7f00"      # Dose B
     COL_C = "#4daf4a"      # Dose C
@@ -31,17 +30,17 @@ class TrialFlowV11(MovingCameraScene):
     COL_BLACK = "#111111"
     FLAG_COLOR = "#E91E63"  # magenta for flags & checks
 
-    SUBTITLE = "Empowering clinical trial design with simulations"
+    SUBTITLE = "Empowering Clinical Trial Design With Simulations"  # Title Case
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # preview knobs
+        # pacing knobs
         self.preview = True
         self.preview_level = 1
-        self.time_scale = 0.55    # 1.0 for final
-        self.flow_speed = 1.35    # dt-stable uniform lane speed
+        self.time_scale = 1.2    # V13=0.83 → shorten total ~12% toward ~2m20s
+        self.flow_speed = 1.35    # lane uniform speed (dt-stable)
         self.flow_running = True
-        self.interval_scale = 4.0 # linger scaler for normal waits
+        self.interval_scale = 4.0 # longer holds; overall still compressed by time_scale
 
         # runtime state
         self.force_next_arm = None
@@ -82,8 +81,8 @@ class TrialFlowV11(MovingCameraScene):
     def construct(self):
         random.seed(42)
 
-        # ---------- Title card ----------
-        self._title_card()
+        # ---------- Title card with pre-roll ----------
+        self._title_card_with_preroll()
 
         self.allowed_arms = ["A", "B", "C"]  # after MS1 -> ["A","B"]
 
@@ -121,8 +120,7 @@ class TrialFlowV11(MovingCameraScene):
         self.lane_offset.set_value(init_off)
 
         def lane_updater(group, dt):
-            if not self.flow_running:
-                return
+            if not self.flow_running: return
             self.lane_offset.increment_value(max(dt, 0.0) * self.flow_speed)
             off = self.lane_offset.get_value()
             for k, p in enumerate(group):
@@ -192,14 +190,21 @@ class TrialFlowV11(MovingCameraScene):
         self._milestone_bubble_sequential(anchor_x=self.x_l2, ms_index=2, drop_C=False)
         anchor2 = self._listener_to_anchor(listener2, color=self.COL_B); self.add(anchor2)
 
-        # Future milestone teaser: ONLY ONE pink flag (left of MS2)
-        self._tease_one_future_flag_left()
+        # Future milestone teaser: ONE pink flag, later & farther left
+        self._tease_one_future_flag_left(delay_real=2.0, dx=1.9)
         self.wait(self.I(0.8))
+
+        # Fade out main stage
         self.play(FadeOut(VGroup(self.persons, r_gate, anchor1, anchor2, baseline), run_time=0.8))
 
-    # ======================= Title card ===========================
-    def _title_card(self):
-        # Title group: TSLite + underline (accent green) + subtitle (warm gray)
+        # Outro: show TSLite only (same color scheme), KEEP on screen
+        self._outro_card()
+
+    # ======================= Title card with pre-roll ===========================
+    def _title_card_with_preroll(self):
+        # Pre-roll blank to allow player controls to disappear
+        self.wait_real(1.5)
+
         title = Text("TSLite", weight=BOLD).scale(2.2)
         title.set_color_by_gradient(ACCENT_GRN, "#00C56A")  # accent sweep
 
@@ -211,14 +216,32 @@ class TrialFlowV11(MovingCameraScene):
 
         group = VGroup(title, underline, subtitle).move_to(ORIGIN)
 
-        # In — slower pacing
+        # Title in
         self.play(LaggedStart(*[Write(ch) for ch in title], lag_ratio=0.10, run_time=1.6))
         self.play(Create(underline, run_time=0.8))
+
+        # Pause before showing subtitle
+        self.wait_real(1.0)
+
+        # Subtitle in
         self.play(FadeIn(subtitle, shift=UP*0.18, run_time=0.9))
-        self.wait(2.4)  # hold to read
-        # Out + short gap before main flow
+        self.wait(2.4)  # scaled hold
+        # Out + gap before main flow
         self.play(FadeOut(group, run_time=0.8))
         self.wait(0.5)
+
+    # ======================= Outro card (keep on screen) =======================
+    def _outro_card(self):
+        title = Text("TSLite", weight=BOLD).scale(2.2)
+        title.set_color_by_gradient(ACCENT_GRN, "#00C56A")
+        underline = Line(LEFT*3.6, RIGHT*3.6, stroke_width=10, color=ACCENT_GRN)
+        underline.move_to(title.get_bottom() + DOWN*0.25)
+        group = VGroup(title, underline).move_to(ORIGIN)
+
+        self.play(LaggedStart(*[Write(ch) for ch in title], lag_ratio=0.08, run_time=1.2))
+        self.play(Create(underline, run_time=0.6))
+        # Do NOT fade out — hold on the final frame
+        self.wait(1.2)
 
     # ======================= lane helpers =========================
     def _wait_for_arm_at_gate(self, arm, min_gap=0.8):
@@ -322,6 +345,7 @@ class TrialFlowV11(MovingCameraScene):
             return VMobject(stroke_color=WHITE, stroke_width=5).set_points_as_corners(pts)
 
         if kind == "delayed":
+            # stepped KM split mid: one solid steeper, one dashed flatter
             x0, x1 = -0.42, 0.42
             mid = (x0 + x1) / 2.0
             y_start = 0.16
@@ -432,7 +456,7 @@ class TrialFlowV11(MovingCameraScene):
         gates = VGroup(*[self._build_endpoint_gate(x, y, k) for x, k in zip(xs, kinds)])
         self.add(gates)
 
-        # Dose label under gates
+        # Dose label under gates（避免和门重叠）
         gates_bottom = min(g.get_bottom()[1] for g in gates)
         tag = Text(label, weight=BOLD, color=color).scale(0.5)
         tag.move_to([0, gates_bottom - 0.40, 0])
@@ -551,12 +575,15 @@ class TrialFlowV11(MovingCameraScene):
         focus = Rectangle(width=8.0, height=4.5, stroke_opacity=0).move_to([anchor_x, self.y0 + 1.6, 0])
         self.play(self.camera.frame.animate.move_to(focus).set(width=8.6), run_time=0.38)
 
+        # soft bubble + subtle shadow (no "Milestone X" title)
+        shadow = RoundedRectangle(corner_radius=0.28, width=6.85, height=3.05,
+                                  stroke_opacity=0, fill_color=SOFT_SHADOW, fill_opacity=0.15)\
+                 .move_to([anchor_x+0.06, self.y0 + 1.6-0.06, 0])
         bubble = RoundedRectangle(corner_radius=0.25, width=6.8, height=3.0,
-                                  stroke_color=GREY, fill_color=WHITE, fill_opacity=1.0)\
-            .move_to([anchor_x, self.y0 + 1.6, 0])
-        title = Text(f"Milestone {ms_index}", weight=BOLD).scale(0.46)\
-            .next_to(bubble.get_top(), DOWN, buff=0.18).move_to([anchor_x, bubble.get_top()[1]-0.35, 0])
-        panel = VGroup(bubble, title)
+                                  stroke_color=GREY_B, stroke_width=1.6,
+                                  fill_color=SOFT_PANEL, fill_opacity=0.98)\
+                 .move_to([anchor_x, self.y0 + 1.6, 0])
+        panel = VGroup(shadow, bubble)
         self.play(FadeIn(panel, run_time=0.22))
 
         center = np.array([anchor_x, bubble.get_center()[1] - 0.10, 0])
@@ -579,9 +606,12 @@ class TrialFlowV11(MovingCameraScene):
         self.wait(self.I(0.55))
         self.play(FadeOut(row, run_time=0.18))
 
-        # 2) Stat analysis
-        stat = self._bars_icon().scale(0.92)
-        show_step_centered("Stat analysis", stat, linger=1.40)
+        # 2) Stat analysis — MS1 uses bars; MS2 uses richer growth curve (DARK strokes)
+        if ms_index == 2:
+            stat_icon = self._growth_curve_icon(dark=True, complex=True).scale(0.98)
+        else:
+            stat_icon = self._bars_icon().scale(0.92)
+        show_step_centered("Stat analysis", stat_icon, linger=1.60)
 
         # 3) Decisions & actions（MS1 才有 drop C + 列表）
         if drop_C:
@@ -605,7 +635,7 @@ class TrialFlowV11(MovingCameraScene):
             self.wait(self.I(0.35))
             self.play(FadeOut(VGroup(row, cross), run_time=0.18))
 
-            # Decisions list (left-aligned, colored, Write, real 3s per line)
+            # Decisions list (left-aligned, colored, Write, 3s real per item)
             self._decisions_actions_list_inside(bubble, anchor_x)
 
         # 4) Save results — page slides inside folder
@@ -652,25 +682,23 @@ class TrialFlowV11(MovingCameraScene):
         self.wait(self.I(0.40))
         self.play(FadeOut(VGroup(title, *lines), run_time=0.22))
 
-    # ====== Future milestone teaser: ONE flag only (left of MS2) ======
-    def _tease_one_future_flag_left(self):
+    # ====== Future milestone teaser: ONE flag (later & farther left) ======
+    def _tease_one_future_flag_left(self, delay_real=2.0, dx=1.9):
+        self.wait_real(delay_real)
         y = self.y0 + 0.95
-        x = self.x_l2 - 1.1  # left of MS2
+        x = self.x_l2 - dx
         pole = Line([x, y-0.10, 0], [x, y+0.12, 0], stroke_color=self.FLAG_COLOR, stroke_width=2.5)
         flag = Polygon(
             pole.get_end(), pole.get_end()+RIGHT*0.22+DOWN*0.08, pole.get_end()+RIGHT*0.22+UP*0.08,
             stroke_color=self.FLAG_COLOR, fill_color=self.FLAG_COLOR, fill_opacity=0.95, stroke_width=2
         )
         g = VGroup(pole, flag)
-
-        # drift with lane
         start_off = self.lane_offset.get_value()
         base_x = x; base_y = y
         def up(m, dt):
-            dx = self.lane_offset.get_value() - start_off
-            m.move_to([base_x + dx, base_y, 0])
+            dx_val = self.lane_offset.get_value() - start_off
+            m.move_to([base_x + dx_val, base_y, 0])
         g.add_updater(up)
-
         self.add(g)
         self.play(FadeIn(g, run_time=0.20))
         self.wait_real(1.2)
@@ -700,6 +728,7 @@ class TrialFlowV11(MovingCameraScene):
                        fill_opacity=1).move_to([0.00, 0.02, 0])
         b3 = Rectangle(width=0.25, height=0.22, stroke_color=self.COL_BLACK, fill_color=self.COL_BLACK,
                        fill_opacity=1).move_to([0.38, -0.14, 0])
+        # tiny error bars
         e1 = Line([-0.38, 0.05, 0], [-0.38, 0.18, 0], stroke_color=GREY, stroke_width=2)
         e1c = Line([-0.48, 0.18, 0], [-0.28, 0.18, 0], stroke_color=GREY, stroke_width=2)
         e2 = Line([0.00, 0.20, 0], [0.00, 0.35, 0], stroke_color=GREY, stroke_width=2)
@@ -708,6 +737,48 @@ class TrialFlowV11(MovingCameraScene):
         e3c = Line([0.28, 0.10, 0], [0.48, 0.10, 0], stroke_color=GREY, stroke_width=2)
         g.add(base, b1, b2, b3, e1, e1c, e2, e2c, e3, e3c)
         return g
+
+    def _growth_curve_icon(self, dark=False, complex=False):
+        """Growth curve with optional richer details for MS2."""
+        x0, y0 = -0.48, -0.32
+        x1, y1 =  0.52,  0.34
+        axis_col = GREY_D if not dark else GREY_B
+        curve_col = self.COL_BLACK if dark else WHITE
+
+        # axes
+        x_axis = Line([x0, y0, 0], [x1, y0, 0], stroke_color=axis_col, stroke_width=2.5)
+        y_axis = Line([x0, y0, 0], [x0, y1, 0], stroke_color=axis_col, stroke_width=2.5)
+
+        # base S-curve
+        xs = np.linspace(x0+0.06, x1-0.06, 100)
+        def f(t):
+            lo, hi = y0+0.02, y1-0.06
+            s = (t - (x0+x1)/2.0) / (x1-x0)
+            return lo + (hi-lo) * (0.5 + 0.5*np.tanh(3.2*s))
+        pts = [np.array([t, f(t), 0]) for t in xs]
+        curve = VMobject(stroke_color=curve_col, stroke_width=4).set_points_smoothly(pts)
+
+        group = VGroup(x_axis, y_axis, curve)
+
+        if complex:
+            # light grid (vertical tick lines)
+            grid = VGroup()
+            for gx in np.linspace(x0+0.12, x1-0.12, 5):
+                grid.add(Line([gx, y0, 0], [gx, y1-0.02, 0], stroke_color=GREY_C, stroke_width=1.2, stroke_opacity=0.6))
+            # dashed target line
+            target_y = y0 + 0.24
+            target_line = DashedVMobject(Line([x0+0.02, target_y, 0], [x1-0.02, target_y, 0]),
+                                         num_dashes=18, dashed_ratio=0.55, color=GREY_B, stroke_width=2)
+            # endpoints
+            start_dot = Dot(point=pts[0], color=curve_col, radius=0.045)
+            end_dot   = Dot(point=pts[-1], color=curve_col, radius=0.045)
+            # arrow head at end
+            arr = Arrow(pts[-1]+LEFT*0.08+DOWN*0.02, pts[-1], buff=0,
+                        stroke_width=4, max_tip_length_to_length_ratio=0.18,
+                        fill_color=curve_col, color=curve_col)
+            group = VGroup(grid, x_axis, y_axis, target_line, curve, start_dot, end_dot, arr)
+
+        return group
 
     # ================== save: folder + sliding page ==================
     def _save_folder_icon(self):
