@@ -1,21 +1,29 @@
-# trial_flow.py — TrialFlowV10
+# trial_flow.py — TrialFlowV11
 # Manim Community v0.19+
-# New vs V9:
-# - Title card at the very beginning: "TSLite" + subtitle
-# - After Milestone 2: ONLY ONE pink flag appears (left of MS2), then fades
-# - All previous fixes remain (uniform lane speed, labels, decisions list with real 3s pauses, etc.)
+# Updates:
+# - Title card (Scheme A): deep green background, accent green underline, warm-gray subtitle
+# - Subtitle text: "Empowering clinical trial design with simulations"
+# - Slower title pacing (1.6/0.8/0.9 + 2.4 hold + 0.8 fade + 0.5 gap)
+# - Keep: one pink flag after Milestone 2
+# - Minor syntax fixes
 
 from manim import *
 import numpy as np
 import random
 from manim import config, rate_functions
 
-config.disable_caching = True
+# -------- Scheme A palette --------
+DARK_BG     = "#0B1F17"   # deep near-black green
+ACCENT_GRN  = "#00E47C"   # bright accent green
+WARM_GRAY   = "#E5E3DE"   # warm light gray for subtitle
+
+config.disable_caching  = True
+config.background_color = DARK_BG
 MIN_FRAMES = 2  # ensure >=2 frames/segment so updaters advance
 
 
-class TrialFlowV10(MovingCameraScene):
-    # colors
+class TrialFlowV11(MovingCameraScene):
+    # lane / arms colors (kept from previous confirmed design)
     COL_A = "#377eb8"      # Dose A
     COL_B = "#ff7f00"      # Dose B
     COL_C = "#4daf4a"      # Dose C
@@ -23,7 +31,7 @@ class TrialFlowV10(MovingCameraScene):
     COL_BLACK = "#111111"
     FLAG_COLOR = "#E91E63"  # magenta for flags & checks
 
-    SUBTITLE = "Clinical trial design powered by sound software engineering in randomized simulations."
+    SUBTITLE = "Empowering clinical trial design with simulations"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -65,7 +73,7 @@ class TrialFlowV10(MovingCameraScene):
         return super().wait(duration, *args, **kwargs)
 
     def wait_real(self, seconds: float):
-        """Unscaled real-time wait (bypasses our time-scale)."""
+        """Unscaled real-time wait (bypasses time-scale)."""
         return super().wait(seconds)
 
     # =========================================================================
@@ -191,25 +199,26 @@ class TrialFlowV10(MovingCameraScene):
 
     # ======================= Title card ===========================
     def _title_card(self):
-        # Background remains black; big TSLite + colored sweep underline + subtitle
+        # Title group: TSLite + underline (accent green) + subtitle (warm gray)
         title = Text("TSLite", weight=BOLD).scale(2.2)
-        title.set_color_by_gradient(self.COL_A, self.COL_B, self.FLAG_COLOR)
+        title.set_color_by_gradient(ACCENT_GRN, "#00C56A")  # accent sweep
 
-        underline = Line(LEFT*3.6, RIGHT*3.6, stroke_width=10, color=self.FLAG_COLOR)
+        underline = Line(LEFT*3.6, RIGHT*3.6, stroke_width=10, color=ACCENT_GRN)
         underline.move_to(title.get_bottom() + DOWN*0.25)
 
-        subtitle = Text(self.SUBTITLE, slant=ITALIC, color=GREY_A).scale(0.55)
+        subtitle = Text(self.SUBTITLE, slant=ITALIC, color=WARM_GRAY).scale(0.55)
         subtitle.next_to(underline, DOWN, buff=0.35)
 
         group = VGroup(title, underline, subtitle).move_to(ORIGIN)
 
-        # In
-        self.play(LaggedStart(*[Write(char) for char in title], lag_ratio=0.08, run_time=0.9))
-        self.play(Create(underline, run_time=0.35))
-        self.play(FadeIn(subtitle, shift=UP*0.15, run_time=0.30))
-        self.wait(self.I(0.9))
-        # Out
-        self.play(FadeOut(group, run_time=0.35))
+        # In — slower pacing
+        self.play(LaggedStart(*[Write(ch) for ch in title], lag_ratio=0.10, run_time=1.6))
+        self.play(Create(underline, run_time=0.8))
+        self.play(FadeIn(subtitle, shift=UP*0.18, run_time=0.9))
+        self.wait(2.4)  # hold to read
+        # Out + short gap before main flow
+        self.play(FadeOut(group, run_time=0.8))
+        self.wait(0.5)
 
     # ======================= lane helpers =========================
     def _wait_for_arm_at_gate(self, arm, min_gap=0.8):
@@ -313,7 +322,6 @@ class TrialFlowV10(MovingCameraScene):
             return VMobject(stroke_color=WHITE, stroke_width=5).set_points_as_corners(pts)
 
         if kind == "delayed":
-            # KM steps: identical pre-mid path → split mid; solid steeper vs dashed flatter
             x0, x1 = -0.42, 0.42
             mid = (x0 + x1) / 2.0
             y_start = 0.16
