@@ -144,16 +144,17 @@ class TrialFlowV14(MovingCameraScene):
 
         # calm start
         self.wait(self.I(0.5))
+        self.wait_real(7.0)
 
         arms_seq = ["A", "B", "C"]
         color_of = {"A": self.COL_A, "B": self.COL_B, "C": self.COL_C}
 
         for idx, arm in enumerate(arms_seq):
             if idx == 0:
-                self._wait_for_arm_at_gate(arm, min_gap=self.I(0.6))
-                self.wait(self.I(1.6))
+                self._wait_for_arm_at_gate(arm, min_gap=self.I(0.50))
+                self.wait(self.I(0.50))
             else:
-                self._wait_for_arm_at_gate(arm, min_gap=self.I(1.6))
+                self._wait_for_arm_at_gate(arm, min_gap=self.I(0.70))
 
             self._rg_cutaway(color_of[arm], scan_rt=1.00, dwell_rt=self.I(0.70), restore_stage=False)
 
@@ -193,7 +194,7 @@ class TrialFlowV14(MovingCameraScene):
         # Future milestone teaser: ONE pink flag, later & farther left
         self._tease_one_future_flag_left(delay_real=2.0, dx=1.9)
         self.wait(self.I(0.8))
-
+        self.wait_real(4.0)
         # Fade out main stage
         self.play(FadeOut(VGroup(self.persons, r_gate, anchor1, anchor2, baseline), run_time=0.8))
 
@@ -598,12 +599,13 @@ class TrialFlowV14(MovingCameraScene):
 
         # 1) Data snapshot — camera → flash → transform to table
         cam = self._camera_icon()
-        row = show_step_centered("Data snapshot", cam, linger=0.90, keep=True)
+        snap_linger = 0.70 if ms_index == 2 else 0.90
+        row = show_step_centered("Data snapshot", cam, linger=snap_linger, keep=True)
         cam_icon = row[0]
         self.play(Flash(cam_icon, flash_radius=0.45, line_length=0.16), run_time=0.18)
         tbl = self._table_icon().scale(0.92).move_to(cam_icon.get_center())
         self.play(Transform(cam_icon, tbl), run_time=0.28)
-        self.wait(self.I(0.55))
+        self.wait(self.I(0.40 if ms_index == 2 else 0.55))
         self.play(FadeOut(row, run_time=0.18))
 
         # 2) Stat analysis — MS1 uses bars; MS2 uses richer growth curve (DARK strokes)
@@ -611,7 +613,8 @@ class TrialFlowV14(MovingCameraScene):
             stat_icon = self._growth_curve_icon(dark=True, complex=True).scale(0.98)
         else:
             stat_icon = self._bars_icon().scale(0.92)
-        show_step_centered("Stat analysis", stat_icon, linger=1.60)
+        stat_linger = 1.30 if ms_index == 2 else 1.60
+        show_step_centered("Stat analysis", stat_icon, linger=stat_linger)
 
         # 3) Decisions & actions（MS1 才有 drop C + 列表）
         if drop_C:
@@ -640,10 +643,10 @@ class TrialFlowV14(MovingCameraScene):
 
         # 4) Save results — page slides inside folder
         folder = self._save_folder_icon().scale(1.0)
-        row = show_step_centered("Save results", folder, linger=1.45, keep=True)
+        row = show_step_centered("Save results", folder, linger=(1.10 if ms_index == 2 else 1.45), keep=True)
         if hasattr(folder, "page"):
             self._save_folder_anim(folder)
-        self.wait(self.I(0.30))
+        self.wait(self.I(0.24 if ms_index == 2 else 0.30))
         self.play(FadeOut(row, run_time=0.18))
 
         self.play(FadeOut(panel, run_time=0.20))
