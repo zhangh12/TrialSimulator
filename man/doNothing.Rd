@@ -4,10 +4,13 @@
 \alias{doNothing}
 \title{An Action Function that Does Nothing}
 \usage{
-doNothing(trial)
+doNothing(trial, ...)
 }
 \arguments{
-\item{trial}{an object returned from \code{trial()}}
+\item{trial}{an object returned from \code{trial()}.}
+
+\item{...}{(optional) arguments. This is for capturing redundant arguments
+in \code{milestone()} only.}
 }
 \value{
 This function returns \code{NULL}. Actually, nothing is done in this function.
