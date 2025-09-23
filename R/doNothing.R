@@ -16,14 +16,24 @@
 #' at a milestone with \code{action = doNothing} is still recorded in output
 #' automatically.
 #'
-#' @param trial an object returned from \code{trial()}
+#' @param trial an object returned from \code{trial()}.
+#' @param ... (optional) arguments. This is for capturing redundant arguments
+#' in \code{milestone()} only.
 #'
 #' @returns
 #' This function returns \code{NULL}. Actually, nothing is done in this function.
 #'
 #' @export
 #'
-doNothing <- function(trial){
+doNothing <- function(trial, ...){
+
+  dots <- list(...)
+  if(length(dots) > 0){
+    stop('Argument(s) <',
+         paste0(names(dots), collapse = ', '),
+         '> should not be specified in milestone() ',
+         'if no action function is specified. ')
+  }
 
   invisible(NULL)
 

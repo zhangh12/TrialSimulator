@@ -6,6 +6,10 @@
 - `milestone()` now support `...` to pass arguments to action functions. 
 - Documents and vignettes are updated. 
 
+## Minor Updates
+
+- Some minor fixes. 
+
 # TrialSimulator 1.2.0
 
 ## New Feature
