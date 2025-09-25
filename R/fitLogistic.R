@@ -3,7 +3,7 @@
 #' @description
 #' Fit logistic regression model on an binary endpoint.
 #'
-#' Refer to \href{this vignette}{https://zhangh12.github.io/TrialSimulator/articles/wrappers.html}
+#' Refer to \href{https://zhangh12.github.io/TrialSimulator/articles/wrappers.html}{this vignette}
 #' for more information and examples.
 #'
 #' @param formula An object of class \code{formula}. Must include \code{arm}

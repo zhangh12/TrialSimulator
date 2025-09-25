@@ -47,6 +47,6 @@ a data frame with columns:
 \description{
 Fit linear regression model on a continuous endpoint.
 
-Refer to \href{this vignette}{https://zhangh12.github.io/TrialSimulator/articles/wrappers.html}
+Refer to \href{https://zhangh12.github.io/TrialSimulator/articles/wrappers.html}{this vignette}
 for more information and examples.
 }
