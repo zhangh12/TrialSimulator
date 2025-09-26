@@ -4,7 +4,7 @@
 #' Test rate difference by comparing it to a pre-specified value using the
 #' Farrington-Manning test.
 #'
-#' Refer to \href{this vignette}{https://zhangh12.github.io/TrialSimulator/articles/wrappers.html}
+#' Refer to \href{https://zhangh12.github.io/TrialSimulator/articles/wrappers.html}{this vignette}
 #' for more information and examples.
 #'
 #' @param endpoint Character. Name of the endpoint in \code{data}.
