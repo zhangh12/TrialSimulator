@@ -28,7 +28,7 @@ The `TrialSimulator` package provides a flexible framework for defining endpoint
 
 Longitudinal endpoints refer to outcomes measured repeatedly over time for the same subject, such as blood pressure, biomarker levels, or symptom severity scores. These repeated measures typically exhibit within-subject correlation as well as correlation with baseline values. Accurately simulating such correlation structures is essential for realistic trial design and evaluation.
 
-In this vignette, we demonstrate how to define longitudinal endpoints using the `endpoint()` function, focusing on its `generator` argument to specify the data-generating mechanism, and the `readout` argument to determine when each endpoint is observed.
+In this vignette, we demonstrate how to define longitudinal endpoints using the `endpoint()` function, focusing on its `generator` argument to specify the data-generating mechanism, and the `readout` argument to determine when each endpoint is observed. Note that longitudinal endpoints are non-TTE endpoints, thus `type` in `endpoint()` must be set as `"non-tte"` and there `readout` needs to be specified. 
 
 ## Example: Simulating Longitudinal Blood Pressure Endpoints
 
