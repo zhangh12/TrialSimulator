@@ -74,7 +74,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Dose-Ranging Study</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/v1.3.0/vignettes/doseRanging.Rmd" class="external-link"><code>vignettes/doseRanging.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/vignettes/doseRanging.Rmd" class="external-link"><code>vignettes/doseRanging.Rmd</code></a></small>
       <div class="d-none name"><code>doseRanging.Rmd</code></div>
     </div>
 
@@ -88,8 +88,9 @@ analysis.</p>
 <p>For the sake of simplicity, we assume a binary endpoint of interest.
 The response rates at doses 0 (placebo), 0.5, 1.5, 2.5, 4 (highest dose)
 are given by a <code>sigEmax</code> model below, where the response rate
-is assume to be 10% in placebo, and 25% in the highest dose arm (dose =
-4).</p>
+is assume to be 10% in placebo, and 25% in arm of the highest dose (dose
+= 4). For further background information, refer to <a href="https://cran.r-project.org/web/packages/DoseFinding/vignettes/binary_data.html" class="external-link">vignette</a>
+of the <code>DoseFinding</code> package.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mods</span> <span class="op">&lt;-</span> <span class="fu">DoseFinding</span><span class="fu">::</span><span class="fu"><a href="https://openpharma.github.io/DoseFinding/reference/Mods.html" class="external-link">Mods</a></span><span class="op">(</span>sigEmax <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span>, </span>
 <span>                          placEff <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">.1</span><span class="op">/</span><span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="fl">.1</span><span class="op">)</span><span class="op">)</span>, </span>
@@ -100,8 +101,9 @@ is assume to be 10% in placebo, and 25% in the highest dose arm (dose =
 <p><img src="doseRanging_files/figure-html/flaf-1.png" width="100%"></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
+<span><span class="co">## response rates on curve</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">DoseFinding</span><span class="fu">::</span><span class="fu"><a href="https://openpharma.github.io/DoseFinding/reference/Mods.html" class="external-link">getResp</a></span><span class="op">(</span><span class="va">mods</span>, doses <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.5</span>, <span class="fl">1.5</span>, <span class="fl">2.5</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fl">1</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fl">1</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">unclass</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;      sigEmax1</span></span>
 <span><span class="co">#&gt; 0   0.1000000</span></span>
 <span><span class="co">#&gt; 0.5 0.1117242</span></span>
@@ -143,7 +145,7 @@ is assume to be 10% in placebo, and 25% in the highest dose arm (dose =
 <li>starting with a placebo arm and a treatment arm of the highest dose
 (= 4), with a 1:1 randomization ratio.
 <ul>
-<li>enroll 5 patients per month for 7 months.</li>
+<li>enroll 5 patients per week for 7 weeks.</li>
 </ul>
 </li>
 <li>an interim is planed when we have collected 30 readouts in total
@@ -152,7 +154,7 @@ from the two arms.
 <li>if z statistic of odds ratio is greater than 1
 <ul>
 <li>add three arms of dose 0.5, 1.5, and 2.5 to trial</li>
-<li>enroll 20 patients per month with a randomization ratio 1:2:2:2:1,
+<li>enroll 20 patients per week with a randomization ratio 1:2:2:2:1,
 until in total 150 patients are enrolled in the trial</li>
 <li>final analysis is performed when readouts are available for all
 enrolled patients.</li>
@@ -178,7 +180,7 @@ enrolled patients.</li>
 <span><span class="va">trt4</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">ep</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="defiine-a-trial">Defiine a Trial<a class="anchor" aria-label="anchor" href="#defiine-a-trial"></a>
+<h2 id="define-a-trial">Define a Trial<a class="anchor" aria-label="anchor" href="#define-a-trial"></a>
 </h2>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">accrual_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>end_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="cn">Inf</span><span class="op">)</span>,</span>
@@ -198,12 +200,15 @@ enrolled patients.</li>
 <span><span class="co">#&gt;  ⚕⚕ # of Patients:  150  </span></span>
 <span><span class="co">#&gt;  ⚕⚕ Planned Duration:  14  </span></span>
 <span><span class="co">#&gt;  ⚕⚕ Random Seed:  1960520344</span></span></code></pre></div>
+<!-- Hide this helper function and display it in Appendix for better typesetting. -->
+<!-- Hide this action function and display it later for better typesetting. -->
+<!-- Hide this action function and display it later for better typesetting. -->
 </div>
 <div class="section level2">
 <h2 id="define-milestones-and-actions">Define Milestones and Actions<a class="anchor" aria-label="anchor" href="#define-milestones-and-actions"></a>
 </h2>
 <p>Two milestones are triggered when 30 and 150 readouts are collected,
-respecitvely. Note that the 30 readouts are from the placebo and the
+respectively. Note that the 30 readouts are from the placebo and the
 highest dose arm, while the 150 readouts are from all five arms.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">interim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'interim'</span>,</span>
@@ -224,12 +229,14 @@ proportion of early termination.</p>
 <span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'interim'</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="co">## compare two arms</span></span>
+<span>  <span class="co">## Risk difference = response rate in high dose - response rate in placebo</span></span>
 <span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fitLogistic.html">fitLogistic</a></span><span class="op">(</span><span class="va">ep</span> <span class="op">~</span> <span class="va">arm</span>, placebo <span class="op">=</span> <span class="st">'dose = 0.0'</span>,</span>
 <span>                     data <span class="op">=</span> <span class="va">locked_data</span>, alternative <span class="op">=</span> <span class="st">'greater'</span>,</span>
 <span>                     scale <span class="op">=</span> <span class="st">'risk difference'</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="co">## for summary of early termination</span></span>
-<span>  <span class="va">trial</span><span class="op">$</span><span class="fu">save</span><span class="op">(</span>value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">z</span> <span class="op">&gt;</span> <span class="fl">1</span>, <span class="st">'add dose arms'</span>, <span class="st">'stop trial'</span><span class="op">)</span>, </span>
+<span>  <span class="va">trial</span><span class="op">$</span><span class="fu">save</span><span class="op">(</span>value <span class="op">=</span> <span class="va">fit</span><span class="op">$</span><span class="va">z</span>, name <span class="op">=</span> <span class="st">'z_value'</span><span class="op">)</span></span>
+<span>  <span class="va">trial</span><span class="op">$</span><span class="fu">save</span><span class="op">(</span>value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">z</span> <span class="op">&gt;</span> <span class="fl">1.64</span>, <span class="st">'add dose arms'</span>, <span class="st">'stop trial'</span><span class="op">)</span>, </span>
 <span>             name <span class="op">=</span> <span class="st">'interim_decision'</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="co">## create three dose arms</span></span>
@@ -249,6 +256,7 @@ proportion of early termination.</p>
 <span>  <span class="va">trt3</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">ep</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="co">## add three new arms to trial</span></span>
+<span>  <span class="co">## BTW: I hate the argument enforce = TRUE, which will be deprecated in next package release</span></span>
 <span>  <span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span>, enforce <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">trt1</span>, <span class="va">trt2</span>, <span class="va">trt3</span><span class="op">)</span></span>
 <span>  </span>
 <span><span class="op">}</span></span></code></pre></div>
@@ -270,39 +278,14 @@ the Appendix below.</p>
 <p>After registering the two milestones with a listener, we simulate a
 single trial using <code>controller$run()</code>. We can see that more
 patients are randomized to the three newly added arms after interim,
-reflecting the new randomization ratio 1:2:2:2:1. We can call
-<code>controller$run(n = 100)</code> to simulate more trials.</p>
+reflecting the new randomization ratio 1:2:2:2:1.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">listener</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/listener.html">listener</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">listener</span><span class="op">$</span><span class="fu">add_milestones</span><span class="op">(</span><span class="va">interim</span>, <span class="va">final</span><span class="op">)</span></span>
-<span><span class="co">#&gt; A milestone &lt;interim&gt; is registered.</span></span>
-<span><span class="co">#&gt; A milestone &lt;final&gt; is registered.</span></span>
 <span></span>
 <span><span class="va">controller</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/controller.html">controller</a></span><span class="op">(</span><span class="va">trial</span>, <span class="va">listener</span><span class="op">)</span></span>
-<span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>plot_event <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Condition of milestone &lt;interim&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 6.8 for milestone &lt;interim&gt;.</span></span>
-<span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('interim'). </span></span>
-<span><span class="co">#&gt; Number of events at lock time:</span></span>
-<span><span class="co">#&gt;   patient ep         arms</span></span>
-<span><span class="co">#&gt; 1      35 30 c(18, 15....</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Arm(s) &lt;dose = 0.5, dose = 1.5, dose = 2.5&gt; are added to the trial.</span></span>
-<span><span class="co">#&gt; Trial data is rolling back to time = 6.8. </span></span>
-<span><span class="co">#&gt; Randomization will be carried out again for unenrolled patients.</span></span>
-<span><span class="co">#&gt; Randomization is done for 115 potential patients.</span></span>
-<span><span class="co">#&gt; Data of 115 potential patients are generated for the trial with 5 arm(s) &lt;dose = 0.0, dose = 4.0, dose = 0.5, dose = 1.5, dose = 2.5&gt;.</span></span>
-<span><span class="co">#&gt; Condition of milestone &lt;final&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 13.7 for milestone &lt;final&gt;.</span></span>
-<span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('final'). </span></span>
-<span><span class="co">#&gt; Number of events at lock time:</span></span>
-<span><span class="co">#&gt;   patient  ep         arms</span></span>
-<span><span class="co">#&gt; 1     150 150 c(33, 33....</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Message: Need bounds in "bnds" for nonlinear models, using default bounds from "defBnds".</span></span>
-<span><span class="co">#&gt; Ignoring unknown labels:</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> <span style="color: #00BB00;">colour</span> : <span style="color: #0000BB;">""</span></span></span></code></pre></div>
-<p><img src="doseRanging_files/figure-html/unnamed-chunk-5-1.png" width="100%"></p>
+<span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1</span>, plot_event <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="doseRanging_files/figure-html/unnamed-chunk-7-1.png" width="100%"></p>
 <p>In this trial, the z statistic at interim is relatively low (1.33),
 thus is early terminated even if in simulation we keep going with three
 newly added dose arms.</p>
@@ -406,6 +389,333 @@ no-go
 </tr></tbody>
 </table>
 </div>
+<p>We can call <code>controller$run(n = 10)</code> to simulate
+additional trials. in the function <code>action_at_final()</code>, the
+go/no-go decision (<code>decision</code> in output) is determined under
+the assumption that the dose has been expanded, regardless of the
+interim evidence—this simplification is made solely for the convenience
+of simulation. However, the overall probability of a <code>"go"</code>
+should incorporate the interim results—specifically, the trial must not
+be stopped at interim, and the function <code>go_nogo()</code> must
+return <code>"go"</code> at the final analysis.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## important: reset before calling run() again</span></span>
+<span><span class="va">controller</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">6</span>, plot_event <span class="op">=</span> <span class="cn">FALSE</span>, silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">controller</span><span class="op">$</span><span class="fu">get_output</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">kable</span><span class="op">(</span>escape <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">kable_styling</span><span class="op">(</span>bootstrap_options <span class="op">=</span> <span class="st">"striped"</span>, </span>
+<span>                full_width <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>                position <span class="op">=</span> <span class="st">"left"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu">scroll_box</span><span class="op">(</span>width <span class="op">=</span> <span class="st">"100%"</span><span class="op">)</span></span></code></pre></div>
+<div style="border: 1px solid #ddd; padding: 5px; overflow-x: scroll; width:100%; ">
+<table class="table table table-striped" style="width: auto !important; ">
+<thead><tr>
+<th style="text-align:left;">
+trial
+</th>
+<th style="text-align:right;">
+seed
+</th>
+<th style="text-align:right;">
+milestone_time_&lt;interim&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;interim&gt;_&lt;patient_id&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;interim&gt;_&lt;ep&gt;
+</th>
+<th style="text-align:left;">
+n_events_&lt;interim&gt;_&lt;arms&gt;
+</th>
+<th style="text-align:right;">
+z_value
+</th>
+<th style="text-align:left;">
+interim_decision
+</th>
+<th style="text-align:right;">
+milestone_time_&lt;final&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;final&gt;_&lt;patient_id&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;final&gt;_&lt;ep&gt;
+</th>
+<th style="text-align:left;">
+n_events_&lt;final&gt;_&lt;arms&gt;
+</th>
+<th style="text-align:left;">
+decision
+</th>
+<th style="text-align:left;">
+error_message
+</th>
+</tr></thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+123
+</td>
+<td style="text-align:right;">
+2006631926
+</td>
+<td style="text-align:right;">
+6.8
+</td>
+<td style="text-align:right;">
+35
+</td>
+<td style="text-align:right;">
+30
+</td>
+<td style="text-align:left;">
+c(17, 15….
+</td>
+<td style="text-align:right;">
+1.035098
+</td>
+<td style="text-align:left;">
+stop trial
+</td>
+<td style="text-align:right;">
+13.7
+</td>
+<td style="text-align:right;">
+150
+</td>
+<td style="text-align:right;">
+150
+</td>
+<td style="text-align:left;">
+c(32, 32….
+</td>
+<td style="text-align:left;">
+go
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+123
+</td>
+<td style="text-align:right;">
+447300730
+</td>
+<td style="text-align:right;">
+6.8
+</td>
+<td style="text-align:right;">
+35
+</td>
+<td style="text-align:right;">
+30
+</td>
+<td style="text-align:left;">
+c(17, 15….
+</td>
+<td style="text-align:right;">
+-1.519109
+</td>
+<td style="text-align:left;">
+stop trial
+</td>
+<td style="text-align:right;">
+13.7
+</td>
+<td style="text-align:right;">
+150
+</td>
+<td style="text-align:right;">
+150
+</td>
+<td style="text-align:left;">
+c(32, 32….
+</td>
+<td style="text-align:left;">
+no-go
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+123
+</td>
+<td style="text-align:right;">
+1544385735
+</td>
+<td style="text-align:right;">
+6.8
+</td>
+<td style="text-align:right;">
+35
+</td>
+<td style="text-align:right;">
+30
+</td>
+<td style="text-align:left;">
+c(17, 15….
+</td>
+<td style="text-align:right;">
+1.095446
+</td>
+<td style="text-align:left;">
+stop trial
+</td>
+<td style="text-align:right;">
+13.7
+</td>
+<td style="text-align:right;">
+150
+</td>
+<td style="text-align:right;">
+150
+</td>
+<td style="text-align:left;">
+c(32, 32….
+</td>
+<td style="text-align:left;">
+no-go
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+123
+</td>
+<td style="text-align:right;">
+2131809493
+</td>
+<td style="text-align:right;">
+6.8
+</td>
+<td style="text-align:right;">
+35
+</td>
+<td style="text-align:right;">
+30
+</td>
+<td style="text-align:left;">
+c(18, 15….
+</td>
+<td style="text-align:right;">
+1.936492
+</td>
+<td style="text-align:left;">
+add dose arms
+</td>
+<td style="text-align:right;">
+13.7
+</td>
+<td style="text-align:right;">
+150
+</td>
+<td style="text-align:right;">
+150
+</td>
+<td style="text-align:left;">
+c(33, 33….
+</td>
+<td style="text-align:left;">
+no-go
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+123
+</td>
+<td style="text-align:right;">
+799237881
+</td>
+<td style="text-align:right;">
+6.8
+</td>
+<td style="text-align:right;">
+35
+</td>
+<td style="text-align:right;">
+30
+</td>
+<td style="text-align:left;">
+c(17, 15….
+</td>
+<td style="text-align:right;">
+1.095446
+</td>
+<td style="text-align:left;">
+stop trial
+</td>
+<td style="text-align:right;">
+13.7
+</td>
+<td style="text-align:right;">
+150
+</td>
+<td style="text-align:right;">
+150
+</td>
+<td style="text-align:left;">
+c(32, 32….
+</td>
+<td style="text-align:left;">
+no-go
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+123
+</td>
+<td style="text-align:right;">
+1359695008
+</td>
+<td style="text-align:right;">
+6.8
+</td>
+<td style="text-align:right;">
+35
+</td>
+<td style="text-align:right;">
+30
+</td>
+<td style="text-align:left;">
+c(17, 15….
+</td>
+<td style="text-align:right;">
+1.525644
+</td>
+<td style="text-align:left;">
+stop trial
+</td>
+<td style="text-align:right;">
+13.7
+</td>
+<td style="text-align:right;">
+150
+</td>
+<td style="text-align:right;">
+150
+</td>
+<td style="text-align:left;">
+c(32, 32….
+</td>
+<td style="text-align:left;">
+no-go
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="section level2">
 <h2 id="appendix-code-of-helper-function">Appendix: Code of Helper Function<a class="anchor" aria-label="anchor" href="#appendix-code-of-helper-function"></a>
@@ -413,7 +723,7 @@ no-go
 <p>For completeness, the full code of the helper functions
 <code>go_nogo()</code> is included below, which informs go/no-go
 decision at the end of the trial.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">go_nogo</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">{</span></span>
 <span></span>
 <span>  <span class="co">## candidate models for MCPMod</span></span>
@@ -433,15 +743,19 @@ decision at the end of the trial.</p>
 <span>  <span class="va">test</span> <span class="op">&lt;-</span> <span class="fu">DoseFinding</span><span class="fu">::</span><span class="fu"><a href="https://openpharma.github.io/DoseFinding/reference/MCTtest.html" class="external-link">MCTtest</a></span><span class="op">(</span>dose <span class="op">=</span> <span class="va">doses</span>,</span>
 <span>                               <span class="va">mu_hat</span>, S <span class="op">=</span> <span class="va">S_hat</span>,</span>
 <span>                               models <span class="op">=</span> <span class="va">candidates</span>, type <span class="op">=</span> <span class="st">"general"</span><span class="op">)</span></span>
-<span>  </span>
+<span></span>
 <span>  <span class="co">## model averaging</span></span>
 <span>  <span class="va">model</span> <span class="op">&lt;-</span> <span class="fu">DoseFinding</span><span class="fu">::</span><span class="fu"><a href="https://openpharma.github.io/DoseFinding/reference/maFitMod.html" class="external-link">maFitMod</a></span><span class="op">(</span>dose <span class="op">=</span> <span class="va">doses</span>,</span>
 <span>                                 <span class="va">mu_hat</span>, S <span class="op">=</span> <span class="va">S_hat</span>,</span>
 <span>                                 models <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"emax"</span>, <span class="st">"sigEmax"</span>, <span class="st">"betaMod"</span><span class="op">)</span><span class="op">)</span></span>
 <span>  </span>
+<span>  <span class="co">## predict response rate per dose</span></span>
 <span>  <span class="va">prd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, summaryFct <span class="op">=</span> <span class="va">median</span>, doseSeq <span class="op">=</span> <span class="va">doses</span><span class="op">)</span></span>
+<span>  </span>
+<span>  <span class="co">## convert to scale of probability</span></span>
 <span>  <span class="va">prd_rate</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="va">prd</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
+<span>  <span class="co">## go/no-go rule: MCP test p-value &lt; 0.05 and estimated effect &gt; 10%</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">test</span><span class="op">$</span><span class="va">tStat</span>, <span class="st">'pVal'</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fl">.05</span> <span class="op">&amp;</span></span>
 <span>           <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">prd_rate</span> <span class="op">-</span> <span class="va">prd_rate</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">.1</span>, <span class="st">'go'</span>, <span class="st">'no-go'</span><span class="op">)</span></span>
 <span></span>
