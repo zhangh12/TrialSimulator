@@ -1,3 +1,9 @@
+# TrialSimulator 1.4.0
+
+## Update
+
+- Add vignette of dose-ranging study.
+
 # TrialSimulator 1.3.0
 
 ## Major Updates

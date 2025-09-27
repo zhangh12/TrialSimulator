@@ -291,7 +291,7 @@ output[, 'n_events_<final>_<arms>']
 
 For completeness, the full code of the helper functions `compute_sample_ratio()` and `multiple_contrast_test()` is included below, which determine the new sample ratio and performs the multiple contrast test. 
 
-```{r eapewria}
+```{r eapewria, eval=FALSE}
 compute_sample_ratio <- function(data){
 
   data$dose <- as.numeric(data$arm)
