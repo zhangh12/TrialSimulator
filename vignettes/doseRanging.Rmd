@@ -36,7 +36,9 @@ arms with doses in between to inform decision at final analysis.
 For the sake of simplicity, we assume a binary endpoint of interest. The
 response rates at doses 0 (placebo), 0.5, 1.5, 2.5, 4 (highest dose) are
 given by a `sigEmax` model below, where the response rate is assume to
-be 10% in placebo, and 25% in the highest dose arm (dose = 4).
+be 10% in placebo, and 25% in arm of the highest dose (dose = 4). For further 
+background information, refer to [vignette](https://cran.r-project.org/web/packages/DoseFinding/vignettes/binary_data.html) 
+of the `DoseFinding` package. 
 
 ```{r flaf}
 mods <- DoseFinding::Mods(sigEmax = rbind(c(1, 3)), 
@@ -46,8 +48,9 @@ mods <- DoseFinding::Mods(sigEmax = rbind(c(1, 3)),
 
 DoseFinding::plotMods(mods, trafo = function(x) 1/(1+exp(-x)))
 
+## response rates on curve
 x <- DoseFinding::getResp(mods, doses = c(0, 0.5, 1.5, 2.5, 4))
-1 / (1 + exp(-x))
+1 / (1 + exp(-unclass(x)))
 ```
 
 ## Simulation Settings
@@ -60,16 +63,16 @@ In our simulation, we assume
 |-------------------|------|------|------|------|------|
 | Response Rate (%) | 10.0 | 11.2 | 20.8 | 24.1 | 25.0 |
 
-- readout time is 1 week.
+- readout time is 1 week. 
 - no dropout. 
 - starting with a placebo arm and a treatment arm of the highest dose (= 4), 
 with a 1:1 randomization ratio.
-  - enroll 5 patients per month for 7 months.
+  - enroll 5 patients per week for 7 weeks.
 - an interim is planed when we have collected 30 readouts in total from the 
 two arms. 
   - if z statistic of odds ratio is greater than 1
     - add three arms of dose 0.5, 1.5, and 2.5 to trial
-    - enroll 20 patients per month with a randomization ratio 1:2:2:2:1, until 
+    - enroll 20 patients per week with a randomization ratio 1:2:2:2:1, until 
     in total 150 patients are enrolled in the trial
     - final analysis is performed when readouts are available for all enrolled patients. 
   - otherwise, stop the trial.
@@ -88,7 +91,7 @@ trt4 <- arm(name = 'dose = 4.0')
 trt4$add_endpoints(ep)
 ```
 
-## Defiine a Trial
+## Define a Trial
 
 ```{r}
 accrual_rate <- data.frame(end_time = c(7, Inf),
@@ -102,9 +105,8 @@ trial$add_arms(sample_ratio = c(1, 1), pbo, trt4)
 trial
 ```
 
-```{r algjla, echo=FALSE}
-## Hide these helper functions for better typesetting. 
-## Displayed in appendix below
+<!-- Hide this helper function and display it in Appendix for better typesetting. -->
+```{r go_nogo, echo=FALSE}
 go_nogo <- function(data){
 
   ## candidate models for MCPMod
@@ -129,20 +131,30 @@ go_nogo <- function(data){
   model <- DoseFinding::maFitMod(dose = doses,
                                  mu_hat, S = S_hat,
                                  models = c("emax", "sigEmax", "betaMod"))
+  
+  ## predict response rate per dose
   prd <- predict(model, summaryFct = median, doseSeq = doses)
+  
+  ## convert to scale of probability
   prd_rate <- 1 / (1 + exp(-prd))
 
+  ## go/no-go rule: MCP test p-value < 0.05 and estimated effect > 10%
   ifelse(min(attr(test$tStat, 'pVal')) < .05 &
            max(prd_rate - prd_rate[1]) > .1, 'go', 'no-go')
 
 }
+```
 
+<!-- Hide this action function and display it later for better typesetting. -->
+
+```{r action_at_interim, echo=FALSE}
 action_at_interim <- function(trial){
 
   ## get data snapshot
   locked_data <- trial$get_locked_data('interim')
 
   ## compare two arms
+  ## Risk difference = response rate in high dose - response rate in placebo
   fit <- fitLogistic(ep ~ arm, placebo = 'dose = 0.0',
                      data = locked_data, alternative = 'greater',
                      scale = 'risk difference')
@@ -169,10 +181,15 @@ action_at_interim <- function(trial){
   trt3$add_endpoints(ep)
 
   ## add three new arms to trial
+  ## BTW: I hate the argument enforce = TRUE, which will be deprecated in next package release
   trial$add_arms(sample_ratio = c(2, 2, 2), enforce = TRUE, trt1, trt2, trt3)
   
 }
+```
 
+<!-- Hide this action function and display it later for better typesetting. -->
+
+```{r action_at_final, echo=FALSE}
 action_at_final <- function(trial){
 
   locked_data <- trial$get_locked_data('final')
@@ -186,7 +203,7 @@ action_at_final <- function(trial){
 ## Define Milestones and Actions
 
 Two milestones are triggered when 30 and 150 readouts are collected, 
-respecitvely. Note that the 30 readouts are from the placebo and the highest 
+respectively. Note that the 30 readouts are from the placebo and the highest 
 dose arm, while the 150 readouts are from all five arms. 
 
 ```{r}
@@ -203,68 +220,27 @@ In the action function `action_at_interim()`, we don't actually terminate the
 trial in simulation but always add dose arms. Instead, we save the z statistic 
 for summary later, e.g., computing the proportion of early termination. 
 
-```{r poadadfjd, eval=FALSE}
-action_at_interim <- function(trial){
-
-  ## get data snapshot
-  locked_data <- trial$get_locked_data('interim')
-
-  ## compare two arms
-  fit <- fitLogistic(ep ~ arm, placebo = 'dose = 0.0',
-                     data = locked_data, alternative = 'greater',
-                     scale = 'risk difference')
-
-  ## for summary of early termination
-  trial$save(value = ifelse(fit$z > 1, 'add dose arms', 'stop trial'), 
-             name = 'interim_decision')
-
-  ## create three dose arms
-  ep <- endpoint(name = 'ep', type = 'non-tte', readout = c(ep = 1),
-                 generator = rbinom, size = 1, prob = .112)
-  trt1 <- arm(name = 'dose = 0.5')
-  trt1$add_endpoints(ep)
-
-  ep <- endpoint(name = 'ep', type = 'non-tte', readout = c(ep = 1),
-                 generator = rbinom, size = 1, prob = .208)
-  trt2 <- arm(name = 'dose = 1.5')
-  trt2$add_endpoints(ep)
-
-  ep <- endpoint(name = 'ep', type = 'non-tte', readout = c(ep = 1),
-                 generator = rbinom, size = 1, prob = .241)
-  trt3 <- arm(name = 'dose = 2.5')
-  trt3$add_endpoints(ep)
-
-  ## add three new arms to trial
-  trial$add_arms(sample_ratio = c(2, 2, 2), enforce = TRUE, trt1, trt2, trt3)
-  
-}
+```{r ref.label='action_at_interim', eval=FALSE}
 ```
 
 At final analysis, we analyze data from all five arms using MCPMod. It calls 
 a helper function `go_nogo()` which can be found in the Appendix below. 
 
-```{r alriea, eval=FALSE}
-action_at_final <- function(trial){
-
-  locked_data <- trial$get_locked_data('final')
-
-  trial$save(value = go_nogo(locked_data), name = 'decision')
-
-}
+```{r ref.label='action_at_final', eval=FALSE}
 ```
 
 ## Execute a Trial
 After registering the two milestones with a listener, we simulate a single trial 
 using `controller$run()`. We can see that more patients are randomized to the 
 three newly added arms after interim, reflecting the new randomization ratio 
-1:2:2:2:1. We can call `controller$run(n = 100)` to simulate more trials. 
+1:2:2:2:1. 
 
-```{r}
+```{r message=FALSE}
 listener <- listener()
 listener$add_milestones(interim, final)
 
 controller <- controller(trial, listener)
-controller$run(plot_event = TRUE)
+controller$run(n = 1, plot_event = TRUE)
 ```
 
 In this trial, the z statistic at interim is relatively low (`r round(controller$get_output('z_value'), 2)`), thus is early 
@@ -281,44 +257,31 @@ output %>%
   scroll_box(width = "100%")
 ```
 
+We can call `controller$run(n = 10)` to simulate additional trials. 
+in the function `action_at_final()`, the go/no-go decision (`decision` in output) 
+is determined under the assumption that the dose has been expanded, 
+regardless of the interim evidence—this simplification is made solely for the 
+convenience of simulation. However, the overall probability of a `"go"` should 
+incorporate the interim results—specifically, the trial must not be stopped at 
+interim, and the function `go_nogo()` must return `"go"` at the final analysis. 
+
+```{r message=FALSE}
+## important: reset before calling run() again
+controller$reset()
+controller$run(n = 6, plot_event = FALSE, silent = TRUE)
+controller$get_output() %>% 
+  kable(escape = FALSE) %>% 
+  kable_styling(bootstrap_options = "striped", 
+                full_width = FALSE,
+                position = "left") %>%
+  scroll_box(width = "100%")
+```
 
 ## Appendix: Code of Helper Function
 For completeness, the full code of the helper functions `go_nogo()` is included 
 below, which informs go/no-go decision at the end of the trial.
 
-```{r eaparia, eval=FALSE}
-go_nogo <- function(data){
-
-  ## candidate models for MCPMod
-  doses <- c(0, 0.5, 1.5, 2.5, 4)
-  candidates <- Mods(emax = c(.25, 1),
-                     sigEmax = rbind(c(1, 3), c(2.5, 4)),
-                     betaMod = c(1.1, 1.1),
-                     placEff = log(.1/(1 - .1)),
-                     maxEff = log(.25/(1 - .25)) - log(.1/(1 - .1)),
-                     doses = doses)
-
-  fit <- glm(ep ~ factor(arm) + 0, data = data, family = binomial)
-  mu_hat <- coef(fit)
-  S_hat <- vcov(fit)
-
-  ## multiple contrast test
-  test <- DoseFinding::MCTtest(dose = doses,
-                               mu_hat, S = S_hat,
-                               models = candidates, type = "general")
-  
-  ## model averaging
-  model <- DoseFinding::maFitMod(dose = doses,
-                                 mu_hat, S = S_hat,
-                                 models = c("emax", "sigEmax", "betaMod"))
-  
-  prd <- predict(model, summaryFct = median, doseSeq = doses)
-  prd_rate <- 1 / (1 + exp(-prd))
-
-  ifelse(min(attr(test$tStat, 'pVal')) < .05 &
-           max(prd_rate - prd_rate[1]) > .1, 'go', 'no-go')
-
-}
+```{r ref.label='go_nogo', eval=FALSE}
 ```
 
 

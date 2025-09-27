@@ -75,14 +75,14 @@ To efficiently utilize `TrialSimulator` for clinical trial simulations, we recom
   - [Seamless design with dose selection, interim, and multiple endpoints](https://zhangh12.github.io/TrialSimulator/articles/adaptiveDesign.html)
   - [Response-adaptive design](https://zhangh12.github.io/TrialSimulator/articles/responseAdaptive.html)
   - [Dose-ranging study](https://zhangh12.github.io/TrialSimulator/articles/doseRanging.html)
-  - [Enrichment design] Vignette is under development. 
-  - [Platform trials] Vignette is under development. 
-  - [basket trial] Vignette is under development. 
+  - [Enrichment design] vignette is under development. 
+  - [Platform trial] vignette is under development. 
+  - [Basket trial] vignette is under development. 
 - Built-in methods supported in `TrialSimulator`
   - [Wrapper functions of common statistical methods for estimating treatment effect](https://zhangh12.github.io/TrialSimulator/articles/wrappers.html)
   - [Group sequential test] See `?GroupSequentialTest`. 
   - [Graphical testing procedure] See `?GraphicalTesting`. 
-  - [Combination test based on independent increment] Vignette is under development. 
+  - [Combination test based on independent increment] vignette is under development. 
 
 
 

@@ -26,7 +26,7 @@ library(TrialSimulator)
 
 Progression-free survival (PFS) and overall survival (OS) are commonly used as confirmatory endpoints in clinical trials. These two endpoints are typically highly correlated, and it is always the case that PFS $\leq$ OS. A reliable algorithm for simulating both PFS and OS is therefore of great interest.
 
-Several methods have been proposed to achieve this, but many rely on latent variables or copula-based approaches, making it difficult to interpret and specify model parameters in practical settings. In this vignette, we do not aim to provide a comprehensive review of existing methods. Instead, we focus on a three-state illness-death model consisting of the following states: initial (0), progression (1), and death (2). For more details, refer to Meller, Beyersmann, and Rufibach (2019).
+Several methods have been proposed to achieve this, but many rely on latent variables or copula-based approaches, making it difficult to interpret and specify model parameters in practical settings. In this vignette, we do not aim to provide a comprehensive review of existing methods. Instead, we focus on a three-state illness-death model consisting of the following states: initial (0), progression (1), and death (2). For more details, refer to [Meller, Beyersmann, and Rufibach (2019)](https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.8295).
 
 ```{r pplloott}
 #| fig-alt: |
