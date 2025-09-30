@@ -77,7 +77,8 @@
 <!-- badges: start -->
 
 <p><strong>⚕ No <code>for</code> loop in clinical trial simulation ⚕</strong></p>
-<p>The goal of <code>TrialSimulator</code> is to provide a pipeline for implementing simulation of clinical trial more efficiently and reliably. It follows principle of modularity to isolate codes of statistical testing from data generation and management. It provides a set of tools to sample endpoints of common or custom distributions, manage trial data, and summarize simulation results under fixed or adaptive designs. It also provides functions of group sequential design, graphical testing procedure, combination test, and closed test that are widely used in analyzing complex trial designs.</p>
+<p><code>TrialSimulator</code> is a system for declaratively implementing clinical trial simulations, inspired by the modular grammar of trial design. You provide the components—arms, endpoint-generation rules, milestones, and analysis methods—specify how they are combined under fixed or adaptive designs, and <code>TrialSimulator</code> takes care of the details, allowing you to focus on the design while it handles the mechanics.</p>
+<p><code>TrialSimulator</code> gives users full freedom to specify how trial data are generated and how analyses are performed. To make this process more convenient, it also provides a suite of helper functions: for data generation, utilities to sample endpoints from common distributions; for analysis, implementations of widely used methods such as group sequential tests, graphical multiple testing procedures, combination tests, and closed tests. These tools are optional but make it easier to construct and evaluate complex trial designs without sacrificing flexibility.</p>
 <div class="section level2">
 <h2 id="shiny-app">Shiny App<a class="anchor" aria-label="anchor" href="#shiny-app"></a>
 </h2>
