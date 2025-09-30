@@ -181,8 +181,7 @@ action_at_interim <- function(trial){
   trt3$add_endpoints(ep)
 
   ## add three new arms to trial
-  ## BTW: I hate the argument enforce = TRUE, which will be deprecated in next package release
-  trial$add_arms(sample_ratio = c(2, 2, 2), enforce = TRUE, trt1, trt2, trt3)
+  trial$add_arms(sample_ratio = c(2, 2, 2), trt1, trt2, trt3)
   
 }
 ```

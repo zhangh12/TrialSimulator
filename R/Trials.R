@@ -422,14 +422,13 @@ Trials <- R6::R6Class(
     #'
     #' @param sample_ratio integer vector. Sample ratio for permuted block
     #' randomization. It will be appended to existing sample ratio in the trial.
-    #' @param ... one or more objects returned from \code{arm()}. One exception in
-    #' \code{...} is an argument \code{enforce}. When \code{enforce = TRUE},
-    #  it makes sure randomization is carried out with updated
+    #' @param ... one or more objects returned from \code{arm()}.
+    #' Randomization is carried out with updated
     #' sample ratio of newly added arm. It rolls back all patients after
     #' \code{Trials$get_current_time()}, i.e. redo randomization for those
     #' patients. This can be useful to add arms one by one when creating a trial.
     #' Note that we can run \code{Trials$add_arm(sample_ratio1, arm1)} followed
-    #' by \code{Trials$add_arm(sample_ratio2, enforce = TRUE, arm2)}.
+    #' by \code{Trials$add_arm(sample_ratio2, arm2)}.
     #' We would expected similar result with
     #' \code{Trials$add_arms(c(sample_ratio1, sample_ratio2), arm1, arm2)}. Note
     #' that these two method won't return exactly the same trial because
@@ -444,6 +443,13 @@ Trials <- R6::R6Class(
       enforce <- arm_list$enforce
       if(is.null(enforce)){
         enforce <- FALSE
+      }
+
+      ## This line ensures that enforce = TRUE is no longer needed by end users.
+      ## However, specifying enforce = TRUE when calling $add_arms() is still valid,
+      ## it is simply unnecessary.
+      if(self$has_arm()){
+        enforce = TRUE
       }
 
       arm_list$enforce <- NULL
@@ -635,7 +641,7 @@ Trials <- R6::R6Class(
     #' n_patients is greater than remaining patients as planned.
     enroll_patients = function(n_patients = NULL){
 
-      if(length(self$get_arms()) == 0){
+      if(!self$has_arm()){
         stop('No arm is added in the trial yet. Patient cannot be enrolled. ')
       }
 
