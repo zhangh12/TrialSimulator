@@ -62,7 +62,7 @@ To efficiently utilize `TrialSimulator` for clinical trial simulations, we recom
   - [Time-to-event (TTE) endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineTimeToEventEndpoints.html)
     - [Simulate correlated PFS and OS](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOs.html)
   - [Non-TTE endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineNonTimeToEventEndpoints.html)
-  - [Longitudinal endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineLongitudinalEndpoints.html)
+    - [Longitudinal endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineLongitudinalEndpoints.html)
   - [Define and summarize arms](https://zhangh12.github.io/TrialSimulator/articles/defineArms.html)
 - Condition system for milestones
   - [Triggering trial milestones](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html)
