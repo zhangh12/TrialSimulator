@@ -11,7 +11,7 @@ developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.re
 
 `TrialSimulator` is a system for declaratively implementing clinical trial simulations, inspired by the modular grammar of trial design. You provide the components—arms, endpoint-generation rules, milestones, and analysis methods—specify how they are combined under fixed or adaptive designs, and `TrialSimulator` takes care of the details, allowing you to focus on the design while it handles the mechanics.
 
-`TrialSimulator` gives users full freedom to specify how trial data are generated and how analyses are performed. To make this process more convenient, it also provides a suite of helper functions: for data generation, utilities to sample endpoints from common distributions; for analysis, implementations of widely used methods such as group sequential tests, graphical multiple testing procedures, combination tests, and closed tests. These tools are optional but make it easier to construct and evaluate complex trial designs without sacrificing flexibility.
+`TrialSimulator` provides a suite of helper functions to support the full trial lifecycle. For data generation, it offers utilities to sample endpoints from common distributions. For adaptation, it includes execution functions that modify trial settings *in place*. For analysis, it implements methods such as regression models, group sequential tests, graphical multiple testing procedures, combination tests, and closed tests. These tools are entirely optional, but they make it simple to construct and evaluate complex trial designs without sacrificing flexibility.
 
 ## Shiny App
 
