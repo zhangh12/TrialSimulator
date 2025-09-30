@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -256,8 +256,7 @@ proportion of early termination.</p>
 <span>  <span class="va">trt3</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">ep</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="co">## add three new arms to trial</span></span>
-<span>  <span class="co">## BTW: I hate the argument enforce = TRUE, which will be deprecated in next package release</span></span>
-<span>  <span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span>, enforce <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">trt1</span>, <span class="va">trt2</span>, <span class="va">trt3</span><span class="op">)</span></span>
+<span>  <span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span>, <span class="va">trt1</span>, <span class="va">trt2</span>, <span class="va">trt3</span><span class="op">)</span></span>
 <span>  </span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>At final analysis, we analyze data from all five arms using MCPMod.

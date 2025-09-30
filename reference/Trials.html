@@ -83,7 +83,7 @@ $closedTest() perform combination test based on Dunnett's test.
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -488,13 +488,13 @@ randomization. It will be appended to existing sample ratio in the trial.</p></d
 
 
 <dt><code>...</code></dt>
-<dd><p>one or more objects returned from <code><a href="arm.html">arm()</a></code>. One exception in
-<code>...</code> is an argument <code>enforce</code>. When <code>enforce = TRUE</code>,
+<dd><p>one or more objects returned from <code><a href="arm.html">arm()</a></code>.
+Randomization is carried out with updated
 sample ratio of newly added arm. It rolls back all patients after
 <code>Trials$get_current_time()</code>, i.e. redo randomization for those
 patients. This can be useful to add arms one by one when creating a trial.
 Note that we can run <code>Trials$add_arm(sample_ratio1, arm1)</code> followed
-by <code>Trials$add_arm(sample_ratio2, enforce = TRUE, arm2)</code>.
+by <code>Trials$add_arm(sample_ratio2, arm2)</code>.
 We would expected similar result with
 <code>Trials$add_arms(c(sample_ratio1, sample_ratio2), arm1, arm2)</code>. Note
 that these two method won't return exactly the same trial because

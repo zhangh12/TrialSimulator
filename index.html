@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -78,7 +78,12 @@
 
 <p><strong>⚕ No <code>for</code> loop in clinical trial simulation ⚕</strong></p>
 <p><code>TrialSimulator</code> is a system for declaratively implementing clinical trial simulations, inspired by the modular grammar of trial design. You provide the components—arms, endpoint-generation rules, milestones, and analysis methods—specify how they are combined under fixed or adaptive designs, and <code>TrialSimulator</code> takes care of the details, allowing you to focus on the design while it handles the mechanics.</p>
-<p><code>TrialSimulator</code> provides a suite of helper functions to support the full trial lifecycle. For data generation, it offers utilities to sample endpoints from common distributions. For adaptation, it includes execution functions that modify trial settings <em>in place</em>. For analysis, it implements methods such as regression models, group sequential tests, graphical multiple testing procedures, combination tests, and closed tests. These tools are entirely optional, but they make it simple to construct and evaluate complex trial designs without sacrificing flexibility.</p>
+<p><code>TrialSimulator</code> provides a suite of helper functions to support the full trial life cycle.</p>
+<ul>
+<li>For <strong>data generation</strong>, it offers utilities to sample endpoints from common distributions.</li>
+<li>For <strong>adaptation</strong>, it includes execution functions that modify trial settings <em>in place</em>.</li>
+<li>For <strong>analysis</strong>, it implements methods such as regression models, group sequential tests, graphical multiple testing procedures, combination tests, and closed tests. These tools are entirely optional, but they make it simple to construct and evaluate complex trial designs without sacrificing flexibility.</li>
+</ul>
 <div class="section level2">
 <h2 id="shiny-app">Shiny App<a class="anchor" aria-label="anchor" href="#shiny-app"></a>
 </h2>
