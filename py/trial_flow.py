@@ -203,33 +203,91 @@ class TrialFlowV14(MovingCameraScene):
 
     # ======================= Title card with pre-roll ===========================
     def _title_card_with_preroll(self):
-        # Pre-roll blank to allow player controls to disappear
-        self.wait_real(1.5)
-
+        # —— 主标题 ——
         title = Text("TSLite", weight=BOLD).scale(2.2)
-        title.set_color_by_gradient(ACCENT_GRN, "#00C56A")  # accent sweep
-
-        underline = Line(LEFT*3.6, RIGHT*3.6, stroke_width=10, color=ACCENT_GRN)
-        underline.move_to(title.get_bottom() + DOWN*0.25)
-
-        subtitle = Text(self.SUBTITLE, slant=ITALIC, color=WARM_GRAY).scale(0.55)
-        subtitle.next_to(underline, DOWN, buff=0.35)
-
-        group = VGroup(title, underline, subtitle).move_to(ORIGIN)
-
-        # Title in
+        title.set_color_by_gradient("#00B86B", "#00C56A")
         self.play(LaggedStart(*[Write(ch) for ch in title], lag_ratio=0.10, run_time=1.6))
-        self.play(Create(underline, run_time=0.8))
 
-        # Pause before showing subtitle
-        self.wait_real(1.0)
+        # 样式
+        accent  = "#8E8E8E"
+        scale_  = 0.55
+        spacing = 0.22
+        epsilon = 0.01
 
-        # Subtitle in
-        self.play(FadeIn(subtitle, shift=UP*0.18, run_time=0.9))
-        self.wait(2.4)  # scaled hold
-        # Out + gap before main flow
-        self.play(FadeOut(group, run_time=0.8))
-        self.wait(0.5)
+        # —— 副标题（整句，不含 Hub）——
+        sub0 = Text(
+            "Empowering Clinical Trial Design with Simulation",
+            slant=ITALIC, color=accent
+        ).scale(scale_)
+        sub0.next_to(title, DOWN, buff=0.45)
+
+        self.play(FadeIn(sub0, shift=UP*0.18, run_time=0.9))
+        self.wait_real(2.0)
+
+        # —— 左移距离用独立 Hub 宽度计算（避免重叠）——
+        hub = Text("Hub", slant=ITALIC, color=accent).scale(scale_)
+        dx = hub.width + spacing + epsilon
+        try:
+            self.add_sound("sfx/whoosh.wav")
+        except Exception:
+            pass
+        self.play(
+            sub0.animate.shift(LEFT * dx),
+            run_time=0.35, rate_func=rate_functions.ease_out_sine
+        )
+
+        # —— 基线对齐（关键修复）——
+        # 1) 先把 Hub 贴到副标题右侧（仅做水平定位）
+        hub.next_to(sub0, RIGHT, buff=spacing)
+        # 2) 找到副标题最后一个“可见字形”的底边 y，把它当作该行“基线”
+        base_glyph = None
+        for g in reversed(sub0.submobjects):
+            if g.width > 1e-4 and g.height > 1e-4:
+                base_glyph = g
+                break
+        # 3) 把 Hub 的底边 y 调整到这个基线（而不是用外接框底边）
+        if base_glyph is not None:
+            baseline_y = base_glyph.get_bottom()[1]  # 近似该行真实基线
+            dy = baseline_y - hub.get_bottom()[1]
+            hub.shift(UP * dy)
+
+        # 光标（也按同一“基线”对齐）
+        cursor = Rectangle(
+            width=0.025, height=sub0.height * 0.92,
+            fill_color=accent, fill_opacity=1.0, stroke_width=0
+        )
+        # 光标初始放在副标题末尾附近，然后按基线调 y
+        cursor.move_to(sub0.get_right() + RIGHT * (spacing / 2))
+        if base_glyph is not None:
+            cursor.shift(UP * (baseline_y - cursor.get_bottom()[1]))
+        self.add(cursor)
+
+        # —— 打字动画（稳定）——
+        try:
+            self.add_sound("sfx/type.wav")
+        except Exception:
+            pass
+        self.play(AddTextLetterByLetter(hub, run_time=0.6))
+        self.bring_to_front(hub)
+
+        # 光标移到末尾并沿同一基线闪烁
+        self.play(
+            cursor.animate.move_to(hub.get_right() + RIGHT * 0.06),
+            run_time=0.15
+        )
+        if base_glyph is not None:
+            self.play(cursor.animate.shift(UP * (baseline_y - cursor.get_bottom()[1])), run_time=0.01)
+        for _ in range(2):
+            self.play(cursor.animate.set_opacity(0.15), run_time=0.10)
+            self.play(cursor.animate.set_opacity(1.00), run_time=0.10)
+        self.play(FadeOut(cursor, run_time=0.12))
+
+        # 停留一下
+        self.wait_real(1.2)
+
+        # —— 整体淡出 —— 
+        self.play(FadeOut(VGroup(title, sub0, hub), run_time=0.8))
+        self.wait(0.4)
 
     # ======================= Outro card (keep on screen) =======================
     def _outro_card(self):
