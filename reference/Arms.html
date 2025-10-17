@@ -25,7 +25,7 @@ $print()
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -89,6 +89,7 @@ useful to end users.</p>
 <li><p><a href="#method-Arms-has_endpoint"><code>Arms$has_endpoint()</code></a></p></li>
 <li><p><a href="#method-Arms-get_endpoints"><code>Arms$get_endpoints()</code></a></p></li>
 <li><p><a href="#method-Arms-get_endpoints_name"><code>Arms$get_endpoints_name()</code></a></p></li>
+<li><p><a href="#method-Arms-update_endpoint_generator"><code>Arms$update_endpoint_generator()</code></a></p></li>
 <li><p><a href="#method-Arms-generate_data"><code>Arms$generate_data()</code></a></p></li>
 <li><p><a href="#method-Arms-print"><code>Arms$print()</code></a></p></li>
 <li><p><a href="#method-Arms-clone"><code>Arms$clone()</code></a></p></li>
@@ -190,15 +191,41 @@ specified in <code>...</code>.</p></dd>
 </div>
 
 
-</div><p></p><hr><a id="method-Arms-generate_data"></a><div class="section">
-<h3 id="method-generate-data-">Method <code>generate_data()</code><a class="anchor" aria-label="anchor" href="#method-generate-data-"></a></h3>
-<p>generate arm data.</p><div class="section">
+</div><p></p><hr><a id="method-Arms-update_endpoint_generator"></a><div class="section">
+<h3 id="method-update-endpoint-generator-">Method <code>update_endpoint_generator()</code><a class="anchor" aria-label="anchor" href="#method-update-endpoint-generator-"></a></h3>
+<p>update generator of an endpoint object</p><div class="section">
 <h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Arms</span><span class="op">$</span><span class="fu">generate_data</span><span class="op">(</span><span class="va">n_patients_in_arm</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Arms</span><span class="op">$</span><span class="fu">update_endpoint_generator</span><span class="op">(</span><span class="va">endpoint_name</span>, <span class="va">generator</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>endpoint_name</code></dt>
+<dd><p>character. A vector of endpoint names whose
+generator is updated.</p></dd>
+
+
+<dt><code>generator</code></dt>
+<dd><p>a random number generation (RNG) function.
+See <code>generator</code> of <code><a href="endpoint.html">endpoint()</a></code>.</p></dd>
+
+
+<dt><code>...</code></dt>
+<dd><p>optional arguments for <code>generator</code>.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-Arms-generate_data"></a><div class="section">
+<h3 id="method-generate-data-">Method <code>generate_data()</code><a class="anchor" aria-label="anchor" href="#method-generate-data-"></a></h3>
+<p>generate arm data.</p><div class="section">
+<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Arms</span><span class="op">$</span><span class="fu">generate_data</span><span class="op">(</span><span class="va">n_patients_in_arm</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>n_patients_in_arm</code></dt>
 <dd><p>integer.
 Number of patients randomized to the arm.</p></dd>
@@ -210,12 +237,12 @@ Number of patients randomized to the arm.</p></dd>
 </div><p></p><hr><a id="method-Arms-print"></a><div class="section">
 <h3 id="method-print-">Method <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code><a class="anchor" aria-label="anchor" href="#method-print-"></a></h3>
 <p>print an arm.</p><div class="section">
-<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Arms</span><span class="op">$</span><span class="fu">print</span><span class="op">(</span>categorical_vars <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
+<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>categorical_vars</code></dt>
 <dd><p>character vector of categorical variables.
 This can be used to specify variables with limited distinct (numeric)
@@ -228,12 +255,12 @@ values as categorical variables in summary report.</p></dd>
 </div><p></p><hr><a id="method-Arms-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
+<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Arms</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
+<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

@@ -25,7 +25,7 @@ $print()
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,6 +85,7 @@ except for the one below.</p>
 <ul><li><p><a href="#method-Endpoints-new"><code>Endpoints$new()</code></a></p></li>
 <li><p><a href="#method-Endpoints-test_generator"><code>Endpoints$test_generator()</code></a></p></li>
 <li><p><a href="#method-Endpoints-get_generator"><code>Endpoints$get_generator()</code></a></p></li>
+<li><p><a href="#method-Endpoints-update_generator"><code>Endpoints$update_generator()</code></a></p></li>
 <li><p><a href="#method-Endpoints-get_readout"><code>Endpoints$get_readout()</code></a></p></li>
 <li><p><a href="#method-Endpoints-get_uid"><code>Endpoints$get_uid()</code></a></p></li>
 <li><p><a href="#method-Endpoints-get_name"><code>Endpoints$get_name()</code></a></p></li>
@@ -194,10 +195,31 @@ simulation.</p><div class="section">
 </div>
 
 
+</div><p></p><hr><a id="method-Endpoints-update_generator"></a><div class="section">
+<h3 id="method-update-generator-">Method <code>update_generator()</code><a class="anchor" aria-label="anchor" href="#method-update-generator-"></a></h3>
+<p>update endpoint generator</p><div class="section">
+<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Endpoints</span><span class="op">$</span><span class="fu">update_generator</span><span class="op">(</span><span class="va">generator</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>generator</code></dt>
+<dd><p>a random number generation (RNG) function.
+See <code>generator</code> of <code><a href="endpoint.html">endpoint()</a></code>.</p></dd>
+
+
+<dt><code>...</code></dt>
+<dd><p>optional arguments for <code>generator</code>.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
 </div><p></p><hr><a id="method-Endpoints-get_readout"></a><div class="section">
 <h3 id="method-get-readout-">Method <code>get_readout()</code><a class="anchor" aria-label="anchor" href="#method-get-readout-"></a></h3>
 <p>return readout function</p><div class="section">
-<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Endpoints</span><span class="op">$</span><span class="fu">get_readout</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -205,7 +227,7 @@ simulation.</p><div class="section">
 </div><p></p><hr><a id="method-Endpoints-get_uid"></a><div class="section">
 <h3 id="method-get-uid-">Method <code>get_uid()</code><a class="anchor" aria-label="anchor" href="#method-get-uid-"></a></h3>
 <p>return uid</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Endpoints</span><span class="op">$</span><span class="fu">get_uid</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -213,7 +235,7 @@ simulation.</p><div class="section">
 </div><p></p><hr><a id="method-Endpoints-get_name"></a><div class="section">
 <h3 id="method-get-name-">Method <code>get_name()</code><a class="anchor" aria-label="anchor" href="#method-get-name-"></a></h3>
 <p>return endpoints' name</p><div class="section">
-<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Endpoints</span><span class="op">$</span><span class="fu">get_name</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -221,7 +243,7 @@ simulation.</p><div class="section">
 </div><p></p><hr><a id="method-Endpoints-get_type"></a><div class="section">
 <h3 id="method-get-type-">Method <code>get_type()</code><a class="anchor" aria-label="anchor" href="#method-get-type-"></a></h3>
 <p>return endpoints' type</p><div class="section">
-<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Endpoints</span><span class="op">$</span><span class="fu">get_type</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -229,12 +251,12 @@ simulation.</p><div class="section">
 </div><p></p><hr><a id="method-Endpoints-print"></a><div class="section">
 <h3 id="method-print-">Method <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code><a class="anchor" aria-label="anchor" href="#method-print-"></a></h3>
 <p>print an endpoint object</p><div class="section">
-<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Endpoints</span><span class="op">$</span><span class="fu">print</span><span class="op">(</span>categorical_vars <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
+<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>categorical_vars</code></dt>
 <dd><p>a character vector of endpoints. This can
 be used to force variables with limited distinct values as categorical
@@ -272,12 +294,12 @@ report instead.</p></dd>
 </div><p></p><hr><a id="method-Endpoints-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Endpoints</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
+<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 
