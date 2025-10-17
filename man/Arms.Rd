@@ -51,6 +51,7 @@ print(a) # use the print method
 \item \href{#method-Arms-has_endpoint}{\code{Arms$has_endpoint()}}
 \item \href{#method-Arms-get_endpoints}{\code{Arms$get_endpoints()}}
 \item \href{#method-Arms-get_endpoints_name}{\code{Arms$get_endpoints_name()}}
+\item \href{#method-Arms-update_endpoint_generator}{\code{Arms$update_endpoint_generator()}}
 \item \href{#method-Arms-generate_data}{\code{Arms$generate_data()}}
 \item \href{#method-Arms-print}{\code{Arms$print()}}
 \item \href{#method-Arms-clone}{\code{Arms$clone()}}
@@ -166,6 +167,29 @@ return name of endpoints registered to the arm.
 \if{html}{\out{<div class="r">}}\preformatted{Arms$get_endpoints_name()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Arms-update_endpoint_generator"></a>}}
+\if{latex}{\out{\hypertarget{method-Arms-update_endpoint_generator}{}}}
+\subsection{Method \code{update_endpoint_generator()}}{
+update generator of an endpoint object
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Arms$update_endpoint_generator(endpoint_name, generator, ...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{endpoint_name}}{character. A vector of endpoint names whose
+generator is updated.}
+
+\item{\code{generator}}{a random number generation (RNG) function.
+See \code{generator} of \code{endpoint()}.}
+
+\item{\code{...}}{optional arguments for \code{generator}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Arms-generate_data"></a>}}

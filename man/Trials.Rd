@@ -19,6 +19,8 @@ used to extend duration under adaptive designs.
 used in adaptive designs, e.g., dose selection, enrichment design, etc.
 \item \code{$update_sample_ratio()} change sample ratio of arm. This function
 can be used under adaptive designs, e.g., response-adaptive design, etc.
+\item \code{$update_generator()} change endpoint generator of arm. This
+function can be used in enrichment design.
 \item \code{$add_arms()} add arms to a trial. This function is used to add
 arms to a newly defined trial, or add arms under adaptive design, e.g.,
 dose-ranging, etc.
@@ -107,6 +109,7 @@ trial$closedTest(dt, treatments = c('high dose', 'low dose'),
 \item \href{#method-Trials-roll_back}{\code{Trials$roll_back()}}
 \item \href{#method-Trials-remove_arms}{\code{Trials$remove_arms()}}
 \item \href{#method-Trials-update_sample_ratio}{\code{Trials$update_sample_ratio()}}
+\item \href{#method-Trials-update_generator}{\code{Trials$update_generator()}}
 \item \href{#method-Trials-add_arms}{\code{Trials$add_arms()}}
 \item \href{#method-Trials-get_name}{\code{Trials$get_name()}}
 \item \href{#method-Trials-get_description}{\code{Trials$get_description()}}
@@ -383,6 +386,31 @@ sample ratio is a whole number, the permuted block randomization is
 adopted; otherwise, \code{sample()} will be used instead, which can
 cause imbalance between arms by chance. However, this is fine for
 simulation.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-update_generator"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-update_generator}{}}}
+\subsection{Method \code{update_generator()}}{
+update endpoint generator in an arm
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$update_generator(arm_name, endpoint_name, generator, ...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{arm_name}}{character. Name of an arm.}
+
+\item{\code{endpoint_name}}{character. A vector of endpoint names whose
+generator is updated.}
+
+\item{\code{generator}}{a random number generation (RNG) function.
+See \code{generator} of \code{endpoint()}.}
+
+\item{\code{...}}{optional arguments for \code{generator}.}
 }
 \if{html}{\out{</div>}}
 }

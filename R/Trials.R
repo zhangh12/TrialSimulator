@@ -14,6 +14,8 @@
 #' used in adaptive designs, e.g., dose selection, enrichment design, etc.
 #' \item \code{$update_sample_ratio()} change sample ratio of arm. This function
 #' can be used under adaptive designs, e.g., response-adaptive design, etc.
+#' \item \code{$update_generator()} change endpoint generator of arm. This
+#' function can be used in enrichment design.
 #' \item \code{$add_arms()} add arms to a trial. This function is used to add
 #' arms to a newly defined trial, or add arms under adaptive design, e.g.,
 #' dose-ranging, etc.
@@ -398,13 +400,72 @@ Trials <- R6::R6Class(
       ## time should be randomized again.
       self$roll_back()
 
-      ## update data for unrolled patients based on new arms and possibly
-      ## new sample ratio. Note that if sample ratio is not whole number,
+      ## update data for unrolled patients based on new sample ratios.
+      ## Note that if sample ratio is not whole number,
       ## the permuted block algorithm will be switched to sample() because
       ## it is not easy to specify a block with proper size automatically.
       self$enroll_patients()
     },
 
+    #' @description
+    #' update endpoint generator in an arm
+    #'
+    #' @param arm_name character. Name of an arm.
+    #' @param endpoint_name character. A vector of endpoint names whose
+    #' generator is updated.
+    #' @param generator a random number generation (RNG) function.
+    #' See \code{generator} of \code{endpoint()}.
+    #' @param ... optional arguments for \code{generator}.
+    update_generator = function(arm_name, endpoint_name, generator, ...){
+
+      stopifnot(is.character(arm_name))
+      if(length(arm_name) != 1){
+        stop('Only one arm can be updated at a time. ',
+             'You specified <', length(arm_name), '> arms: <',
+             paste0(arm_name, collapse = ', '), '>. ')
+      }
+
+      if(!(arm_name %in% self$get_arms_name())){
+        stop('The arm <', arm_name,
+             '> is not in the trial or has been dropped from the trial. ')
+      }
+
+      selected_arm <- self$get_an_arm(arm_name)
+
+      stopifnot(is.character(endpoint_name))
+
+      unknown_endpoints <- setdiff(endpoint_name, selected_arm$get_endpoints_name())
+
+      if(length(unknown_endpoints) > 0){
+        stop('Endpoint(s) <', paste0(unknown_endpoints, collapse = ', '),
+             '> are not in the arm <', selected_arm$get_name(), '>. ')
+      }
+
+      endpoint_name_ <- paste0(endpoint_name, collapse = '/')
+      if(!(endpoint_name_ %in% names(selected_arm$get_endpoints()))){
+        stop('Some more endpoint(s) are needed to define the arm <',
+             selected_arm$get_name(), '> with <',
+             paste0(endpoint_name, collapse = ', '), '>. ')
+      }
+
+      stopifnot(is.function(generator))
+
+      private$arms[[arm_name]]$update_endpoint_generator(endpoint_name, generator, ...)
+
+      if(!private$silent){
+        message('Generator of endpoints <',
+                paste0(endpoint_name, collapse = ', '),
+                '> in the arm <', arm_name, '> has been udpated. ')
+      }
+
+      ## with generator of an arm is updated, unenrolled patient at current
+      ## time should be randomized again.
+      self$roll_back()
+
+      ## update data for unrolled patients based on new generator in arm.
+      self$enroll_patients()
+
+    },
 
     #' @description
     #' add one or more arms to the trial. \code{enroll_patients()} will be

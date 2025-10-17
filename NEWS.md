@@ -1,5 +1,11 @@
 # TrialSimulator 1.5.0
 
+## New Feature
+
+- Generator of an endpoint can be updated during a running trial with `Trials$update_generator()`. 
+
+# TrialSimulator 1.5.0
+
 ## Update
 
 - `enforce = TRUE` is no longer needed when adding new arms to an existing trial with at least one arm through `Trials$add_arms()`. However, for backward compatibility, legacy codes with `enforce = TRUE` still behaves as expected and no need to update. 

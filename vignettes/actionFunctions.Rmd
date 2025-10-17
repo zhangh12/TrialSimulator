@@ -420,11 +420,9 @@ Adaptations that are currently supported are summarized below:
 +------------------------------+--------------------------------------------------------+---------------------------------------------------------+
 | Increase sample size[^1]     | `trial$set_sample_size()`                              | sample size reassessment                                |
 +------------------------------+--------------------------------------------------------+---------------------------------------------------------+
-| Eliminate sub-population[^2] | `trial$update_generator()`                             | enrichment design                                       |
+| Eliminate sub-population | `trial$update_generator()`                             | enrichment design                                       |
 +------------------------------+--------------------------------------------------------+---------------------------------------------------------+
 
 [^1]: experimental
-
-[^2]: work in progress
 
 These adaptive features allow users to simulate complex, data-driven designs where trial conduct is not static but evolves in response to accumulating evidence. At the time of writing, the vignette dedicated to trial adaptation is still under development. Detailed examples will be provided in that vignette.

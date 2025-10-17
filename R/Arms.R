@@ -122,6 +122,20 @@ Arms <- R6::R6Class(
     },
 
     #' @description
+    #' update generator of an endpoint object
+    #'
+    #' @param endpoint_name character. A vector of endpoint names whose
+    #' generator is updated.
+    #' @param generator a random number generation (RNG) function.
+    #' See \code{generator} of \code{endpoint()}.
+    #' @param ... optional arguments for \code{generator}.
+    update_endpoint_generator = function(endpoint_name, generator, ...){
+
+      private$endpoints[[paste0(endpoint_name, collapse = '/')]]$update_generator(generator, ...)
+
+    },
+
+    #' @description
     #' generate arm data.
     #'
     #' @param n_patients_in_arm integer.

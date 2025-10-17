@@ -50,6 +50,7 @@ print(ep, categorical_vars = 'y')
 \item \href{#method-Endpoints-new}{\code{Endpoints$new()}}
 \item \href{#method-Endpoints-test_generator}{\code{Endpoints$test_generator()}}
 \item \href{#method-Endpoints-get_generator}{\code{Endpoints$get_generator()}}
+\item \href{#method-Endpoints-update_generator}{\code{Endpoints$update_generator()}}
 \item \href{#method-Endpoints-get_readout}{\code{Endpoints$get_readout()}}
 \item \href{#method-Endpoints-get_uid}{\code{Endpoints$get_uid()}}
 \item \href{#method-Endpoints-get_name}{\code{Endpoints$get_name()}}
@@ -156,6 +157,26 @@ return random number generator of an endpoint
 \if{html}{\out{<div class="r">}}\preformatted{Endpoints$get_generator()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Endpoints-update_generator"></a>}}
+\if{latex}{\out{\hypertarget{method-Endpoints-update_generator}{}}}
+\subsection{Method \code{update_generator()}}{
+update endpoint generator
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Endpoints$update_generator(generator, ...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{generator}}{a random number generation (RNG) function.
+See \code{generator} of \code{endpoint()}.}
+
+\item{\code{...}}{optional arguments for \code{generator}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Endpoints-get_readout"></a>}}

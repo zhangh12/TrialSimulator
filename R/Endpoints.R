@@ -133,6 +133,22 @@ Endpoints <- R6::R6Class(
     },
 
     #' @description
+    #' update endpoint generator
+    #'
+    #' @param generator a random number generation (RNG) function.
+    #' See \code{generator} of \code{endpoint()}.
+    #' @param ... optional arguments for \code{generator}.
+    update_generator = function(generator, ...){
+
+      stopifnot(is.function(generator))
+      private$generator <- DynamicRNGFunction(
+        generator, rng = deparse(substitute(generator)),
+        var_name = self$get_name(),
+        type = self$get_type(),
+        readout = self$get_readout(), ...)
+    },
+
+    #' @description
     #' return readout function
     get_readout = function(){
       private$readout
