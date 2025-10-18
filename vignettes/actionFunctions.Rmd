@@ -44,8 +44,7 @@ This vignette demonstrates how to define such actions, associate them with miles
 
 A milestone represents a pre-specified time point or condition during the trial at which a snapshot of accumulated data becomes available for custom analysis. Each milestone consists of three key elements:
 
--   `name`: the label of the milestone. A data snapshot at the triggering time can be retrieved by calling `trial$get_locked_data(<name>)`, where `<name>` is a 
-placeholder of `name`. 
+-   `name`: the label of the milestone. A data snapshot at the triggering time can be retrieved by calling `trial$get_locked_data(<name>)`, where `<name>` is a placeholder of `name`.
 
 -   `when`: the logical conditions that trigger the milestone. Refer to the vignette [Condition System for Triggering Milestones in a Trial](conditionSystem.html) for more information.
 
@@ -407,21 +406,21 @@ In `TrialSimulator`, such adaptations are implemented directly within action fun
 
 Adaptations that are currently supported are summarized below:
 
-+------------------------------+--------------------------------------------------------+---------------------------------------------------------+
-| Adaptation                   | Member Function                                        | Use Case                                                |
-+==============================+========================================================+=========================================================+
-| Remove an arm                | `trial$remove_arms()`                                  | dose selection; seamless design                         |
-+------------------------------+--------------------------------------------------------+---------------------------------------------------------+
-| Add an arm                   | `trial$add_arms()`                                     | adaptive platform trials                                |
-+------------------------------+--------------------------------------------------------+---------------------------------------------------------+
-| Update sample ratio          | `trial$update_sample_ratio()`                          | response-adaptive design                                |
-+------------------------------+--------------------------------------------------------+---------------------------------------------------------+
-| Extend trial duration        | `trial$set_duration()` or add a event-driven milestone | actual patient or event accrual is slower than expected |
-+------------------------------+--------------------------------------------------------+---------------------------------------------------------+
-| Increase sample size[^1]     | `trial$set_sample_size()`                              | sample size reassessment                                |
-+------------------------------+--------------------------------------------------------+---------------------------------------------------------+
-| Eliminate sub-population | `trial$update_generator()`                             | enrichment design                                       |
-+------------------------------+--------------------------------------------------------+---------------------------------------------------------+
++--------------------------+--------------------------------------------------------+---------------------------------------------------------+
+| Adaptation               | Member Function                                        | Use Case                                                |
++==========================+========================================================+=========================================================+
+| Remove an arm            | `trial$remove_arms()`                                  | dose selection; seamless design                         |
++--------------------------+--------------------------------------------------------+---------------------------------------------------------+
+| Add an arm               | `trial$add_arms()`                                     | adaptive platform trials                                |
++--------------------------+--------------------------------------------------------+---------------------------------------------------------+
+| Update sample ratio      | `trial$update_sample_ratio()`                          | response-adaptive design                                |
++--------------------------+--------------------------------------------------------+---------------------------------------------------------+
+| Extend trial duration    | `trial$set_duration()` or add a event-driven milestone | actual patient or event accrual is slower than expected |
++--------------------------+--------------------------------------------------------+---------------------------------------------------------+
+| Increase sample size[^1] | `trial$set_sample_size()`                              | sample size reassessment                                |
++--------------------------+--------------------------------------------------------+---------------------------------------------------------+
+| Eliminate sub-population | `trial$update_generator()`                             | enrichment design; data model changes over time         |
++--------------------------+--------------------------------------------------------+---------------------------------------------------------+
 
 [^1]: experimental
 
