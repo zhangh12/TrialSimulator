@@ -1,4 +1,4 @@
-# TrialSimulator 1.5.0
+# TrialSimulator 1.6.0
 
 ## New Feature
 
