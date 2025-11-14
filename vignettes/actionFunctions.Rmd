@@ -62,7 +62,7 @@ interim <- milestone(name = 'interim analysis',
 
 Note that in this example, `action` is set to the default `doNothing` function. In such cases, `TrialSimulator` will not perform additional computations but will still record the triggering time of the milestone. This can be useful when the sole interest is in timing of interim analysis given recruitment and dropout assumptions.
 
-Importantly, whenever a milestone is reached, `TrialSimulator` **automatically** records a set of standard outputs, even when `doNothing` is used. These are summarized in the following table:
+Importantly, whenever a milestone is reached, `TrialSimulator` **automatically** records a set of standard outputs, even when `doNothing` is used. These are summarized in the following table.
 
 +-----------------------------------------------------------------------+------------+------------------------------------------------------------+-----------------------------------+
 | Type of Results                                                       | Format     | Column Naming Convention                                   | Examples                          |
@@ -89,6 +89,8 @@ Importantly, whenever a milestone is reached, `TrialSimulator` **automatically**
 +-----------------------------------------------------------------------+------------+------------------------------------------------------------+-----------------------------------+
 
 : Automatically Saved Results At Triggered Milestones
+
+Note that these automatically saved columns can be eliminated from outputs by setting `tidy = TRUE` in `controller$get_output()`. Currently, we use regex `"^n_events_<.*?>_<.*?>$"` and `"^milestone_time_<.*?>$"` to match columns to be eliminated. If users plan to use `tidy = TRUE`, caution is needed when naming \#' custom outputs in `save()`.
 
 We can define arbitrary number of milestones in a trial. For example, the final analysis might be triggered when both `PFS` and `OS` events reach their required numbers:
 

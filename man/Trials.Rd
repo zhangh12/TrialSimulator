@@ -1056,7 +1056,7 @@ return a data frame of all current outputs saved by calling
 \code{Trials$save()}. Usually this function is call at the end of
 simulation for summary.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_output(cols = NULL, simplify = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_output(cols = NULL, simplify = TRUE, tidy = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -1067,6 +1067,20 @@ simulation for summary.
 
 \item{\code{simplify}}{logical. Return value rather than a data frame of one
 column when \code{length(col) == 1} and \code{simplify == TRUE}.}
+
+\item{\code{tidy}}{logical. \code{TrialSimulator} automatically records a set
+of standard outputs at milestones, even when \code{doNothing} is used
+as action functions. These includes time of triggering milestones,
+number of observed events for time-to-event endpoints, and number of
+non-missing readouts for non-TTE endpoints
+(see \code{vignette('actionFunctions')}). This usually mean a large
+number of columns in outputs. If users have no intent to summarize a
+trial on these columns, setting \code{tidy = TRUE} can eliminate these
+columns from \code{get_output()}. Note that currently we use regex
+\code{"^n_events_<.*?>_<.*?>$"} and
+\code{"^milestone_time_<.*?>$"} to match columns to be eliminated.
+If users plan to use \code{tidy = TRUE}, caution is needed when naming
+custom outputs in \code{save()}. Default \code{FALSE}.}
 }
 \if{html}{\out{</div>}}
 }

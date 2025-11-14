@@ -1,3 +1,9 @@
+# TrialSimulator 1.7.0
+
+## New Feature
+
+- Columns automatically recorded at milestones can be eliminated from `get_output()` by setting new argument `tidy = TRUE`. 
+
 # TrialSimulator 1.6.0
 
 ## New Feature

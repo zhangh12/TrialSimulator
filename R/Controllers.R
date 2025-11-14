@@ -87,12 +87,27 @@ Controllers <- R6::R6Class(
     },
 
     #' @description
-    #' return a data frame of all current outputs saved by calling \code{save}.
-    #' @param cols character vector. Columns to be returned from the data frame of simulation
-    #' outputs. If \code{NULL}, all columns are returned.
+    #' return a data frame of all current outputs saved by calling \code{save()}.
+    #' @param cols character vector. Columns to be returned from the data frame
+    #' of simulation outputs. If \code{NULL}, all columns are returned.
     #' @param simplify logical. Return vector rather than a data frame of one
     #' column when \code{length(cols) == 1} and \code{simplify == TRUE}.
-    get_output = function(cols = NULL, simplify = TRUE){
+    #' @param tidy logical. \code{TrialSimulator} automatically records a set
+    #' of standard outputs at milestones, even when \code{doNothing} is used
+    #' as action functions. These includes time of triggering milestones,
+    #' number of observed events for time-to-event endpoints, and number of
+    #' non-missing readouts for non-TTE endpoints
+    #' (see \code{vignette('actionFunctions')}). This usually mean a large
+    #' number of columns in outputs. If users have no intent to summarize a
+    #' trial on these columns, setting \code{tidy = TRUE} can eliminate these
+    #' columns from \code{get_output()}. This is useful to reduced the size of
+    #' output data frame when a large number of replicates are done for
+    #' simulation. Note that currently we use regex
+    #' \code{"^n_events_<.*?>_<.*?>$"} and
+    #' \code{"^milestone_time_<.*?>$"} to match columns to be eliminated.
+    #' If users plan to use \code{tidy = TRUE}, caution is needed when naming
+    #' custom outputs in \code{save()}. Default \code{FALSE}.
+    get_output = function(cols = NULL, simplify = TRUE, tidy = FALSE){
       if(is.null(cols)){
         cols <- colnames(private$output)
       }
@@ -103,6 +118,13 @@ Controllers <- R6::R6Class(
       }
 
       ret <- private$output[, cols, drop = FALSE]
+
+      if(tidy){
+        ret <- ret %>%
+          select(!matches("^n_events_<.*?>_<.*?>$")) %>%
+          select(!matches("^milestone_time_<.*?>$"))
+      }
+
       if(simplify && ncol(ret) == 1){
         return(ret[, 1])
       }else{

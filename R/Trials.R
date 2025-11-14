@@ -1731,7 +1731,20 @@ Trials <- R6::R6Class(
     #' \code{NULL}, all columns are returned.
     #' @param simplify logical. Return value rather than a data frame of one
     #' column when \code{length(col) == 1} and \code{simplify == TRUE}.
-    get_output = function(cols = NULL, simplify = TRUE){
+    #' @param tidy logical. \code{TrialSimulator} automatically records a set
+    #' of standard outputs at milestones, even when \code{doNothing} is used
+    #' as action functions. These includes time of triggering milestones,
+    #' number of observed events for time-to-event endpoints, and number of
+    #' non-missing readouts for non-TTE endpoints
+    #' (see \code{vignette('actionFunctions')}). This usually mean a large
+    #' number of columns in outputs. If users have no intent to summarize a
+    #' trial on these columns, setting \code{tidy = TRUE} can eliminate these
+    #' columns from \code{get_output()}. Note that currently we use regex
+    #' \code{"^n_events_<.*?>_<.*?>$"} and
+    #' \code{"^milestone_time_<.*?>$"} to match columns to be eliminated.
+    #' If users plan to use \code{tidy = TRUE}, caution is needed when naming
+    #' custom outputs in \code{save()}. Default \code{FALSE}.
+    get_output = function(cols = NULL, simplify = TRUE, tidy = FALSE){
       if(is.null(cols)){
         cols <- colnames(private$output)
       }
@@ -1741,6 +1754,13 @@ Trials <- R6::R6Class(
              '> are not found in trial$output. Check if there is a typo. ')
       }
       ret <- private$output[, cols, drop = FALSE]
+
+      if(tidy){
+        ret <- ret %>%
+          select(!matches("^n_events_<.*?>_<.*?>$")) %>%
+          select(!matches("^milestone_time_<.*?>$"))
+      }
+
       if(simplify && ncol(ret) == 1){
         return(ret[1, 1])
       }else{
