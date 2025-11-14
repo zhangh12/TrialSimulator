@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -132,7 +132,7 @@ recruitment and dropout assumptions.</p>
 <p>Importantly, whenever a milestone is reached,
 <code>TrialSimulator</code> <strong>automatically</strong> records a set
 of standard outputs, even when <code>doNothing</code> is used. These are
-summarized in the following table:</p>
+summarized in the following table.</p>
 <table style="width:99%;" class="table">
 <caption>Automatically Saved Results At Triggered Milestones</caption>
 <colgroup>
@@ -198,6 +198,13 @@ endpoint</td>
 </tr>
 </tbody>
 </table>
+<p>Note that these automatically saved columns can be eliminated from
+outputs by setting <code>tidy = TRUE</code> in
+<code>controller$get_output()</code>. Currently, we use regex
+<code>"^n_events_&lt;.*?&gt;_&lt;.*?&gt;$"</code> and
+<code>"^milestone_time_&lt;.*?&gt;$"</code> to match columns to be
+eliminated. If users plan to use <code>tidy = TRUE</code>, caution is
+needed when naming #’ custom outputs in <code><a href="https://rdrr.io/r/base/save.html" class="external-link">save()</a></code>.</p>
 <p>We can define arbitrary number of milestones in a trial. For example,
 the final analysis might be triggered when both <code>PFS</code> and
 <code>OS</code> events reach their required numbers:</p>
@@ -644,7 +651,7 @@ provided in that vignette.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

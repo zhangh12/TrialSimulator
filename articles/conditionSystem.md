@@ -1,0 +1,103 @@
+# Condition System for Triggering Milestones in a Trial
+
+In clinical trial simulations, it is often necessary to specify when
+certain actions should be taken. For example, a trial may require
+interim data reviews when a predefined number of surrogate endpoint
+events occur to support dose selection. More complex triggers can be
+defined based on event numbers of one or multiple endpoints, calendar
+time, the number of enrolled patients, or a combination of multiple
+conditions. These triggers may govern critical analyses such as futility
+assessments, sample size re-assessment, interim analyses, and final
+evaluations, at various trial milestones.
+
+To facilitate this process, `TrialSimulator` provides an intuitive
+condition-based system for defining milestone triggers. It supports
+logical operations (`&` for AND and `|` for OR), allowing users to
+specify complex conditions seamlessly. The simulator is then
+automatically determines the appropriate time points and executes
+user-defined actions accordingly.
+
+Currently, `TrialSimulator` provides three key functions to define the
+earliest possible time for triggering a milestone:
+
+- `calendarTime(time)`: Specifies a minimum trial duration before a
+  milestone can occur.
+
+- `enrollment(n, ..., arms, min_treatment_duration)`: Specifies a
+  minimum number of patients that must be enrolled before a milestone
+  can occur.
+
+- `eventNumber(endpoint, n, ..., arms)`: Specifies a minimum number of
+  observed events for a given endpoint before triggering a milestone
+  This condition can apply to specific arms or the entire trial.
+
+The following sections illustrate various ways to define milestone
+triggers using these functions, which could be passed to the argument
+`when` of
+[`milestone()`](https://zhangh12.github.io/TrialSimulator/reference/milestone.md).
+
+#### A trial has been running for 6 months
+
+``` r
+## Note: the unit of time depends on the context of a trial
+##       It is users responsibility to align it with trial's parameters
+calendarTime(time = 6)
+#> Calendar time >=  6
+```
+
+#### At least 520 patients have been enrolled
+
+``` r
+enrollment(n = 520)
+#> Number of randomized patients >=  520
+```
+
+#### At least 400 patients have been enrolled, and each has received a minimum of 3 weeks of treatment
+
+``` r
+enrollment(n = 400, min_treatment_duration = 3)
+#> Number of randomized patients >=  400 and all enrolled patients have been treated for < 3 > (unit time)
+```
+
+#### At least 340 PFS events are observed
+
+``` r
+## condition is based on number of event in the placebo arm
+## Note: 'pfs' is the name of the endpoint, i.e., endpoints(name = 'pfs', ...)
+## Note: 'pbo' is the name of the placebo arm, i.e., arm(name = 'pbo', ...)
+eventNumber(endpoint = 'pfs', n = 340, arms = 'pbo')
+#> Number of events (pfs) >= 340 in arms <pbo>.
+
+## condition can be based on number of event in specific arms
+eventNumber(endpoint = 'pfs', n = 340, arms = c('pbo', 'trt'))
+#> Number of events (pfs) >= 340 in arms <pbo, trt>.
+
+## condition can be based on number of event in the trial
+## Note: for example, a trial of more than two arms. 
+##       Here the number of PFS events are counted on all arms in trial
+eventNumber(endpoint = 'pfs', n = 340)
+#> Number of events (pfs) >= 340 in all arms in a trial.
+```
+
+#### Other examples
+
+``` r
+## observe at least 200 OS events on at least 500 enrolled patients, or
+## the trial has been running for at least 12 months
+(enrollment(n = 500) & eventNumber(endpoint = 'os', n = 200)) | 
+  calendarTime(time = 12)
+#> Combined Condition (or):
+#> Combined Condition (and):
+#>     Number of randomized patients >=  500
+#>     Number of events (os) >= 200 in all arms in a trial. 
+#> Calendar time >=  12
+
+## observe 320 OS or 480 PFS event when the trial has been running for 6 months
+calendarTime(time = 6) & 
+  (eventNumber('os', n = 320) | eventNumber('pfs', n = 480))
+#> Combined Condition (and):
+#> Calendar time >=  6 
+#> Combined Condition (or):
+#>     Number of events (os) >= 320 in all arms in a trial. 
+#>     Number of events (pfs) >= 480 in all arms in a trial.
+```

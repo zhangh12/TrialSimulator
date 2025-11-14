@@ -1,0 +1,174 @@
+# Define Longitudinal Endpoints
+
+The `TrialSimulator` package provides a flexible framework for defining
+endpoints in clinical trial simulations. Users can choose to generate
+endpoints using either built-in random number generators from standard
+probability distributions or custom user-defined functions. The ability
+to specify custom generators is particularly useful when simulating
+correlated endpoints, which often arise in longitudinal settings.
+
+Longitudinal endpoints refer to outcomes measured repeatedly over time
+for the same subject, such as blood pressure, biomarker levels, or
+symptom severity scores. These repeated measures typically exhibit
+within-subject correlation as well as correlation with baseline values.
+Accurately simulating such correlation structures is essential for
+realistic trial design and evaluation.
+
+In this vignette, we demonstrate how to define longitudinal endpoints
+using the
+[`endpoint()`](https://zhangh12.github.io/TrialSimulator/reference/endpoint.md)
+function, focusing on its `generator` argument to specify the
+data-generating mechanism, and the `readout` argument to determine when
+each endpoint is observed. Note that longitudinal endpoints are non-TTE
+endpoints, thus `type` in
+[`endpoint()`](https://zhangh12.github.io/TrialSimulator/reference/endpoint.md)
+must be set as `"non-tte"` and there `readout` needs to be specified.
+
+## Example: Simulating Longitudinal Blood Pressure Endpoints
+
+Suppose blood pressure is measured for each patient at baseline (week
+0), and again at weeks 2 and 4 following randomization. We are
+interested in changes from baseline at weeks 2 and 4. A typical dataset
+at a milestone (e.g., after enrollment or follow-up) that can be
+accessed by calling `trial$get_locked_data(milestone_name)` may resemble
+the following:
+
+    #> # A tibble: 6 × 3
+    #>   baseline bp_cfb2 bp_cfb4
+    #>      <dbl>   <dbl>   <dbl>
+    #> 1     144.  -24.7    -21.0
+    #> 2     148.  -22.2    -42.5
+    #> 3     145.  -13.4    -30.4
+    #> 4     148.   -8.03   -31.2
+    #> 5     139.  -28.1    -24.4
+    #> 6     133.  -18.8    -18.3
+
+In this example, the variables `baseline`, `bp_cfb2`, and `bp_cfb4` are
+observed at weeks 0, 2, and 4, respectively. Therefore, we will define
+`readout = c(baseline = 0, bp_cfb2 = 2, bp_cfb4 = 4)` in the endpoint
+definition.
+
+To simulate correlated values across time points, we assume that
+`baseline`, `bp2`, and `bp4` follow a multivariate normal distribution.
+The user must provide the mean vector and covariance matrix for these
+variables. Importantly, any custom generator function must accept `n`
+(number of observations) as its first argument, as required by
+TrialSimulator, otherwise it throws an error.
+
+``` r
+library(mvtnorm)
+bp_generator <- function(n, bp_means, bp_vcov){
+  dat <- rmvnorm(n, mean = bp_means, sigma = bp_vcov) %>% 
+    as.data.frame()
+  names(dat) <- c('baseline', 'bp2', 'bp4')
+  dat %>% 
+    mutate(
+      bp_cfb2 = bp2 - baseline, 
+      bp_cfb4 = bp4 - baseline
+    ) %>% 
+    select(baseline, bp_cfb2, bp_cfb4)
+}
+```
+
+This function assumes a trivariate normal distribution for blood
+pressure at baseline, week 2, and week 4. Users may also extend this
+function to support more complex simulation logic as needed.
+
+## Defining Endpoints for an Arm
+
+We now use the
+[`endpoint()`](https://zhangh12.github.io/TrialSimulator/reference/endpoint.md)
+function to define the longitudinal endpoints in a treatment arm. The
+required parameters for the custom generator, `bp_means` and `bp_vcov`,
+are passed through the ellipsis (`...`) argument.
+
+``` r
+vcov1 <- matrix(
+  c(2, 1.5, 1, 
+    1.5, 3, 1.5, 
+    1, 1.5, 4),
+  nrow = 3
+)
+
+ep_in_trt1 <- endpoint(
+  name = c('bp_cfb2', 'baseline', 'bp_cfb4'), 
+  type = rep('non-tte', 3), 
+  readout = c(baseline = 0, bp_cfb4 = 4, bp_cfb2 = 2), 
+  generator = bp_generator, 
+  bp_means = c(140, 125, 120), 
+  bp_vcov = vcov1
+)
+```
+
+Note that we deliberately specify the `name` and `readout` arguments in
+an order different from the data frame returned by `bp_generator`, to
+illustrate that the
+[`endpoint()`](https://zhangh12.github.io/TrialSimulator/reference/endpoint.md)
+function correctly maps variable names to their respective time points.
+However, the user is responsible for ensuring the order of `name` and
+`type` are aligned; the function cannot automatically infer types from
+the generator output.
+
+This example also demonstrates that
+[`endpoint()`](https://zhangh12.github.io/TrialSimulator/reference/endpoint.md)
+can be used to generate covariates. For instance, the baseline value is
+typically used as a covariate in statistical models, and should
+therefore be simulated and retained. More generally, users can define
+covariates, biomarker dynamics, or subgroup indicators using the same
+mechanism to simulate complex trial designs.
+
+A simple way to generate a report for an endpoint object is to print it
+in console directly
+
+``` r
+ep_in_trt1
+```
+
+## Defining Endpoints for Another Arm
+
+We now define another arm with slightly different means and correlation
+structure for blood pressure:
+
+``` r
+vcov2 <- matrix(
+  c(2, 1.5, 1, 
+    1.5, 3, 1, 
+    1, 1, 4),
+  nrow = 3
+)
+
+ep_in_trt2 <- endpoint(
+  name = c('bp_cfb2', 'baseline', 'bp_cfb4'), 
+  type = rep('non-tte', 3), 
+  readout = c(baseline = 0, bp_cfb4 = 4, bp_cfb2 = 2), 
+  generator = bp_generator, 
+  bp_means = c(140, 127, 122), 
+  bp_vcov = vcov2
+)
+
+ep_in_trt2
+```
+
+Note that user can even specify different generators across arms. For
+example, `bp_generator` can be replaced by another function with
+different mechanism and arguments.
+
+## Creating Treatment Arms and Adding Endpoints
+
+Finally, we create two treatment arms and attach the respective
+endpoints:
+
+``` r
+trt1 <- arm(name = 'treatment 1')
+trt2 <- arm(name = 'treatment 2')
+
+trt1$add_endpoints(ep_in_trt1)
+trt2$add_endpoints(ep_in_trt2)
+
+trt1
+```
+
+``` r
+
+trt2
+```

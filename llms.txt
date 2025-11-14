@@ -1,0 +1,235 @@
+# TrialSimulator
+
+**⚕ No `for` loop in clinical trial simulation ⚕**
+
+`TrialSimulator` is a system for declaratively implementing clinical
+trial simulations, inspired by the modular grammar of trial design. You
+provide the components—arms, endpoint-generation rules, milestones, and
+analysis methods—specify how they are combined under fixed or adaptive
+designs, and `TrialSimulator` takes care of the details, allowing you to
+focus on the design while it handles the mechanics.
+
+`TrialSimulator` provides a suite of helper functions to support the
+full trial life cycle.
+
+- For **data generation**, it offers utilities to sample endpoints from
+  common distributions.
+- For **adaptation**, it includes execution functions that modify trial
+  settings *in place*.
+- For **analysis**, it implements methods such as regression models,
+  group sequential tests, graphical multiple testing procedures,
+  combination tests, and closed tests. These tools are entirely
+  optional, but they make it simple to construct and evaluate complex
+  trial designs without sacrificing flexibility.
+
+## Shiny App
+
+An online version of this app is hosted on
+[shinyapps.io](https://bx7ttm-han-zhang.shinyapps.io/trialsimulatorstarter/).
+
+## Validation
+
+The validation documents for this R package are hosted
+[here](https://github.com/zhangh12/TrialSimulatorDocuments) and are
+continuously updated.
+
+## Installation
+
+### Release
+
+You can install the current release version from `CRAN` with:
+
+``` r
+install.packages("TrialSimulator")
+```
+
+### Development
+
+You can install the development version from
+[GitHub](https://github.com/zhangh12/TrialSimulator) with:
+
+``` r
+if (!require("remotes")) {
+  install.packages("remotes")
+}
+remotes::install_github(
+  "zhangh12/TrialSimulator", 
+  build_manual = TRUE, 
+  build_vignettes = TRUE, 
+  force = TRUE
+)
+```
+
+## Getting Started
+
+`TrialSimulator` is designed with a modular architecture, allowing users
+to systematically construct and simulate clinical trials in a structured
+and flexible manner. The simulation process is broken down into three
+key steps:
+
+1.  **Defining Endpoints**: Specify the treatment endpoints that will be
+    evaluated throughout the trial.
+2.  **Specifying Milestone**: Establish the conditions under which
+    specific milestones (e.g., interim analysis, futility assessment, or
+    stopping rules) will be triggered.
+3.  **Defining Actions for Milestones**: Determine the appropriate
+    actions to be taken once a milestone is triggered, such as adjusting
+    enrollment, terminating treatment arms, or conducting statistical
+    analysis.
+
+To efficiently utilize `TrialSimulator` for clinical trial simulations,
+we recommend reading the following vignettes in order:
+
+- Define endpoints and arms
+  - [Time-to-event (TTE)
+    endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineTimeToEventEndpoints.html)
+    - [Simulate correlated PFS and
+      OS](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOs.html)
+  - [Non-TTE
+    endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineNonTimeToEventEndpoints.html)
+    - [Longitudinal
+      endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineLongitudinalEndpoints.html)
+  - [Define and summarize
+    arms](https://zhangh12.github.io/TrialSimulator/articles/defineArms.html)
+- Condition system for milestones
+  - [Triggering trial
+    milestones](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html)
+- Define actions for milestones
+  - [Action
+    function](https://zhangh12.github.io/TrialSimulator/articles/actionFunctions.html)
+- Examples: fixed design
+  - [Design with correlated endpoints, and custom data
+    generator](https://zhangh12.github.io/TrialSimulator/articles/fixedDesign.html)
+- Examples: adaptive design
+  - [Seamless design with dose selection, interim, and multiple
+    endpoints](https://zhangh12.github.io/TrialSimulator/articles/adaptiveDesign.html)
+  - [Response-adaptive
+    design](https://zhangh12.github.io/TrialSimulator/articles/responseAdaptive.html)
+  - [Dose-ranging
+    study](https://zhangh12.github.io/TrialSimulator/articles/doseRanging.html)
+  - \[Enrichment design\] vignette is under development.
+  - \[Platform trial\] vignette is under development.
+  - \[Basket trial\] vignette is under development.
+- Built-in methods supported in `TrialSimulator`
+  - [Wrapper functions of common statistical methods for estimating
+    treatment
+    effect](https://zhangh12.github.io/TrialSimulator/articles/wrappers.html)
+  - \[Group sequential test\] See
+    [`?GroupSequentialTest`](https://zhangh12.github.io/TrialSimulator/reference/GroupSequentialTest.md).
+  - \[Graphical testing procedure\] See
+    [`?GraphicalTesting`](https://zhangh12.github.io/TrialSimulator/reference/GraphicalTesting.md).
+  - \[Combination test based on independent increment\] vignette is
+    under development.
+
+# Package index
+
+## All functions
+
+- [`Arms`](https://zhangh12.github.io/TrialSimulator/reference/Arms.md)
+  : Class of Arm
+- [`Controllers`](https://zhangh12.github.io/TrialSimulator/reference/Controllers.md)
+  : Class of Controller
+- [`CorrelatedPfsAndOs3()`](https://zhangh12.github.io/TrialSimulator/reference/CorrelatedPfsAndOs3.md)
+  : Generate Correlated PFS and OS
+- [`CorrelatedPfsAndOs4()`](https://zhangh12.github.io/TrialSimulator/reference/CorrelatedPfsAndOs4.md)
+  : Generate Correlated PFS, OS and Objective Response
+- [`DynamicRNGFunction()`](https://zhangh12.github.io/TrialSimulator/reference/DynamicRNGFunction.md)
+  : A wrapper of random number generator.
+- [`Endpoints`](https://zhangh12.github.io/TrialSimulator/reference/Endpoints.md)
+  : Class of Endpoint
+- [`GraphicalTesting`](https://zhangh12.github.io/TrialSimulator/reference/GraphicalTesting.md)
+  : Class of GraphicalTesting
+- [`GroupSequentialTest`](https://zhangh12.github.io/TrialSimulator/reference/GroupSequentialTest.md)
+  : Class of GroupSequentialTest
+- [`Listeners`](https://zhangh12.github.io/TrialSimulator/reference/Listeners.md)
+  : Class of Listener
+- [`Milestones`](https://zhangh12.github.io/TrialSimulator/reference/Milestones.md)
+  : Class of Milestones
+- [`PiecewiseConstantExponentialRNG()`](https://zhangh12.github.io/TrialSimulator/reference/PiecewiseConstantExponentialRNG.md)
+  : Generate Time-to-Event Endpoint from Piecewise Constant Exponential
+  Distribution
+- [`StaggeredRecruiter()`](https://zhangh12.github.io/TrialSimulator/reference/StaggeredRecruiter.md)
+  : Generate Enrollment Time from Piecewise Constant Uniform
+  Distribution
+- [`Trials`](https://zhangh12.github.io/TrialSimulator/reference/Trials.md)
+  : Class of Trial
+- [`arm()`](https://zhangh12.github.io/TrialSimulator/reference/arm.md)
+  : Define an Arm
+- [`calendarTime()`](https://zhangh12.github.io/TrialSimulator/reference/calendarTime.md)
+  : Triggering Condition by Calendar Time
+- [`controller()`](https://zhangh12.github.io/TrialSimulator/reference/controller.md)
+  : Define a Controller
+- [`doNothing()`](https://zhangh12.github.io/TrialSimulator/reference/doNothing.md)
+  : An Action Function that Does Nothing
+- [`endpoint()`](https://zhangh12.github.io/TrialSimulator/reference/endpoint.md)
+  : Define Endpoints
+- [`enrollment()`](https://zhangh12.github.io/TrialSimulator/reference/enrollment.md)
+  : Triggering Condition by Number of Randomized Patients
+- [`eventNumber()`](https://zhangh12.github.io/TrialSimulator/reference/eventNumber.md)
+  : Triggering Condition by Number of Events or Non-missing Observations
+  of an Endpoint
+- [`fitCoxph()`](https://zhangh12.github.io/TrialSimulator/reference/fitCoxph.md)
+  : Fit Cox Proportional Hazard Ratio model
+- [`fitFarringtonManning()`](https://zhangh12.github.io/TrialSimulator/reference/fitFarringtonManning.md)
+  : Farrington-Manning test for rate difference
+- [`fitLinear()`](https://zhangh12.github.io/TrialSimulator/reference/fitLinear.md)
+  : Fit linear regression model
+- [`fitLogistic()`](https://zhangh12.github.io/TrialSimulator/reference/fitLogistic.md)
+  : Fit logistic regression model
+- [`fitLogrank()`](https://zhangh12.github.io/TrialSimulator/reference/fitLogrank.md)
+  : Carry out log rank test
+- [`getAdaptiveDesignOutput()`](https://zhangh12.github.io/TrialSimulator/reference/getAdaptiveDesignOutput.md)
+  : Get simulation output in the vignette adaptiveDesign.Rmd
+- [`getFixedDesignOutput()`](https://zhangh12.github.io/TrialSimulator/reference/getFixedDesignOutput.md)
+  : Get simulation output in the vignette fixedDesign.Rmd
+- [`listener()`](https://zhangh12.github.io/TrialSimulator/reference/listener.md)
+  : Define a Listener
+- [`milestone()`](https://zhangh12.github.io/TrialSimulator/reference/milestone.md)
+  : Define a Milestone
+- [`plot(`*`<milestone_time_summary>`*`)`](https://zhangh12.github.io/TrialSimulator/reference/plot.milestone_time_summary.md)
+  : Plot Triggering Time of Milestones in Simulated Trials
+- [`plot(`*`<three_state_model>`*`)`](https://zhangh12.github.io/TrialSimulator/reference/plot.three_state_model.md)
+  : Plot result of three-state ill-death model
+- [`rconst()`](https://zhangh12.github.io/TrialSimulator/reference/rconst.md)
+  : Generate Constant Variable
+- [`solveMixtureExponentialDistribution()`](https://zhangh12.github.io/TrialSimulator/reference/solveMixtureExponentialDistribution.md)
+  : Solve Parameters in a Mixture Exponential Distribution
+- [`solveThreeStateModel()`](https://zhangh12.github.io/TrialSimulator/reference/solveThreeStateModel.md)
+  : Solve Parameters in a Three-State Ill-Death Model
+- [`summarizeDataFrame()`](https://zhangh12.github.io/TrialSimulator/reference/summarizeDataFrame.md)
+  : Summarize A Data Frame
+- [`summarizeMilestoneTime()`](https://zhangh12.github.io/TrialSimulator/reference/summarizeMilestoneTime.md)
+  : Summary of Milestone Time from Simulated Trials
+- [`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md)
+  : Define a Trial
+- [`weibullDropout()`](https://zhangh12.github.io/TrialSimulator/reference/weibullDropout.md)
+  : Calculate Parameters of Weibull Distribution as a Dropout Method
+
+# Articles
+
+### All vignettes
+
+- [Specify Actions to Execute at Trial
+  Milestones](https://zhangh12.github.io/TrialSimulator/articles/actionFunctions.md):
+- [An Example of Simulating a Trial with Adaptive
+  Design](https://zhangh12.github.io/TrialSimulator/articles/adaptiveDesign.md):
+- [Condition System for Triggering Milestones in a
+  Trial](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.md):
+- [Define and Summarize Arms in Clinical
+  Trials](https://zhangh12.github.io/TrialSimulator/articles/defineArms.md):
+- [Define Longitudinal
+  Endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineLongitudinalEndpoints.md):
+- [Define Non-Time-to-Event
+  Endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineNonTimeToEventEndpoints.md):
+- [Define Time-to-Event
+  Endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineTimeToEventEndpoints.md):
+- [Dose-Ranging
+  Study](https://zhangh12.github.io/TrialSimulator/articles/doseRanging.md):
+- [An Example of Fixed Design with Two Correlated
+  Endpoints](https://zhangh12.github.io/TrialSimulator/articles/fixedDesign.md):
+- [Designs with Response-Adaptive
+  Randomization](https://zhangh12.github.io/TrialSimulator/articles/responseAdaptive.md):
+- [Simulate Correlated Progression-Free Survival and Overall Survival as
+  Endpoints](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOs.md):
+- [Wrapper Functions of Common Statistical Methods in
+  TrialSimulator](https://zhangh12.github.io/TrialSimulator/articles/wrappers.md):
