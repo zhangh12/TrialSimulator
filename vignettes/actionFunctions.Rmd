@@ -425,7 +425,7 @@ Adaptations that are currently supported are summarized below:
 +--------------------------+--------------------------------------------------------+---------------------------------------------------------+
 | Extend trial duration    | `trial$set_duration()` or add a event-driven milestone | actual patient or event accrual is slower than expected |
 +--------------------------+--------------------------------------------------------+---------------------------------------------------------+
-| Increase sample size[^1] | `trial$set_sample_size()`                              | sample size reassessment                                |
+| Increase sample size[^1] | `trial$resize()`                                       | sample size reassessment                                |
 +--------------------------+--------------------------------------------------------+---------------------------------------------------------+
 | Eliminate sub-population | `trial$update_generator()`                             | enrichment design; data model changes over time         |
 +--------------------------+--------------------------------------------------------+---------------------------------------------------------+
