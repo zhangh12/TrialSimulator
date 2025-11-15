@@ -38,7 +38,131 @@ Controllers <- R6::R6Class(
         self$get_trial()$event_plot()
       }
 
+    },
+
+    run_sequential_ = function(n, plot_event, silent, dry_run){
+
+      for(idx in 1:n){
+        tryCatch(
+          expr = {
+            private$run_(plot_event, silent, dry_run)
+          },
+
+          error = function(e){
+            self$get_trial()$save(e$message, 'error_message', overwrite = TRUE)
+            private$output <- bind_rows(private$output, self$get_trial()$get_output())
+            stop(e$message)
+          }
+        )
+
+        private$output <- bind_rows(private$output, self$get_trial()$get_output())
+
+        if(idx < n){
+          self$reset()
+        }
+      }
+
+    },
+
+    run_parallel_ = function(n, n_workers, silent, dry_run){
+
+      if(!requireNamespace("mirai", quietly = TRUE)){
+        stop('Package "mirai" is required for parallel execution (n_workers > 1). ',
+             'Install it with install.packages("mirai").')
+      }
+
+      ## Serialize trial and listener once; workers will deserialize
+      ## independent copies. make_arms_snapshot() has already been called
+      ## in run(), so the snapshot is baked into the serialized bytes.
+      trial_raw <- serialize(self$get_trial()$clone(deep = TRUE), NULL)
+      listener_raw <- serialize(self$get_listener()$clone(deep = TRUE), NULL)
+
+      ## Distribute replicates evenly across workers
+      reps_per_worker <- rep(floor(n / n_workers), n_workers)
+      remainder <- n %% n_workers
+      if(remainder > 0){
+        reps_per_worker[1:remainder] <- reps_per_worker[1:remainder] + 1L
+      }
+
+      ## Pre-generate one seed per worker so that each worker's RNG stream
+      ## is guaranteed to diverge, regardless of daemon initialization order.
+      worker_seeds <- sample(.Machine$integer.max, n_workers)
+
+      with(
+        mirai::daemons(n_workers),
+        {
+          ## Submit all tasks
+          tasks <- vector("list", n_workers)
+          for(i in seq_len(n_workers)){
+            tasks[[i]] <- mirai::mirai(
+              {
+                library(TrialSimulator)
+
+                trial <- unserialize(trial_raw)
+                listener <- unserialize(listener_raw)
+
+                set.seed(worker_seed)
+
+                output <- NULL
+                error_msg <- NULL
+
+                for(j in seq_len(reps)){
+                  trial$reset()
+                  listener$reset()
+
+                  trial$mute(silent)
+                  listener$mute(silent)
+
+                  run_ok <- tryCatch(
+                    {
+                      listener$monitor(trial, dry_run)
+                      TRUE
+                    },
+                    error = function(e){
+                      trial$save(e$message, 'error_message', overwrite = TRUE)
+                      error_msg <<- e$message
+                      FALSE
+                    }
+                  )
+
+                  output <- dplyr::bind_rows(output, trial$get_output())
+
+                  if(!run_ok) break
+                }
+
+                list(output = output, error = error_msg)
+              },
+              trial_raw = trial_raw,
+              listener_raw = listener_raw,
+              worker_seed = worker_seeds[i],
+              reps = reps_per_worker[i],
+              silent = silent,
+              dry_run = dry_run
+            )
+          }
+
+          ## Collect results; fail-fast on first error
+          for(i in seq_len(n_workers)){
+            result <- mirai::call_mirai(tasks[[i]])$data
+
+            ## Unexpected worker-level failure (e.g. package not found,
+            ## serialization issue)
+            if(mirai::is_error_value(result)){
+              stop('Worker ', i, ' failed unexpectedly: ', result)
+            }
+
+            private$output <- bind_rows(private$output, result$output)
+
+            ## Expected simulation error (from stop() in user action functions)
+            if(!is.null(result$error)){
+              stop(result$error)
+            }
+          }
+        }
+      )
+
     }
+
   ),
 
   public = list(
@@ -137,8 +261,18 @@ Controllers <- R6::R6Class(
     #' @param n integer. Number of replicates of simulation.
     #' \code{n = 1} by default. Simulation results can be accessed by
     #' \code{controller$get_output()}.
-    #' @param plot_event logical. Create event plot if \code{FALSE}. Users
-    #' should set it to be \code{FALSE} if \code{n > 1}.
+    #' @param n_workers integer. Number of parallel workers. When
+    #' \code{n_workers = 1} (default), replicates are run sequentially.
+    #' When \code{n_workers > 1}, replicates are distributed across
+    #' parallel workers using the \code{mirai} package, which must be
+    #' installed separately. Each worker receives a serialized copy of
+    #' the trial and listener objects and runs its share of replicates
+    #' independently. If any replicate encounters an error, execution
+    #' stops and already-collected results are preserved in
+    #' \code{$get_output()}.
+    #' @param plot_event logical. Create event plot if \code{TRUE}. Users
+    #' should set it to be \code{FALSE} if \code{n > 1}. Forced to
+    #' \code{FALSE} when \code{n_workers > 1}.
     #' @param silent logical. \code{TRUE} if muting all messages during a
     #' trial. Note that warning messages are still displayed.
     #' @param dry_run logical. We are considering retire this argument.
@@ -156,31 +290,24 @@ Controllers <- R6::R6Class(
     #' possibly be added or removed, setting \code{dry_run} to \code{TRUE}
     #' is usually not helpful because adaption should be executed
     #' before estimating the milestone time.
-    run = function(n = 1, plot_event = TRUE, silent = FALSE, dry_run = FALSE){
+    run = function(n = 1, n_workers = 1, plot_event = TRUE, silent = FALSE, dry_run = FALSE){
 
       self$get_trial()$make_arms_snapshot()
       private$output <- NULL
 
-      for(idx in 1:n){
-        tryCatch(
-          expr = {
-            private$run_(plot_event, silent, dry_run)
-          },
+      if(n_workers == 1){
 
-          error = function(e){
-            self$get_trial()$save(e$message, 'error_message', overwrite = TRUE)
-            private$output <- bind_rows(private$output, self$get_trial()$get_output())
-            stop(e$message)
-          }
-        )
+        private$run_sequential_(n, plot_event, silent, dry_run)
 
-        private$output <- bind_rows(private$output, self$get_trial()$get_output())
+      }else{
 
-        if(idx < n){
-          self$reset()
+        if(!silent && plot_event){
+          warning('plot_event is forced to FALSE for parallel execution.',
+                  immediate. = TRUE)
         }
-      }
+        private$run_parallel_(n, n_workers, silent, dry_run)
 
+      }
     }
   )
 

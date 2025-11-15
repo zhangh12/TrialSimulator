@@ -145,7 +145,13 @@ custom outputs in \code{save()}. Default \code{FALSE}.}
 \subsection{Method \code{run()}}{
 run trial simulation.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Controllers$run(n = 1, plot_event = TRUE, silent = FALSE, dry_run = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Controllers$run(
+  n = 1,
+  n_workers = 1,
+  plot_event = TRUE,
+  silent = FALSE,
+  dry_run = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -155,8 +161,19 @@ run trial simulation.
 \code{n = 1} by default. Simulation results can be accessed by
 \code{controller$get_output()}.}
 
-\item{\code{plot_event}}{logical. Create event plot if \code{FALSE}. Users
-should set it to be \code{FALSE} if \code{n > 1}.}
+\item{\code{n_workers}}{integer. Number of parallel workers. When
+\code{n_workers = 1} (default), replicates are run sequentially.
+When \code{n_workers > 1}, replicates are distributed across
+parallel workers using the \code{mirai} package, which must be
+installed separately. Each worker receives a serialized copy of
+the trial and listener objects and runs its share of replicates
+independently. If any replicate encounters an error, execution
+stops and already-collected results are preserved in
+\code{$get_output()}.}
+
+\item{\code{plot_event}}{logical. Create event plot if \code{TRUE}. Users
+should set it to be \code{FALSE} if \code{n > 1}. Forced to
+\code{FALSE} when \code{n_workers > 1}.}
 
 \item{\code{silent}}{logical. \code{TRUE} if muting all messages during a
 trial. Note that warning messages are still displayed.}
