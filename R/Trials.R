@@ -10,6 +10,9 @@
 #' \itemize{
 #' \item \code{$set_duration()} set duration of a trial. This function can be
 #' used to extend duration under adaptive designs.
+#' \item \code{$resize()} set maximum sample size of a trial. This function can
+#' be used to increase sample size under adaptive designs (e.g., sample size
+#' reassessment).
 #' \item \code{$remove_arms()} drop arms from a trial. This function can be
 #' used in adaptive designs, e.g., dose selection, enrichment design, etc.
 #' \item \code{$update_sample_ratio()} change sample ratio of arm. This function
@@ -131,9 +134,19 @@ Trials <- R6::R6Class(
         self$make_snapshot()
 
         set.seed(private$seed)
-        ## sort enrollment time
-        private$enroll_time <-
-          sort(self$get_enroller()(n = n_patients), decreasing = FALSE)
+        ## Why we need enroll_time_with_redundant?
+        ## This is for resize(), i.e. resizing a trial adaptively.
+        ## We generate enroll time more than enough for potential patients
+        ## that are more than the planned size. Currently it is 10x
+        ## The enroll_time is then initialized to be the first n_patients
+        ## elements in enroll_time_with_redundant. If the trial is later resized
+        ## to be more than 10 * n_patients, an error message will be prompted.
+        ##
+        ## Sort enrollment time
+        private$enroll_time_with_redundant <-
+          sort(self$get_enroller()(n = n_patients * 10), decreasing = FALSE)
+        private$enroll_time <- head(private$enroll_time_with_redundant, n_patients)
+        private$enroll_time_with_redundant <- private$enroll_time_with_redundant[-c(1:n_patients)]
 
       },
 
@@ -276,6 +289,33 @@ Trials <- R6::R6Class(
       private$enroll_time <- (self$get_trial_data() %>%
         dplyr::filter(enroll_time > current_time) %>%
         arrange(enroll_time))$enroll_time
+
+      ## self$get_number_patients(), i.e. private$n_patients may have been
+      ## updated by calling Trials$resize() to resize the trial, in this case
+      ## we need to add more enroll time into private$enroll_time from
+      ## private$enroll_time_with_redundant.
+      ##
+      if(nrow(self$get_trial_data()) != self$get_number_patients()){
+
+        number_new_patients <- self$get_number_patients() - nrow(self$get_trial_data())
+        if(length(private$enroll_time_with_redundant) < number_new_patients){
+          stop('Debug roll_back(). ',
+               'No sufficient redundant enroll time can be used when resizing the trial. ')
+        }
+
+        if(length(private$enroll_time) > 0 &&
+           min(private$enroll_time_with_redundant) < max(private$enroll_time)){
+          stop('Debug roll_back() if Trials$resize() is called. ',
+               'Unlikely to trigger this error. ')
+        }
+
+        private$enroll_time <-
+          c(private$enroll_time,
+            head(private$enroll_time_with_redundant, number_new_patients))
+
+        private$enroll_time_with_redundant <-
+          private$enroll_time_with_redundant[-c(1:number_new_patients)]
+      }
 
       private$trial_data <- self$get_trial_data() %>%
         dplyr::filter(enroll_time <= current_time) %>%
@@ -463,6 +503,29 @@ Trials <- R6::R6Class(
       self$roll_back()
 
       ## update data for unrolled patients based on new generator in arm.
+      self$enroll_patients()
+
+    },
+
+    #' @description
+    #' resize a trial with a greater sample size. This function is used to
+    #' update the maximum sample size adaptively after sample size reassessment.
+    #' Note that this function should be called within action functions.
+    #' It is users' responsibility to ensure it and \code{TrialSimulator} has
+    #' no way to track this.
+    #'
+    #' @param n_patients integer. Number of maximum sample size of a trial.
+    resize = function(n_patients){
+      if(n_patients <= self$get_number_patients()){
+        stop('TrialSimulator can only increase sample size of a trial. ',
+             'When calling Trials$resize(n_patients), use n_patients > ',
+             self$get_number_patients(), '. ')
+      }
+
+      private$n_patients <- n_patients
+
+      self$roll_back()
+
       self$enroll_patients()
 
     },
@@ -2610,6 +2673,7 @@ Trials <- R6::R6Class(
       private$milestone_time <- c()
       private$trial_data <- NULL
       private$enroll_time <- NULL
+      private$enroll_time_with_redundant <- NULL
       private$randomization_queue <- NULL
       private$n_enrolled_patients <- NULL
       private$sample_ratio <- NULL
@@ -2619,8 +2683,11 @@ Trials <- R6::R6Class(
       private$output$seed <- private$seed
       set.seed(private$seed)
 
-      private$enroll_time <-
-        sort(self$get_enroller()(n = private$n_patients), decreasing = FALSE)
+      ## see comments in initialize()
+      private$enroll_time_with_redundant <-
+        sort(self$get_enroller()(n = private$n_patients * 10), decreasing = FALSE)
+      private$enroll_time <- head(private$enroll_time_with_redundant, private$n_patients)
+      private$enroll_time_with_redundant <- private$enroll_time_with_redundant[-c(1:private$n_patients)]
 
       arms <- private$.snapshot[['arms']]
       sample_ratio <- private$.snapshot[['sample_ratio']]
@@ -2718,6 +2785,7 @@ Trials <- R6::R6Class(
     randomization_queue = NULL,
     enroller = NULL,
     enroll_time = NULL,
+    enroll_time_with_redundant = NULL,
 
     dropout = NULL, # function to generate dropout time
 

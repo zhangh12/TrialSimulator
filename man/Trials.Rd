@@ -15,6 +15,9 @@ useful to end users.
 \itemize{
 \item \code{$set_duration()} set duration of a trial. This function can be
 used to extend duration under adaptive designs.
+\item \code{$resize()} set maximum sample size of a trial. This function can
+be used to increase sample size under adaptive designs (e.g., sample size
+reassessment).
 \item \code{$remove_arms()} drop arms from a trial. This function can be
 used in adaptive designs, e.g., dose selection, enrichment design, etc.
 \item \code{$update_sample_ratio()} change sample ratio of arm. This function
@@ -110,6 +113,7 @@ trial$closedTest(dt, treatments = c('high dose', 'low dose'),
 \item \href{#method-Trials-remove_arms}{\code{Trials$remove_arms()}}
 \item \href{#method-Trials-update_sample_ratio}{\code{Trials$update_sample_ratio()}}
 \item \href{#method-Trials-update_generator}{\code{Trials$update_generator()}}
+\item \href{#method-Trials-resize}{\code{Trials$resize()}}
 \item \href{#method-Trials-add_arms}{\code{Trials$add_arms()}}
 \item \href{#method-Trials-get_name}{\code{Trials$get_name()}}
 \item \href{#method-Trials-get_description}{\code{Trials$get_description()}}
@@ -411,6 +415,27 @@ generator is updated.}
 See \code{generator} of \code{endpoint()}.}
 
 \item{\code{...}}{optional arguments for \code{generator}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-resize"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-resize}{}}}
+\subsection{Method \code{resize()}}{
+resize a trial with a greater sample size. This function is used to
+update the maximum sample size adaptively after sample size reassessment.
+Note that this function should be called within action functions.
+It is users' responsibility to ensure it and \code{TrialSimulator} has
+no way to track this.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$resize(n_patients)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{n_patients}}{integer. Number of maximum sample size of a trial.}
 }
 \if{html}{\out{</div>}}
 }

@@ -37,7 +37,7 @@ For the sake of simplicity, we assume a binary endpoint of interest. The
 response rates at doses 0 (placebo), 0.5, 1.5, 2.5, 4 (highest dose) are
 given by a `sigEmax` model below, where the response rate is assume to
 be 10% in placebo, and 25% in arm of the highest dose (dose = 4). For further 
-background information, refer to [vignette](https://cran.r-project.org/web/packages/DoseFinding/vignettes/binary_data.html) 
+background information, refer to [vignette](https://cran.r-project.org/package=DoseFinding/vignettes/binary_data.html) 
 of the `DoseFinding` package. 
 
 ```{r flaf}
