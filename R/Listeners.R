@@ -112,7 +112,15 @@ Listeners <- R6::R6Class(
       }
       for(milestone in self$get_milestones()){
         milestone$set_dry_run(dry_run)
-        milestone$trigger_milestone(trial)
+        tryCatch(
+          {milestone$trigger_milestone(trial)},
+          error = function(e){
+            stop('Error in executing action function of milestone <',
+                 milestone$get_name(), '>. \n',
+                 'Please set a breakpoint in its action function to debug it. \n',
+                 'The browser() function can be helpful for a step-by-step diagnosis. ')
+          }
+        )
         milestone$set_dry_run(FALSE)
       }
     },

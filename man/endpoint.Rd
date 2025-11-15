@@ -60,7 +60,7 @@ endpoints as well.}
 }
 \description{
 Define one or multiple endpoints. This is a user-friendly wrapper for
-the class constructor \code{Endpoint$new}. Users who are not familiar with
+the class constructor \code{Endpoints$new}. Users who are not familiar with
 the concept of classes may consider using this wrapper directly.
 
 Note that it is users' responsibility to assure that the units of

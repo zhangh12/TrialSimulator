@@ -1,3 +1,16 @@
+# TrialSimulator 1.9.0
+
+## New Feature
+
+- Support wrapper functions for adaptation, including `remove_arms()`, `add_arms()`, `update_sample_ratio()`, `set_duration()`, `resize()` and `update_generator()`. 
+- More informative message is prompted when error is throwed from an action function; milestone's name is printed. 
+
+# TrialSimulator 1.8.0
+
+## New Feature
+
+- Support new adaptation `Trials$resize()` that resizes an ongoing trial. 
+
 # TrialSimulator 1.7.0
 
 ## New Feature

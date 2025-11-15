@@ -432,4 +432,6 @@ Adaptations that are currently supported are summarized below:
 
 [^1]: experimental
 
+Note that functions in the table above are member functions of `Trials` object. Users who are not familiar with the concept of classes may consider using their wrapper functions. The wrapper function of `trial$foo(...)` is `foo(trial, ...)`.
+
 These adaptive features allow users to simulate complex, data-driven designs where trial conduct is not static but evolves in response to accumulating evidence. At the time of writing, the vignette dedicated to trial adaptation is still under development. Detailed examples will be provided in that vignette.
