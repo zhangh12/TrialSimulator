@@ -20,7 +20,7 @@ censored (TTE endpoints) at the original duration. This helps maintain
 proper type I error or family-wise error rate and control multiplicity when
 conducting testing statistics. For more
 details of why this is necessary, please refer to
-[Jorgens et al. 2019](https://onlinelibrary.wiley.com/doi/10.1002/pst.1926).
+\href{https://onlinelibrary.wiley.com/doi/10.1002/pst.1926}{Jorgens et al. 2019}.
 
 Note that this function should only be called within action functions of
 milestones. It is users' responsibility to ensure that and

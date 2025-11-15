@@ -84,10 +84,6 @@ Controllers <- R6::R6Class(
         reps_per_worker[1:remainder] <- reps_per_worker[1:remainder] + 1L
       }
 
-      ## Pre-generate one seed per worker so that each worker's RNG stream
-      ## is guaranteed to diverge, regardless of daemon initialization order.
-      worker_seeds <- sample(.Machine$integer.max, n_workers)
-
       with(
         mirai::daemons(n_workers),
         {
@@ -101,11 +97,17 @@ Controllers <- R6::R6Class(
                 trial <- unserialize(trial_raw)
                 listener <- unserialize(listener_raw)
 
-                set.seed(worker_seed)
-
                 output <- NULL
                 error_msg <- NULL
 
+                ## R uses Mersenne-Twister streams by default to generate
+                ## random numbers, which theoretically is not safe for parallel,
+                ## but the chance of getting wrong is low given the extremely
+                ## long period it has (2^19937 - 1).
+                ## The packages parallel and mirai use L'Ecuyer-CMRG streams.
+                ## The reason why I use Mersenne-Twister:
+                ## 1.
+                RNGkind('default')
                 for(j in seq_len(reps)){
                   trial$reset()
                   listener$reset()
@@ -134,7 +136,7 @@ Controllers <- R6::R6Class(
               },
               trial_raw = trial_raw,
               listener_raw = listener_raw,
-              worker_seed = worker_seeds[i],
+              #worker_seed = worker_seeds[i],
               reps = reps_per_worker[i],
               silent = silent,
               dry_run = dry_run
@@ -160,6 +162,8 @@ Controllers <- R6::R6Class(
           }
         }
       )
+
+      RNGkind('default')
 
     }
 
@@ -269,7 +273,14 @@ Controllers <- R6::R6Class(
     #' the trial and listener objects and runs its share of replicates
     #' independently. If any replicate encounters an error, execution
     #' stops and already-collected results are preserved in
-    #' \code{$get_output()}.
+    #' \code{$get_output()}. To debug, manually set \code{seed} in
+    #' \code{trial()} and \code{n_workers = 1} in \code{run()} for reproduced
+    #' results. Note that optimal \code{n_workers} may not be
+    #' \code{parallel::detectCores()}. For example, Macbook with M1/M2/M3 chips
+    #' may have performance cores and efficiency cores. To achieve the best
+    #' parallel performance, one may want to use the performance cores only.
+    #' For a M1 laptop with 4 performance cores, \code{n_workers = 3} may give
+    #' the best performance.
     #' @param plot_event logical. Create event plot if \code{TRUE}. Users
     #' should set it to be \code{FALSE} if \code{n > 1}. Forced to
     #' \code{FALSE} when \code{n_workers > 1}.
@@ -295,18 +306,20 @@ Controllers <- R6::R6Class(
       self$get_trial()$make_arms_snapshot()
       private$output <- NULL
 
-      if(n_workers == 1){
-
-        private$run_sequential_(n, plot_event, silent, dry_run)
-
-      }else{
-
-        if(!silent && plot_event){
-          warning('plot_event is forced to FALSE for parallel execution.',
-                  immediate. = TRUE)
+      if(plot_event){
+        if(n > 1 || n_workers > 1){
+          plot_event <- FALSE
+          if(!silent){
+            warning('plot_event is forced to FALSE for parallel execution or when n > 1.',
+                    immediate. = TRUE)
+          }
         }
-        private$run_parallel_(n, n_workers, silent, dry_run)
+      }
 
+      if(n_workers == 1){
+        private$run_sequential_(n, plot_event, silent, dry_run)
+      }else{
+        private$run_parallel_(n, n_workers, silent, dry_run)
       }
     }
   )

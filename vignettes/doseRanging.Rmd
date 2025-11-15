@@ -53,8 +53,6 @@ x <- DoseFinding::getResp(mods, doses = c(0, 0.5, 1.5, 2.5, 4))
 1 / (1 + exp(-unclass(x)))
 ```
 
-Any function invoked via the `trial$*` interface is documented under `?Trials`.
-
 ## Simulation Settings
 
 In our simulation, we assume 

@@ -17,7 +17,7 @@ is updated.}
 \item{generator}{a random number generation (RNG) function.
 See generator of \code{endpoint()}.}
 
-\item{...}{}
+\item{...}{optional arguments for generator.}
 }
 \description{
 update endpoint generator in an arm. This function can be useful in, e.g.,

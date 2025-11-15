@@ -24,7 +24,7 @@
 #' is updated.
 #' @param generator a random number generation (RNG) function.
 #' See generator of \code{endpoint()}.
-#' @param ...
+#' @param ... optional arguments for generator.
 #'
 #' @export
 #'

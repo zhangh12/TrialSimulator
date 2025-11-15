@@ -44,8 +44,6 @@ In `TrialSimulator`, we can define custom action functions that will be executed
 
 This vignette demonstrates how to define such actions, associate them with milestones, and make use of them to enrich trial simulations.
 
-Any function invoked via the `trial$*` interface is documented under `?Trials`.
-
 ## Define Trial Milestones
 
 A milestone represents a pre-specified time point or condition during the trial at which a snapshot of accumulated data becomes available for custom analysis. Each milestone consists of three key elements:
