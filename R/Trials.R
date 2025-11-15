@@ -2597,12 +2597,12 @@ Trials <- R6::R6Class(
 
       cat(white_text_blue_bg, logo, 'Trial Name: ', self$get_name(), reset, '\n')
       cat(white_text_blue_bg, logo, 'Description: ', self$get_description(), reset, '\n')
-      cat(white_text_blue_bg, logo, '# of Arms: ', self$get_number_arms(), reset, '\n')
+      cat(white_text_blue_bg, logo, 'Number of Arms: ', self$get_number_arms(), reset, '\n')
       cat(white_text_blue_bg, logo, 'Registered Arms: ',
           paste0(self$get_arms_name(), collapse = ', '), reset, '\n')
       cat(white_text_blue_bg, logo, 'Sample Ratio: ',
           paste0(self$get_sample_ratio(), collapse = ', '), reset, '\n')
-      cat(white_text_blue_bg, logo, '# of Patients: ', self$get_number_patients(), reset, '\n')
+      cat(white_text_blue_bg, logo, 'Number of Patients: ', self$get_number_patients(), reset, '\n')
       cat(white_text_blue_bg, logo, 'Planned Duration: ', self$get_duration(), reset, '\n')
       cat(white_text_blue_bg, logo, 'Random Seed: ', self$get_seed(), reset, '\n')
 

@@ -35,6 +35,8 @@ This vignette demonstrates how to simulate a trial with response-adaptive design
 
 However, the original `MedianaDesigner::ADRand()` function is no longer functional, even for examples provided on [this](https://medianasoft.github.io/CaseStudyF1) page. Therefore, this vignette focuses on implementing a similar response-adaptive design using `TrialSimulator`. The core algorithm for updating the randomization ratio is re-implemented based on the logic of the `DoseFinding` package and may differ slightly from that used in Dr. Dmitrienko's materials.
 
+Any function invoked via the `trial$*` interface is documented under `?Trials`.
+
 
 ## Simulation Settings
 

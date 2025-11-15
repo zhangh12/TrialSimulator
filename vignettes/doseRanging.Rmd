@@ -29,8 +29,8 @@ set.seed(12345)
 ```
 
 In this vignette, we implement simulation for a dose-ranging trial under 
-adaptive design. We start from a placebo arm and a treatment arm with highest 
-possible dose. At an interim, if we observe promising results, we add 
+adaptive design. We start from a placebo arm and a treatment arm with 
+highest possible dose. At an interim, if we observe promising results, we add 
 arms with doses in between to inform decision at final analysis.
 
 For the sake of simplicity, we assume a binary endpoint of interest. The
@@ -52,6 +52,8 @@ DoseFinding::plotMods(mods, trafo = function(x) 1/(1+exp(-x)))
 x <- DoseFinding::getResp(mods, doses = c(0, 0.5, 1.5, 2.5, 4))
 1 / (1 + exp(-unclass(x)))
 ```
+
+Any function invoked via the `trial$*` interface is documented under `?Trials`.
 
 ## Simulation Settings
 
@@ -262,18 +264,29 @@ is determined under the assumption that the dose has been expanded,
 regardless of the interim evidence—this simplification is made solely for the 
 convenience of simulation. However, the overall probability of a `"go"` should 
 incorporate the interim results—specifically, the trial must not be stopped at 
-interim, and the function `go_nogo()` must return `"go"` at the final analysis. 
+interim (i.e., `interim_decision == "add dose arms"`), 
+and the function `go_nogo()` must return `"go"` at the final analysis. 
 
 ```{r message=FALSE}
 ## important: reset before calling run() again
 controller$reset()
-controller$run(n = 6, plot_event = FALSE, silent = TRUE)
-controller$get_output() %>% 
+controller$run(n = 10, plot_event = FALSE, silent = TRUE)
+res <- controller$get_output()
+
+res %>% 
   kable(escape = FALSE) %>% 
   kable_styling(bootstrap_options = "striped", 
                 full_width = FALSE,
                 position = "left") %>%
   scroll_box(width = "100%")
+```
+
+```{r message=FALSE}
+## Number of overall Go
+sum(res$interim_decision == 'add dose arms' & 'decision' == 'go')
+
+## Number of early trial termination
+sum(res$interim_decision == 'stop trial')
 ```
 
 ## Appendix: Code of Helper Function

@@ -39,6 +39,8 @@ test with Dunnett's test, with $\alpha$ split for the endpoints. Please
 refer to another vignette where graphical testing procedure is adopted
 instead.
 
+Any function invoked via the `trial$*` interface is documented under `?Trials`. 
+
 ## Simulation Settings
 
 -   Trial consists of two active arms of high or low dose, and a placebo
@@ -149,7 +151,7 @@ high$add_endpoints(pfs, os, surrogate)
 With three arms, we can define a trial of class `Trial`. Recruitment
 curve are specified through `enroller` with a built-in function
 `StaggeredRecruiter` of piecewise constant rate. We set `duration` to be
-an arbitrary large number (50) but controlling the end of trial through
+an arbitrary large number (40) but controlling the end of trial through
 pre-defined milestones later. Note that if `seed = NULL`, `TrialSimulator`
 will pick a seed for the purpose of reproducibility.
 
@@ -254,7 +256,7 @@ action3 <- function(trial){
                              alternative = 'less', 
                              planned_info = 'default')
   
-  ct_os <- trial$closedTest(dt_pfs, treatments = c('high dose', 'low dose'),
+  ct_os <- trial$closedTest(dt_os, treatments = c('high dose', 'low dose'),
                             milestones = c('final'),
                             alpha = .02, alpha_spending = 'asOF')
   
@@ -316,7 +318,7 @@ controller$run(plot_event = TRUE)
 
 In custom action functions, we can use `Trial$save()` to save
 intermediate results for summary purpose, which can be accessed anytime
-and anywhere by
+and anywhere by calling `get_output()`
 
 ```{r alojfqoitl, class.source="fold-show"}
 controller$get_output() %>% 
@@ -352,7 +354,7 @@ dt_os <- trial$dunnettTest(Surv(os, os_event) ~ arm, placebo = 'placebo',
                            milestones = c('dose selection', 'final'),
                            alternative = 'less', 
                            planned_info = 'default')
-ct_os <- trial$closedTest(dt_pfs, treatments = c('high dose', 'low dose'),
+ct_os <- trial$closedTest(dt_os, treatments = c('high dose', 'low dose'),
                           milestones = c('final'),
                           alpha = .02, alpha_spending = 'asOF')
 

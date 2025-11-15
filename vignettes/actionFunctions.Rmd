@@ -30,15 +30,21 @@ In `TrialSimulator`, we can define custom action functions that will be executed
 
 -   Early stopping for efficacy or futility
 
--   Dropping or selecting treatment arms
+-   Dropping, adding or selecting treatment arms
 
--   Adjusting enrollment rules adaptively
+-   Resizing based on sample size reassessment
+
+-   extending trial duration
+
+-   Adjusting enrollment rules
 
 -   Logging or tracking intermediate results
 
 -   Locking and exporting trial data snapshot at specific points
 
 This vignette demonstrates how to define such actions, associate them with milestones, and make use of them to enrich trial simulations.
+
+Any function invoked via the `trial$*` interface is documented under `?Trials`.
 
 ## Define Trial Milestones
 
