@@ -8,6 +8,9 @@ test with Dunnett’s test, with $\alpha$ split for the endpoints. Please
 refer to another vignette where graphical testing procedure is adopted
 instead.
 
+Any function invoked via the `trial$*` interface is documented under
+[`?Trials`](https://zhangh12.github.io/TrialSimulator/reference/Trials.md).
+
 ## Simulation Settings
 
 - Trial consists of two active arms of high or low dose, and a placebo
@@ -124,7 +127,7 @@ high$add_endpoints(pfs, os, surrogate)
 With three arms, we can define a trial of class `Trial`. Recruitment
 curve are specified through `enroller` with a built-in function
 `StaggeredRecruiter` of piecewise constant rate. We set `duration` to be
-an arbitrary large number (50) but controlling the end of trial through
+an arbitrary large number (40) but controlling the end of trial through
 pre-defined milestones later. Note that if `seed = NULL`,
 `TrialSimulator` will pick a seed for the purpose of reproducibility.
 
@@ -234,7 +237,7 @@ action3 <- function(trial){
                              alternative = 'less', 
                              planned_info = 'default')
   
-  ct_os <- trial$closedTest(dt_pfs, treatments = c('high dose', 'low dose'),
+  ct_os <- trial$closedTest(dt_os, treatments = c('high dose', 'low dose'),
                             milestones = c('final'),
                             alpha = .02, alpha_spending = 'asOF')
   
@@ -330,7 +333,7 @@ controller$run(plot_event = TRUE)
 
 In custom action functions, we can use `Trial$save()` to save
 intermediate results for summary purpose, which can be accessed anytime
-and anywhere by
+and anywhere by calling `get_output()`
 
 ``` r
 controller$get_output() %>% 
@@ -343,7 +346,7 @@ controller$get_output() %>%
 
 | trial      |       seed | milestone_time\_\<dose selection\> | n_events\_\<dose selection\>\_\<patient_id\> | n_events\_\<dose selection\>\_\<pfs\> | n_events\_\<dose selection\>\_\<os\> | n_events\_\<dose selection\>\_\<surrogate\> | n_events\_\<dose selection\>\_\<arms\> | kept_arm | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<pfs\> | n_events\_\<interim\>\_\<os\> | n_events\_\<interim\>\_\<surrogate\> | n_events\_\<interim\>\_\<arms\> | futility | milestone_time\_\<final\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<pfs\> | n_events\_\<final\>\_\<os\> | n_events\_\<final\>\_\<surrogate\> | n_events\_\<final\>\_\<arms\> | pfs_high_dose_decision | pfs_low_dose_decision | os_high_dose_decision | os_low_dose_decision | error_message |
 |:-----------|-----------:|-----------------------------------:|---------------------------------------------:|--------------------------------------:|-------------------------------------:|--------------------------------------------:|:---------------------------------------|:---------|----------------------------:|--------------------------------------:|-------------------------------:|------------------------------:|-------------------------------------:|:--------------------------------|:---------|--------------------------:|------------------------------------:|-----------------------------:|----------------------------:|-----------------------------------:|:------------------------------|:-----------------------|:----------------------|:----------------------|:---------------------|:--------------|
-| Trial-3415 | 1727811904 |                           11.12051 |                                          357 |                                   141 |                                   65 |                                         300 | c(119, 4….                             | low      |                    17.99494 |                                   581 |                            300 |                           138 |                                  524 | c(290, 1….                      | negative |                  25.74756 |                                 881 |                          596 |                         300 |                                880 | c(441, 2….                    | accept                 | reject                | accept                | reject               |               |
+| Trial-3415 | 1727811904 |                           11.12051 |                                          357 |                                   141 |                                   65 |                                         300 | c(119, 4….                             | low      |                    17.99494 |                                   581 |                            300 |                           138 |                                  524 | c(290, 1….                      | negative |                  25.74756 |                                 881 |                          596 |                         300 |                                880 | c(441, 2….                    | accept                 | reject                | accept                | accept               |               |
 
 Here we dive into the action function (`action3`) for the final
 analysis. We can literally execute the function line by line with locked
@@ -370,7 +373,7 @@ dt_os <- trial$dunnettTest(Surv(os, os_event) ~ arm, placebo = 'placebo',
                            milestones = c('dose selection', 'final'),
                            alternative = 'less', 
                            planned_info = 'default')
-ct_os <- trial$closedTest(dt_pfs, treatments = c('high dose', 'low dose'),
+ct_os <- trial$closedTest(dt_os, treatments = c('high dose', 'low dose'),
                           milestones = c('final'),
                           alpha = .02, alpha_spending = 'asOF')
 
@@ -380,8 +383,8 @@ print(ct_pfs)
 #> 2  low dose   reject               final    25.74756
 print(ct_os)
 #>         arm decision milestone_at_reject reject_time
-#> 1 high dose   accept                <NA>         Inf
-#> 2  low dose   reject               final    25.74756
+#> 1 high dose   accept                  NA         Inf
+#> 2  low dose   accept                  NA         Inf
 ```
 
 The two null hypotheses of `PFS` and `OS` are both accepted for the high
@@ -389,9 +392,8 @@ dose because it is dropped at dose selection. Thus,
 `milestone_at_reject` is `NA`, and the `reject_time` is infinite. In
 contrast, `PFS` and `OS` are significant in low does. Note that even if
 `PFS` are tested at interim and final, one cannot claim its significance
-until the final analysis (`milestone_at_reject`). The `reject_time`
-(25.7475563) can be saved to the output using the member function
-`Trial$save`.
+until the final analysis (`milestone_at_reject`). The `reject_time` ()
+can be saved to the output using the member function `Trial$save`.
 
 `TrialSimulator` abstracts the data generation and management to allow
 user focus on implementing the statistical analysis. It simulates a

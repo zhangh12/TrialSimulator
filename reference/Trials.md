@@ -10,6 +10,10 @@ to end users.
 - `$set_duration()` set duration of a trial. This function can be used
   to extend duration under adaptive designs.
 
+- `$resize()` set maximum sample size of a trial. This function can be
+  used to increase sample size under adaptive designs (e.g., sample size
+  reassessment).
+
 - `$remove_arms()` drop arms from a trial. This function can be used in
   adaptive designs, e.g., dose selection, enrichment design, etc.
 
@@ -81,6 +85,8 @@ to end users.
 - [`Trials$update_sample_ratio()`](#method-Trials-update_sample_ratio)
 
 - [`Trials$update_generator()`](#method-Trials-update_generator)
+
+- [`Trials$resize()`](#method-Trials-resize)
 
 - [`Trials$add_arms()`](#method-Trials-add_arms)
 
@@ -451,6 +457,26 @@ update endpoint generator in an arm
 - `...`:
 
   optional arguments for `generator`.
+
+------------------------------------------------------------------------
+
+### Method `resize()`
+
+resize a trial with a greater sample size. This function is used to
+update the maximum sample size adaptively after sample size
+reassessment. Note that this function should be called within action
+functions. It is users' responsibility to ensure it and `TrialSimulator`
+has no way to track this.
+
+#### Usage
+
+    Trials$resize(n_patients)
+
+#### Arguments
+
+- `n_patients`:
+
+  integer. Number of maximum sample size of a trial.
 
 ------------------------------------------------------------------------
 

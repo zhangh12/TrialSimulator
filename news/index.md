@@ -2,10 +2,16 @@
 
 ## TrialSimulator 1.7.0
 
+CRAN release: 2025-12-19
+
 ### New Feature
 
 - Columns automatically recorded at milestones can be eliminated from
   `get_output()` by setting new argument `tidy = TRUE`.
+
+### Minor Updates
+
+- Some minor fixes for CRAN submission.
 
 ## TrialSimulator 1.6.0
 

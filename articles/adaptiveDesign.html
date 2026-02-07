@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.8.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -88,6 +88,8 @@ error rate are controlled by closed test with Dunnett’s test, with
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math>
 split for the endpoints. Please refer to another vignette where
 graphical testing procedure is adopted instead.</p>
+<p>Any function invoked via the <code>trial$*</code> interface is
+documented under <code><a href="../reference/Trials.html">?Trials</a></code>.</p>
 <div class="section level2">
 <h2 id="simulation-settings">Simulation Settings<a class="anchor" aria-label="anchor" href="#simulation-settings"></a>
 </h2>
@@ -229,7 +231,7 @@ Survival and Overall Survival as Endpoints in Clinical Trials</a>.</p>
 <p>With three arms, we can define a trial of class <code>Trial</code>.
 Recruitment curve are specified through <code>enroller</code> with a
 built-in function <code>StaggeredRecruiter</code> of piecewise constant
-rate. We set <code>duration</code> to be an arbitrary large number (50)
+rate. We set <code>duration</code> to be an arbitrary large number (40)
 but controlling the end of trial through pre-defined milestones later.
 Note that if <code>seed = NULL</code>, <code>TrialSimulator</code> will
 pick a seed for the purpose of reproducibility.</p>
@@ -332,7 +334,7 @@ intersection hypotheses. The action function is as follows.</p>
 <span>                             alternative <span class="op">=</span> <span class="st">'less'</span>, </span>
 <span>                             planned_info <span class="op">=</span> <span class="st">'default'</span><span class="op">)</span></span>
 <span>  </span>
-<span>  <span class="va">ct_os</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span><span class="va">dt_pfs</span>, treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
+<span>  <span class="va">ct_os</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span><span class="va">dt_os</span>, treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
 <span>                            milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                            alpha <span class="op">=</span> <span class="fl">.02</span>, alpha_spending <span class="op">=</span> <span class="st">'asOF'</span><span class="op">)</span></span>
 <span>  </span>
@@ -419,10 +421,10 @@ replicates is run to save time.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Ignoring unknown labels:</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> <span style="color: #00BB00;">colour</span> : <span style="color: #0000BB;">""</span></span></span></code></pre></div>
-<p><img src="adaptiveDesign_files/figure-html/eiaaf-1.png" class="r-plt" width="100%"></p>
+<p><img src="adaptiveDesign_files/figure-html/eiaaf-1.png" class="r-plt" alt="" width="100%"></p>
 <p>In custom action functions, we can use <code>Trial$save()</code> to
 save intermediate results for summary purpose, which can be accessed
-anytime and anywhere by</p>
+anytime and anywhere by calling <code>get_output()</code></p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">controller</span><span class="op">$</span><span class="fu">get_output</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu">kable</span><span class="op">(</span>escape <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
@@ -592,7 +594,7 @@ reject
 accept
 </td>
 <td style="text-align:left;">
-reject
+accept
 </td>
 <td style="text-align:left;">
 </td>
@@ -624,7 +626,7 @@ make use of locked data at multiple stages (through the
 <span>                           milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                           alternative <span class="op">=</span> <span class="st">'less'</span>, </span>
 <span>                           planned_info <span class="op">=</span> <span class="st">'default'</span><span class="op">)</span></span>
-<span><span class="va">ct_os</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span><span class="va">dt_pfs</span>, treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
+<span><span class="va">ct_os</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span><span class="va">dt_os</span>, treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
 <span>                          milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                          alpha <span class="op">=</span> <span class="fl">.02</span>, alpha_spending <span class="op">=</span> <span class="st">'asOF'</span><span class="op">)</span></span>
 <span></span>
@@ -634,8 +636,8 @@ make use of locked data at multiple stages (through the
 <span><span class="co">#&gt; 2  low dose   reject               final    25.74756</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ct_os</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         arm decision milestone_at_reject reject_time</span></span>
-<span><span class="co">#&gt; 1 high dose   accept                &lt;NA&gt;         Inf</span></span>
-<span><span class="co">#&gt; 2  low dose   reject               final    25.74756</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 high dose   accept                  NA         Inf</span></span>
+<span><span class="co">#&gt; 2  low dose   accept                  NA         Inf</span></span></code></pre></div>
 <p>The two null hypotheses of <code>PFS</code> and <code>OS</code> are
 both accepted for the high dose because it is dropped at dose selection.
 Thus, <code>milestone_at_reject</code> is <code>NA</code>, and the
@@ -643,8 +645,8 @@ Thus, <code>milestone_at_reject</code> is <code>NA</code>, and the
 <code>OS</code> are significant in low does. Note that even if
 <code>PFS</code> are tested at interim and final, one cannot claim its
 significance until the final analysis
-(<code>milestone_at_reject</code>). The <code>reject_time</code>
-(25.7475563) can be saved to the output using the member function
+(<code>milestone_at_reject</code>). The <code>reject_time</code> () can
+be saved to the output using the member function
 <code>Trial$save</code>.</p>
 <p><code>TrialSimulator</code> abstracts the data generation and
 management to allow user focus on implementing the statistical analysis.

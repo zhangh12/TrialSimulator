@@ -266,7 +266,7 @@ test a hypothesis with the given p-value at current stage
   the alpha spending function (`typeOfDesign` in `rpact`) will be
   updated to `'asUser'`, and the argument `userAlphaSpending` will be
   used when calling
-  [`rpact::getDesignGroupSequential`](https://rpact-com.github.io/rpact/reference/getDesignGroupSequential.html).
+  [`rpact::getDesignGroupSequential`](https://docs.rpact.org/reference/getDesignGroupSequential.html).
 
 - `alpha_spent`:
 

@@ -129,10 +129,10 @@ trial <- trial(
 trial
 #>  ⚕⚕ Trial Name:  Trial-3415  
 #>  ⚕⚕ Description:  Trial-3415  
-#>  ⚕⚕ # of Arms:  0  
+#>  ⚕⚕ Number of Arms:  0  
 #>  ⚕⚕ Registered Arms:    
 #>  ⚕⚕ Sample Ratio:    
-#>  ⚕⚕ # of Patients:  100  
+#>  ⚕⚕ Number of Patients:  100  
 #>  ⚕⚕ Planned Duration:  100  
 #>  ⚕⚕ Random Seed:  31415926  
 
@@ -145,10 +145,10 @@ trial$add_arms(sample_ratio = c(1, 2), placebo, active)
 trial
 #>  ⚕⚕ Trial Name:  Trial-3415  
 #>  ⚕⚕ Description:  Trial-3415  
-#>  ⚕⚕ # of Arms:  2  
+#>  ⚕⚕ Number of Arms:  2  
 #>  ⚕⚕ Registered Arms:  pbo, ac  
 #>  ⚕⚕ Sample Ratio:  1, 2  
-#>  ⚕⚕ # of Patients:  100  
+#>  ⚕⚕ Number of Patients:  100  
 #>  ⚕⚕ Planned Duration:  100  
 #>  ⚕⚕ Random Seed:  31415926  
 ```

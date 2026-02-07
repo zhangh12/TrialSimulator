@@ -122,10 +122,10 @@ trial$add_arms(sample_ratio = c(1, 1), trt, pbo)
 trial
 #>  ⚕⚕ Trial Name:  Trial-31415  
 #>  ⚕⚕ Description:  Example Clinical Trial  
-#>  ⚕⚕ # of Arms:  2  
+#>  ⚕⚕ Number of Arms:  2  
 #>  ⚕⚕ Registered Arms:  treatment, placebo  
 #>  ⚕⚕ Sample Ratio:  1, 1  
-#>  ⚕⚕ # of Patients:  420  
+#>  ⚕⚕ Number of Patients:  420  
 #>  ⚕⚕ Planned Duration:  30  
 #>  ⚕⚕ Random Seed:  1012203595
 ```

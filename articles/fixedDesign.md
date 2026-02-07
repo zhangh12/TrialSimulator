@@ -4,6 +4,9 @@ In this vignette, we illustrate how to use `TrialSimulator` to simulate
 a trial of two correlated endpoints. Under a fixed design, only one
 milestone is specified for final analysis.
 
+Any function invoked via the `trial$*` interface is documented under
+[`?Trials`](https://zhangh12.github.io/TrialSimulator/reference/Trials.md).
+
 ## Simulation Settings
 
 - Trial consists of two active arms of high and low dose, and a
@@ -158,10 +161,10 @@ trial$add_arms(sample_ratio = c(1, 1, 1), soc, low, high) ## 1:1:1
 trial
 #>  ⚕⚕ Trial Name:  Trial-3415  
 #>  ⚕⚕ Description:  Trial-3415  
-#>  ⚕⚕ # of Arms:  3  
+#>  ⚕⚕ Number of Arms:  3  
 #>  ⚕⚕ Registered Arms:  soc, low, high  
 #>  ⚕⚕ Sample Ratio:  1, 1, 1  
-#>  ⚕⚕ # of Patients:  1000  
+#>  ⚕⚕ Number of Patients:  1000  
 #>  ⚕⚕ Planned Duration:  500  
 #>  ⚕⚕ Random Seed:  1727811904
 ```

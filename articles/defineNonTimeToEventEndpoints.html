@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.8.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -206,10 +206,10 @@ function:</p>
 <span><span class="va">trial</span></span>
 <span><span class="co">#&gt;  ⚕⚕ Trial Name:  Trial-31415  </span></span>
 <span><span class="co">#&gt;  ⚕⚕ Description:  Example Clinical Trial  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ # of Arms:  2  </span></span>
+<span><span class="co">#&gt;  ⚕⚕ Number of Arms:  2  </span></span>
 <span><span class="co">#&gt;  ⚕⚕ Registered Arms:  treatment, placebo  </span></span>
 <span><span class="co">#&gt;  ⚕⚕ Sample Ratio:  1, 1  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ # of Patients:  420  </span></span>
+<span><span class="co">#&gt;  ⚕⚕ Number of Patients:  420  </span></span>
 <span><span class="co">#&gt;  ⚕⚕ Planned Duration:  30  </span></span>
 <span><span class="co">#&gt;  ⚕⚕ Random Seed:  1012203595</span></span></code></pre></div>
 <p>Here <code>accrual_rate</code> is an argument of
@@ -294,7 +294,7 @@ controller to monitor and execute the trial.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Ignoring unknown labels:</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> <span style="color: #00BB00;">colour</span> : <span style="color: #0000BB;">""</span></span></span></code></pre></div>
-<p><img src="defineNonTimeToEventEndpoints_files/figure-html/ihhf-1.png" class="r-plt" width="100%"></p>
+<p><img src="defineNonTimeToEventEndpoints_files/figure-html/ihhf-1.png" class="r-plt" alt="" width="100%"></p>
 <p>We can inspect the dataset locked at different milestone by calling
 member function <code>get_locked_data</code> with milestone names.
 Ideally, this should be done within custom action function, where

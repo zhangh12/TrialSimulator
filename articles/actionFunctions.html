@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.8.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -87,14 +87,18 @@ dynamic trial behaviors, such as:</p>
 <ul>
 <li><p>Conducting interim analyses</p></li>
 <li><p>Early stopping for efficacy or futility</p></li>
-<li><p>Dropping or selecting treatment arms</p></li>
-<li><p>Adjusting enrollment rules adaptively</p></li>
+<li><p>Dropping, adding or selecting treatment arms</p></li>
+<li><p>Resizing based on sample size reassessment</p></li>
+<li><p>extending trial duration</p></li>
+<li><p>Adjusting enrollment rules</p></li>
 <li><p>Logging or tracking intermediate results</p></li>
 <li><p>Locking and exporting trial data snapshot at specific
 points</p></li>
 </ul>
 <p>This vignette demonstrates how to define such actions, associate them
 with milestones, and make use of them to enrich trial simulations.</p>
+<p>Any function invoked via the <code>trial$*</code> interface is
+documented under <code><a href="../reference/Trials.html">?Trials</a></code>.</p>
 <div class="section level2">
 <h2 id="define-trial-milestones">Define Trial Milestones<a class="anchor" aria-label="anchor" href="#define-trial-milestones"></a>
 </h2>
@@ -622,7 +626,7 @@ milestone</td>
 <tr class="odd">
 <td>Increase sample size<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;experimental&lt;/p&gt;"><sup>1</sup></a>
 </td>
-<td><code>trial$set_sample_size()</code></td>
+<td><code>trial$resize()</code></td>
 <td>sample size reassessment</td>
 </tr>
 <tr class="even">

@@ -9,9 +9,13 @@ behaviors, such as:
 
 - Early stopping for efficacy or futility
 
-- Dropping or selecting treatment arms
+- Dropping, adding or selecting treatment arms
 
-- Adjusting enrollment rules adaptively
+- Resizing based on sample size reassessment
+
+- extending trial duration
+
+- Adjusting enrollment rules
 
 - Logging or tracking intermediate results
 
@@ -19,6 +23,9 @@ behaviors, such as:
 
 This vignette demonstrates how to define such actions, associate them
 with milestones, and make use of them to enrich trial simulations.
+
+Any function invoked via the `trial$*` interface is documented under
+[`?Trials`](https://zhangh12.github.io/TrialSimulator/reference/Trials.md).
 
 ## Define Trial Milestones
 
@@ -495,7 +502,7 @@ Adaptations that are currently supported are summarized below:
 | Add an arm                    | `trial$add_arms()`                                     | adaptive platform trials                                |
 | Update sample ratio           | `trial$update_sample_ratio()`                          | response-adaptive design                                |
 | Extend trial duration         | `trial$set_duration()` or add a event-driven milestone | actual patient or event accrual is slower than expected |
-| Increase sample size[¹](#fn1) | `trial$set_sample_size()`                              | sample size reassessment                                |
+| Increase sample size[¹](#fn1) | `trial$resize()`                                       | sample size reassessment                                |
 | Eliminate sub-population      | `trial$update_generator()`                             | enrichment design; data model changes over time         |
 
 These adaptive features allow users to simulate complex, data-driven

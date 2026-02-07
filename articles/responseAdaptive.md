@@ -29,6 +29,9 @@ randomization ratio is re-implemented based on the logic of the
 `DoseFinding` package and may differ slightly from that used in
 Dr. Dmitrienko’s materials.
 
+Any function invoked via the `trial$*` interface is documented under
+[`?Trials`](https://zhangh12.github.io/TrialSimulator/reference/Trials.md).
+
 ## Simulation Settings
 
 - We assume an `Emax` model for the endpoint `fev1` (forced expiratory
@@ -141,10 +144,10 @@ trial$add_arms(sample_ratio = rep(1, 5), pbo, dose1, dose2, dose3, dose4)
 trial
 #>  ⚕⚕ Trial Name:  Trial-3415  
 #>  ⚕⚕ Description:  Trial-3415  
-#>  ⚕⚕ # of Arms:  5  
+#>  ⚕⚕ Number of Arms:  5  
 #>  ⚕⚕ Registered Arms:  0.0, 20.0, 25.0, 30.0, 35.0  
 #>  ⚕⚕ Sample Ratio:  1, 1, 1, 1, 1  
-#>  ⚕⚕ # of Patients:  200  
+#>  ⚕⚕ Number of Patients:  200  
 #>  ⚕⚕ Planned Duration:  40  
 #>  ⚕⚕ Random Seed:  1727811904
 ```
