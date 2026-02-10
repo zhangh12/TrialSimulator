@@ -153,6 +153,8 @@ we recommend reading the following vignettes in order:
   Distribution
 - [`Trials`](https://zhangh12.github.io/TrialSimulator/reference/Trials.md)
   : Class of Trial
+- [`add_arms()`](https://zhangh12.github.io/TrialSimulator/reference/add_arms.md)
+  : Adding One or More Arms to a Trial
 - [`arm()`](https://zhangh12.github.io/TrialSimulator/reference/arm.md)
   : Define an Arm
 - [`calendarTime()`](https://zhangh12.github.io/TrialSimulator/reference/calendarTime.md)
@@ -192,6 +194,12 @@ we recommend reading the following vignettes in order:
   : Plot result of three-state ill-death model
 - [`rconst()`](https://zhangh12.github.io/TrialSimulator/reference/rconst.md)
   : Generate Constant Variable
+- [`remove_arms()`](https://zhangh12.github.io/TrialSimulator/reference/remove_arms.md)
+  : Removing One or More Arms From a Trial
+- [`resize()`](https://zhangh12.github.io/TrialSimulator/reference/resize.md)
+  : Resizing a Trial
+- [`set_duration()`](https://zhangh12.github.io/TrialSimulator/reference/set_duration.md)
+  : Extending Duration of a Trial
 - [`solveMixtureExponentialDistribution()`](https://zhangh12.github.io/TrialSimulator/reference/solveMixtureExponentialDistribution.md)
   : Solve Parameters in a Mixture Exponential Distribution
 - [`solveThreeStateModel()`](https://zhangh12.github.io/TrialSimulator/reference/solveThreeStateModel.md)
@@ -202,6 +210,10 @@ we recommend reading the following vignettes in order:
   : Summary of Milestone Time from Simulated Trials
 - [`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md)
   : Define a Trial
+- [`update_generator()`](https://zhangh12.github.io/TrialSimulator/reference/update_generator.md)
+  : Updating Data Generators of One or More Endpoints in an Arm
+- [`update_sample_ratio()`](https://zhangh12.github.io/TrialSimulator/reference/update_sample_ratio.md)
+  : Updating Sampling Ratios of Existing Arms in a Trial
 - [`weibullDropout()`](https://zhangh12.github.io/TrialSimulator/reference/weibullDropout.md)
   : Calculate Parameters of Weibull Distribution as a Dropout Method
 

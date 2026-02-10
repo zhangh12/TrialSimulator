@@ -282,7 +282,7 @@ return maximum duration of a trial
 
 ------------------------------------------------------------------------
 
-### Method `set_duration()`
+### Method [`set_duration()`](https://zhangh12.github.io/TrialSimulator/reference/set_duration.md)
 
 set trial duration in an adaptive designed trial. All patients enrolled
 before resetting the duration are truncated (non-tte endpoints) or
@@ -377,7 +377,7 @@ is planned enrollment curve.
 
 ------------------------------------------------------------------------
 
-### Method `remove_arms()`
+### Method [`remove_arms()`](https://zhangh12.github.io/TrialSimulator/reference/remove_arms.md)
 
 remove arms from a trial. `enroll_patients()` will be called at the end
 of this function to enroll all remaining patients after
@@ -403,7 +403,7 @@ truncated by the time of arm removal.
 
 ------------------------------------------------------------------------
 
-### Method `update_sample_ratio()`
+### Method [`update_sample_ratio()`](https://zhangh12.github.io/TrialSimulator/reference/update_sample_ratio.md)
 
 update sample ratios of arms. This could happen after an arm is added or
 removed. Note that we may update sample ratios of unaffected arms as
@@ -431,7 +431,7 @@ re-sampled as well.
 
 ------------------------------------------------------------------------
 
-### Method `update_generator()`
+### Method [`update_generator()`](https://zhangh12.github.io/TrialSimulator/reference/update_generator.md)
 
 update endpoint generator in an arm
 
@@ -460,7 +460,7 @@ update endpoint generator in an arm
 
 ------------------------------------------------------------------------
 
-### Method `resize()`
+### Method [`resize()`](https://zhangh12.github.io/TrialSimulator/reference/resize.md)
 
 resize a trial with a greater sample size. This function is used to
 update the maximum sample size adaptively after sample size
@@ -480,7 +480,7 @@ has no way to track this.
 
 ------------------------------------------------------------------------
 
-### Method `add_arms()`
+### Method [`add_arms()`](https://zhangh12.github.io/TrialSimulator/reference/add_arms.md)
 
 add one or more arms to the trial. `enroll_patients()` will be called at
 the end to enroll all remaining patients in

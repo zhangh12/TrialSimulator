@@ -93,7 +93,7 @@ $closedTest() perform combination test based on Dunnett's test.
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.8.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -337,7 +337,7 @@ function is called</p><div class="section">
 
 
 </div><p></p><hr><a id="method-Trials-set_duration"></a><div class="section">
-<h3 id="method-set-duration-">Method <code>set_duration()</code><a class="anchor" aria-label="anchor" href="#method-set-duration-"></a></h3>
+<h3 id="method-set-duration-">Method <code><a href="set_duration.html">set_duration()</a></code><a class="anchor" aria-label="anchor" href="#method-set-duration-"></a></h3>
 <p>set trial duration in an adaptive designed trial. All patients enrolled
 before resetting the duration are truncated (non-tte endpoints) or
 censored (tte endpoints) at the original duration. Remaining patients
@@ -427,7 +427,7 @@ kept unchanged because that is planned enrollment curve.</p><div class="section"
 
 
 </div><p></p><hr><a id="method-Trials-remove_arms"></a><div class="section">
-<h3 id="method-remove-arms-">Method <code>remove_arms()</code><a class="anchor" aria-label="anchor" href="#method-remove-arms-"></a></h3>
+<h3 id="method-remove-arms-">Method <code><a href="remove_arms.html">remove_arms()</a></code><a class="anchor" aria-label="anchor" href="#method-remove-arms-"></a></h3>
 <p>remove arms from a trial. <code>enroll_patients()</code> will be called
 at the end of this function to enroll all remaining patients after
 <code>Trials$get_current_time()</code>, i.e. no more unenrolled patients
@@ -453,7 +453,7 @@ the time of arm removal.</p><div class="section">
 </div>
 
 </div><p></p><hr><a id="method-Trials-update_sample_ratio"></a><div class="section">
-<h3 id="method-update-sample-ratio-">Method <code>update_sample_ratio()</code><a class="anchor" aria-label="anchor" href="#method-update-sample-ratio-"></a></h3>
+<h3 id="method-update-sample-ratio-">Method <code><a href="update_sample_ratio.html">update_sample_ratio()</a></code><a class="anchor" aria-label="anchor" href="#method-update-sample-ratio-"></a></h3>
 <p>update sample ratios of arms. This could happen after an arm is added
 or removed. Note that we may update sample ratios of unaffected arms as
 well. Once sample ratio is updated, trial data should be rolled back with
@@ -481,7 +481,7 @@ simulation.</p></dd>
 </div>
 
 </div><p></p><hr><a id="method-Trials-update_generator"></a><div class="section">
-<h3 id="method-update-generator-">Method <code>update_generator()</code><a class="anchor" aria-label="anchor" href="#method-update-generator-"></a></h3>
+<h3 id="method-update-generator-">Method <code><a href="update_generator.html">update_generator()</a></code><a class="anchor" aria-label="anchor" href="#method-update-generator-"></a></h3>
 <p>update endpoint generator in an arm</p><div class="section">
 <h4 id="usage-11">Usage<a class="anchor" aria-label="anchor" href="#usage-11"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">update_generator</span><span class="op">(</span><span class="va">arm_name</span>, <span class="va">endpoint_name</span>, <span class="va">generator</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
@@ -511,7 +511,7 @@ See <code>generator</code> of <code><a href="endpoint.html">endpoint()</a></code
 </div>
 
 </div><p></p><hr><a id="method-Trials-resize"></a><div class="section">
-<h3 id="method-resize-">Method <code>resize()</code><a class="anchor" aria-label="anchor" href="#method-resize-"></a></h3>
+<h3 id="method-resize-">Method <code><a href="resize.html">resize()</a></code><a class="anchor" aria-label="anchor" href="#method-resize-"></a></h3>
 <p>resize a trial with a greater sample size. This function is used to
 update the maximum sample size adaptively after sample size reassessment.
 Note that this function should be called within action functions.
@@ -531,7 +531,7 @@ no way to track this.</p><div class="section">
 </div>
 
 </div><p></p><hr><a id="method-Trials-add_arms"></a><div class="section">
-<h3 id="method-add-arms-">Method <code>add_arms()</code><a class="anchor" aria-label="anchor" href="#method-add-arms-"></a></h3>
+<h3 id="method-add-arms-">Method <code><a href="add_arms.html">add_arms()</a></code><a class="anchor" aria-label="anchor" href="#method-add-arms-"></a></h3>
 <p>add one or more arms to the trial. <code>enroll_patients()</code> will be
 called at the end to enroll all remaining patients in
 <code>private$randomization_queue</code>. This function can be used in two

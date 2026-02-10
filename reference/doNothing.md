@@ -5,9 +5,14 @@ milestone is triggered. When the listener is monitoring a trial and
 determining the time to trigger a milestone, data is automatically
 locked with other necessary data manipulations (censoring, truncation,
 etc.) are executed. If the users have no intent to modify the trial
-adaptively at the milestone, e.g., adding (`add_arms()`) or removing
-(`remove_arms()`) arm(s), changing sampling ratio(s)
-(`update_sample_ratio()`), modifying trial duration (`set_duration()`),
+adaptively at the milestone, e.g., adding
+([`add_arms()`](https://zhangh12.github.io/TrialSimulator/reference/add_arms.md))
+or removing
+([`remove_arms()`](https://zhangh12.github.io/TrialSimulator/reference/remove_arms.md))
+arm(s), changing sampling ratio(s)
+([`update_sample_ratio()`](https://zhangh12.github.io/TrialSimulator/reference/update_sample_ratio.md)),
+modifying trial duration
+([`set_duration()`](https://zhangh12.github.io/TrialSimulator/reference/set_duration.md)),
 carrying out statistical testing, or saving intermediate results
 ([`save()`](https://rdrr.io/r/base/save.html), etc.), then this function
 can be used to set the argument `action` when creating a new milestone.

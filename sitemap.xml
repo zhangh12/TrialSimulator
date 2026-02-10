@@ -31,6 +31,7 @@
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/PiecewiseConstantExponentialRNG.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/StaggeredRecruiter.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/Trials.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/reference/add_arms.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/arm.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/calendarTime.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/controller.html</loc></url>
@@ -51,11 +52,16 @@
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/plot.milestone_time_summary.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/plot.three_state_model.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/rconst.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/reference/remove_arms.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/reference/resize.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/reference/set_duration.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/solveMixtureExponentialDistribution.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/solveThreeStateModel.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/summarizeDataFrame.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/summarizeMilestoneTime.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/trial.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/reference/update_generator.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/reference/update_sample_ratio.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/weibullDropout.html</loc></url>
 </urlset>
 

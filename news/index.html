@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.8.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,6 +46,21 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.9.0" id="trialsimulator-190">TrialSimulator 1.9.0<a class="anchor" aria-label="anchor" href="#trialsimulator-190"></a></h2>
+<div class="section level3">
+<h3 id="new-feature-1-9-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-1-9-0"></a></h3>
+<ul><li>Support wrapper functions for adaptation, including <code><a href="../reference/remove_arms.html">remove_arms()</a></code>, <code><a href="../reference/add_arms.html">add_arms()</a></code>, <code><a href="../reference/update_sample_ratio.html">update_sample_ratio()</a></code>, <code><a href="../reference/set_duration.html">set_duration()</a></code>, <code><a href="../reference/resize.html">resize()</a></code> and <code><a href="../reference/update_generator.html">update_generator()</a></code>.</li>
+<li>More informative message is prompted when error is throwed from an action function; milestone’s name is printed.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.8.0" id="trialsimulator-180">TrialSimulator 1.8.0<a class="anchor" aria-label="anchor" href="#trialsimulator-180"></a></h2>
+<div class="section level3">
+<h3 id="new-feature-1-8-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-1-8-0"></a></h3>
+<ul><li>Support new adaptation <code>Trials$resize()</code> that resizes an ongoing trial.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.7.0" id="trialsimulator-170">TrialSimulator 1.7.0<a class="anchor" aria-label="anchor" href="#trialsimulator-170"></a></h2><p class="text-muted">CRAN release: 2025-12-19</p>
 <div class="section level3">
@@ -152,8 +167,8 @@
 <div class="section level3">
 <h3 id="new-feature-0-93-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-0-93-0"></a></h3>
 <ul><li>
-<code>update_sample_ratio()</code> now supports updating multiple arms simultaneously. When ratio is not a whole number, <code><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample()</a></code> is used to replace the permuted block algorithm to randomize patients to arms. This enable response-adaptive design.</li>
-<li>Add a vignette of response-adaptive design using <code>update_sample_ratio()</code>.</li>
+<code><a href="../reference/update_sample_ratio.html">update_sample_ratio()</a></code> now supports updating multiple arms simultaneously. When ratio is not a whole number, <code><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample()</a></code> is used to replace the permuted block algorithm to randomize patients to arms. This enable response-adaptive design.</li>
+<li>Add a vignette of response-adaptive design using <code><a href="../reference/update_sample_ratio.html">update_sample_ratio()</a></code>.</li>
 </ul></div>
 </div>
     <div class="section level2">

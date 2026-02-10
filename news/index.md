@@ -1,5 +1,27 @@
 # Changelog
 
+## TrialSimulator 1.9.0
+
+### New Feature
+
+- Support wrapper functions for adaptation, including
+  [`remove_arms()`](https://zhangh12.github.io/TrialSimulator/reference/remove_arms.md),
+  [`add_arms()`](https://zhangh12.github.io/TrialSimulator/reference/add_arms.md),
+  [`update_sample_ratio()`](https://zhangh12.github.io/TrialSimulator/reference/update_sample_ratio.md),
+  [`set_duration()`](https://zhangh12.github.io/TrialSimulator/reference/set_duration.md),
+  [`resize()`](https://zhangh12.github.io/TrialSimulator/reference/resize.md)
+  and
+  [`update_generator()`](https://zhangh12.github.io/TrialSimulator/reference/update_generator.md).
+- More informative message is prompted when error is throwed from an
+  action function; milestone’s name is printed.
+
+## TrialSimulator 1.8.0
+
+### New Feature
+
+- Support new adaptation `Trials$resize()` that resizes an ongoing
+  trial.
+
 ## TrialSimulator 1.7.0
 
 CRAN release: 2025-12-19
@@ -118,13 +140,13 @@ CRAN release: 2025-09-03
 
 ### New Feature
 
-- `update_sample_ratio()` now supports updating multiple arms
-  simultaneously. When ratio is not a whole number,
-  [`sample()`](https://rdrr.io/r/base/sample.html) is used to replace
-  the permuted block algorithm to randomize patients to arms. This
-  enable response-adaptive design.
+- [`update_sample_ratio()`](https://zhangh12.github.io/TrialSimulator/reference/update_sample_ratio.md)
+  now supports updating multiple arms simultaneously. When ratio is not
+  a whole number, [`sample()`](https://rdrr.io/r/base/sample.html) is
+  used to replace the permuted block algorithm to randomize patients to
+  arms. This enable response-adaptive design.
 - Add a vignette of response-adaptive design using
-  `update_sample_ratio()`.
+  [`update_sample_ratio()`](https://zhangh12.github.io/TrialSimulator/reference/update_sample_ratio.md).
 
 ## TrialSimulator 0.92.0
 

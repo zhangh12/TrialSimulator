@@ -141,7 +141,7 @@ return random number generator of an endpoint
 
 ------------------------------------------------------------------------
 
-### Method `update_generator()`
+### Method [`update_generator()`](https://zhangh12.github.io/TrialSimulator/reference/update_generator.md)
 
 update endpoint generator
 

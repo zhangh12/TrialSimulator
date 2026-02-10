@@ -505,6 +505,11 @@ Adaptations that are currently supported are summarized below:
 | Increase sample size[¹](#fn1) | `trial$resize()`                                       | sample size reassessment                                |
 | Eliminate sub-population      | `trial$update_generator()`                             | enrichment design; data model changes over time         |
 
+Note that functions in the table above are member functions of `Trials`
+object. Users who are not familiar with the concept of classes may
+consider using their wrapper functions. The wrapper function of
+`trial$foo(...)` is `foo(trial, ...)`.
+
 These adaptive features allow users to simulate complex, data-driven
 designs where trial conduct is not static but evolves in response to
 accumulating evidence. At the time of writing, the vignette dedicated to

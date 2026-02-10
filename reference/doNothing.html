@@ -35,7 +35,7 @@ automatically."><meta property="og:image" content="https://zhangh12.github.io/Tr
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.8.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -81,10 +81,10 @@ is triggered. When the listener is monitoring a trial and determining the
 time to trigger a milestone, data is automatically locked with other necessary
 data manipulations (censoring, truncation, etc.) are executed.
 If the users have no intent to modify the
-trial adaptively at the milestone, e.g., adding (<code>add_arms()</code>) or
-removing (<code>remove_arms()</code>) arm(s),
-changing sampling ratio(s) (<code>update_sample_ratio()</code>),
-modifying trial duration (<code>set_duration()</code>), carrying out statistical
+trial adaptively at the milestone, e.g., adding (<code><a href="add_arms.html">add_arms()</a></code>) or
+removing (<code><a href="remove_arms.html">remove_arms()</a></code>) arm(s),
+changing sampling ratio(s) (<code><a href="update_sample_ratio.html">update_sample_ratio()</a></code>),
+modifying trial duration (<code><a href="set_duration.html">set_duration()</a></code>), carrying out statistical
 testing, or saving intermediate results (<code><a href="https://rdrr.io/r/base/save.html" class="external-link">save()</a></code>, etc.),
 then this function
 can be used to set the argument <code>action</code> when creating a new milestone.

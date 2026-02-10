@@ -56,8 +56,9 @@ eventNumber(endpoint, n, ..., arms = NULL)
 
   vector of character. Name of arms on which the number of
   events/observations is counted. If `NULL`, use all arms that are not
-  yet removed from the trial (using `remove_arms()`) by the time of
-  calculation.
+  yet removed from the trial (using
+  [`remove_arms()`](https://zhangh12.github.io/TrialSimulator/reference/remove_arms.md))
+  by the time of calculation.
 
 ## Value
 
