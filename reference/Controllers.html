@@ -27,7 +27,7 @@ $reset()
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.9.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.10.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -199,7 +199,13 @@ custom outputs in <code><a href="https://rdrr.io/r/base/save.html" class="extern
 <h3 id="method-run-">Method <code>run()</code><a class="anchor" aria-label="anchor" href="#method-run-"></a></h3>
 <p>run trial simulation.</p><div class="section">
 <h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controllers</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1</span>, plot_event <span class="op">=</span> <span class="cn">TRUE</span>, silent <span class="op">=</span> <span class="cn">FALSE</span>, dry_run <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controllers</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span></span>
+<span>  n <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  n_workers <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  plot_event <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  silent <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  dry_run <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -210,9 +216,22 @@ custom outputs in <code><a href="https://rdrr.io/r/base/save.html" class="extern
 <code>controller$get_output()</code>.</p></dd>
 
 
+<dt><code>n_workers</code></dt>
+<dd><p>integer. Number of parallel workers. When
+<code>n_workers = 1</code> (default), replicates are run sequentially.
+When <code>n_workers &gt; 1</code>, replicates are distributed across
+parallel workers using the <code>mirai</code> package, which must be
+installed separately. Each worker receives a serialized copy of
+the trial and listener objects and runs its share of replicates
+independently. If any replicate encounters an error, execution
+stops and already-collected results are preserved in
+<code>$get_output()</code>.</p></dd>
+
+
 <dt><code>plot_event</code></dt>
-<dd><p>logical. Create event plot if <code>FALSE</code>. Users
-should set it to be <code>FALSE</code> if <code>n &gt; 1</code>.</p></dd>
+<dd><p>logical. Create event plot if <code>TRUE</code>. Users
+should set it to be <code>FALSE</code> if <code>n &gt; 1</code>. Forced to
+<code>FALSE</code> when <code>n_workers &gt; 1</code>.</p></dd>
 
 
 <dt><code>silent</code></dt>

@@ -152,7 +152,13 @@ run trial simulation.
 
 #### Usage
 
-    Controllers$run(n = 1, plot_event = TRUE, silent = FALSE, dry_run = FALSE)
+    Controllers$run(
+      n = 1,
+      n_workers = 1,
+      plot_event = TRUE,
+      silent = FALSE,
+      dry_run = FALSE
+    )
 
 #### Arguments
 
@@ -161,10 +167,20 @@ run trial simulation.
   integer. Number of replicates of simulation. `n = 1` by default.
   Simulation results can be accessed by `controller$get_output()`.
 
+- `n_workers`:
+
+  integer. Number of parallel workers. When `n_workers = 1` (default),
+  replicates are run sequentially. When `n_workers > 1`, replicates are
+  distributed across parallel workers using the `mirai` package, which
+  must be installed separately. Each worker receives a serialized copy
+  of the trial and listener objects and runs its share of replicates
+  independently. If any replicate encounters an error, execution stops
+  and already-collected results are preserved in `$get_output()`.
+
 - `plot_event`:
 
-  logical. Create event plot if `FALSE`. Users should set it to be
-  `FALSE` if `n > 1`.
+  logical. Create event plot if `TRUE`. Users should set it to be
+  `FALSE` if `n > 1`. Forced to `FALSE` when `n_workers > 1`.
 
 - `silent`:
 
