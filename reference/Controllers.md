@@ -175,7 +175,16 @@ run trial simulation.
   must be installed separately. Each worker receives a serialized copy
   of the trial and listener objects and runs its share of replicates
   independently. If any replicate encounters an error, execution stops
-  and already-collected results are preserved in `$get_output()`.
+  and already-collected results are preserved in `$get_output()`. To
+  debug, manually set `seed` in
+  [`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md)
+  and `n_workers = 1` in `run()` for reproduced results. Note that
+  optimal `n_workers` may not be
+  [`parallel::detectCores()`](https://rdrr.io/r/parallel/detectCores.html).
+  For example, Macbook with M1/M2/M3 chips may have performance cores
+  and efficiency cores. To achieve the best parallel performance, one
+  may want to use the performance cores only. For a M1 laptop with 4
+  performance cores, `n_workers = 3` may give the best performance.
 
 - `plot_event`:
 

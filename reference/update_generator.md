@@ -43,3 +43,5 @@ update_generator(trial, arm_name, endpoint_name, generator, ...)
   [`endpoint()`](https://zhangh12.github.io/TrialSimulator/reference/endpoint.md).
 
 - ...:
+
+  optional arguments for generator.

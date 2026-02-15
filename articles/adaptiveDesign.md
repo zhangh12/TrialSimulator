@@ -8,9 +8,6 @@ test with Dunnett’s test, with $\alpha$ split for the endpoints. Please
 refer to another vignette where graphical testing procedure is adopted
 instead.
 
-Any function invoked via the `trial$*` interface is documented under
-[`?Trials`](https://zhangh12.github.io/TrialSimulator/reference/Trials.md).
-
 ## Simulation Settings
 
 - Trial consists of two active arms of high or low dose, and a placebo
@@ -404,7 +401,8 @@ trial on patient level, and provide flexibility in adaptive design.
 We can run a massive number of replicates in simulation to study
 operating characteristics of a trial design by specifying `n` in
 `Controller$run()`. We can set `plot_event = FALSE` to turn off plotting
-to save running time.
+to save running time. Parallelization is also supported by setting
+`n_workers`.
 
 ``` r
 ## reset a controller if $run has been executed before

@@ -41,9 +41,6 @@ x <- DoseFinding::getResp(mods, doses = c(0, 0.5, 1.5, 2.5, 4))
 #> -2.197225  1.115778  1.000000  3.000000
 ```
 
-Any function invoked via the `trial$*` interface is documented under
-[`?Trials`](https://zhangh12.github.io/TrialSimulator/reference/Trials.md).
-
 ## Simulation Settings
 
 In our simulation, we assume

@@ -24,9 +24,6 @@ behaviors, such as:
 This vignette demonstrates how to define such actions, associate them
 with milestones, and make use of them to enrich trial simulations.
 
-Any function invoked via the `trial$*` interface is documented under
-[`?Trials`](https://zhangh12.github.io/TrialSimulator/reference/Trials.md).
-
 ## Define Trial Milestones
 
 A milestone represents a pre-specified time point or condition during

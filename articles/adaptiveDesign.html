@@ -88,8 +88,6 @@ error rate are controlled by closed test with Dunnett’s test, with
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math>
 split for the endpoints. Please refer to another vignette where
 graphical testing procedure is adopted instead.</p>
-<p>Any function invoked via the <code>trial$*</code> interface is
-documented under <code><a href="../reference/Trials.html">?Trials</a></code>.</p>
 <div class="section level2">
 <h2 id="simulation-settings">Simulation Settings<a class="anchor" aria-label="anchor" href="#simulation-settings"></a>
 </h2>
@@ -660,7 +658,8 @@ adaptive design.</p>
 operating characteristics of a trial design by specifying <code>n</code>
 in <code>Controller$run()</code>. We can set
 <code>plot_event = FALSE</code> to turn off plotting to save running
-time.</p>
+time. Parallelization is also supported by setting
+<code>n_workers</code>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## reset a controller if $run has been executed before</span></span>
 <span><span class="va">controller</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span>

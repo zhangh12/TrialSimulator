@@ -29,9 +29,6 @@ randomization ratio is re-implemented based on the logic of the
 `DoseFinding` package and may differ slightly from that used in
 Dr. Dmitrienko’s materials.
 
-Any function invoked via the `trial$*` interface is documented under
-[`?Trials`](https://zhangh12.github.io/TrialSimulator/reference/Trials.md).
-
 ## Simulation Settings
 
 - We assume an `Emax` model for the endpoint `fev1` (forced expiratory

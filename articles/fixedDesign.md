@@ -4,9 +4,6 @@ In this vignette, we illustrate how to use `TrialSimulator` to simulate
 a trial of two correlated endpoints. Under a fixed design, only one
 milestone is specified for final analysis.
 
-Any function invoked via the `trial$*` interface is documented under
-[`?Trials`](https://zhangh12.github.io/TrialSimulator/reference/Trials.md).
-
 ## Simulation Settings
 
 - Trial consists of two active arms of high and low dose, and a

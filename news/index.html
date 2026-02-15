@@ -47,6 +47,13 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.10.0" id="trialsimulator-1100">TrialSimulator 1.10.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1100"></a></h2>
+<div class="section level3">
+<h3 id="new-feature-1-10-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-1-10-0"></a></h3>
+<ul><li>Support parallelization in <code>Controllers$run()</code> through new argument <code>n_workers</code>. The package <code>mirai</code> is used. Although <code>mirai</code> advocates the use of L’Ecuyer-CMRG streams to maintain independence between multiple streams, however, <code>TrialSimulator</code> resets it to be Mersenne-Twister streams to force identical behavior between <code>n_workers = 1</code> and <code>n_workers &gt; 1</code>. This enables debuggability and reproduciability under single-process mode by setting seed that causes issues under multi-process mode.</li>
+</ul></div>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.9.0" id="trialsimulator-190">TrialSimulator 1.9.0<a class="anchor" aria-label="anchor" href="#trialsimulator-190"></a></h2>
 <div class="section level3">
 <h3 id="new-feature-1-9-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-1-9-0"></a></h3>
