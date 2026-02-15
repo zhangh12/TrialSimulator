@@ -281,9 +281,8 @@ Controllers <- R6::R6Class(
     #' parallel performance, one may want to use the performance cores only.
     #' For a M1 laptop with 4 performance cores, \code{n_workers = 3} may give
     #' the best performance.
-    #' @param plot_event logical. Create event plot if \code{TRUE}. Users
-    #' should set it to be \code{FALSE} if \code{n > 1}. Forced to
-    #' \code{FALSE} when \code{n_workers > 1}.
+    #' @param plot_event logical. Create event plot if \code{TRUE}. Forced to
+    #' \code{FALSE} when \code{n > 1} or \code{n_workers > 1}.
     #' @param silent logical. \code{TRUE} if muting all messages during a
     #' trial. Note that warning messages are still displayed.
     #' @param dry_run logical. We are considering retire this argument.

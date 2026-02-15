@@ -64,9 +64,9 @@ To efficiently utilize `TrialSimulator` for clinical trial simulations, we recom
 
 - Define endpoints and arms
   - [Time-to-event (TTE) endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineTimeToEventEndpoints.html)
-    - [Simulate correlated PFS and OS](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOs.html)
+    - [Special case: simulate correlated PFS and OS](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOs.html)
   - [Non-TTE endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineNonTimeToEventEndpoints.html)
-    - [Longitudinal endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineLongitudinalEndpoints.html)
+    - [Special case: longitudinal endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineLongitudinalEndpoints.html)
   - [Define and summarize arms](https://zhangh12.github.io/TrialSimulator/articles/defineArms.html)
 - Condition system for milestones
   - [Triggering trial milestones](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html)
@@ -85,7 +85,7 @@ To efficiently utilize `TrialSimulator` for clinical trial simulations, we recom
   - [Wrapper functions of common statistical methods for estimating treatment effect](https://zhangh12.github.io/TrialSimulator/articles/wrappers.html)
   - [Group sequential test] See `?GroupSequentialTest`. 
   - [Graphical testing procedure] See `?GraphicalTesting`. 
-  - [Combination test based on independent increment] vignette is under development. 
+  - [Combination test based on independent increment] extended from [Jorgens et al. 2019](https://onlinelibrary.wiley.com/doi/10.1002/pst.1926). Vignette is under development. 
 
 
 
