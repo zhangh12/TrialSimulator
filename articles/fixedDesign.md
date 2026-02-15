@@ -236,8 +236,7 @@ controller <- controller(trial, listener)
 
 We can run a massive number of replicates in simulation to study
 operating characteristics of a trial design by specifying `n` in
-`Controller$run()`. We can set `plot_event = FALSE` to turn off plotting
-to save running time. The simulation results can be accessed by calling
+`Controller$run()`. The simulation results can be accessed by calling
 the member function `get_output()` of the controller.
 
 ``` r

@@ -83,11 +83,11 @@ we recommend reading the following vignettes in order:
 - Define endpoints and arms
   - [Time-to-event (TTE)
     endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineTimeToEventEndpoints.html)
-    - [Simulate correlated PFS and
+    - [Special case: simulate correlated PFS and
       OS](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOs.html)
   - [Non-TTE
     endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineNonTimeToEventEndpoints.html)
-    - [Longitudinal
+    - [Special case: longitudinal
       endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineLongitudinalEndpoints.html)
   - [Define and summarize
     arms](https://zhangh12.github.io/TrialSimulator/articles/defineArms.html)
@@ -118,8 +118,10 @@ we recommend reading the following vignettes in order:
     [`?GroupSequentialTest`](https://zhangh12.github.io/TrialSimulator/reference/GroupSequentialTest.md).
   - \[Graphical testing procedure\] See
     [`?GraphicalTesting`](https://zhangh12.github.io/TrialSimulator/reference/GraphicalTesting.md).
-  - \[Combination test based on independent increment\] vignette is
-    under development.
+  - \[Combination test based on independent increment\] extended from
+    [Jorgens et
+    al. 2019](https://onlinelibrary.wiley.com/doi/10.1002/pst.1926).
+    Vignette is under development.
 
 # Package index
 

@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.10.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.10.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -656,10 +656,8 @@ adaptive design.</p>
 </h2>
 <p>We can run a massive number of replicates in simulation to study
 operating characteristics of a trial design by specifying <code>n</code>
-in <code>Controller$run()</code>. We can set
-<code>plot_event = FALSE</code> to turn off plotting to save running
-time. Parallelization is also supported by setting
-<code>n_workers</code>.</p>
+in <code>Controller$run()</code>. Parallelization is also supported by
+setting <code>n_workers</code>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## reset a controller if $run has been executed before</span></span>
 <span><span class="va">controller</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span>

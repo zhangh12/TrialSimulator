@@ -188,8 +188,8 @@ run trial simulation.
 
 - `plot_event`:
 
-  logical. Create event plot if `TRUE`. Users should set it to be
-  `FALSE` if `n > 1`. Forced to `FALSE` when `n_workers > 1`.
+  logical. Create event plot if `TRUE`. Forced to `FALSE` when `n > 1`
+  or `n_workers > 1`.
 
 - `silent`:
 

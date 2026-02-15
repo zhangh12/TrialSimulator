@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.10.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.10.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -365,10 +365,9 @@ monitors the trial for us through a controller</p>
 <span><span class="va">controller</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/controller.html">controller</a></span><span class="op">(</span><span class="va">trial</span>, <span class="va">listener</span><span class="op">)</span></span></code></pre></div>
 <p>We can run a massive number of replicates in simulation to study
 operating characteristics of a trial design by specifying <code>n</code>
-in <code>Controller$run()</code>. We can set
-<code>plot_event = FALSE</code> to turn off plotting to save running
-time. The simulation results can be accessed by calling the member
-function <code>get_output()</code> of the controller.</p>
+in <code>Controller$run()</code>. The simulation results can be accessed
+by calling the member function <code>get_output()</code> of the
+controller.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1000</span>, plot_event <span class="op">=</span> <span class="cn">FALSE</span>, silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">output</span> <span class="op">&lt;-</span> <span class="va">controller</span><span class="op">$</span><span class="fu">get_output</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
