@@ -1539,5 +1539,48 @@ test_that('package behaves the same under single- and multi-process modes with s
 })
 
 
+test_that('functions of piecewise exponential distribution work fine', {
+
+  for(n in sample(5:10, 20, TRUE)){
+    surv_prob <- sort(runif(n), decreasing = TRUE)
+    times <- sort(runif(n, 0, 10), decreasing = FALSE)
+    x <- solvePiecewiseConstantExponentialDistribution(
+      surv_prob = surv_prob,
+      times = times
+    )
+
+    times <- x$end_time
+    rates <- x$piecewise_risk
+
+    qs <- qPiecewiseExponential(
+      1 - surv_prob,
+      times = times, piecewise_risk = c(rates, .1)
+    )
+
+    expect_equal(qs, times, tolerance = 1e-4)
+
+    p <- c(0, 1, runif(1e3))
+
+    u <-
+      data.frame(
+        a = qPiecewiseExponential(
+          p,
+          times = x$end_time,
+          piecewise_risk = c(x$piecewise_risk, .1)),
+
+        b = rpact::getPiecewiseExponentialQuantile(
+          p,
+          piecewiseSurvivalTime = c(0,x$end_time),
+          piecewiseLambda=c(x$piecewise_risk, .1))
+      )
+    expect_equal(u$a, u$b, tolerance = 1e-4)
+
+  }
+
+})
+
+
+
+
 
 
