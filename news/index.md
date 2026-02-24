@@ -1,6 +1,22 @@
 # Changelog
 
+## TrialSimulator 1.11.0
+
+### New Feature
+
+- Add function
+  [`solvePiecewiseConstantExponentialDistribution()`](https://zhangh12.github.io/TrialSimulator/reference/solvePiecewiseConstantExponentialDistribution.md)
+  to compute event rates in time windows given survival probabilities at
+  changepoints.
+- Add `qPiecewiseExponent()`, the quantile function of piecewise
+  exponential distribution. This function is useful to simulate
+  time-to-event endpoint that is correlated to other endpoints using the
+  copula method. For example, the `simdata` package needs marginal
+  quantile functions.
+
 ## TrialSimulator 1.10.0
+
+CRAN release: 2026-02-15
 
 ### New Feature
 

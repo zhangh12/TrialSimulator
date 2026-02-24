@@ -51,11 +51,13 @@
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/milestone.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/plot.milestone_time_summary.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/plot.three_state_model.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/reference/qPiecewiseExponential.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/rconst.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/remove_arms.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/resize.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/set_duration.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/solveMixtureExponentialDistribution.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/reference/solvePiecewiseConstantExponentialDistribution.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/solveThreeStateModel.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/summarizeDataFrame.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/summarizeMilestoneTime.html</loc></url>

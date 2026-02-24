@@ -69,6 +69,8 @@
   : Plot Triggering Time of Milestones in Simulated Trials
 - [`plot(`*`<three_state_model>`*`)`](https://zhangh12.github.io/TrialSimulator/reference/plot.three_state_model.md)
   : Plot result of three-state ill-death model
+- [`qPiecewiseExponential()`](https://zhangh12.github.io/TrialSimulator/reference/qPiecewiseExponential.md)
+  : Quantile Function of Piecewise Exponential Distribution
 - [`rconst()`](https://zhangh12.github.io/TrialSimulator/reference/rconst.md)
   : Generate Constant Variable
 - [`remove_arms()`](https://zhangh12.github.io/TrialSimulator/reference/remove_arms.md)
@@ -79,6 +81,8 @@
   : Extending Duration of a Trial
 - [`solveMixtureExponentialDistribution()`](https://zhangh12.github.io/TrialSimulator/reference/solveMixtureExponentialDistribution.md)
   : Solve Parameters in a Mixture Exponential Distribution
+- [`solvePiecewiseConstantExponentialDistribution()`](https://zhangh12.github.io/TrialSimulator/reference/solvePiecewiseConstantExponentialDistribution.md)
+  : Compute Constant Rates of Piecewise Exponential Distribution
 - [`solveThreeStateModel()`](https://zhangh12.github.io/TrialSimulator/reference/solveThreeStateModel.md)
   : Solve Parameters in a Three-State Ill-Death Model
 - [`summarizeDataFrame()`](https://zhangh12.github.io/TrialSimulator/reference/summarizeDataFrame.md)

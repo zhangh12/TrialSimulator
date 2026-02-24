@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.10.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,7 +47,15 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.10.0" id="trialsimulator-1100">TrialSimulator 1.10.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1100"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.11.0" id="trialsimulator-1110">TrialSimulator 1.11.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1110"></a></h2>
+<div class="section level3">
+<h3 id="new-feature-1-11-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-1-11-0"></a></h3>
+<ul><li>Add function <code><a href="../reference/solvePiecewiseConstantExponentialDistribution.html">solvePiecewiseConstantExponentialDistribution()</a></code> to compute event rates in time windows given survival probabilities at changepoints.</li>
+<li>Add <code>qPiecewiseExponent()</code>, the quantile function of piecewise exponential distribution. This function is useful to simulate time-to-event endpoint that is correlated to other endpoints using the copula method. For example, the <code>simdata</code> package needs marginal quantile functions.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.10.0" id="trialsimulator-1100">TrialSimulator 1.10.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1100"></a></h2><p class="text-muted">CRAN release: 2026-02-15</p>
 <div class="section level3">
 <h3 id="new-feature-1-10-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-1-10-0"></a></h3>
 <ul><li>Support parallelization in <code>Controllers$run()</code> through new argument <code>n_workers</code>. The package <code>mirai</code> is used. Although <code>mirai</code> advocates the use of L’Ecuyer-CMRG streams to maintain independence between multiple streams, however, <code>TrialSimulator</code> resets it to be Mersenne-Twister streams to force identical behavior between <code>n_workers = 1</code> and <code>n_workers &gt; 1</code>. This enables debuggability and reproduciability under single-process mode by setting seed that causes issues under multi-process mode.</li>

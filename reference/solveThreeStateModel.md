@@ -86,13 +86,13 @@ a data frame with columns:
 dat <- CorrelatedPfsAndOs3(1e6, h01 = .1, h02 = .05, h12 = .12)
 
 cor(dat$pfs, dat$os) ## 0.65
-#> [1] 0.6467199
+#> [1] 0.6467165
 
 median(dat$pfs) ## 4.62
-#> [1] 4.624702
+#> [1] 4.62474
 
 median(dat$os) ## 9.61
-#> [1] 9.601951
+#> [1] 9.602062
 
 ## find h01, h02, h12 that can match to median_pfs, median_os and corr
 ## should be close to h01 = 0.10, h02 = 0.05, h12 = 0.12 when corr = 0.65
