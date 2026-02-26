@@ -49,14 +49,12 @@ You can install the development version from
 [GitHub](https://github.com/zhangh12/TrialSimulator) with:
 
 ``` r
-if (!require("remotes")) {
+if(!requireNamespace("remotes", quietly = TRUE)){
   install.packages("remotes")
 }
 remotes::install_github(
   "zhangh12/TrialSimulator", 
-  build_manual = TRUE, 
-  build_vignettes = TRUE, 
-  force = TRUE
+  dependencies = TRUE
 )
 ```
 

@@ -134,13 +134,6 @@ test_set <- rbind(pfs_pbo$test_generator(n = 1e4) %>% mutate(arm = 'pbo'),
 
 sfit <- survfit(Surv(time = PFS, event = PFS_event) ~ arm, test_set)
 ggsurvplot(sfit, data = test_set, palette = c("blue", "red"))
-#> Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
-#> ℹ Please use `linewidth` instead.
-#> ℹ The deprecated feature was likely used in the ggpubr package.
-#>   Please report the issue at <https://github.com/kassambara/ggpubr/issues>.
-#> This warning is displayed once per session.
-#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-#> generated.
 ```
 
 ![](defineTimeToEventEndpoints_files/figure-html/aldjfba-1.png)
