@@ -1,3 +1,9 @@
+# TrialSimulator 1.12.0
+
+## New Feature
+
+- Support editing trajectory of endpoint over time. 
+
 # TrialSimulator 1.11.0
 
 ## New Feature

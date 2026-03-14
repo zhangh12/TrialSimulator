@@ -632,6 +632,34 @@ Trials <- R6::R6Class(
     },
 
     #' @description
+    #' register regime to a trial. The regime consists of three functions
+    #' to determine the patients who may switch to other treatment during a
+    #' a trial, to determine the switching time and how to update patients'
+    #' endpoint data accordingly.
+    #' @param regime an object created by \code{regime()}.
+    add_regime = function(regime){
+      if(self$has_arm()){
+        stop('Member function trial$add_regime() must be called before trial$add_arms(). ',
+             'A good practice is to call trial$add_regime() immediately after trial() is executed. ')
+      }
+
+      stopifnot(inherits(regime, 'Regimes'))
+      private$regime <- regime
+    },
+
+    #' @description
+    #' return registered regime.
+    get_regime = function(){
+      private$regime
+    },
+
+    #' @description
+    #' return whether a regime is registered
+    has_regime = function(){
+      !is.null(private$regime)
+    },
+
+    #' @description
     #' return name of trial
     get_name = function(){
       private$name
@@ -811,6 +839,19 @@ Trials <- R6::R6Class(
             dropout_time = self$get_dropout()(n = n_patients_in_arm)
           )
 
+        if(self$has_regime()){
+          arms_data[[arm]]$regime_trajectory <- I(Map(
+            function(a){
+                data.frame(
+                  regime = a,
+                  start_time = 0,
+                  stringsAsFactors = FALSE
+                )
+            },
+            arms_data[[arm]]$arm
+          ) %>% unname())
+        }
+
         arms_data[[arm]] <- cbind(arms_data[[arm]], self$get_an_arm(arm)$generate_data(n_patients_in_arm))
 
         arm_data <- arms_data[[arm]]
@@ -835,6 +876,32 @@ Trials <- R6::R6Class(
 
       for(arm in arms_in_trial){
         patient_data[which(next_enroll_arms %in% arm), ] <- arms_data[[arm]]
+      }
+
+      if(self$has_regime()){
+        # message('Set regime when there are ', self$get_number_enrolled_patients(), ' patients in the trial. ')
+        ## real-time monitor to apply potential regime switching over newly enrolled patients
+        for(row_idx in 1:nrow(patient_data)){
+          new_treatment <- self$get_regime()$get_treatment_selector()(patient_data[row_idx, ])
+          if(is.na(new_treatment)){
+            next
+          }
+
+          switch_time <- self$get_regime()$get_time_selector()(patient_data[row_idx, ])
+
+          updated_data <- self$get_regime()$get_data_modifier()(patient_data[row_idx, ], new_treatment, switch_time)
+
+          no_touch_cols <- c('patient_id', 'arm', 'enroll_time', 'dropout_time', 'regime_trajectory')
+          for(col in setdiff(names(updated_data), no_touch_cols)){
+            patient_data[row_idx, col] <- updated_data[[col]]
+          }
+
+          patient_data$regime_trajectory[row_idx][[1]] <-
+            rbind(patient_data$regime_trajectory[row_idx][[1]],
+                  data.frame(regime = new_treatment, start_time = switch_time)
+            )
+
+        }
       }
 
       private$trial_data <- bind_rows(self$get_trial_data(), patient_data)
@@ -2595,16 +2662,17 @@ Trials <- R6::R6Class(
       reset <- "" ## "\033[0m"  # Reset to default color
       logo <- '\u2695\u2695' ## stringi::stri_escape_unicode('⚕')
 
-      cat(white_text_blue_bg, logo, 'Trial Name: ', self$get_name(), reset, '\n')
-      cat(white_text_blue_bg, logo, 'Description: ', self$get_description(), reset, '\n')
-      cat(white_text_blue_bg, logo, 'Number of Arms: ', self$get_number_arms(), reset, '\n')
-      cat(white_text_blue_bg, logo, 'Registered Arms: ',
+      cat(white_text_blue_bg, logo, '        Trial Name: ', self$get_name(), reset, '\n')
+      cat(white_text_blue_bg, logo, '       Description: ', self$get_description(), reset, '\n')
+      cat(white_text_blue_bg, logo, '    Number of Arms: ', self$get_number_arms(), reset, '\n')
+      cat(white_text_blue_bg, logo, '   Registered Arms: ',
           paste0(self$get_arms_name(), collapse = ', '), reset, '\n')
-      cat(white_text_blue_bg, logo, 'Sample Ratio: ',
+      cat(white_text_blue_bg, logo, '      Sample Ratio: ',
           paste0(self$get_sample_ratio(), collapse = ', '), reset, '\n')
       cat(white_text_blue_bg, logo, 'Number of Patients: ', self$get_number_patients(), reset, '\n')
-      cat(white_text_blue_bg, logo, 'Planned Duration: ', self$get_duration(), reset, '\n')
-      cat(white_text_blue_bg, logo, 'Random Seed: ', self$get_seed(), reset, '\n')
+      cat(white_text_blue_bg, logo, '  Planned Duration: ', self$get_duration(), reset, '\n')
+      cat(white_text_blue_bg, logo, '            Regime: ', ifelse(is.null(self$get_regime()), 'not set', 'set'), reset, '\n')
+      cat(white_text_blue_bg, logo, '       Random Seed: ', self$get_seed(), reset, '\n')
 
       invisible(self)
 
@@ -2794,6 +2862,8 @@ Trials <- R6::R6Class(
 
     milestone_time = c(),
     arm_time = list(), # time when arms are added to or removed from the trial
+
+    regime = NULL,
 
     silent = FALSE,
 
