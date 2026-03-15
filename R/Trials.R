@@ -827,6 +827,8 @@ Trials <- R6::R6Class(
       patient_data <- NULL
       arms_data <- list()
       arms_in_trial <- sort(unique(next_enroll_arms))
+      regime_trajectory <- list()
+
       for(i in seq_along(arms_in_trial)){
         arm <- arms_in_trial[i]
         patients_index <- which(next_enroll_arms %in% arm)
@@ -840,25 +842,17 @@ Trials <- R6::R6Class(
           )
 
         if(self$has_regime()){
-          arms_data[[arm]]$regime_trajectory <- I(Map(
-            function(a){
-                data.frame(
-                  regime = a,
-                  start_time = 0,
-                  stringsAsFactors = FALSE
-                )
-            },
-            arms_data[[arm]]$arm
-          ) %>% unname())
+          regime_trajectory[[arm]] <- data.frame(patient_id = arms_data[[arm]]$patient_id,
+                                                 regime = arm,
+                                                 start_time = 0,
+                                                 stringsAsFactors = FALSE)
         }
 
         arms_data[[arm]] <- cbind(arms_data[[arm]], self$get_an_arm(arm)$generate_data(n_patients_in_arm))
 
-        arm_data <- arms_data[[arm]]
-
         if(!is.null(patient_data)){
-          diff_cols1 <- setdiff(names(arm_data), names(patient_data))
-          diff_cols2 <- setdiff(names(patient_data), names(arm_data))
+          diff_cols1 <- setdiff(names(arms_data[[arm]]), names(patient_data))
+          diff_cols2 <- setdiff(names(patient_data), names(arms_data[[arm]]))
           if(length(diff_cols1) > 0){
             stop('Arm <', arm, '> may have endpoints different from other arms: <',
                  paste0(diff_cols1, collapse = ', '), '>.')
@@ -870,10 +864,13 @@ Trials <- R6::R6Class(
           }
         }
 
-        patient_data <- bind_rows(patient_data, arm_data)
+        patient_data <- bind_rows(patient_data, arms_data[[arm]])
       }
 
 
+      ## before this line, patient_data is created to have the right size,
+      ## but its content does not matter. Its correct content is added in the
+      ## for loop below
       for(arm in arms_in_trial){
         patient_data[which(next_enroll_arms %in% arm), ] <- arms_data[[arm]]
       }
@@ -881,6 +878,7 @@ Trials <- R6::R6Class(
       if(self$has_regime()){
         # message('Set regime when there are ', self$get_number_enrolled_patients(), ' patients in the trial. ')
         ## real-time monitor to apply potential regime switching over newly enrolled patients
+        new_regimes <- list()
         for(row_idx in 1:nrow(patient_data)){
           new_treatment <- self$get_regime()$get_treatment_selector()(patient_data[row_idx, ])
           if(is.na(new_treatment)){
@@ -896,12 +894,19 @@ Trials <- R6::R6Class(
             patient_data[row_idx, col] <- updated_data[[col]]
           }
 
-          patient_data$regime_trajectory[row_idx][[1]] <-
-            rbind(patient_data$regime_trajectory[row_idx][[1]],
-                  data.frame(regime = new_treatment, start_time = switch_time)
-            )
+          new_regimes[[as.character(row_idx)]] <-
+            data.frame(patient_id = patient_data$patient_id[row_idx],
+                       regime = new_treatment,
+                       start_time = switch_time)
 
         }
+
+        regime_trajectory <- bind_rows(c(regime_trajectory, new_regimes))
+
+        id_col <- which(names(regime_trajectory) == 'patient_id')
+        lst <- split(regime_trajectory[, -id_col, drop = FALSE], regime_trajectory$patient_id)
+        patient_data$regime_trajectory <- I(unname(lst[match(patient_data$patient_id, names(lst))]))
+
       }
 
       private$trial_data <- bind_rows(self$get_trial_data(), patient_data)
