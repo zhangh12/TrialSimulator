@@ -3,6 +3,7 @@
 ## New Feature
 
 - Support editing trajectory of endpoint over time. 
+- Add new argument `tidy` (default: `TRUE`) in `Controllers$run()` to stop computing and saving event count per arm per endpoint for 40% shorter run time. 
 
 # TrialSimulator 1.11.0
 

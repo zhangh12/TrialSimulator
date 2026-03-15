@@ -1088,6 +1088,16 @@ Trials <- R6::R6Class(
       attr(lock_time, 'n_events') <- list()
 
       ## count events on all trial data in trial output
+      ## Note on Mar 15, 2026
+      # Turn off this line of code and use event_counts computed with (arms, ...) above
+      # can save 20% of running time. However, they are computing different things.
+      # The one above computes arm-specified endpoint counts accounting for filtering
+      # conditions in .... Thus, if the selected milestone time is from this condition,
+      # saved arm-specific event counts might be from a subset of all enrolled patients
+      # by the milestone time.
+      # Instead, if we use the line of code below (without ...), we are computing
+      # arm-specific event counts from all enrolled patients by the milestone
+      # time. For now, I keep using the code below for forward compatibility.
       event_counts <- self$get_event_tables(arms)
 
       for(i in seq_along(event_counts)){
@@ -1099,27 +1109,28 @@ Trials <- R6::R6Class(
 
       }
 
-      event_count_per_arm <- list()
-      for(arm in arms){
-        ec <- self$get_event_tables(arms = arm)
-        for(endpoint in names(ec)){
-          count <- ifelse(any(ec[[endpoint]]$calendar_time <= lock_time),
-                          max(ec[[endpoint]]$n_events[ec[[endpoint]]$calendar_time <= lock_time]),
-                          0) %>% setNames(arm)
+      if(private$save_event_count_per_arm){
+        event_count_per_arm <- list()
+        for(arm in arms){
+          ec <- self$get_event_tables(arms = arm)
+          for(endpoint in names(ec)){
+            count <- ifelse(any(ec[[endpoint]]$calendar_time <= lock_time),
+                            max(ec[[endpoint]]$n_events[ec[[endpoint]]$calendar_time <= lock_time]),
+                            0) %>% setNames(arm)
 
-          event_count_per_arm[[endpoint]] <- c(event_count_per_arm[[endpoint]], count)
+            event_count_per_arm[[endpoint]] <- c(event_count_per_arm[[endpoint]], count)
+          }
         }
+
+        event_count <- NULL
+        for(ep in names(event_count_per_arm)){
+          event_count <- bind_rows(event_count, data.frame(t(event_count_per_arm[[ep]])) %>% mutate(endpoint = ep))
+        }
+
+        attr(lock_time, 'n_events')[['arms']] <- I(list(event_count))
       }
 
-      event_count <- NULL
-      for(ep in names(event_count_per_arm)){
-        event_count <- bind_rows(event_count, data.frame(t(event_count_per_arm[[ep]])) %>% mutate(endpoint = ep))
-      }
-
-      attr(lock_time, 'n_events') <-
-        data.frame(attr(lock_time, 'n_events'))
-      attr(lock_time, 'n_events')$arms <- I(list(event_count))
-
+      attr(lock_time, 'n_events') <- as.data.frame(attr(lock_time, 'n_events'))
 
       lock_time
 
@@ -1146,6 +1157,7 @@ Trials <- R6::R6Class(
       lock_time <- calendar_time
 
       attr(lock_time, 'n_events') <- list()
+
       for(i in seq_along(event_counts)){
         ec <- event_counts[[i]]
         attr(lock_time, 'n_events')[[names(event_counts)[i]]] <-
@@ -1155,27 +1167,28 @@ Trials <- R6::R6Class(
 
       }
 
-      event_count_per_arm <- list()
-      for(arm in arms){
-        ec <- self$get_event_tables(arms = arm)
-        for(endpoint in names(ec)){
-          count <- ifelse(any(ec[[endpoint]]$calendar_time <= lock_time),
-                          max(ec[[endpoint]]$n_events[ec[[endpoint]]$calendar_time <= lock_time]),
-                          0) %>% setNames(arm)
+      if(private$save_event_count_per_arm){
+        event_count_per_arm <- list()
+        for(arm in arms){
+          ec <- self$get_event_tables(arms = arm)
+          for(endpoint in names(ec)){
+            count <- ifelse(any(ec[[endpoint]]$calendar_time <= lock_time),
+                            max(ec[[endpoint]]$n_events[ec[[endpoint]]$calendar_time <= lock_time]),
+                            0) %>% setNames(arm)
 
-          event_count_per_arm[[endpoint]] <- c(event_count_per_arm[[endpoint]], count)
+            event_count_per_arm[[endpoint]] <- c(event_count_per_arm[[endpoint]], count)
+          }
         }
+
+        event_count <- NULL
+        for(ep in names(event_count_per_arm)){
+          event_count <- bind_rows(event_count, data.frame(t(event_count_per_arm[[ep]])) %>% mutate(endpoint = ep))
+        }
+
+        attr(lock_time, 'n_events')[['arms']] <- I(list(event_count))
       }
 
-      event_count <- NULL
-      for(ep in names(event_count_per_arm)){
-        event_count <- bind_rows(event_count, data.frame(t(event_count_per_arm[[ep]])) %>% mutate(endpoint = ep))
-      }
-
-      attr(lock_time, 'n_events') <-
-        data.frame(attr(lock_time, 'n_events'))
-      attr(lock_time, 'n_events')$arms <- I(list(event_count))
-
+      attr(lock_time, 'n_events') <- as.data.frame(attr(lock_time, 'n_events'))
 
       lock_time
 
@@ -1903,6 +1916,15 @@ Trials <- R6::R6Class(
     #' @param silent logical.
     mute = function(silent){
       private$silent <- silent
+    },
+
+    #' @description
+    #' save less information in trial output if no intent to use it in summary
+    #' @param tidy logical. If \code{TRUE}, event count per arm per endpoint is
+    #' not computed and saved in trial output. This can speed up simulation by
+    #' up to 40\% under some circumstances.
+    tidy_output = function(tidy){
+      private$save_event_count_per_arm <- !tidy
     },
 
     #' @description
@@ -2866,6 +2888,7 @@ Trials <- R6::R6Class(
     regime = NULL,
 
     silent = FALSE,
+    save_event_count_per_arm = FALSE,
 
     output = NULL,
 

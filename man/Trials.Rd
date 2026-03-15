@@ -152,6 +152,7 @@ trial$closedTest(dt, treatments = c('high dose', 'low dose'),
 \item \href{#method-Trials-get}{\code{Trials$get()}}
 \item \href{#method-Trials-get_output}{\code{Trials$get_output()}}
 \item \href{#method-Trials-mute}{\code{Trials$mute()}}
+\item \href{#method-Trials-tidy_output}{\code{Trials$tidy_output()}}
 \item \href{#method-Trials-independentIncrement}{\code{Trials$independentIncrement()}}
 \item \href{#method-Trials-dunnettTest}{\code{Trials$dunnettTest()}}
 \item \href{#method-Trials-closedTest}{\code{Trials$closedTest()}}
@@ -1166,6 +1167,25 @@ mute all messages (not including warnings)
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{silent}}{logical.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-tidy_output"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-tidy_output}{}}}
+\subsection{Method \code{tidy_output()}}{
+save less information in trial output if no intent to use it in summary
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$tidy_output(tidy)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{tidy}}{logical. If \code{TRUE}, event count per arm per endpoint is
+not computed and saved in trial output. This can speed up simulation by
+up to 40\% under some circumstances.}
 }
 \if{html}{\out{</div>}}
 }
