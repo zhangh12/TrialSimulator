@@ -1187,6 +1187,96 @@ Trials <- R6::R6Class(
 
     },
 
+    #' @description
+    #' given a target number of enrolled patients, determine the data
+    #' lock time for a milestone (futility, interim, final, etc.). This function does
+    #' not change trial object (e.g. rolling back not yet randomized patients after
+    #' the found data lock time). It is similar to get_data_lock_time_by_event_number
+    #' but only focus on patient_id.
+    #' @param target_n_patients target number of enrolled patients.
+    #' @param arms a vector of arms' name on which number of events will be
+    #' counted.
+    #' @param min_treatment_duration numeric. Zero or positive value.
+    #' minimum treatment duration of enrolled patients.
+    #' If 0, it looks for triggering time based on number of enrolled
+    #' patients in population specified by \code{...} and \code{arms}. If positive,
+    #' it means that milestone is triggered when a specific number of enrolled
+    #' patients have received treatment for at least \code{min_treatment_duration}
+    #' duration. It is users' responsibility to assure that the unit of
+    #' \code{min_treatment_duration} are consistent with
+    #' readout of non-tte endpoints, dropout time, and trial duration.
+    #' @param ... subset conditions compatible with \code{dplyr::filter}. Number
+    #' Time of milestone is based on event counts on the subset of trial data.
+    #' @return data lock time
+    #'
+    get_data_lock_time_by_enrollment = function(arms,
+                                                target_n_patients,
+                                                min_treatment_duration,
+                                                ...){
+
+      stopifnot(all(is.wholenumber(target_n_patients)))
+      stopifnot(min_treatment_duration >= 0)
+
+      if(is.null(arms)){
+        arms <- self$get_arms_name()
+      }
+
+      event_counts <- self$get_event_tables(arms, ...)
+
+      if(max(event_counts[['patient_id']]$n_events) < target_n_patients){
+        warning('No enough patients to reach the target number <', target_n_patients, '>. ',
+                immediate. = TRUE)
+        milestone_time <- Inf
+      }else{
+        milestone_time <- min(event_counts[['patient_id']]$calendar_time[
+              event_counts[['patient_id']]$n_events >= target_n_patients
+            ]) + min_treatment_duration
+      }
+
+      lock_time <- milestone_time
+
+      if(is.infinite(lock_time)){
+        stop('None of the endpoints can reach target event number during the trial. ')
+      }
+
+      attr(lock_time, 'n_events') <- list()
+      event_counts <- self$get_event_tables(arms)
+
+      for(i in seq_along(event_counts)){
+        ec <- event_counts[[i]]
+        attr(lock_time, 'n_events')[[names(event_counts)[i]]] <-
+          ifelse(any(ec$calendar_time <= lock_time),
+                 max(ec$n_events[ec$calendar_time <= lock_time]),
+                 0)
+
+      }
+
+      if(private$save_event_count_per_arm){
+        event_count_per_arm <- list()
+        for(arm in arms){
+          ec <- self$get_event_tables(arms = arm)
+          for(endpoint in names(ec)){
+            count <- ifelse(any(ec[[endpoint]]$calendar_time <= lock_time),
+                            max(ec[[endpoint]]$n_events[ec[[endpoint]]$calendar_time <= lock_time]),
+                            0) %>% setNames(arm)
+
+            event_count_per_arm[[endpoint]] <- c(event_count_per_arm[[endpoint]], count)
+          }
+        }
+
+        event_count <- NULL
+        for(ep in names(event_count_per_arm)){
+          event_count <- bind_rows(event_count, data.frame(t(event_count_per_arm[[ep]])) %>% mutate(endpoint = ep))
+        }
+
+        attr(lock_time, 'n_events')[['arms']] <- I(list(event_count))
+      }
+
+      attr(lock_time, 'n_events') <- as.data.frame(attr(lock_time, 'n_events'))
+
+      lock_time
+
+    },
 
     #' @description
     #' given the calendar time to lock the data, return it with event counts of

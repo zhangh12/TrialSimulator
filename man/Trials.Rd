@@ -136,6 +136,7 @@ trial$closedTest(dt, treatments = c('high dose', 'low dose'),
 \item \href{#method-Trials-get_current_time}{\code{Trials$get_current_time()}}
 \item \href{#method-Trials-get_event_tables}{\code{Trials$get_event_tables()}}
 \item \href{#method-Trials-get_data_lock_time_by_event_number}{\code{Trials$get_data_lock_time_by_event_number()}}
+\item \href{#method-Trials-get_data_lock_time_by_enrollment}{\code{Trials$get_data_lock_time_by_enrollment()}}
 \item \href{#method-Trials-get_data_lock_time_by_calendar_time}{\code{Trials$get_data_lock_time_by_calendar_time()}}
 \item \href{#method-Trials-get_locked_data}{\code{Trials$get_locked_data()}}
 \item \href{#method-Trials-get_locked_data_name}{\code{Trials$get_locked_data_name()}}
@@ -794,6 +795,51 @@ counted.}
 
 \item{\code{type}}{\code{all} if all target number of events are reached.
 \code{any} if the any target number of events is reached.}
+
+\item{\code{...}}{subset conditions compatible with \code{dplyr::filter}. Number
+Time of milestone is based on event counts on the subset of trial data.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+data lock time
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-get_data_lock_time_by_enrollment"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-get_data_lock_time_by_enrollment}{}}}
+\subsection{Method \code{get_data_lock_time_by_enrollment()}}{
+given a target number of enrolled patients, determine the data
+lock time for a milestone (futility, interim, final, etc.). This function does
+not change trial object (e.g. rolling back not yet randomized patients after
+the found data lock time). It is similar to get_data_lock_time_by_event_number
+but only focus on patient_id.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_data_lock_time_by_enrollment(
+  arms,
+  target_n_patients,
+  min_treatment_duration,
+  ...
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{arms}}{a vector of arms' name on which number of events will be
+counted.}
+
+\item{\code{target_n_patients}}{target number of enrolled patients.}
+
+\item{\code{min_treatment_duration}}{numeric. Zero or positive value.
+minimum treatment duration of enrolled patients.
+If 0, it looks for triggering time based on number of enrolled
+patients in population specified by \code{...} and \code{arms}. If positive,
+it means that milestone is triggered when a specific number of enrolled
+patients have received treatment for at least \code{min_treatment_duration}
+duration. It is users' responsibility to assure that the unit of
+\code{min_treatment_duration} are consistent with
+readout of non-tte endpoints, dropout time, and trial duration.}
 
 \item{\code{...}}{subset conditions compatible with \code{dplyr::filter}. Number
 Time of milestone is based on event counts on the subset of trial data.}

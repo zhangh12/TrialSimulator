@@ -79,6 +79,10 @@ To efficiently utilize `TrialSimulator` for clinical trial simulations, we recom
   - [Enrichment design] vignette is under development. 
   - [Platform trial] vignette is under development. 
   - [Basket trial] vignette is under development. 
+- Examples: crossover
+  - [crossover trial with wash-out periods](https://zhangh12.github.io/TrialSimulator/articles/crossoverWashout.html)
+  - [crossover over time] vignette is coming!
+  - [crossover at specified time points] vignette is coming!
 - Built-in methods supported in `TrialSimulator`
   - [Wrapper functions of common statistical methods for estimating treatment effect](https://zhangh12.github.io/TrialSimulator/articles/wrappers.html)
   - [Group sequential test] See `?GroupSequentialTest`. 

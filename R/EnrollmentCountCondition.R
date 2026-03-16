@@ -29,15 +29,13 @@ EnrollmentCountCondition <- R6::R6Class(
 
     get_trigger_time = function(trial){
 
-      milestone_time <- trial$get_data_lock_time_by_event_number(
-        endpoints = 'patient_id',
+      milestone_time <- trial$get_data_lock_time_by_enrollment(
         arms = self$arms,
-        target_n_events = self$n,
-        !!!self$filter_conditions,
-        type = 'all'
+        target_n_patients = self$n,
+        self$min_treatment_duration,
+        !!!self$filter_conditions
       )
 
-      milestone_time <- milestone_time + self$min_treatment_duration
       milestone_time
     },
 
