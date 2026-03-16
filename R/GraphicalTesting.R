@@ -4,7 +4,6 @@
 #' endpoints. See Maurer & Bretz (2013).
 #'
 #' @docType class
-#' @importFrom gMCPLite hGraph
 #'
 #' @examples
 #'

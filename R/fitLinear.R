@@ -38,8 +38,6 @@
 #' \item{\code{z}}{z statistics of between-arm difference (treated vs placebo). }
 #' }
 #'
-#' @importFrom stats glm pt
-#' @importFrom emmeans emmeans contrast
 #' @export
 #'
 fitLinear <- function(formula, placebo, data, alternative, ...) {

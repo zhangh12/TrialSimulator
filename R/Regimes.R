@@ -15,34 +15,34 @@ Regimes <- R6::R6Class(
     #' @description
     #' initialize regime
     #'
-    #' @param what a function determining whether a patient's data would be
-    #' updated due to switching treatment. It takes \code{one_patient_data},
-    #' a data frame of one row as input, and returns a character of new treatment.
-    #' Return \code{NA} if no treatment switching could be done for this patient.
-    #' Note that the returned value will be passed into function `how()`, which
-    #' is also provide by users. Thus, it is up to users to decide what to return
-    #' from this function. No default value.
+    #' @param what a function determining whether patients' data would be
+    #' updated due to switching treatment. It takes \code{patient_data},
+    #' a data frame as argument, and returns a data frame of two columns
+    #' \code{patient_id} and \code{new_treatment}. Patients with \code{NA} in
+    #' \code{new_treatment} will be skipped.
+    #' The number of rows in the returned data frame may be smaller than the
+    #' number of patients in the input data frame. This indicates that some
+    #' patients' data will not be modifier.
+    #' Note that the returned object will be passed into function `how()`, which
+    #' is also provide by users. No default value.
     #' @param when a function determining the time at which a patient switches
     #' to another treatment regimen, measured from the time of enrollment.
-    #' It takes \code{one_patient_data}, a data frame of one row as
-    #' input, and returns a numeric switching time (from \code{enroll_time}).
+    #' It takes \code{patient_data}, a data frame as
+    #' argument, and returns a data frame of two columns \code{patient_id} and
+    #' \code{switch_time} (from \code{enroll_time}). No \code{NA} is allowed
+    #' in \code{switch_time} and the number of rows in the returned data frame
+    #' must equal the number of rows in \code{patient_data}, i.e., switching
+    #' time must be specified to every patients.
     #' Note that the returned object will be passed into function `how()`, which
     #' is also provided by users. No default value.
-    #' @param how a function updating a patient's data after treatment switching.
+    #' @param how a function updating patients' data after treatment switching.
     #' @param ... optional arguments for the three functions. No default value.
     initialize =
-      function(what, when, how, ...){
+      function(what, when, how){
 
         stopifnot(is.function(what) || is.null(what))
         stopifnot(is.function(when) || is.null(when))
         stopifnot(is.function(how) || is.null(how))
-
-        # Capture fixed arguments for functions what, when and how
-        dots <- list(...)
-        if(length(dots) && (is.null(names(dots)) || any(names(dots) == ''))){
-          stop('All extra arguments to regime(...) must be named; ',
-               'they are passed to functions specified by `what`, `when` and `how`.')
-        }
 
         isValidFunction <- function(func, func_name, args_order){
           if(!is.function(func)){
@@ -57,14 +57,13 @@ Regimes <- R6::R6Class(
           }
         }
 
-        isValidFunction(what, deparse(substitute(what)), 'one_patient_data')
-        isValidFunction(when, deparse(substitute(when)), 'one_patient_data')
-        isValidFunction(how, deparse(substitute(how)), c('one_patient_data', 'new_treatment', 'switch_time'))
+        isValidFunction(what, deparse(substitute(what)), 'patient_data')
+        isValidFunction(when, deparse(substitute(when)), 'patient_data')
+        isValidFunction(how, deparse(substitute(how)), 'patient_data')
 
         private$treatment_selector <- what
         private$time_selector <- when
         private$data_modifier <- how
-        private$args <- dots
 
       },
 
@@ -90,8 +89,7 @@ Regimes <- R6::R6Class(
   private = list(
     treatment_selector = NULL,
     time_selector = NULL,
-    data_modifier = NULL,
-    args = NULL
+    data_modifier = NULL
   )
 
 )

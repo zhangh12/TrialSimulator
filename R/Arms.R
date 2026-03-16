@@ -14,8 +14,6 @@
 #'
 #' @docType class
 #'
-#' @importFrom rlang expr_text
-#'
 #' @examples
 #' # Instead of using Arms$new(), please use arm(), a user-friendly
 #' # wrapper. See examples in ?arm

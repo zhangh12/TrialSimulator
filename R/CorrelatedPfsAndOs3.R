@@ -24,7 +24,6 @@
 #'
 #' @export
 #'
-#' @importFrom stats model.frame model.response rexp cor
 #'
 #' @examples
 #' ## use as function (if you don't use TrialSimulator for simulation)

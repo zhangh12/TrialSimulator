@@ -25,28 +25,35 @@ endpoint data.
 \subsection{Method \code{new()}}{
 initialize regime
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Regimes$new(what, when, how, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Regimes$new(what, when, how)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{what}}{a function determining whether a patient's data would be
-updated due to switching treatment. It takes \code{one_patient_data},
-a data frame of one row as input, and returns a character of new treatment.
-Return \code{NA} if no treatment switching could be done for this patient.
-Note that the returned value will be passed into function `how()`, which
-is also provide by users. Thus, it is up to users to decide what to return
-from this function. No default value.}
+\item{\code{what}}{a function determining whether patients' data would be
+updated due to switching treatment. It takes \code{patient_data},
+a data frame as argument, and returns a data frame of two columns
+\code{patient_id} and \code{new_treatment}. Patients with \code{NA} in
+\code{new_treatment} will be skipped.
+The number of rows in the returned data frame may be smaller than the
+number of patients in the input data frame. This indicates that some
+patients' data will not be modifier.
+Note that the returned object will be passed into function `how()`, which
+is also provide by users. No default value.}
 
 \item{\code{when}}{a function determining the time at which a patient switches
 to another treatment regimen, measured from the time of enrollment.
-It takes \code{one_patient_data}, a data frame of one row as
-input, and returns a numeric switching time (from \code{enroll_time}).
+It takes \code{patient_data}, a data frame as
+argument, and returns a data frame of two columns \code{patient_id} and
+\code{switch_time} (from \code{enroll_time}). No \code{NA} is allowed
+in \code{switch_time} and the number of rows in the returned data frame
+must equal the number of rows in \code{patient_data}, i.e., switching
+time must be specified to every patients.
 Note that the returned object will be passed into function `how()`, which
 is also provided by users. No default value.}
 
-\item{\code{how}}{a function updating a patient's data after treatment switching.}
+\item{\code{how}}{a function updating patients' data after treatment switching.}
 
 \item{\code{...}}{optional arguments for the three functions. No default value.}
 }

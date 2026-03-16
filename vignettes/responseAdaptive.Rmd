@@ -242,7 +242,7 @@ listener <- listener()
 listener$add_milestones(stage1, stage2, final)
 
 controller <- controller(trial, listener)
-controller$run(n = 1, plot_event = TRUE, silent = TRUE)
+controller$run(n = 1, plot_event = TRUE, silent = TRUE, tidy = FALSE)
 
 output <- controller$get_output()
 
@@ -254,7 +254,8 @@ output %>%
   scroll_box(width = "100%")
 ```
 
-In the output, the columns `n_event_<milestone>_<arms>` contain detailed information on observed events or sample sizes per arm at each milestone. It is evident that we have pipeline patients at both interims. 
+In the output, the columns `n_event_<milestone>_<arms>` contain detailed information on observed events or sample sizes per arm at each milestone. It is evident that we have pipeline patients at both interim. Note that to have columns `n_event_<milestone>_<arms>` in the simulation output, 
+one must set `tidy = FALSE` when running `controller$run()`. Computing these columns are expensive so by default the option is turned off.
 
 ```{r qeaeal}
 output[, 'n_events_<stage 1>_<arms>']

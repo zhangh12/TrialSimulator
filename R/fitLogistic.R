@@ -41,7 +41,6 @@
 #' \item{\code{z}}{z statistics of log odds ratio (treated vs placebo). }
 #' }
 #'
-#' @importFrom emmeans regrid
 #' @export
 #'
 fitLogistic <- function(formula, placebo, data, alternative, scale, ...) {

@@ -20,12 +20,6 @@
 #' @returns a data frame of summary
 #' @export
 #'
-#' @importFrom base64enc base64encode
-#' @importFrom htmltools HTML
-#' @importFrom grDevices dev.off png
-#' @importFrom graphics axis barplot hist par
-#' @importFrom stats IQR complete.cases median sd setNames
-#' @importFrom rstudioapi isAvailable viewer
 #' @examples
 #'
 #' set.seed(123)

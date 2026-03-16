@@ -47,6 +47,9 @@
 #' }
 #'
 #' @docType class
+#'
+#' @import data.table
+#'
 #' @examples
 #' # Instead of using Trials$new, please use trial(), a user-friendly
 #' # wrapper. See examples in ?trial.
@@ -841,13 +844,6 @@ Trials <- R6::R6Class(
             dropout_time = self$get_dropout()(n = n_patients_in_arm)
           )
 
-        if(self$has_regime()){
-          regime_trajectory[[arm]] <- data.frame(patient_id = arms_data[[arm]]$patient_id,
-                                                 regime = arm,
-                                                 start_time = 0,
-                                                 stringsAsFactors = FALSE)
-        }
-
         arms_data[[arm]] <- cbind(arms_data[[arm]], self$get_an_arm(arm)$generate_data(n_patients_in_arm))
 
         if(!is.null(patient_data)){
@@ -878,30 +874,76 @@ Trials <- R6::R6Class(
       if(self$has_regime()){
         # message('Set regime when there are ', self$get_number_enrolled_patients(), ' patients in the trial. ')
         ## real-time monitor to apply potential regime switching over newly enrolled patients
-        new_regimes <- list()
-        for(row_idx in 1:nrow(patient_data)){
-          new_treatment <- self$get_regime()$get_treatment_selector()(patient_data[row_idx, ])
-          if(is.na(new_treatment)){
-            next
+
+        isValidOutput <- function(op, req_cols, func_name){
+          miss_cols <- setdiff(req_cols, names(op))
+          if(length(miss_cols) > 0){
+            stop('Column(s) <', paste0(miss_cols, collapse = ', '),
+                 '> are missed in data frame returned from the user-defined function ',
+                 func_name, ' for regime. ')
           }
-
-          switch_time <- self$get_regime()$get_time_selector()(patient_data[row_idx, ])
-
-          updated_data <- self$get_regime()$get_data_modifier()(patient_data[row_idx, ], new_treatment, switch_time)
-
-          no_touch_cols <- c('patient_id', 'arm', 'enroll_time', 'dropout_time', 'regime_trajectory')
-          for(col in setdiff(names(updated_data), no_touch_cols)){
-            patient_data[row_idx, col] <- updated_data[[col]]
-          }
-
-          new_regimes[[as.character(row_idx)]] <-
-            data.frame(patient_id = patient_data$patient_id[row_idx],
-                       regime = new_treatment,
-                       start_time = switch_time)
-
         }
 
-        regime_trajectory <- bind_rows(c(regime_trajectory, new_regimes))
+        new_treatment <- self$get_regime()$get_treatment_selector()(patient_data)
+
+        isValidOutput(new_treatment, c('patient_id', 'new_treatment'), 'what()')
+        if(any(duplicated(new_treatment$patient_id))){
+          stop('No duplicated patient ID is allowed in data frame returned from user-defined function what(). ')
+        }
+
+        new_treatment <- new_treatment %>%
+          select(patient_id, new_treatment) %>%
+          dplyr::filter(complete.cases(.))
+
+        switch_time <- self$get_regime()$get_time_selector()(
+          patient_data %>% dplyr::filter(patient_id %in% new_treatment$patient_id))
+
+        isValidOutput(switch_time, c('patient_id', 'switch_time'), 'when()')
+
+        switch_time <- switch_time %>%
+          select(patient_id, switch_time) %>%
+          dplyr::filter(complete.cases(.))
+
+        if(nrow(switch_time) != nrow(new_treatment)){
+          stop('NA is not allowed for switch_time in data frame returned from user-defined function when(). ')
+        }
+
+        new_regimes <- dplyr::inner_join(new_treatment, switch_time, by = 'patient_id')
+
+        merged_patient_data <- dplyr::inner_join(patient_data, new_regimes, by = 'patient_id')
+
+        updated_data <- self$get_regime()$get_data_modifier()(merged_patient_data)
+        isValidOutput(updated_data, 'patient_id', 'how()')
+
+        setDT(patient_data)
+        setDT(updated_data)
+
+        no_touch_cols <- c('patient_id', 'arm', 'enroll_time', 'dropout_time', 'regime_trajectory')
+        touch_cols <- setdiff(names(updated_data), no_touch_cols)
+        if(!all(touch_cols %in% names(patient_data))){
+          stop('The columns below must not be returned from user-defined function < how() >. ')
+        }
+
+        for(col in touch_cols){
+          patient_data[updated_data,
+                       (col) := fifelse(
+                         is.na(get(paste0('i.', col))),
+                         get(col),
+                         get(paste0('i.', col))
+                       ),
+                       on = 'patient_id']
+        }
+
+
+        regime_trajectory <- bind_rows(
+          data.frame(
+            patient_id = patient_data$patient_id,
+            regime = patient_data$arm,
+            start_time = 0,
+            stringsAsFactors = FALSE
+          ),
+          new_regimes
+        )
 
         id_col <- which(names(regime_trajectory) == 'patient_id')
         lst <- split(regime_trajectory[, -id_col, drop = FALSE], regime_trajectory$patient_id)
