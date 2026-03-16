@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,6 +41,8 @@
 <li><a class="dropdown-item" href="../articles/actionFunctions.html">Specify Actions to Execute at Trial Milestones</a></li>
     <li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
     <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
+    <li><a class="dropdown-item" href="../articles/crossoverSwitchTreatment.html">Simulate Trials with Treatment Switching</a></li>
+    <li><a class="dropdown-item" href="../articles/crossoverWashout.html">Crossover Design with Wash-out Periods</a></li>
     <li><a class="dropdown-item" href="../articles/defineArms.html">Define and Summarize Arms in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineLongitudinalEndpoints.html">Define Longitudinal Endpoints</a></li>
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints</a></li>
@@ -192,14 +194,15 @@ enrolled patients.</li>
 <span></span>
 <span><span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, <span class="va">pbo</span>, <span class="va">trt4</span><span class="op">)</span></span>
 <span><span class="va">trial</span></span>
-<span><span class="co">#&gt;  ⚕⚕ Trial Name:  123  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ Description:  123  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ Number of Arms:  2  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ Registered Arms:  dose = 0.0, dose = 4.0  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ Sample Ratio:  1, 1  </span></span>
+<span><span class="co">#&gt;  ⚕⚕         Trial Name:  123  </span></span>
+<span><span class="co">#&gt;  ⚕⚕        Description:  123  </span></span>
+<span><span class="co">#&gt;  ⚕⚕     Number of Arms:  2  </span></span>
+<span><span class="co">#&gt;  ⚕⚕    Registered Arms:  dose = 0.0, dose = 4.0  </span></span>
+<span><span class="co">#&gt;  ⚕⚕       Sample Ratio:  1, 1  </span></span>
 <span><span class="co">#&gt;  ⚕⚕ Number of Patients:  150  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ Planned Duration:  14  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ Random Seed:  1960520344</span></span></code></pre></div>
+<span><span class="co">#&gt;  ⚕⚕   Planned Duration:  14  </span></span>
+<span><span class="co">#&gt;  ⚕⚕             Regime:  not set  </span></span>
+<span><span class="co">#&gt;  ⚕⚕        Random Seed:  1960520344</span></span></code></pre></div>
 <!-- Hide this helper function and display it in Appendix for better typesetting. -->
 <!-- Hide this action function and display it later for better typesetting. -->
 <!-- Hide this action function and display it later for better typesetting. -->
@@ -315,9 +318,6 @@ n_events_&lt;interim&gt;_&lt;patient_id&gt;
 <th style="text-align:right;">
 n_events_&lt;interim&gt;_&lt;ep&gt;
 </th>
-<th style="text-align:left;">
-n_events_&lt;interim&gt;_&lt;arms&gt;
-</th>
 <th style="text-align:right;">
 z_value
 </th>
@@ -332,9 +332,6 @@ n_events_&lt;final&gt;_&lt;patient_id&gt;
 </th>
 <th style="text-align:right;">
 n_events_&lt;final&gt;_&lt;ep&gt;
-</th>
-<th style="text-align:left;">
-n_events_&lt;final&gt;_&lt;arms&gt;
 </th>
 <th style="text-align:left;">
 decision
@@ -359,9 +356,6 @@ error_message
 <td style="text-align:right;">
 30
 </td>
-<td style="text-align:left;">
-c(18, 15….
-</td>
 <td style="text-align:right;">
 1.332786
 </td>
@@ -376,9 +370,6 @@ stop trial
 </td>
 <td style="text-align:right;">
 150
-</td>
-<td style="text-align:left;">
-c(33, 33….
 </td>
 <td style="text-align:left;">
 no-go
@@ -429,9 +420,6 @@ n_events_&lt;interim&gt;_&lt;patient_id&gt;
 <th style="text-align:right;">
 n_events_&lt;interim&gt;_&lt;ep&gt;
 </th>
-<th style="text-align:left;">
-n_events_&lt;interim&gt;_&lt;arms&gt;
-</th>
 <th style="text-align:right;">
 z_value
 </th>
@@ -446,9 +434,6 @@ n_events_&lt;final&gt;_&lt;patient_id&gt;
 </th>
 <th style="text-align:right;">
 n_events_&lt;final&gt;_&lt;ep&gt;
-</th>
-<th style="text-align:left;">
-n_events_&lt;final&gt;_&lt;arms&gt;
 </th>
 <th style="text-align:left;">
 decision
@@ -474,9 +459,6 @@ error_message
 <td style="text-align:right;">
 30
 </td>
-<td style="text-align:left;">
-c(17, 15….
-</td>
 <td style="text-align:right;">
 1.0350983
 </td>
@@ -491,9 +473,6 @@ stop trial
 </td>
 <td style="text-align:right;">
 150
-</td>
-<td style="text-align:left;">
-c(32, 32….
 </td>
 <td style="text-align:left;">
 go
@@ -517,9 +496,6 @@ go
 <td style="text-align:right;">
 30
 </td>
-<td style="text-align:left;">
-c(17, 15….
-</td>
 <td style="text-align:right;">
 -1.5191090
 </td>
@@ -534,9 +510,6 @@ stop trial
 </td>
 <td style="text-align:right;">
 150
-</td>
-<td style="text-align:left;">
-c(32, 32….
 </td>
 <td style="text-align:left;">
 no-go
@@ -560,9 +533,6 @@ no-go
 <td style="text-align:right;">
 30
 </td>
-<td style="text-align:left;">
-c(17, 15….
-</td>
 <td style="text-align:right;">
 1.0954461
 </td>
@@ -577,9 +547,6 @@ stop trial
 </td>
 <td style="text-align:right;">
 150
-</td>
-<td style="text-align:left;">
-c(32, 32….
 </td>
 <td style="text-align:left;">
 no-go
@@ -603,9 +570,6 @@ no-go
 <td style="text-align:right;">
 30
 </td>
-<td style="text-align:left;">
-c(18, 15….
-</td>
 <td style="text-align:right;">
 1.9364917
 </td>
@@ -620,9 +584,6 @@ add dose arms
 </td>
 <td style="text-align:right;">
 150
-</td>
-<td style="text-align:left;">
-c(33, 33….
 </td>
 <td style="text-align:left;">
 no-go
@@ -646,9 +607,6 @@ no-go
 <td style="text-align:right;">
 30
 </td>
-<td style="text-align:left;">
-c(17, 15….
-</td>
 <td style="text-align:right;">
 1.0954461
 </td>
@@ -663,9 +621,6 @@ stop trial
 </td>
 <td style="text-align:right;">
 150
-</td>
-<td style="text-align:left;">
-c(32, 32….
 </td>
 <td style="text-align:left;">
 no-go
@@ -689,9 +644,6 @@ no-go
 <td style="text-align:right;">
 30
 </td>
-<td style="text-align:left;">
-c(17, 15….
-</td>
 <td style="text-align:right;">
 1.5256441
 </td>
@@ -706,9 +658,6 @@ stop trial
 </td>
 <td style="text-align:right;">
 150
-</td>
-<td style="text-align:left;">
-c(32, 32….
 </td>
 <td style="text-align:left;">
 no-go
@@ -732,9 +681,6 @@ no-go
 <td style="text-align:right;">
 30
 </td>
-<td style="text-align:left;">
-c(18, 15….
-</td>
 <td style="text-align:right;">
 0.4330129
 </td>
@@ -749,9 +695,6 @@ stop trial
 </td>
 <td style="text-align:right;">
 150
-</td>
-<td style="text-align:left;">
-c(33, 33….
 </td>
 <td style="text-align:left;">
 no-go
@@ -775,9 +718,6 @@ no-go
 <td style="text-align:right;">
 30
 </td>
-<td style="text-align:left;">
-c(18, 15….
-</td>
 <td style="text-align:right;">
 1.5191090
 </td>
@@ -792,9 +732,6 @@ stop trial
 </td>
 <td style="text-align:right;">
 150
-</td>
-<td style="text-align:left;">
-c(33, 33….
 </td>
 <td style="text-align:left;">
 go
@@ -818,9 +755,6 @@ go
 <td style="text-align:right;">
 30
 </td>
-<td style="text-align:left;">
-c(18, 15….
-</td>
 <td style="text-align:right;">
 1.5256441
 </td>
@@ -835,9 +769,6 @@ stop trial
 </td>
 <td style="text-align:right;">
 150
-</td>
-<td style="text-align:left;">
-c(33, 33….
 </td>
 <td style="text-align:left;">
 no-go
@@ -861,9 +792,6 @@ no-go
 <td style="text-align:right;">
 30
 </td>
-<td style="text-align:left;">
-c(18, 15….
-</td>
 <td style="text-align:right;">
 1.9364930
 </td>
@@ -878,9 +806,6 @@ add dose arms
 </td>
 <td style="text-align:right;">
 150
-</td>
-<td style="text-align:left;">
-c(33, 33….
 </td>
 <td style="text-align:left;">
 go

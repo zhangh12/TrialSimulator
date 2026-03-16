@@ -54,10 +54,10 @@ head(placebo$get_endpoints()[[1]]$get_generator()(n = 1e3))
 #>         pfs pfs_event
 #> 1 52.000000         0
 #> 2 52.000000         0
-#> 3  2.546424         1
-#> 4 52.000000         0
-#> 5  1.888995         1
-#> 6  9.728610         1
+#> 3 52.000000         0
+#> 4 43.538389         1
+#> 5 52.000000         0
+#> 6  1.472804         1
 
 ## get name of endpoints in the arm
 ## for illustration only, NOT recommended

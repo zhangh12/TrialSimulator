@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,6 +21,8 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/actionFunctions.html">Specify Actions to Execute at Trial Milestones</a></li>
     <li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
     <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
+    <li><a class="dropdown-item" href="../articles/crossoverSwitchTreatment.html">Simulate Trials with Treatment Switching</a></li>
+    <li><a class="dropdown-item" href="../articles/crossoverWashout.html">Crossover Design with Wash-out Periods</a></li>
     <li><a class="dropdown-item" href="../articles/defineArms.html">Define and Summarize Arms in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineLongitudinalEndpoints.html">Define Longitudinal Endpoints</a></li>
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints</a></li>
@@ -46,6 +48,29 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.13.0" id="trialsimulator-1130">TrialSimulator 1.13.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1130"></a></h2>
+<div class="section level3">
+<h3 id="new-feature-1-13-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-1-13-0"></a></h3>
+<ul><li>New implementation of regime that is 60% faster.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="update-1-13-0">Update<a class="anchor" aria-label="anchor" href="#update-1-13-0"></a></h3>
+<ul><li>Add a vignette of crossover design with wash-out periods.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fix-1-13-0">Bug Fix<a class="anchor" aria-label="anchor" href="#bug-fix-1-13-0"></a></h3>
+<ul><li>Fix a minor bug displaying incorrect event count when using <code><a href="../reference/enrollment.html">enrollment()</a></code> to define milestone. This bug does not affect milestone triggering.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.12.0" id="trialsimulator-1120">TrialSimulator 1.12.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1120"></a></h2>
+<div class="section level3">
+<h3 id="new-feature-1-12-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-1-12-0"></a></h3>
+<ul><li>Support editing trajectory of endpoint over time.</li>
+<li>Add new argument <code>tidy</code> (default: <code>TRUE</code>) in <code>Controllers$run()</code> to stop computing and saving event count per arm per endpoint for 40% shorter run time.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.11.0" id="trialsimulator-1110">TrialSimulator 1.11.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1110"></a></h2>
 <div class="section level3">

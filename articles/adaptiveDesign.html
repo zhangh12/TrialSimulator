@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,6 +41,8 @@
 <li><a class="dropdown-item" href="../articles/actionFunctions.html">Specify Actions to Execute at Trial Milestones</a></li>
     <li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
     <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
+    <li><a class="dropdown-item" href="../articles/crossoverSwitchTreatment.html">Simulate Trials with Treatment Switching</a></li>
+    <li><a class="dropdown-item" href="../articles/crossoverWashout.html">Crossover Design with Wash-out Periods</a></li>
     <li><a class="dropdown-item" href="../articles/defineArms.html">Define and Summarize Arms in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineLongitudinalEndpoints.html">Define Longitudinal Endpoints</a></li>
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints</a></li>
@@ -394,8 +396,8 @@ replicates is run to save time.</p>
 <span><span class="co">#&gt; Data is locked at time = 11.1205128205128 for milestone &lt;dose selection&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('dose selection'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
-<span><span class="co">#&gt;   patient pfs os surrogate         arms</span></span>
-<span><span class="co">#&gt; 1     357 141 65       300 c(119, 4....</span></span>
+<span><span class="co">#&gt;   patient pfs os surrogate</span></span>
+<span><span class="co">#&gt; 1     357 141 65       300</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Arm &lt;high dose&gt; is removed.</span></span>
 <span><span class="co">#&gt; Sample ratio is updated to be &lt;low dose: 1, placebo: 1&gt;.</span></span>
@@ -407,18 +409,16 @@ replicates is run to save time.</p>
 <span><span class="co">#&gt; Data is locked at time = 17.9949397642942 for milestone &lt;interim&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('interim'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
-<span><span class="co">#&gt;   patient pfs  os surrogate         arms</span></span>
-<span><span class="co">#&gt; 1     581 300 138       524 c(290, 1....</span></span>
+<span><span class="co">#&gt;   patient pfs  os surrogate</span></span>
+<span><span class="co">#&gt; 1     581 300 138       524</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;final&gt; is being checked.</span></span>
 <span><span class="co">#&gt; Data is locked at time = 25.7475563250256 for milestone &lt;final&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('final'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
-<span><span class="co">#&gt;   patient pfs  os surrogate         arms</span></span>
-<span><span class="co">#&gt; 1     881 596 300       880 c(441, 2....</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Ignoring unknown labels:</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> <span style="color: #00BB00;">colour</span> : <span style="color: #0000BB;">""</span></span></span></code></pre></div>
+<span><span class="co">#&gt;   patient pfs  os surrogate</span></span>
+<span><span class="co">#&gt; 1     881 596 300       880</span></span>
+<span><span class="co">#&gt; </span></span></code></pre></div>
 <p><img src="adaptiveDesign_files/figure-html/eiaaf-1.png" class="r-plt" alt="" width="100%"></p>
 <p>In custom action functions, we can use <code>Trial$save()</code> to
 save intermediate results for summary purpose, which can be accessed
@@ -455,9 +455,6 @@ n_events_&lt;dose selection&gt;_&lt;os&gt;
 n_events_&lt;dose selection&gt;_&lt;surrogate&gt;
 </th>
 <th style="text-align:left;">
-n_events_&lt;dose selection&gt;_&lt;arms&gt;
-</th>
-<th style="text-align:left;">
 kept_arm
 </th>
 <th style="text-align:right;">
@@ -476,9 +473,6 @@ n_events_&lt;interim&gt;_&lt;os&gt;
 n_events_&lt;interim&gt;_&lt;surrogate&gt;
 </th>
 <th style="text-align:left;">
-n_events_&lt;interim&gt;_&lt;arms&gt;
-</th>
-<th style="text-align:left;">
 futility
 </th>
 <th style="text-align:right;">
@@ -495,9 +489,6 @@ n_events_&lt;final&gt;_&lt;os&gt;
 </th>
 <th style="text-align:right;">
 n_events_&lt;final&gt;_&lt;surrogate&gt;
-</th>
-<th style="text-align:left;">
-n_events_&lt;final&gt;_&lt;arms&gt;
 </th>
 <th style="text-align:left;">
 pfs_high_dose_decision
@@ -538,9 +529,6 @@ Trial-3415
 300
 </td>
 <td style="text-align:left;">
-c(119, 4….
-</td>
-<td style="text-align:left;">
 low
 </td>
 <td style="text-align:right;">
@@ -559,9 +547,6 @@ low
 524
 </td>
 <td style="text-align:left;">
-c(290, 1….
-</td>
-<td style="text-align:left;">
 negative
 </td>
 <td style="text-align:right;">
@@ -578,9 +563,6 @@ negative
 </td>
 <td style="text-align:right;">
 880
-</td>
-<td style="text-align:left;">
-c(441, 2….
 </td>
 <td style="text-align:left;">
 accept

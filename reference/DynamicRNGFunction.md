@@ -55,7 +55,7 @@ hist(x)
 
 y <- dfunc(1e3, mean = 3.5) # mean can be changed
 mean(y)
-#> [1] 3.477097
+#> [1] 3.620964
 
 try(z <- dfunc(1e3, sd = 1)) # error because sd is fixed in dfunc
 #> Error in dfunc(1000, sd = 1) : Cannot override fixed arguments: sd

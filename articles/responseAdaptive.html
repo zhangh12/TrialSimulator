@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,6 +41,8 @@
 <li><a class="dropdown-item" href="../articles/actionFunctions.html">Specify Actions to Execute at Trial Milestones</a></li>
     <li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
     <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
+    <li><a class="dropdown-item" href="../articles/crossoverSwitchTreatment.html">Simulate Trials with Treatment Switching</a></li>
+    <li><a class="dropdown-item" href="../articles/crossoverWashout.html">Crossover Design with Wash-out Periods</a></li>
     <li><a class="dropdown-item" href="../articles/defineArms.html">Define and Summarize Arms in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineLongitudinalEndpoints.html">Define Longitudinal Endpoints</a></li>
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints</a></li>
@@ -163,7 +165,7 @@ function when defining endpoints.</p>
 <span>    doses <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">20</span>, <span class="fl">25</span>, <span class="fl">50</span>, <span class="fl">100</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>    fev1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, mean <span class="op">=</span> <span class="fu">getResp</span><span class="op">(</span><span class="va">model</span>, doses <span class="op">=</span> <span class="va">dose</span><span class="op">)</span>, sd <span class="op">=</span> <span class="fl">.05</span><span class="op">)</span></span>
+<span>    fev1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, mean <span class="op">=</span> <span class="fu">DoseFinding</span><span class="fu">::</span><span class="fu"><a href="https://openpharma.github.io/DoseFinding/reference/Mods.html" class="external-link">getResp</a></span><span class="op">(</span><span class="va">model</span>, doses <span class="op">=</span> <span class="va">dose</span><span class="op">)</span>, sd <span class="op">=</span> <span class="fl">.05</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="op">}</span></span></code></pre></div>
@@ -217,14 +219,15 @@ to account for a 4-month follow-up after last enrollment.</p>
 <span></span>
 <span><span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">5</span><span class="op">)</span>, <span class="va">pbo</span>, <span class="va">dose1</span>, <span class="va">dose2</span>, <span class="va">dose3</span>, <span class="va">dose4</span><span class="op">)</span></span>
 <span><span class="va">trial</span></span>
-<span><span class="co">#&gt;  ⚕⚕ Trial Name:  Trial-3415  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ Description:  Trial-3415  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ Number of Arms:  5  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ Registered Arms:  0.0, 20.0, 25.0, 30.0, 35.0  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ Sample Ratio:  1, 1, 1, 1, 1  </span></span>
+<span><span class="co">#&gt;  ⚕⚕         Trial Name:  Trial-3415  </span></span>
+<span><span class="co">#&gt;  ⚕⚕        Description:  Trial-3415  </span></span>
+<span><span class="co">#&gt;  ⚕⚕     Number of Arms:  5  </span></span>
+<span><span class="co">#&gt;  ⚕⚕    Registered Arms:  0.0, 20.0, 25.0, 30.0, 35.0  </span></span>
+<span><span class="co">#&gt;  ⚕⚕       Sample Ratio:  1, 1, 1, 1, 1  </span></span>
 <span><span class="co">#&gt;  ⚕⚕ Number of Patients:  200  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ Planned Duration:  40  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ Random Seed:  1727811904</span></span></code></pre></div>
+<span><span class="co">#&gt;  ⚕⚕   Planned Duration:  40  </span></span>
+<span><span class="co">#&gt;  ⚕⚕             Regime:  not set  </span></span>
+<span><span class="co">#&gt;  ⚕⚕        Random Seed:  1727811904</span></span></code></pre></div>
 <!-- Hide this helper function and display it in Appendix for better typesetting. -->
 <!-- Hide this action function and display it later for better typesetting. -->
 <!-- Hide this action function and display it later for better typesetting. -->
@@ -296,7 +299,7 @@ the trial using <code>controller$run()</code>.</p>
 <span><span class="co">#&gt; A milestone &lt;final&gt; is registered.</span></span>
 <span></span>
 <span><span class="va">controller</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/controller.html">controller</a></span><span class="op">(</span><span class="va">trial</span>, <span class="va">listener</span><span class="op">)</span></span>
-<span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1</span>, plot_event <span class="op">=</span> <span class="cn">TRUE</span>, silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1</span>, silent <span class="op">=</span> <span class="cn">TRUE</span>, tidy <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; stage 1:</span></span>
 <span><span class="co">#&gt;   dose total_n new_ratio</span></span>
 <span><span class="co">#&gt; 1  0.0      13 0.2000000</span></span>
@@ -317,8 +320,10 @@ the trial using <code>controller$run()</code>.</p>
 <span><span class="co">#&gt; 2 20.0      26</span></span>
 <span><span class="co">#&gt; 3 25.0      32</span></span>
 <span><span class="co">#&gt; 4 30.0      39</span></span>
-<span><span class="co">#&gt; 5 35.0      63</span></span>
-<span></span>
+<span><span class="co">#&gt; 5 35.0      63</span></span></code></pre></div>
+<p><img src="responseAdaptive_files/figure-html/sdlatiow-1.png" class="r-plt" alt="" width="100%"></p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
 <span><span class="va">output</span> <span class="op">&lt;-</span> <span class="va">controller</span><span class="op">$</span><span class="fu">get_output</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">output</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
@@ -433,9 +438,13 @@ TRUE
 <p>In the output, the columns
 <code>n_event_&lt;milestone&gt;_&lt;arms&gt;</code> contain detailed
 information on observed events or sample sizes per arm at each
-milestone. It is evident that we have pipeline patients at both
-interims.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+milestone. It is evident that we have pipeline patients at both interim.
+Note that to have columns
+<code>n_event_&lt;milestone&gt;_&lt;arms&gt;</code> in the simulation
+output, one must set <code>tidy = FALSE</code> when running
+<code>controller$run()</code>. Computing these columns are expensive so
+by default the option is turned off.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">output</span><span class="op">[</span>, <span class="st">'n_events_&lt;stage 1&gt;_&lt;arms&gt;'</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
 <span><span class="co">#&gt;   X0.0 X20.0 X25.0 X30.0 X35.0   endpoint</span></span>
@@ -461,7 +470,7 @@ interims.</p>
 <code>compute_sample_ratio()</code> and
 <code>multiple_contrast_test()</code> is included below, which determine
 the new sample ratio and performs the multiple contrast test.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">compute_sample_ratio</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">{</span></span>
 <span></span>
 <span>  <span class="va">data</span><span class="op">$</span><span class="va">dose</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">arm</span><span class="op">)</span></span>

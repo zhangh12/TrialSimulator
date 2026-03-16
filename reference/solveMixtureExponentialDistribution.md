@@ -85,7 +85,7 @@ ifelse(
   rexp(n, rate=log(2)/10),
   rexp(n, rate=log(2)/median2)) %>%
   median() ## should be close to 8
-#> [1] 8.010029
+#> [1] 8.01036
 
 overall_median <-
   solveMixtureExponentialDistribution(
@@ -102,5 +102,5 @@ ifelse(
   rexp(n, rate=log(2)/12),
   rexp(n, rate=log(2)/4)) %>%
   median() ## should be close to overall_median
-#> [1] 5.901173
+#> [1] 5.917953
 ```

@@ -70,7 +70,7 @@ output <- controller$get_output()
 time <- summarizeMilestoneTime(output)
 time
 #>        milestone     mean   median       sd  n
-#> 1 final analysis 15.88651 15.85284 0.197101 10
+#> 1 final analysis 15.82073 15.87398 0.389367 10
 
 plot(time)
 

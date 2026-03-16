@@ -53,7 +53,7 @@ trial <- trial(name = 'trial',
                enroller = StaggeredRecruiter,
                accrual_rate = accrual_rate,
                dropout = rweibull, shape = 2, scale = 38)
-#> Seed is not specified. TrialSimulator sets it to 1657797706
+#> Seed is not specified. TrialSimulator sets it to 628824304
 
 trial$add_arms(sample_ratio = c(1, 1), control, active)
 #> Arm(s) <control arm, active arm> are added to the trial. 
@@ -81,10 +81,8 @@ controller$run(n = 1)
 #> Data is locked at time = 40 for milestone <final analysis>.
 #> Locked data can be accessed in Trial$get_locked_data('final analysis'). 
 #> Number of events at lock time: 
-#>   patient PFS         arms
-#> 1    1000 903 c(500, 4....
+#>   patient PFS
+#> 1    1000 905
 #> 
-#> Ignoring unknown labels:
-#> • colour : ""
 
 ```

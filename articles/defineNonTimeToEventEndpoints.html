@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,6 +41,8 @@
 <li><a class="dropdown-item" href="../articles/actionFunctions.html">Specify Actions to Execute at Trial Milestones</a></li>
     <li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
     <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
+    <li><a class="dropdown-item" href="../articles/crossoverSwitchTreatment.html">Simulate Trials with Treatment Switching</a></li>
+    <li><a class="dropdown-item" href="../articles/crossoverWashout.html">Crossover Design with Wash-out Periods</a></li>
     <li><a class="dropdown-item" href="../articles/defineArms.html">Define and Summarize Arms in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineLongitudinalEndpoints.html">Define Longitudinal Endpoints</a></li>
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints</a></li>
@@ -204,14 +206,15 @@ function:</p>
 <span><span class="co">#&gt; Randomization is done for 420 potential patients.</span></span>
 <span><span class="co">#&gt; Data of 420 potential patients are generated for the trial with 2 arm(s) &lt;treatment, placebo&gt;.</span></span>
 <span><span class="va">trial</span></span>
-<span><span class="co">#&gt;  ⚕⚕ Trial Name:  Trial-31415  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ Description:  Example Clinical Trial  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ Number of Arms:  2  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ Registered Arms:  treatment, placebo  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ Sample Ratio:  1, 1  </span></span>
+<span><span class="co">#&gt;  ⚕⚕         Trial Name:  Trial-31415  </span></span>
+<span><span class="co">#&gt;  ⚕⚕        Description:  Example Clinical Trial  </span></span>
+<span><span class="co">#&gt;  ⚕⚕     Number of Arms:  2  </span></span>
+<span><span class="co">#&gt;  ⚕⚕    Registered Arms:  treatment, placebo  </span></span>
+<span><span class="co">#&gt;  ⚕⚕       Sample Ratio:  1, 1  </span></span>
 <span><span class="co">#&gt;  ⚕⚕ Number of Patients:  420  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ Planned Duration:  30  </span></span>
-<span><span class="co">#&gt;  ⚕⚕ Random Seed:  1012203595</span></span></code></pre></div>
+<span><span class="co">#&gt;  ⚕⚕   Planned Duration:  30  </span></span>
+<span><span class="co">#&gt;  ⚕⚕             Regime:  not set  </span></span>
+<span><span class="co">#&gt;  ⚕⚕        Random Seed:  1012203595</span></span></code></pre></div>
 <p>Here <code>accrual_rate</code> is an argument of
 <code><a href="../reference/StaggeredRecruiter.html">TrialSimulator::StaggeredRecruiter</a></code> controlling how patients
 are recruited into the trial. Similarly, <code>scale</code> and
@@ -275,25 +278,23 @@ controller to monitor and execute the trial.</p>
 <span><span class="co">#&gt; Data is locked at time = 7.9 for milestone &lt;interim&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('interim'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
-<span><span class="co">#&gt;   patient cfb orr         arms</span></span>
-<span><span class="co">#&gt; 1      99  18  60 c(50, 9,....</span></span>
+<span><span class="co">#&gt;   patient cfb orr</span></span>
+<span><span class="co">#&gt; 1      99  18  60</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;random&gt; is being checked.</span></span>
 <span><span class="co">#&gt; Data is locked at time = 14 for milestone &lt;random&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('random'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
-<span><span class="co">#&gt;   patient cfb orr         arms</span></span>
-<span><span class="co">#&gt; 1     221  96 180 c(110, 4....</span></span>
+<span><span class="co">#&gt;   patient cfb orr</span></span>
+<span><span class="co">#&gt; 1     221  96 180</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;final&gt; is being checked.</span></span>
 <span><span class="co">#&gt; Data is locked at time = 30 for milestone &lt;final&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('final'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
-<span><span class="co">#&gt;   patient cfb orr         arms</span></span>
-<span><span class="co">#&gt; 1     420 403 418 c(210, 2....</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Ignoring unknown labels:</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> <span style="color: #00BB00;">colour</span> : <span style="color: #0000BB;">""</span></span></span></code></pre></div>
+<span><span class="co">#&gt;   patient cfb orr</span></span>
+<span><span class="co">#&gt; 1     420 403 418</span></span>
+<span><span class="co">#&gt; </span></span></code></pre></div>
 <p><img src="defineNonTimeToEventEndpoints_files/figure-html/ihhf-1.png" class="r-plt" alt="" width="100%"></p>
 <p>We can inspect the dataset locked at different milestone by calling
 member function <code>get_locked_data</code> with milestone names.

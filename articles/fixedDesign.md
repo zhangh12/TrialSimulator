@@ -156,14 +156,15 @@ trial <- trial(
 
 trial$add_arms(sample_ratio = c(1, 1, 1), soc, low, high) ## 1:1:1
 trial
-#>  ⚕⚕ Trial Name:  Trial-3415  
-#>  ⚕⚕ Description:  Trial-3415  
-#>  ⚕⚕ Number of Arms:  3  
-#>  ⚕⚕ Registered Arms:  soc, low, high  
-#>  ⚕⚕ Sample Ratio:  1, 1, 1  
+#>  ⚕⚕         Trial Name:  Trial-3415  
+#>  ⚕⚕        Description:  Trial-3415  
+#>  ⚕⚕     Number of Arms:  3  
+#>  ⚕⚕    Registered Arms:  soc, low, high  
+#>  ⚕⚕       Sample Ratio:  1, 1, 1  
 #>  ⚕⚕ Number of Patients:  1000  
-#>  ⚕⚕ Planned Duration:  500  
-#>  ⚕⚕ Random Seed:  1727811904
+#>  ⚕⚕   Planned Duration:  500  
+#>  ⚕⚕             Regime:  not set  
+#>  ⚕⚕        Random Seed:  1727811904
 ```
 
 ## Define Milestone and Action for Final Analysis

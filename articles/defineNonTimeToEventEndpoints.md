@@ -120,14 +120,15 @@ trial$add_arms(sample_ratio = c(1, 1), trt, pbo)
 #> Randomization is done for 420 potential patients.
 #> Data of 420 potential patients are generated for the trial with 2 arm(s) <treatment, placebo>.
 trial
-#>  ⚕⚕ Trial Name:  Trial-31415  
-#>  ⚕⚕ Description:  Example Clinical Trial  
-#>  ⚕⚕ Number of Arms:  2  
-#>  ⚕⚕ Registered Arms:  treatment, placebo  
-#>  ⚕⚕ Sample Ratio:  1, 1  
+#>  ⚕⚕         Trial Name:  Trial-31415  
+#>  ⚕⚕        Description:  Example Clinical Trial  
+#>  ⚕⚕     Number of Arms:  2  
+#>  ⚕⚕    Registered Arms:  treatment, placebo  
+#>  ⚕⚕       Sample Ratio:  1, 1  
 #>  ⚕⚕ Number of Patients:  420  
-#>  ⚕⚕ Planned Duration:  30  
-#>  ⚕⚕ Random Seed:  1012203595
+#>  ⚕⚕   Planned Duration:  30  
+#>  ⚕⚕             Regime:  not set  
+#>  ⚕⚕        Random Seed:  1012203595
 ```
 
 Here `accrual_rate` is an argument of
@@ -193,25 +194,23 @@ controller$run()
 #> Data is locked at time = 7.9 for milestone <interim>.
 #> Locked data can be accessed in Trial$get_locked_data('interim'). 
 #> Number of events at lock time:
-#>   patient cfb orr         arms
-#> 1      99  18  60 c(50, 9,....
+#>   patient cfb orr
+#> 1      99  18  60
 #> 
 #> Condition of milestone <random> is being checked.
 #> Data is locked at time = 14 for milestone <random>.
 #> Locked data can be accessed in Trial$get_locked_data('random'). 
 #> Number of events at lock time:
-#>   patient cfb orr         arms
-#> 1     221  96 180 c(110, 4....
+#>   patient cfb orr
+#> 1     221  96 180
 #> 
 #> Condition of milestone <final> is being checked.
 #> Data is locked at time = 30 for milestone <final>.
 #> Locked data can be accessed in Trial$get_locked_data('final'). 
 #> Number of events at lock time:
-#>   patient cfb orr         arms
-#> 1     420 403 418 c(210, 2....
+#>   patient cfb orr
+#> 1     420 403 418
 #> 
-#> Ignoring unknown labels:
-#> • colour : ""
 ```
 
 ![](defineNonTimeToEventEndpoints_files/figure-html/ihhf-1.png)

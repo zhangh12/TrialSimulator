@@ -90,6 +90,12 @@ to end users.
 
 - [`Trials$add_arms()`](#method-Trials-add_arms)
 
+- [`Trials$add_regime()`](#method-Trials-add_regime)
+
+- [`Trials$get_regime()`](#method-Trials-get_regime)
+
+- [`Trials$has_regime()`](#method-Trials-has_regime)
+
 - [`Trials$get_name()`](#method-Trials-get_name)
 
 - [`Trials$get_description()`](#method-Trials-get_description)
@@ -126,6 +132,8 @@ to end users.
 
 - [`Trials$get_data_lock_time_by_event_number()`](#method-Trials-get_data_lock_time_by_event_number)
 
+- [`Trials$get_data_lock_time_by_enrollment()`](#method-Trials-get_data_lock_time_by_enrollment)
+
 - [`Trials$get_data_lock_time_by_calendar_time()`](#method-Trials-get_data_lock_time_by_calendar_time)
 
 - [`Trials$get_locked_data()`](#method-Trials-get_locked_data)
@@ -157,6 +165,8 @@ to end users.
 - [`Trials$get_output()`](#method-Trials-get_output)
 
 - [`Trials$mute()`](#method-Trials-mute)
+
+- [`Trials$tidy_output()`](#method-Trials-tidy_output)
 
 - [`Trials$independentIncrement()`](#method-Trials-independentIncrement)
 
@@ -523,6 +533,46 @@ to track this.
 
 ------------------------------------------------------------------------
 
+### Method `add_regime()`
+
+register regime to a trial. The regime consists of three functions to
+determine the patients who may switch to other treatment during a a
+trial, to determine the switching time and how to update patients'
+endpoint data accordingly.
+
+#### Usage
+
+    Trials$add_regime(regime)
+
+#### Arguments
+
+- `regime`:
+
+  an object created by
+  [`regime()`](https://zhangh12.github.io/TrialSimulator/reference/regime.md).
+
+------------------------------------------------------------------------
+
+### Method `get_regime()`
+
+return registered regime.
+
+#### Usage
+
+    Trials$get_regime()
+
+------------------------------------------------------------------------
+
+### Method `has_regime()`
+
+return whether a regime is registered
+
+#### Usage
+
+    Trials$has_regime()
+
+------------------------------------------------------------------------
+
 ### Method `get_name()`
 
 return name of trial
@@ -790,6 +840,57 @@ randomized patients after the found data lock time).
 
   `all` if all target number of events are reached. `any` if the any
   target number of events is reached.
+
+- `...`:
+
+  subset conditions compatible with
+  [`dplyr::filter`](https://dplyr.tidyverse.org/reference/filter.html).
+  Number Time of milestone is based on event counts on the subset of
+  trial data.
+
+#### Returns
+
+data lock time
+
+------------------------------------------------------------------------
+
+### Method `get_data_lock_time_by_enrollment()`
+
+given a target number of enrolled patients, determine the data lock time
+for a milestone (futility, interim, final, etc.). This function does not
+change trial object (e.g. rolling back not yet randomized patients after
+the found data lock time). It is similar to
+get_data_lock_time_by_event_number but only focus on patient_id.
+
+#### Usage
+
+    Trials$get_data_lock_time_by_enrollment(
+      arms,
+      target_n_patients,
+      min_treatment_duration,
+      ...
+    )
+
+#### Arguments
+
+- `arms`:
+
+  a vector of arms' name on which number of events will be counted.
+
+- `target_n_patients`:
+
+  target number of enrolled patients.
+
+- `min_treatment_duration`:
+
+  numeric. Zero or positive value. minimum treatment duration of
+  enrolled patients. If 0, it looks for triggering time based on number
+  of enrolled patients in population specified by `...` and `arms`. If
+  positive, it means that milestone is triggered when a specific number
+  of enrolled patients have received treatment for at least
+  `min_treatment_duration` duration. It is users' responsibility to
+  assure that the unit of `min_treatment_duration` are consistent with
+  readout of non-tte endpoints, dropout time, and trial duration.
 
 - `...`:
 
@@ -1169,6 +1270,24 @@ mute all messages (not including warnings)
 - `silent`:
 
   logical.
+
+------------------------------------------------------------------------
+
+### Method `tidy_output()`
+
+save less information in trial output if no intent to use it in summary
+
+#### Usage
+
+    Trials$tidy_output(tidy)
+
+#### Arguments
+
+- `tidy`:
+
+  logical. If `TRUE`, event count per arm per endpoint is not computed
+  and saved in trial output. This can speed up simulation by up to 40%
+  under some circumstances.
 
 ------------------------------------------------------------------------
 

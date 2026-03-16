@@ -21,7 +21,7 @@ time, trial duration, and readout of non-tte endpoints are consistent."><meta pr
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,6 +35,8 @@ time, trial duration, and readout of non-tte endpoints are consistent."><meta pr
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/actionFunctions.html">Specify Actions to Execute at Trial Milestones</a></li>
     <li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
     <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
+    <li><a class="dropdown-item" href="../articles/crossoverSwitchTreatment.html">Simulate Trials with Treatment Switching</a></li>
+    <li><a class="dropdown-item" href="../articles/crossoverWashout.html">Crossover Design with Wash-out Periods</a></li>
     <li><a class="dropdown-item" href="../articles/defineArms.html">Define and Summarize Arms in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineLongitudinalEndpoints.html">Define Longitudinal Endpoints</a></li>
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints</a></li>
@@ -188,14 +190,15 @@ simulation. Default: <code>FALSE</code>.</p></dd>
 <span class="r-in"><span>  enroller <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="fl">5</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">trial</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕ Trial Name:  Trial-3415  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕ Description:  Trial-3415  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕ Number of Arms:  0  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕ Registered Arms:    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕ Sample Ratio:    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕         Trial Name:  Trial-3415  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕        Description:  Trial-3415  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕     Number of Arms:  0  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕    Registered Arms:    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕       Sample Ratio:    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕ Number of Patients:  100  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕ Planned Duration:  100  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕ Random Seed:  31415926  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕   Planned Duration:  100  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕             Regime:  not set  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕        Random Seed:  31415926  </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, <span class="va">placebo</span>, <span class="va">active</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Arm(s) &lt;pbo, ac&gt; are added to the trial. </span>
@@ -204,14 +207,15 @@ simulation. Default: <code>FALSE</code>.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## updated information after arms are registered</span></span></span>
 <span class="r-in"><span><span class="va">trial</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕ Trial Name:  Trial-3415  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕ Description:  Trial-3415  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕ Number of Arms:  2  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕ Registered Arms:  pbo, ac  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕ Sample Ratio:  1, 2  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕         Trial Name:  Trial-3415  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕        Description:  Trial-3415  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕     Number of Arms:  2  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕    Registered Arms:  pbo, ac  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕       Sample Ratio:  1, 2  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕ Number of Patients:  100  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕ Planned Duration:  100  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕ Random Seed:  31415926  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕   Planned Duration:  100  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕             Regime:  not set  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕        Random Seed:  31415926  </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

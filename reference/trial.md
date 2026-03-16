@@ -127,14 +127,15 @@ trial <- trial(
   enroller = rexp, rate = log(2) / 5)
 
 trial
-#>  ⚕⚕ Trial Name:  Trial-3415  
-#>  ⚕⚕ Description:  Trial-3415  
-#>  ⚕⚕ Number of Arms:  0  
-#>  ⚕⚕ Registered Arms:    
-#>  ⚕⚕ Sample Ratio:    
+#>  ⚕⚕         Trial Name:  Trial-3415  
+#>  ⚕⚕        Description:  Trial-3415  
+#>  ⚕⚕     Number of Arms:  0  
+#>  ⚕⚕    Registered Arms:    
+#>  ⚕⚕       Sample Ratio:    
 #>  ⚕⚕ Number of Patients:  100  
-#>  ⚕⚕ Planned Duration:  100  
-#>  ⚕⚕ Random Seed:  31415926  
+#>  ⚕⚕   Planned Duration:  100  
+#>  ⚕⚕             Regime:  not set  
+#>  ⚕⚕        Random Seed:  31415926  
 
 trial$add_arms(sample_ratio = c(1, 2), placebo, active)
 #> Arm(s) <pbo, ac> are added to the trial. 
@@ -143,12 +144,13 @@ trial$add_arms(sample_ratio = c(1, 2), placebo, active)
 
 ## updated information after arms are registered
 trial
-#>  ⚕⚕ Trial Name:  Trial-3415  
-#>  ⚕⚕ Description:  Trial-3415  
-#>  ⚕⚕ Number of Arms:  2  
-#>  ⚕⚕ Registered Arms:  pbo, ac  
-#>  ⚕⚕ Sample Ratio:  1, 2  
+#>  ⚕⚕         Trial Name:  Trial-3415  
+#>  ⚕⚕        Description:  Trial-3415  
+#>  ⚕⚕     Number of Arms:  2  
+#>  ⚕⚕    Registered Arms:  pbo, ac  
+#>  ⚕⚕       Sample Ratio:  1, 2  
 #>  ⚕⚕ Number of Patients:  100  
-#>  ⚕⚕ Planned Duration:  100  
-#>  ⚕⚕ Random Seed:  31415926  
+#>  ⚕⚕   Planned Duration:  100  
+#>  ⚕⚕             Regime:  not set  
+#>  ⚕⚕        Random Seed:  31415926  
 ```

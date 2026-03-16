@@ -13,7 +13,7 @@ This distribution can be used to simulate delayed treatment effect."><meta prope
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.11.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,6 +27,8 @@ This distribution can be used to simulate delayed treatment effect."><meta prope
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/actionFunctions.html">Specify Actions to Execute at Trial Milestones</a></li>
     <li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
     <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
+    <li><a class="dropdown-item" href="../articles/crossoverSwitchTreatment.html">Simulate Trials with Treatment Switching</a></li>
+    <li><a class="dropdown-item" href="../articles/crossoverWashout.html">Crossover Design with Wash-out Periods</a></li>
     <li><a class="dropdown-item" href="../articles/defineArms.html">Define and Summarize Arms in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineLongitudinalEndpoints.html">Define Longitudinal Endpoints</a></li>
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints</a></li>
@@ -121,17 +123,17 @@ being censoring at the last <code>end_time</code> unless it is set to <code>Inf<
 <span class="r-in"><span>  piecewise_risk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1.01</span>, <span class="fl">0.381</span>, <span class="fl">0.150</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">4.01</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">PiecewiseConstantExponentialRNG</span><span class="op">(</span><span class="fl">10</span>, <span class="va">risk</span>, <span class="st">'PFS'</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    PFS PFS_event</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   52         0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   52         0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3   52         0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   52         0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   52         0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6   52         0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7   52         0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8   52         0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9   52         0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10  52         0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          PFS PFS_event</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   3.357111         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  52.000000         0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  52.000000         0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  52.000000         0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  52.000000         0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  52.000000         0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  13.534581         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  52.000000         0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9   3.832545         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 52.000000         0</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

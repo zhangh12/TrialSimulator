@@ -299,8 +299,8 @@ controller$run(plot_event = TRUE)
 #> Data is locked at time = 11.1205128205128 for milestone <dose selection>.
 #> Locked data can be accessed in Trial$get_locked_data('dose selection'). 
 #> Number of events at lock time:
-#>   patient pfs os surrogate         arms
-#> 1     357 141 65       300 c(119, 4....
+#>   patient pfs os surrogate
+#> 1     357 141 65       300
 #> 
 #> Arm <high dose> is removed.
 #> Sample ratio is updated to be <low dose: 1, placebo: 1>.
@@ -312,18 +312,16 @@ controller$run(plot_event = TRUE)
 #> Data is locked at time = 17.9949397642942 for milestone <interim>.
 #> Locked data can be accessed in Trial$get_locked_data('interim'). 
 #> Number of events at lock time:
-#>   patient pfs  os surrogate         arms
-#> 1     581 300 138       524 c(290, 1....
+#>   patient pfs  os surrogate
+#> 1     581 300 138       524
 #> 
 #> Condition of milestone <final> is being checked.
 #> Data is locked at time = 25.7475563250256 for milestone <final>.
 #> Locked data can be accessed in Trial$get_locked_data('final'). 
 #> Number of events at lock time:
-#>   patient pfs  os surrogate         arms
-#> 1     881 596 300       880 c(441, 2....
+#>   patient pfs  os surrogate
+#> 1     881 596 300       880
 #> 
-#> Ignoring unknown labels:
-#> • colour : ""
 ```
 
 ![](adaptiveDesign_files/figure-html/eiaaf-1.png)
@@ -341,9 +339,9 @@ controller$get_output() %>%
   scroll_box(width = "100%")
 ```
 
-| trial      |       seed | milestone_time\_\<dose selection\> | n_events\_\<dose selection\>\_\<patient_id\> | n_events\_\<dose selection\>\_\<pfs\> | n_events\_\<dose selection\>\_\<os\> | n_events\_\<dose selection\>\_\<surrogate\> | n_events\_\<dose selection\>\_\<arms\> | kept_arm | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<pfs\> | n_events\_\<interim\>\_\<os\> | n_events\_\<interim\>\_\<surrogate\> | n_events\_\<interim\>\_\<arms\> | futility | milestone_time\_\<final\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<pfs\> | n_events\_\<final\>\_\<os\> | n_events\_\<final\>\_\<surrogate\> | n_events\_\<final\>\_\<arms\> | pfs_high_dose_decision | pfs_low_dose_decision | os_high_dose_decision | os_low_dose_decision | error_message |
-|:-----------|-----------:|-----------------------------------:|---------------------------------------------:|--------------------------------------:|-------------------------------------:|--------------------------------------------:|:---------------------------------------|:---------|----------------------------:|--------------------------------------:|-------------------------------:|------------------------------:|-------------------------------------:|:--------------------------------|:---------|--------------------------:|------------------------------------:|-----------------------------:|----------------------------:|-----------------------------------:|:------------------------------|:-----------------------|:----------------------|:----------------------|:---------------------|:--------------|
-| Trial-3415 | 1727811904 |                           11.12051 |                                          357 |                                   141 |                                   65 |                                         300 | c(119, 4….                             | low      |                    17.99494 |                                   581 |                            300 |                           138 |                                  524 | c(290, 1….                      | negative |                  25.74756 |                                 881 |                          596 |                         300 |                                880 | c(441, 2….                    | accept                 | reject                | accept                | accept               |               |
+| trial      |       seed | milestone_time\_\<dose selection\> | n_events\_\<dose selection\>\_\<patient_id\> | n_events\_\<dose selection\>\_\<pfs\> | n_events\_\<dose selection\>\_\<os\> | n_events\_\<dose selection\>\_\<surrogate\> | kept_arm | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<pfs\> | n_events\_\<interim\>\_\<os\> | n_events\_\<interim\>\_\<surrogate\> | futility | milestone_time\_\<final\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<pfs\> | n_events\_\<final\>\_\<os\> | n_events\_\<final\>\_\<surrogate\> | pfs_high_dose_decision | pfs_low_dose_decision | os_high_dose_decision | os_low_dose_decision | error_message |
+|:-----------|-----------:|-----------------------------------:|---------------------------------------------:|--------------------------------------:|-------------------------------------:|--------------------------------------------:|:---------|----------------------------:|--------------------------------------:|-------------------------------:|------------------------------:|-------------------------------------:|:---------|--------------------------:|------------------------------------:|-----------------------------:|----------------------------:|-----------------------------------:|:-----------------------|:----------------------|:----------------------|:---------------------|:--------------|
+| Trial-3415 | 1727811904 |                           11.12051 |                                          357 |                                   141 |                                   65 |                                         300 | low      |                    17.99494 |                                   581 |                            300 |                           138 |                                  524 | negative |                  25.74756 |                                 881 |                          596 |                         300 |                                880 | accept                 | reject                | accept                | accept               |               |
 
 Here we dive into the action function (`action3`) for the final
 analysis. We can literally execute the function line by line with locked

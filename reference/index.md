@@ -25,6 +25,8 @@
 - [`PiecewiseConstantExponentialRNG()`](https://zhangh12.github.io/TrialSimulator/reference/PiecewiseConstantExponentialRNG.md)
   : Generate Time-to-Event Endpoint from Piecewise Constant Exponential
   Distribution
+- [`Regimes`](https://zhangh12.github.io/TrialSimulator/reference/Regimes.md)
+  : Class of Regimes
 - [`StaggeredRecruiter()`](https://zhangh12.github.io/TrialSimulator/reference/StaggeredRecruiter.md)
   : Generate Enrollment Time from Piecewise Constant Uniform
   Distribution
@@ -73,6 +75,8 @@
   : Quantile Function of Piecewise Exponential Distribution
 - [`rconst()`](https://zhangh12.github.io/TrialSimulator/reference/rconst.md)
   : Generate Constant Variable
+- [`regime()`](https://zhangh12.github.io/TrialSimulator/reference/regime.md)
+  : Define a Regime
 - [`remove_arms()`](https://zhangh12.github.io/TrialSimulator/reference/remove_arms.md)
   : Removing One or More Arms From a Trial
 - [`resize()`](https://zhangh12.github.io/TrialSimulator/reference/resize.md)

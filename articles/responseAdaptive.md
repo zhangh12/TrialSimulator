@@ -83,7 +83,7 @@ rng <- function(n, dose){
     doses = c(0, 20, 25, 50, 100))
 
   data.frame(
-    fev1 = rnorm(n, mean = getResp(model, doses = dose), sd = .05)
+    fev1 = rnorm(n, mean = DoseFinding::getResp(model, doses = dose), sd = .05)
   )
 
 }
@@ -139,14 +139,15 @@ trial <- trial(
 
 trial$add_arms(sample_ratio = rep(1, 5), pbo, dose1, dose2, dose3, dose4)
 trial
-#>  ⚕⚕ Trial Name:  Trial-3415  
-#>  ⚕⚕ Description:  Trial-3415  
-#>  ⚕⚕ Number of Arms:  5  
-#>  ⚕⚕ Registered Arms:  0.0, 20.0, 25.0, 30.0, 35.0  
-#>  ⚕⚕ Sample Ratio:  1, 1, 1, 1, 1  
+#>  ⚕⚕         Trial Name:  Trial-3415  
+#>  ⚕⚕        Description:  Trial-3415  
+#>  ⚕⚕     Number of Arms:  5  
+#>  ⚕⚕    Registered Arms:  0.0, 20.0, 25.0, 30.0, 35.0  
+#>  ⚕⚕       Sample Ratio:  1, 1, 1, 1, 1  
 #>  ⚕⚕ Number of Patients:  200  
-#>  ⚕⚕ Planned Duration:  40  
-#>  ⚕⚕ Random Seed:  1727811904
+#>  ⚕⚕   Planned Duration:  40  
+#>  ⚕⚕             Regime:  not set  
+#>  ⚕⚕        Random Seed:  1727811904
 ```
 
 ## Define Milestones and Associated Actions
@@ -221,7 +222,7 @@ listener$add_milestones(stage1, stage2, final)
 #> A milestone <final> is registered.
 
 controller <- controller(trial, listener)
-controller$run(n = 1, plot_event = TRUE, silent = TRUE)
+controller$run(n = 1, silent = TRUE, tidy = FALSE)
 #> stage 1:
 #>   dose total_n new_ratio
 #> 1  0.0      13 0.2000000
@@ -243,6 +244,11 @@ controller$run(n = 1, plot_event = TRUE, silent = TRUE)
 #> 3 25.0      32
 #> 4 30.0      39
 #> 5 35.0      63
+```
+
+![](responseAdaptive_files/figure-html/sdlatiow-1.png)
+
+``` r
 
 output <- controller$get_output()
 
@@ -260,8 +266,11 @@ output %>%
 
 In the output, the columns `n_event_<milestone>_<arms>` contain detailed
 information on observed events or sample sizes per arm at each
-milestone. It is evident that we have pipeline patients at both
-interims.
+milestone. It is evident that we have pipeline patients at both interim.
+Note that to have columns `n_event_<milestone>_<arms>` in the simulation
+output, one must set `tidy = FALSE` when running `controller$run()`.
+Computing these columns are expensive so by default the option is turned
+off.
 
 ``` r
 output[, 'n_events_<stage 1>_<arms>']
