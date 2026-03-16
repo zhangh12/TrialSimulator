@@ -904,8 +904,12 @@ Trials <- R6::R6Class(
           select(patient_id, switch_time) %>%
           dplyr::filter(complete.cases(.))
 
-        if(nrow(switch_time) != nrow(new_treatment)){
-          stop('NA is not allowed for switch_time in data frame returned from user-defined function when(). ')
+        if(nrow(switch_time) != nrow(new_treatment) ||
+           !setequal(switch_time$patient_id, new_treatment$patient_id) ||
+           any(is.na(switch_time$switch_time))){
+          stop('In the user-defined function when(), ',
+               'switch_time must be specified to all patients who switch to new treatment regime. ',
+               'NA is not allowed, too. ')
         }
 
         new_regimes <- dplyr::inner_join(new_treatment, switch_time, by = 'patient_id')
@@ -1466,10 +1470,6 @@ Trials <- R6::R6Class(
     #' plot of cumulative number of events/samples over calendar time.
     event_plot = function(){
 
-      if(private$silent){
-        return(invisible(NULL))
-      }
-
       trial_data <- self$get_trial_data()
 
       event_number <- self$get_event_number()
@@ -1607,8 +1607,7 @@ Trials <- R6::R6Class(
         xlim(0, self$get_duration() * 1.05) +
         labs(
           x = 'Calendar Time',
-          y = 'Cumulative N',
-          color = ''
+          y = 'Cumulative N'
         ) +
         geom_area() +
         scale_fill_manual(
