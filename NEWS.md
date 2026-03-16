@@ -1,3 +1,24 @@
+# TrialSimulator 1.13.0
+
+## New Feature
+
+- New implementation of regime that is 60% faster. 
+
+## Update
+
+- Add a vignette of crossover design with wash-out periods. 
+
+## Bug Fix
+
+- Fix a minor bug displaying incorrect event count when using `enrollment()` to define milestone. This bug does not affect milestone triggering. 
+
+# TrialSimulator 1.12.0
+
+## New Feature
+
+- Support editing trajectory of endpoint over time. 
+- Add new argument `tidy` (default: `TRUE`) in `Controllers$run()` to stop computing and saving event count per arm per endpoint for 40% shorter run time. 
+
 # TrialSimulator 1.11.0
 
 ## New Feature

@@ -12,7 +12,6 @@
 #' A data frame of class \code{milestone_time_summary}. It comes with a
 #' \code{plot} method for visualization.
 #'
-#' @importFrom utils stack
 #'
 #' @examples
 #'

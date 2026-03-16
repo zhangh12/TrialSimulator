@@ -12,7 +12,6 @@
 #' supported which should be sufficient for common use in clinical design.
 #'
 #' @docType class
-#' @importFrom rpact getDesignGroupSequential
 #'
 #' @examples
 #' ## Note: examples showed here replicate the results from

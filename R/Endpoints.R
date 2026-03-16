@@ -13,11 +13,6 @@
 #' }
 #'
 #' @docType class
-#' @importFrom R6 R6Class
-#' @import dplyr survival
-#' @importFrom stats runif
-#' @importFrom utils head tail
-#' @import ggplot2
 #'
 #' @examples
 #' # Instead of using Endpoints$new(), please use endpoint(), a user-friendly

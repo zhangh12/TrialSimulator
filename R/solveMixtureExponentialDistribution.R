@@ -30,7 +30,6 @@
 #'
 #' @returns a named vector of \code{median2} or \code{overall_median}.
 #'
-#' @importFrom stats uniroot
 #'
 #' @examples
 #'

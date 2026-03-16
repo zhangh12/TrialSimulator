@@ -47,6 +47,9 @@
 #' }
 #'
 #' @docType class
+#'
+#' @import data.table
+#'
 #' @examples
 #' # Instead of using Trials$new, please use trial(), a user-friendly
 #' # wrapper. See examples in ?trial.
@@ -632,6 +635,34 @@ Trials <- R6::R6Class(
     },
 
     #' @description
+    #' register regime to a trial. The regime consists of three functions
+    #' to determine the patients who may switch to other treatment during a
+    #' a trial, to determine the switching time and how to update patients'
+    #' endpoint data accordingly.
+    #' @param regime an object created by \code{regime()}.
+    add_regime = function(regime){
+      if(self$has_arm()){
+        stop('Member function trial$add_regime() must be called before trial$add_arms(). ',
+             'A good practice is to call trial$add_regime() immediately after trial() is executed. ')
+      }
+
+      stopifnot(inherits(regime, 'Regimes'))
+      private$regime <- regime
+    },
+
+    #' @description
+    #' return registered regime.
+    get_regime = function(){
+      private$regime
+    },
+
+    #' @description
+    #' return whether a regime is registered
+    has_regime = function(){
+      !is.null(private$regime)
+    },
+
+    #' @description
     #' return name of trial
     get_name = function(){
       private$name
@@ -799,6 +830,8 @@ Trials <- R6::R6Class(
       patient_data <- NULL
       arms_data <- list()
       arms_in_trial <- sort(unique(next_enroll_arms))
+      regime_trajectory <- list()
+
       for(i in seq_along(arms_in_trial)){
         arm <- arms_in_trial[i]
         patients_index <- which(next_enroll_arms %in% arm)
@@ -813,11 +846,9 @@ Trials <- R6::R6Class(
 
         arms_data[[arm]] <- cbind(arms_data[[arm]], self$get_an_arm(arm)$generate_data(n_patients_in_arm))
 
-        arm_data <- arms_data[[arm]]
-
         if(!is.null(patient_data)){
-          diff_cols1 <- setdiff(names(arm_data), names(patient_data))
-          diff_cols2 <- setdiff(names(patient_data), names(arm_data))
+          diff_cols1 <- setdiff(names(arms_data[[arm]]), names(patient_data))
+          diff_cols2 <- setdiff(names(patient_data), names(arms_data[[arm]]))
           if(length(diff_cols1) > 0){
             stop('Arm <', arm, '> may have endpoints different from other arms: <',
                  paste0(diff_cols1, collapse = ', '), '>.')
@@ -829,12 +860,99 @@ Trials <- R6::R6Class(
           }
         }
 
-        patient_data <- bind_rows(patient_data, arm_data)
+        patient_data <- bind_rows(patient_data, arms_data[[arm]])
       }
 
 
+      ## before this line, patient_data is created to have the right size,
+      ## but its content does not matter. Its correct content is added in the
+      ## for loop below
       for(arm in arms_in_trial){
         patient_data[which(next_enroll_arms %in% arm), ] <- arms_data[[arm]]
+      }
+
+      if(self$has_regime()){
+        # message('Set regime when there are ', self$get_number_enrolled_patients(), ' patients in the trial. ')
+        ## real-time monitor to apply potential regime switching over newly enrolled patients
+
+        isValidOutput <- function(op, req_cols, func_name){
+          miss_cols <- setdiff(req_cols, names(op))
+          if(length(miss_cols) > 0){
+            stop('Column(s) <', paste0(miss_cols, collapse = ', '),
+                 '> are missed in data frame returned from the user-defined function ',
+                 func_name, ' for regime. ')
+          }
+        }
+
+        new_treatment <- self$get_regime()$get_treatment_selector()(patient_data)
+
+        isValidOutput(new_treatment, c('patient_id', 'new_treatment'), 'what()')
+        if(any(duplicated(new_treatment$patient_id))){
+          stop('No duplicated patient ID is allowed in data frame returned from user-defined function what(). ')
+        }
+
+        new_treatment <- new_treatment %>%
+          select(patient_id, new_treatment) %>%
+          dplyr::filter(complete.cases(.))
+
+        switch_time <- self$get_regime()$get_time_selector()(
+          patient_data %>% dplyr::filter(patient_id %in% new_treatment$patient_id))
+
+        isValidOutput(switch_time, c('patient_id', 'switch_time'), 'when()')
+
+        switch_time <- switch_time %>%
+          select(patient_id, switch_time) %>%
+          dplyr::filter(complete.cases(.))
+
+        if(nrow(switch_time) != nrow(new_treatment) ||
+           !setequal(switch_time$patient_id, new_treatment$patient_id) ||
+           any(is.na(switch_time$switch_time))){
+          stop('In the user-defined function when(), ',
+               'switch_time must be specified to all patients who switch to new treatment regime. ',
+               'NA is not allowed, too. ')
+        }
+
+        new_regimes <- dplyr::inner_join(new_treatment, switch_time, by = 'patient_id')
+
+        merged_patient_data <- dplyr::inner_join(patient_data, new_regimes, by = 'patient_id')
+
+        updated_data <- self$get_regime()$get_data_modifier()(merged_patient_data)
+        isValidOutput(updated_data, 'patient_id', 'how()')
+
+        setDT(patient_data)
+        setDT(updated_data)
+
+        no_touch_cols <- c('patient_id', 'arm', 'enroll_time', 'dropout_time', 'regime_trajectory')
+        touch_cols <- setdiff(names(updated_data), no_touch_cols)
+        if(!all(touch_cols %in% names(patient_data))){
+          stop('The columns below must not be returned from user-defined function < how() >. ')
+        }
+
+        for(col in touch_cols){
+          patient_data[updated_data,
+                       (col) := fifelse(
+                         is.na(get(paste0('i.', col))),
+                         get(col),
+                         get(paste0('i.', col))
+                       ),
+                       on = 'patient_id']
+        }
+
+
+        regime_trajectory <- bind_rows(
+          data.frame(
+            patient_id = patient_data$patient_id,
+            regime = patient_data$arm,
+            start_time = 0,
+            stringsAsFactors = FALSE
+          ),
+          new_regimes
+        )
+
+        id_col <- which(names(regime_trajectory) == 'patient_id')
+        lst <- split(regime_trajectory[, -id_col, drop = FALSE], regime_trajectory$patient_id)
+        patient_data$regime_trajectory <- I(unname(lst[match(patient_data$patient_id, names(lst))]))
+
       }
 
       private$trial_data <- bind_rows(self$get_trial_data(), patient_data)
@@ -1021,6 +1139,16 @@ Trials <- R6::R6Class(
       attr(lock_time, 'n_events') <- list()
 
       ## count events on all trial data in trial output
+      ## Note on Mar 15, 2026
+      # Turn off this line of code and use event_counts computed with (arms, ...) above
+      # can save 20% of running time. However, they are computing different things.
+      # The one above computes arm-specified endpoint counts accounting for filtering
+      # conditions in .... Thus, if the selected milestone time is from this condition,
+      # saved arm-specific event counts might be from a subset of all enrolled patients
+      # by the milestone time.
+      # Instead, if we use the line of code below (without ...), we are computing
+      # arm-specific event counts from all enrolled patients by the milestone
+      # time. For now, I keep using the code below for forward compatibility.
       event_counts <- self$get_event_tables(arms)
 
       for(i in seq_along(event_counts)){
@@ -1032,32 +1160,123 @@ Trials <- R6::R6Class(
 
       }
 
-      event_count_per_arm <- list()
-      for(arm in arms){
-        ec <- self$get_event_tables(arms = arm)
-        for(endpoint in names(ec)){
-          count <- ifelse(any(ec[[endpoint]]$calendar_time <= lock_time),
-                          max(ec[[endpoint]]$n_events[ec[[endpoint]]$calendar_time <= lock_time]),
-                          0) %>% setNames(arm)
+      if(private$save_event_count_per_arm){
+        event_count_per_arm <- list()
+        for(arm in arms){
+          ec <- self$get_event_tables(arms = arm)
+          for(endpoint in names(ec)){
+            count <- ifelse(any(ec[[endpoint]]$calendar_time <= lock_time),
+                            max(ec[[endpoint]]$n_events[ec[[endpoint]]$calendar_time <= lock_time]),
+                            0) %>% setNames(arm)
 
-          event_count_per_arm[[endpoint]] <- c(event_count_per_arm[[endpoint]], count)
+            event_count_per_arm[[endpoint]] <- c(event_count_per_arm[[endpoint]], count)
+          }
         }
+
+        event_count <- NULL
+        for(ep in names(event_count_per_arm)){
+          event_count <- bind_rows(event_count, data.frame(t(event_count_per_arm[[ep]])) %>% mutate(endpoint = ep))
+        }
+
+        attr(lock_time, 'n_events')[['arms']] <- I(list(event_count))
       }
 
-      event_count <- NULL
-      for(ep in names(event_count_per_arm)){
-        event_count <- bind_rows(event_count, data.frame(t(event_count_per_arm[[ep]])) %>% mutate(endpoint = ep))
-      }
-
-      attr(lock_time, 'n_events') <-
-        data.frame(attr(lock_time, 'n_events'))
-      attr(lock_time, 'n_events')$arms <- I(list(event_count))
-
+      attr(lock_time, 'n_events') <- as.data.frame(attr(lock_time, 'n_events'))
 
       lock_time
 
     },
 
+    #' @description
+    #' given a target number of enrolled patients, determine the data
+    #' lock time for a milestone (futility, interim, final, etc.). This function does
+    #' not change trial object (e.g. rolling back not yet randomized patients after
+    #' the found data lock time). It is similar to get_data_lock_time_by_event_number
+    #' but only focus on patient_id.
+    #' @param target_n_patients target number of enrolled patients.
+    #' @param arms a vector of arms' name on which number of events will be
+    #' counted.
+    #' @param min_treatment_duration numeric. Zero or positive value.
+    #' minimum treatment duration of enrolled patients.
+    #' If 0, it looks for triggering time based on number of enrolled
+    #' patients in population specified by \code{...} and \code{arms}. If positive,
+    #' it means that milestone is triggered when a specific number of enrolled
+    #' patients have received treatment for at least \code{min_treatment_duration}
+    #' duration. It is users' responsibility to assure that the unit of
+    #' \code{min_treatment_duration} are consistent with
+    #' readout of non-tte endpoints, dropout time, and trial duration.
+    #' @param ... subset conditions compatible with \code{dplyr::filter}. Number
+    #' Time of milestone is based on event counts on the subset of trial data.
+    #' @return data lock time
+    #'
+    get_data_lock_time_by_enrollment = function(arms,
+                                                target_n_patients,
+                                                min_treatment_duration,
+                                                ...){
+
+      stopifnot(all(is.wholenumber(target_n_patients)))
+      stopifnot(min_treatment_duration >= 0)
+
+      if(is.null(arms)){
+        arms <- self$get_arms_name()
+      }
+
+      event_counts <- self$get_event_tables(arms, ...)
+
+      if(max(event_counts[['patient_id']]$n_events) < target_n_patients){
+        warning('No enough patients to reach the target number <', target_n_patients, '>. ',
+                immediate. = TRUE)
+        milestone_time <- Inf
+      }else{
+        milestone_time <- min(event_counts[['patient_id']]$calendar_time[
+              event_counts[['patient_id']]$n_events >= target_n_patients
+            ]) + min_treatment_duration
+      }
+
+      lock_time <- milestone_time
+
+      if(is.infinite(lock_time)){
+        stop('None of the endpoints can reach target event number during the trial. ')
+      }
+
+      attr(lock_time, 'n_events') <- list()
+      event_counts <- self$get_event_tables(arms)
+
+      for(i in seq_along(event_counts)){
+        ec <- event_counts[[i]]
+        attr(lock_time, 'n_events')[[names(event_counts)[i]]] <-
+          ifelse(any(ec$calendar_time <= lock_time),
+                 max(ec$n_events[ec$calendar_time <= lock_time]),
+                 0)
+
+      }
+
+      if(private$save_event_count_per_arm){
+        event_count_per_arm <- list()
+        for(arm in arms){
+          ec <- self$get_event_tables(arms = arm)
+          for(endpoint in names(ec)){
+            count <- ifelse(any(ec[[endpoint]]$calendar_time <= lock_time),
+                            max(ec[[endpoint]]$n_events[ec[[endpoint]]$calendar_time <= lock_time]),
+                            0) %>% setNames(arm)
+
+            event_count_per_arm[[endpoint]] <- c(event_count_per_arm[[endpoint]], count)
+          }
+        }
+
+        event_count <- NULL
+        for(ep in names(event_count_per_arm)){
+          event_count <- bind_rows(event_count, data.frame(t(event_count_per_arm[[ep]])) %>% mutate(endpoint = ep))
+        }
+
+        attr(lock_time, 'n_events')[['arms']] <- I(list(event_count))
+      }
+
+      attr(lock_time, 'n_events') <- as.data.frame(attr(lock_time, 'n_events'))
+
+      lock_time
+
+    },
 
     #' @description
     #' given the calendar time to lock the data, return it with event counts of
@@ -1079,6 +1298,7 @@ Trials <- R6::R6Class(
       lock_time <- calendar_time
 
       attr(lock_time, 'n_events') <- list()
+
       for(i in seq_along(event_counts)){
         ec <- event_counts[[i]]
         attr(lock_time, 'n_events')[[names(event_counts)[i]]] <-
@@ -1088,27 +1308,28 @@ Trials <- R6::R6Class(
 
       }
 
-      event_count_per_arm <- list()
-      for(arm in arms){
-        ec <- self$get_event_tables(arms = arm)
-        for(endpoint in names(ec)){
-          count <- ifelse(any(ec[[endpoint]]$calendar_time <= lock_time),
-                          max(ec[[endpoint]]$n_events[ec[[endpoint]]$calendar_time <= lock_time]),
-                          0) %>% setNames(arm)
+      if(private$save_event_count_per_arm){
+        event_count_per_arm <- list()
+        for(arm in arms){
+          ec <- self$get_event_tables(arms = arm)
+          for(endpoint in names(ec)){
+            count <- ifelse(any(ec[[endpoint]]$calendar_time <= lock_time),
+                            max(ec[[endpoint]]$n_events[ec[[endpoint]]$calendar_time <= lock_time]),
+                            0) %>% setNames(arm)
 
-          event_count_per_arm[[endpoint]] <- c(event_count_per_arm[[endpoint]], count)
+            event_count_per_arm[[endpoint]] <- c(event_count_per_arm[[endpoint]], count)
+          }
         }
+
+        event_count <- NULL
+        for(ep in names(event_count_per_arm)){
+          event_count <- bind_rows(event_count, data.frame(t(event_count_per_arm[[ep]])) %>% mutate(endpoint = ep))
+        }
+
+        attr(lock_time, 'n_events')[['arms']] <- I(list(event_count))
       }
 
-      event_count <- NULL
-      for(ep in names(event_count_per_arm)){
-        event_count <- bind_rows(event_count, data.frame(t(event_count_per_arm[[ep]])) %>% mutate(endpoint = ep))
-      }
-
-      attr(lock_time, 'n_events') <-
-        data.frame(attr(lock_time, 'n_events'))
-      attr(lock_time, 'n_events')$arms <- I(list(event_count))
-
+      attr(lock_time, 'n_events') <- as.data.frame(attr(lock_time, 'n_events'))
 
       lock_time
 
@@ -1339,10 +1560,6 @@ Trials <- R6::R6Class(
     #' plot of cumulative number of events/samples over calendar time.
     event_plot = function(){
 
-      if(private$silent){
-        return(invisible(NULL))
-      }
-
       trial_data <- self$get_trial_data()
 
       event_number <- self$get_event_number()
@@ -1480,8 +1697,7 @@ Trials <- R6::R6Class(
         xlim(0, self$get_duration() * 1.05) +
         labs(
           x = 'Calendar Time',
-          y = 'Cumulative N',
-          color = ''
+          y = 'Cumulative N'
         ) +
         geom_area() +
         scale_fill_manual(
@@ -1836,6 +2052,15 @@ Trials <- R6::R6Class(
     #' @param silent logical.
     mute = function(silent){
       private$silent <- silent
+    },
+
+    #' @description
+    #' save less information in trial output if no intent to use it in summary
+    #' @param tidy logical. If \code{TRUE}, event count per arm per endpoint is
+    #' not computed and saved in trial output. This can speed up simulation by
+    #' up to 40\% under some circumstances.
+    tidy_output = function(tidy){
+      private$save_event_count_per_arm <- !tidy
     },
 
     #' @description
@@ -2595,16 +2820,17 @@ Trials <- R6::R6Class(
       reset <- "" ## "\033[0m"  # Reset to default color
       logo <- '\u2695\u2695' ## stringi::stri_escape_unicode('⚕')
 
-      cat(white_text_blue_bg, logo, 'Trial Name: ', self$get_name(), reset, '\n')
-      cat(white_text_blue_bg, logo, 'Description: ', self$get_description(), reset, '\n')
-      cat(white_text_blue_bg, logo, 'Number of Arms: ', self$get_number_arms(), reset, '\n')
-      cat(white_text_blue_bg, logo, 'Registered Arms: ',
+      cat(white_text_blue_bg, logo, '        Trial Name: ', self$get_name(), reset, '\n')
+      cat(white_text_blue_bg, logo, '       Description: ', self$get_description(), reset, '\n')
+      cat(white_text_blue_bg, logo, '    Number of Arms: ', self$get_number_arms(), reset, '\n')
+      cat(white_text_blue_bg, logo, '   Registered Arms: ',
           paste0(self$get_arms_name(), collapse = ', '), reset, '\n')
-      cat(white_text_blue_bg, logo, 'Sample Ratio: ',
+      cat(white_text_blue_bg, logo, '      Sample Ratio: ',
           paste0(self$get_sample_ratio(), collapse = ', '), reset, '\n')
       cat(white_text_blue_bg, logo, 'Number of Patients: ', self$get_number_patients(), reset, '\n')
-      cat(white_text_blue_bg, logo, 'Planned Duration: ', self$get_duration(), reset, '\n')
-      cat(white_text_blue_bg, logo, 'Random Seed: ', self$get_seed(), reset, '\n')
+      cat(white_text_blue_bg, logo, '  Planned Duration: ', self$get_duration(), reset, '\n')
+      cat(white_text_blue_bg, logo, '            Regime: ', ifelse(is.null(self$get_regime()), 'not set', 'set'), reset, '\n')
+      cat(white_text_blue_bg, logo, '       Random Seed: ', self$get_seed(), reset, '\n')
 
       invisible(self)
 
@@ -2795,7 +3021,10 @@ Trials <- R6::R6Class(
     milestone_time = c(),
     arm_time = list(), # time when arms are added to or removed from the trial
 
+    regime = NULL,
+
     silent = FALSE,
+    save_event_count_per_arm = FALSE,
 
     output = NULL,
 

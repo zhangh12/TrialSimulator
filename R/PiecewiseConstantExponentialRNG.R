@@ -30,7 +30,6 @@
 #' being censoring at the last \code{end_time} unless it is set to \code{Inf}.}
 #' }
 #'
-#' @import rlang
 #' @examples
 #' # example code
 #' # In this example, absolute risk in [0, 1) and [26, 52] are 0.0181 and

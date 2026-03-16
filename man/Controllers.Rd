@@ -28,6 +28,7 @@ useful to end users.
 \item \href{#method-Controllers-get_listener}{\code{Controllers$get_listener()}}
 \item \href{#method-Controllers-get_trial}{\code{Controllers$get_trial()}}
 \item \href{#method-Controllers-mute}{\code{Controllers$mute()}}
+\item \href{#method-Controllers-tidy_output}{\code{Controllers$tidy_output()}}
 \item \href{#method-Controllers-reset}{\code{Controllers$reset()}}
 \item \href{#method-Controllers-get_output}{\code{Controllers$get_output()}}
 \item \href{#method-Controllers-run}{\code{Controllers$run()}}
@@ -91,6 +92,17 @@ mute all messages (not including warnings).
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Controllers-tidy_output"></a>}}
+\if{latex}{\out{\hypertarget{method-Controllers-tidy_output}{}}}
+\subsection{Method \code{tidy_output()}}{
+control trial output. Event count per arm may not be computed
+for faster run time.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Controllers$tidy_output()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Controllers-reset"></a>}}
 \if{latex}{\out{\hypertarget{method-Controllers-reset}{}}}
 \subsection{Method \code{reset()}}{
@@ -150,6 +162,7 @@ run trial simulation.
   n_workers = 1,
   plot_event = TRUE,
   silent = FALSE,
+  tidy = TRUE,
   dry_run = FALSE
 )}\if{html}{\out{</div>}}
 }
@@ -183,6 +196,15 @@ the best performance.}
 
 \item{\code{silent}}{logical. \code{TRUE} if muting all messages during a
 trial. Note that warning messages are still displayed.}
+
+\item{\code{tidy}}{logical. \code{TRUE} by default, i.e., event count per arm
+per endpoint is not computed and saved in returned trial output. This
+can make \code{run()} 40% more faster under certain circumstances. Set it
+to \code{FALSE} if more information is needed when designing a trial,
+e.g., determining weights in combination test. Users can also compute
+the event count per arm in action functions with locked data by themselves,
+which is usually faster as event counts may only be computed for
+a subset of endpoints.}
 
 \item{\code{dry_run}}{logical. We are considering retire this argument.
 \code{TRUE} if action function provided by users is

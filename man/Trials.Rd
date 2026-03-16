@@ -115,6 +115,9 @@ trial$closedTest(dt, treatments = c('high dose', 'low dose'),
 \item \href{#method-Trials-update_generator}{\code{Trials$update_generator()}}
 \item \href{#method-Trials-resize}{\code{Trials$resize()}}
 \item \href{#method-Trials-add_arms}{\code{Trials$add_arms()}}
+\item \href{#method-Trials-add_regime}{\code{Trials$add_regime()}}
+\item \href{#method-Trials-get_regime}{\code{Trials$get_regime()}}
+\item \href{#method-Trials-has_regime}{\code{Trials$has_regime()}}
 \item \href{#method-Trials-get_name}{\code{Trials$get_name()}}
 \item \href{#method-Trials-get_description}{\code{Trials$get_description()}}
 \item \href{#method-Trials-get_arms}{\code{Trials$get_arms()}}
@@ -133,6 +136,7 @@ trial$closedTest(dt, treatments = c('high dose', 'low dose'),
 \item \href{#method-Trials-get_current_time}{\code{Trials$get_current_time()}}
 \item \href{#method-Trials-get_event_tables}{\code{Trials$get_event_tables()}}
 \item \href{#method-Trials-get_data_lock_time_by_event_number}{\code{Trials$get_data_lock_time_by_event_number()}}
+\item \href{#method-Trials-get_data_lock_time_by_enrollment}{\code{Trials$get_data_lock_time_by_enrollment()}}
 \item \href{#method-Trials-get_data_lock_time_by_calendar_time}{\code{Trials$get_data_lock_time_by_calendar_time()}}
 \item \href{#method-Trials-get_locked_data}{\code{Trials$get_locked_data()}}
 \item \href{#method-Trials-get_locked_data_name}{\code{Trials$get_locked_data_name()}}
@@ -149,6 +153,7 @@ trial$closedTest(dt, treatments = c('high dose', 'low dose'),
 \item \href{#method-Trials-get}{\code{Trials$get()}}
 \item \href{#method-Trials-get_output}{\code{Trials$get_output()}}
 \item \href{#method-Trials-mute}{\code{Trials$mute()}}
+\item \href{#method-Trials-tidy_output}{\code{Trials$tidy_output()}}
 \item \href{#method-Trials-independentIncrement}{\code{Trials$independentIncrement()}}
 \item \href{#method-Trials-dunnettTest}{\code{Trials$dunnettTest()}}
 \item \href{#method-Trials-closedTest}{\code{Trials$closedTest()}}
@@ -484,6 +489,46 @@ of the same distribution.}
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-add_regime"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-add_regime}{}}}
+\subsection{Method \code{add_regime()}}{
+register regime to a trial. The regime consists of three functions
+to determine the patients who may switch to other treatment during a
+a trial, to determine the switching time and how to update patients'
+endpoint data accordingly.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$add_regime(regime)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{regime}}{an object created by \code{regime()}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-get_regime"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-get_regime}{}}}
+\subsection{Method \code{get_regime()}}{
+return registered regime.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_regime()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-has_regime"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-has_regime}{}}}
+\subsection{Method \code{has_regime()}}{
+return whether a regime is registered
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$has_regime()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Trials-get_name"></a>}}
 \if{latex}{\out{\hypertarget{method-Trials-get_name}{}}}
 \subsection{Method \code{get_name()}}{
@@ -750,6 +795,51 @@ counted.}
 
 \item{\code{type}}{\code{all} if all target number of events are reached.
 \code{any} if the any target number of events is reached.}
+
+\item{\code{...}}{subset conditions compatible with \code{dplyr::filter}. Number
+Time of milestone is based on event counts on the subset of trial data.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+data lock time
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-get_data_lock_time_by_enrollment"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-get_data_lock_time_by_enrollment}{}}}
+\subsection{Method \code{get_data_lock_time_by_enrollment()}}{
+given a target number of enrolled patients, determine the data
+lock time for a milestone (futility, interim, final, etc.). This function does
+not change trial object (e.g. rolling back not yet randomized patients after
+the found data lock time). It is similar to get_data_lock_time_by_event_number
+but only focus on patient_id.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_data_lock_time_by_enrollment(
+  arms,
+  target_n_patients,
+  min_treatment_duration,
+  ...
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{arms}}{a vector of arms' name on which number of events will be
+counted.}
+
+\item{\code{target_n_patients}}{target number of enrolled patients.}
+
+\item{\code{min_treatment_duration}}{numeric. Zero or positive value.
+minimum treatment duration of enrolled patients.
+If 0, it looks for triggering time based on number of enrolled
+patients in population specified by \code{...} and \code{arms}. If positive,
+it means that milestone is triggered when a specific number of enrolled
+patients have received treatment for at least \code{min_treatment_duration}
+duration. It is users' responsibility to assure that the unit of
+\code{min_treatment_duration} are consistent with
+readout of non-tte endpoints, dropout time, and trial duration.}
 
 \item{\code{...}}{subset conditions compatible with \code{dplyr::filter}. Number
 Time of milestone is based on event counts on the subset of trial data.}
@@ -1123,6 +1213,25 @@ mute all messages (not including warnings)
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{silent}}{logical.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-tidy_output"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-tidy_output}{}}}
+\subsection{Method \code{tidy_output()}}{
+save less information in trial output if no intent to use it in summary
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$tidy_output(tidy)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{tidy}}{logical. If \code{TRUE}, event count per arm per endpoint is
+not computed and saved in trial output. This can speed up simulation by
+up to 40\% under some circumstances.}
 }
 \if{html}{\out{</div>}}
 }

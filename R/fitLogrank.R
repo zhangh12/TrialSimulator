@@ -40,7 +40,6 @@
 #' \item{\code{z}}{the z statistics of log hazard ratios. }
 #' }
 #'
-#' @importFrom stats terms
 #'
 #' @export
 #'
