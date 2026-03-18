@@ -1,3 +1,2 @@
 
-
-library(dplyr)
+suppressMessages(library(dplyr))

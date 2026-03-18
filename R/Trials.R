@@ -635,31 +635,31 @@ Trials <- R6::R6Class(
     },
 
     #' @description
-    #' register regime to a trial. The regime consists of three functions
+    #' register regimen to a trial. The regimen consists of three functions
     #' to determine the patients who may switch to other treatment during a
     #' a trial, to determine the switching time and how to update patients'
     #' endpoint data accordingly.
-    #' @param regime an object created by \code{regime()}.
-    add_regime = function(regime){
+    #' @param regimen an object created by \code{regimen()}.
+    add_regimen = function(regimen){
       if(self$has_arm()){
-        stop('Member function trial$add_regime() must be called before trial$add_arms(). ',
-             'A good practice is to call trial$add_regime() immediately after trial() is executed. ')
+        stop('Member function trial$add_regimen() must be called before trial$add_arms(). ',
+             'A good practice is to call trial$add_regimen() immediately after trial() is executed. ')
       }
 
-      stopifnot(inherits(regime, 'Regimes'))
-      private$regime <- regime
+      stopifnot(inherits(regimen, 'Regimens'))
+      private$regimen <- regimen
     },
 
     #' @description
-    #' return registered regime.
-    get_regime = function(){
-      private$regime
+    #' return registered regimen.
+    get_regimen = function(){
+      private$regimen
     },
 
     #' @description
-    #' return whether a regime is registered
-    has_regime = function(){
-      !is.null(private$regime)
+    #' return whether a regimen is registered
+    has_regimen = function(){
+      !is.null(private$regimen)
     },
 
     #' @description
@@ -830,7 +830,7 @@ Trials <- R6::R6Class(
       patient_data <- NULL
       arms_data <- list()
       arms_in_trial <- sort(unique(next_enroll_arms))
-      regime_trajectory <- list()
+      regimen_trajectory <- list()
 
       for(i in seq_along(arms_in_trial)){
         arm <- arms_in_trial[i]
@@ -871,20 +871,20 @@ Trials <- R6::R6Class(
         patient_data[which(next_enroll_arms %in% arm), ] <- arms_data[[arm]]
       }
 
-      if(self$has_regime()){
-        # message('Set regime when there are ', self$get_number_enrolled_patients(), ' patients in the trial. ')
-        ## real-time monitor to apply potential regime switching over newly enrolled patients
+      if(self$has_regimen()){
+        # message('Set regimen when there are ', self$get_number_enrolled_patients(), ' patients in the trial. ')
+        ## real-time monitor to apply potential regimen switching over newly enrolled patients
 
         isValidOutput <- function(op, req_cols, func_name){
           miss_cols <- setdiff(req_cols, names(op))
           if(length(miss_cols) > 0){
             stop('Column(s) <', paste0(miss_cols, collapse = ', '),
-                 '> are missed in data frame returned from the user-defined function ',
-                 func_name, ' for regime. ')
+                 '> are missing in data frame returned from the user-defined function ',
+                 func_name, ' for regimen. ')
           }
         }
 
-        new_treatment <- self$get_regime()$get_treatment_selector()(patient_data)
+        new_treatment <- self$get_regimen()$get_treatment_allocator()(patient_data)
 
         isValidOutput(new_treatment, c('patient_id', 'new_treatment'), 'what()')
         if(any(duplicated(new_treatment$patient_id))){
@@ -895,7 +895,7 @@ Trials <- R6::R6Class(
           select(patient_id, new_treatment) %>%
           dplyr::filter(complete.cases(.))
 
-        switch_time <- self$get_regime()$get_time_selector()(
+        switch_time <- self$get_regimen()$get_time_selector()(
           patient_data %>% dplyr::filter(patient_id %in% new_treatment$patient_id))
 
         isValidOutput(switch_time, c('patient_id', 'switch_time'), 'when()')
@@ -908,21 +908,21 @@ Trials <- R6::R6Class(
            !setequal(switch_time$patient_id, new_treatment$patient_id) ||
            any(is.na(switch_time$switch_time))){
           stop('In the user-defined function when(), ',
-               'switch_time must be specified to all patients who switch to new treatment regime. ',
+               'switch_time must be specified to all patients who switch to new treatment regimen. ',
                'NA is not allowed, too. ')
         }
 
-        new_regimes <- dplyr::inner_join(new_treatment, switch_time, by = 'patient_id')
+        new_regimens <- dplyr::inner_join(new_treatment, switch_time, by = 'patient_id')
 
-        merged_patient_data <- dplyr::inner_join(patient_data, new_regimes, by = 'patient_id')
+        merged_patient_data <- dplyr::inner_join(patient_data, new_regimens, by = 'patient_id')
 
-        updated_data <- self$get_regime()$get_data_modifier()(merged_patient_data)
+        updated_data <- self$get_regimen()$get_data_modifier()(merged_patient_data)
         isValidOutput(updated_data, 'patient_id', 'how()')
 
         setDT(patient_data)
         setDT(updated_data)
 
-        no_touch_cols <- c('patient_id', 'arm', 'enroll_time', 'dropout_time', 'regime_trajectory')
+        no_touch_cols <- c('patient_id', 'arm', 'enroll_time', 'dropout_time', 'regimen_trajectory')
         touch_cols <- setdiff(names(updated_data), no_touch_cols)
         if(!all(touch_cols %in% names(patient_data))){
           stop('The columns below must not be returned from user-defined function < how() >. ')
@@ -938,20 +938,23 @@ Trials <- R6::R6Class(
                        on = 'patient_id']
         }
 
-
-        regime_trajectory <- bind_rows(
+        regimen_trajectory <- bind_rows(
           data.frame(
             patient_id = patient_data$patient_id,
-            regime = patient_data$arm,
+            regimen = patient_data$arm,
             start_time = 0,
             stringsAsFactors = FALSE
           ),
-          new_regimes
+          new_regimens %>%
+            dplyr::rename(
+              regimen = new_treatment,
+              start_time = switch_time
+            )
         )
 
-        id_col <- which(names(regime_trajectory) == 'patient_id')
-        lst <- split(regime_trajectory[, -id_col, drop = FALSE], regime_trajectory$patient_id)
-        patient_data$regime_trajectory <- I(unname(lst[match(patient_data$patient_id, names(lst))]))
+        id_col <- which(names(regimen_trajectory) == 'patient_id')
+        lst <- split(regimen_trajectory[, -id_col, drop = FALSE], regimen_trajectory$patient_id)
+        patient_data$regimen_trajectory <- I(unname(lst[match(patient_data$patient_id, names(lst))]))
 
       }
 
@@ -1100,10 +1103,10 @@ Trials <- R6::R6Class(
 
       event_counts <- self$get_event_tables(arms, ...)
 
-      missed_endpoints <- setdiff(endpoints, names(event_counts))
-      if(length(missed_endpoints) > 0){
+      missing_endpoints <- setdiff(endpoints, names(event_counts))
+      if(length(missing_endpoints) > 0){
         stop('Endpoints <',
-             paste0(missed_endpoints, collapse = ', '),
+             paste0(missing_endpoints, collapse = ', '),
              '> are missing in event_counts when determining data lock time. ')
       }
 
@@ -2829,7 +2832,7 @@ Trials <- R6::R6Class(
           paste0(self$get_sample_ratio(), collapse = ', '), reset, '\n')
       cat(white_text_blue_bg, logo, 'Number of Patients: ', self$get_number_patients(), reset, '\n')
       cat(white_text_blue_bg, logo, '  Planned Duration: ', self$get_duration(), reset, '\n')
-      cat(white_text_blue_bg, logo, '            Regime: ', ifelse(is.null(self$get_regime()), 'not set', 'set'), reset, '\n')
+      cat(white_text_blue_bg, logo, '           Regimen: ', ifelse(is.null(self$get_regimen()), 'not set', 'set'), reset, '\n')
       cat(white_text_blue_bg, logo, '       Random Seed: ', self$get_seed(), reset, '\n')
 
       invisible(self)
@@ -3021,7 +3024,7 @@ Trials <- R6::R6Class(
     milestone_time = c(),
     arm_time = list(), # time when arms are added to or removed from the trial
 
-    regime = NULL,
+    regimen = NULL,
 
     silent = FALSE,
     save_event_count_per_arm = FALSE,

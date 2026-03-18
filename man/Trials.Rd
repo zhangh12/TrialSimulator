@@ -115,9 +115,9 @@ trial$closedTest(dt, treatments = c('high dose', 'low dose'),
 \item \href{#method-Trials-update_generator}{\code{Trials$update_generator()}}
 \item \href{#method-Trials-resize}{\code{Trials$resize()}}
 \item \href{#method-Trials-add_arms}{\code{Trials$add_arms()}}
-\item \href{#method-Trials-add_regime}{\code{Trials$add_regime()}}
-\item \href{#method-Trials-get_regime}{\code{Trials$get_regime()}}
-\item \href{#method-Trials-has_regime}{\code{Trials$has_regime()}}
+\item \href{#method-Trials-add_regimen}{\code{Trials$add_regimen()}}
+\item \href{#method-Trials-get_regimen}{\code{Trials$get_regimen()}}
+\item \href{#method-Trials-has_regimen}{\code{Trials$has_regimen()}}
 \item \href{#method-Trials-get_name}{\code{Trials$get_name()}}
 \item \href{#method-Trials-get_description}{\code{Trials$get_description()}}
 \item \href{#method-Trials-get_arms}{\code{Trials$get_arms()}}
@@ -489,42 +489,42 @@ of the same distribution.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-add_regime"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-add_regime}{}}}
-\subsection{Method \code{add_regime()}}{
-register regime to a trial. The regime consists of three functions
+\if{html}{\out{<a id="method-Trials-add_regimen"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-add_regimen}{}}}
+\subsection{Method \code{add_regimen()}}{
+register regimen to a trial. The regimen consists of three functions
 to determine the patients who may switch to other treatment during a
 a trial, to determine the switching time and how to update patients'
 endpoint data accordingly.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$add_regime(regime)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$add_regimen(regimen)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{regime}}{an object created by \code{regime()}.}
+\item{\code{regimen}}{an object created by \code{regimen()}.}
 }
 \if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_regime"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_regime}{}}}
-\subsection{Method \code{get_regime()}}{
-return registered regime.
+\if{html}{\out{<a id="method-Trials-get_regimen"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-get_regimen}{}}}
+\subsection{Method \code{get_regimen()}}{
+return registered regimen.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_regime()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_regimen()}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-has_regime"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-has_regime}{}}}
-\subsection{Method \code{has_regime()}}{
-return whether a regime is registered
+\if{html}{\out{<a id="method-Trials-has_regimen"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-has_regimen}{}}}
+\subsection{Method \code{has_regimen()}}{
+return whether a regimen is registered
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$has_regime()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$has_regimen()}\if{html}{\out{</div>}}
 }
 
 }

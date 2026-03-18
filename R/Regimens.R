@@ -1,19 +1,19 @@
-#' Class of Regimes
+#' Class of Regimens
 #' @description
-#' Create a class of regime. A regime defines the rules to select treatments for
+#' Create a class of regimen. A regimen defines the rules to select treatments for
 #' patients switch, to determine the time of switching, and to update patients'
 #' endpoint data.
 #'
 #' @docType class
 #'
 #' @export
-Regimes <- R6::R6Class(
-  'Regimes',
+Regimens <- R6::R6Class(
+  'Regimens',
 
   public = list(
 
     #' @description
-    #' initialize regime
+    #' initialize regimen
     #'
     #' @param what a function determining whether patients' data would be
     #' updated due to switching treatment. It takes \code{patient_data},
@@ -50,7 +50,7 @@ Regimes <- R6::R6Class(
           }
 
           if(!identical(names(formals(func)), args_order)){
-            stop('The <', func_name, '> function passed to regime has arguments <',
+            stop('The <', func_name, '> function passed to regimen has arguments <',
                  paste0(names(formals(func)), collapse = ', '), '>. \n',
                  'The TrialSimulator convention requires that this function must take the following arguments in the specified order: \n',
                  paste0(args_order, collapse = ', '))
@@ -61,7 +61,7 @@ Regimes <- R6::R6Class(
         isValidFunction(when, deparse(substitute(when)), 'patient_data')
         isValidFunction(how, deparse(substitute(how)), 'patient_data')
 
-        private$treatment_selector <- what
+        private$treatment_allocator <- what
         private$time_selector <- when
         private$data_modifier <- how
 
@@ -69,8 +69,8 @@ Regimes <- R6::R6Class(
 
     #' @description
     #' return user-defined new treatment for a patient
-    get_treatment_selector = function(){
-      private$treatment_selector
+    get_treatment_allocator = function(){
+      private$treatment_allocator
     },
 
     #' @description
@@ -87,7 +87,7 @@ Regimes <- R6::R6Class(
   ),
 
   private = list(
-    treatment_selector = NULL,
+    treatment_allocator = NULL,
     time_selector = NULL,
     data_modifier = NULL
   )
