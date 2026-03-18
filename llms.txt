@@ -109,9 +109,10 @@ we recommend reading the following vignettes in order:
   - \[Platform trial\] vignette is under development.
   - \[Basket trial\] vignette is under development.
 - Examples: crossover
-  - [crossover trial with wash-out
+  - [Crossover trial with wash-out
     periods](https://zhangh12.github.io/TrialSimulator/articles/crossoverWashout.html)
-  - \[crossover over time\] vignette is coming!
+  - [Dynamic treatment
+    switching](https://zhangh12.github.io/TrialSimulator/articles/dynamicTreatmentSwitching.html)
   - \[crossover at specified time points\] vignette is coming!
 - Built-in methods supported in `TrialSimulator`
   - [Wrapper functions of common statistical methods for estimating
@@ -153,8 +154,8 @@ we recommend reading the following vignettes in order:
 - [`PiecewiseConstantExponentialRNG()`](https://zhangh12.github.io/TrialSimulator/reference/PiecewiseConstantExponentialRNG.md)
   : Generate Time-to-Event Endpoint from Piecewise Constant Exponential
   Distribution
-- [`Regimes`](https://zhangh12.github.io/TrialSimulator/reference/Regimes.md)
-  : Class of Regimes
+- [`Regimens`](https://zhangh12.github.io/TrialSimulator/reference/Regimens.md)
+  : Class of Regimens
 - [`StaggeredRecruiter()`](https://zhangh12.github.io/TrialSimulator/reference/StaggeredRecruiter.md)
   : Generate Enrollment Time from Piecewise Constant Uniform
   Distribution
@@ -203,8 +204,8 @@ we recommend reading the following vignettes in order:
   : Quantile Function of Piecewise Exponential Distribution
 - [`rconst()`](https://zhangh12.github.io/TrialSimulator/reference/rconst.md)
   : Generate Constant Variable
-- [`regime()`](https://zhangh12.github.io/TrialSimulator/reference/regime.md)
-  : Define a Regime
+- [`regimen()`](https://zhangh12.github.io/TrialSimulator/reference/regimen.md)
+  : Define a Regimen
 - [`remove_arms()`](https://zhangh12.github.io/TrialSimulator/reference/remove_arms.md)
   : Removing One or More Arms From a Trial
 - [`resize()`](https://zhangh12.github.io/TrialSimulator/reference/resize.md)
@@ -240,8 +241,6 @@ we recommend reading the following vignettes in order:
   Design](https://zhangh12.github.io/TrialSimulator/articles/adaptiveDesign.md):
 - [Condition System for Triggering Milestones in a
   Trial](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.md):
-- [Simulate Trials with Treatment
-  Switching](https://zhangh12.github.io/TrialSimulator/articles/crossoverSwitchTreatment.md):
 - [Crossover Design with Wash-out
   Periods](https://zhangh12.github.io/TrialSimulator/articles/crossoverWashout.md):
 - [Define and Summarize Arms in Clinical
@@ -254,6 +253,8 @@ we recommend reading the following vignettes in order:
   Endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineTimeToEventEndpoints.md):
 - [Dose-Ranging
   Study](https://zhangh12.github.io/TrialSimulator/articles/doseRanging.md):
+- [Simulate Trials with Dynamic Treatment
+  Switching](https://zhangh12.github.io/TrialSimulator/articles/dynamicTreatmentSwitching.md):
 - [An Example of Fixed Design with Two Correlated
   Endpoints](https://zhangh12.github.io/TrialSimulator/articles/fixedDesign.md):
 - [Designs with Response-Adaptive

@@ -8,8 +8,6 @@
   Design](https://zhangh12.github.io/TrialSimulator/articles/adaptiveDesign.md):
 - [Condition System for Triggering Milestones in a
   Trial](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.md):
-- [Simulate Trials with Treatment
-  Switching](https://zhangh12.github.io/TrialSimulator/articles/crossoverSwitchTreatment.md):
 - [Crossover Design with Wash-out
   Periods](https://zhangh12.github.io/TrialSimulator/articles/crossoverWashout.md):
 - [Define and Summarize Arms in Clinical
@@ -22,6 +20,8 @@
   Endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineTimeToEventEndpoints.md):
 - [Dose-Ranging
   Study](https://zhangh12.github.io/TrialSimulator/articles/doseRanging.md):
+- [Simulate Trials with Dynamic Treatment
+  Switching](https://zhangh12.github.io/TrialSimulator/articles/dynamicTreatmentSwitching.md):
 - [An Example of Fixed Design with Two Correlated
   Endpoints](https://zhangh12.github.io/TrialSimulator/articles/fixedDesign.md):
 - [Designs with Response-Adaptive

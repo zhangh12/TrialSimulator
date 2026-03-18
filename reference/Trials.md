@@ -90,11 +90,11 @@ to end users.
 
 - [`Trials$add_arms()`](#method-Trials-add_arms)
 
-- [`Trials$add_regime()`](#method-Trials-add_regime)
+- [`Trials$add_regimen()`](#method-Trials-add_regimen)
 
-- [`Trials$get_regime()`](#method-Trials-get_regime)
+- [`Trials$get_regimen()`](#method-Trials-get_regimen)
 
-- [`Trials$has_regime()`](#method-Trials-has_regime)
+- [`Trials$has_regimen()`](#method-Trials-has_regimen)
 
 - [`Trials$get_name()`](#method-Trials-get_name)
 
@@ -533,43 +533,43 @@ to track this.
 
 ------------------------------------------------------------------------
 
-### Method `add_regime()`
+### Method `add_regimen()`
 
-register regime to a trial. The regime consists of three functions to
+register regimen to a trial. The regimen consists of three functions to
 determine the patients who may switch to other treatment during a a
 trial, to determine the switching time and how to update patients'
 endpoint data accordingly.
 
 #### Usage
 
-    Trials$add_regime(regime)
+    Trials$add_regimen(regimen)
 
 #### Arguments
 
-- `regime`:
+- `regimen`:
 
   an object created by
-  [`regime()`](https://zhangh12.github.io/TrialSimulator/reference/regime.md).
+  [`regimen()`](https://zhangh12.github.io/TrialSimulator/reference/regimen.md).
 
 ------------------------------------------------------------------------
 
-### Method `get_regime()`
+### Method `get_regimen()`
 
-return registered regime.
+return registered regimen.
 
 #### Usage
 
-    Trials$get_regime()
+    Trials$get_regimen()
 
 ------------------------------------------------------------------------
 
-### Method `has_regime()`
+### Method `has_regimen()`
 
-return whether a regime is registered
+return whether a regimen is registered
 
 #### Usage
 
-    Trials$has_regime()
+    Trials$has_regimen()
 
 ------------------------------------------------------------------------
 

@@ -107,13 +107,13 @@ $closedTest() perform combination test based on Dunnett's test.
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/actionFunctions.html">Specify Actions to Execute at Trial Milestones</a></li>
     <li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
     <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
-    <li><a class="dropdown-item" href="../articles/crossoverSwitchTreatment.html">Simulate Trials with Treatment Switching</a></li>
     <li><a class="dropdown-item" href="../articles/crossoverWashout.html">Crossover Design with Wash-out Periods</a></li>
     <li><a class="dropdown-item" href="../articles/defineArms.html">Define and Summarize Arms in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineLongitudinalEndpoints.html">Define Longitudinal Endpoints</a></li>
     <li><a class="dropdown-item" href="../articles/defineNonTimeToEventEndpoints.html">Define Non-Time-to-Event Endpoints</a></li>
     <li><a class="dropdown-item" href="../articles/defineTimeToEventEndpoints.html">Define Time-to-Event Endpoints</a></li>
     <li><a class="dropdown-item" href="../articles/doseRanging.html">Dose-Ranging Study</a></li>
+    <li><a class="dropdown-item" href="../articles/dynamicTreatmentSwitching.html">Simulate Trials with Dynamic Treatment Switching</a></li>
     <li><a class="dropdown-item" href="../articles/fixedDesign.html">An Example of Fixed Design with Two Correlated Endpoints</a></li>
     <li><a class="dropdown-item" href="../articles/responseAdaptive.html">Designs with Response-Adaptive Randomization</a></li>
     <li><a class="dropdown-item" href="../articles/simulatePfsAndOs.html">Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints</a></li>
@@ -200,9 +200,9 @@ function <code><a href="https://rdrr.io/r/base/save.html" class="external-link">
 <li><p><a href="#method-Trials-update_generator"><code>Trials$update_generator()</code></a></p></li>
 <li><p><a href="#method-Trials-resize"><code>Trials$resize()</code></a></p></li>
 <li><p><a href="#method-Trials-add_arms"><code>Trials$add_arms()</code></a></p></li>
-<li><p><a href="#method-Trials-add_regime"><code>Trials$add_regime()</code></a></p></li>
-<li><p><a href="#method-Trials-get_regime"><code>Trials$get_regime()</code></a></p></li>
-<li><p><a href="#method-Trials-has_regime"><code>Trials$has_regime()</code></a></p></li>
+<li><p><a href="#method-Trials-add_regimen"><code>Trials$add_regimen()</code></a></p></li>
+<li><p><a href="#method-Trials-get_regimen"><code>Trials$get_regimen()</code></a></p></li>
+<li><p><a href="#method-Trials-has_regimen"><code>Trials$has_regimen()</code></a></p></li>
 <li><p><a href="#method-Trials-get_name"><code>Trials$get_name()</code></a></p></li>
 <li><p><a href="#method-Trials-get_description"><code>Trials$get_description()</code></a></p></li>
 <li><p><a href="#method-Trials-get_arms"><code>Trials$get_arms()</code></a></p></li>
@@ -580,38 +580,38 @@ of the same distribution.</p></dd>
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-Trials-add_regime"></a><div class="section">
-<h3 id="method-add-regime-">Method <code>add_regime()</code><a class="anchor" aria-label="anchor" href="#method-add-regime-"></a></h3>
-<p>register regime to a trial. The regime consists of three functions
+</div><p></p><hr><a id="method-Trials-add_regimen"></a><div class="section">
+<h3 id="method-add-regimen-">Method <code>add_regimen()</code><a class="anchor" aria-label="anchor" href="#method-add-regimen-"></a></h3>
+<p>register regimen to a trial. The regimen consists of three functions
 to determine the patients who may switch to other treatment during a
 a trial, to determine the switching time and how to update patients'
 endpoint data accordingly.</p><div class="section">
 <h4 id="usage-14">Usage<a class="anchor" aria-label="anchor" href="#usage-14"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">add_regime</span><span class="op">(</span><span class="va">regime</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">add_regimen</span><span class="op">(</span><span class="va">regimen</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-9">Arguments<a class="anchor" aria-label="anchor" href="#arguments-9"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>regime</code></dt>
-<dd><p>an object created by <code><a href="regime.html">regime()</a></code>.</p></dd>
+<p></p><div class="arguments"><dl><dt><code>regimen</code></dt>
+<dd><p>an object created by <code><a href="regimen.html">regimen()</a></code>.</p></dd>
 
 
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-Trials-get_regime"></a><div class="section">
-<h3 id="method-get-regime-">Method <code>get_regime()</code><a class="anchor" aria-label="anchor" href="#method-get-regime-"></a></h3>
-<p>return registered regime.</p><div class="section">
+</div><p></p><hr><a id="method-Trials-get_regimen"></a><div class="section">
+<h3 id="method-get-regimen-">Method <code>get_regimen()</code><a class="anchor" aria-label="anchor" href="#method-get-regimen-"></a></h3>
+<p>return registered regimen.</p><div class="section">
 <h4 id="usage-15">Usage<a class="anchor" aria-label="anchor" href="#usage-15"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">get_regime</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">get_regimen</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 
-</div><p></p><hr><a id="method-Trials-has_regime"></a><div class="section">
-<h3 id="method-has-regime-">Method <code>has_regime()</code><a class="anchor" aria-label="anchor" href="#method-has-regime-"></a></h3>
-<p>return whether a regime is registered</p><div class="section">
+</div><p></p><hr><a id="method-Trials-has_regimen"></a><div class="section">
+<h3 id="method-has-regimen-">Method <code>has_regimen()</code><a class="anchor" aria-label="anchor" href="#method-has-regimen-"></a></h3>
+<p>return whether a regimen is registered</p><div class="section">
 <h4 id="usage-16">Usage<a class="anchor" aria-label="anchor" href="#usage-16"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">has_regime</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">has_regimen</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 

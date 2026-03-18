@@ -5,13 +5,13 @@
 <url><loc>https://zhangh12.github.io/TrialSimulator/articles/actionFunctions.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/articles/adaptiveDesign.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html</loc></url>
-<url><loc>https://zhangh12.github.io/TrialSimulator/articles/crossoverSwitchTreatment.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/articles/crossoverWashout.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/articles/defineArms.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/articles/defineLongitudinalEndpoints.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/articles/defineNonTimeToEventEndpoints.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/articles/defineTimeToEventEndpoints.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/articles/doseRanging.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/articles/dynamicTreatmentSwitching.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/articles/fixedDesign.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/articles/index.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/articles/responseAdaptive.html</loc></url>
@@ -31,7 +31,7 @@
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/Listeners.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/Milestones.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/PiecewiseConstantExponentialRNG.html</loc></url>
-<url><loc>https://zhangh12.github.io/TrialSimulator/reference/Regimes.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/reference/Regimens.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/StaggeredRecruiter.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/Trials.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/add_arms.html</loc></url>
@@ -56,7 +56,7 @@
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/plot.three_state_model.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/qPiecewiseExponential.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/rconst.html</loc></url>
-<url><loc>https://zhangh12.github.io/TrialSimulator/reference/regime.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/reference/regimen.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/remove_arms.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/resize.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/set_duration.html</loc></url>

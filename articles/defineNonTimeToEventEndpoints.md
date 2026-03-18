@@ -127,7 +127,7 @@ trial
 #>  ⚕⚕       Sample Ratio:  1, 1  
 #>  ⚕⚕ Number of Patients:  420  
 #>  ⚕⚕   Planned Duration:  30  
-#>  ⚕⚕             Regime:  not set  
+#>  ⚕⚕            Regimen:  not set  
 #>  ⚕⚕        Random Seed:  1012203595
 ```
 

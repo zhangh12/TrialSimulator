@@ -13,6 +13,9 @@ the pre-determined and randomized sequence are defined in function
 [`endpoint()`](https://zhangh12.github.io/TrialSimulator/reference/endpoint.md)
 with its argument `readout` is set.
 
+To simulate dynamic treatment switching, please refer to its
+[vignette](https://cran.r-project.org/package=TrialSimulator/vignettes/dynamicTreatmentSwitching.html).
+
 ## Simulation Settings
 
 In simulation, we assume a balanced Latin square design of four arms
@@ -161,7 +164,7 @@ trial
 #>  ⚕⚕       Sample Ratio:  1, 1, 1, 1  
 #>  ⚕⚕ Number of Patients:  60  
 #>  ⚕⚕   Planned Duration:  28  
-#>  ⚕⚕             Regime:  not set  
+#>  ⚕⚕            Regimen:  not set  
 #>  ⚕⚕        Random Seed:  973100785
 ```
 

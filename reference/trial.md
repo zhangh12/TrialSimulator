@@ -134,7 +134,7 @@ trial
 #>  ⚕⚕       Sample Ratio:    
 #>  ⚕⚕ Number of Patients:  100  
 #>  ⚕⚕   Planned Duration:  100  
-#>  ⚕⚕             Regime:  not set  
+#>  ⚕⚕            Regimen:  not set  
 #>  ⚕⚕        Random Seed:  31415926  
 
 trial$add_arms(sample_ratio = c(1, 2), placebo, active)
@@ -151,6 +151,6 @@ trial
 #>  ⚕⚕       Sample Ratio:  1, 2  
 #>  ⚕⚕ Number of Patients:  100  
 #>  ⚕⚕   Planned Duration:  100  
-#>  ⚕⚕             Regime:  not set  
+#>  ⚕⚕            Regimen:  not set  
 #>  ⚕⚕        Random Seed:  31415926  
 ```
