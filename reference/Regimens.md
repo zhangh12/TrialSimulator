@@ -10,9 +10,15 @@ to update patients' endpoint data.
 
 - [`Regimens$new()`](#method-Regimens-new)
 
+- [`Regimens$get_number_treatment_allocator()`](#method-Regimens-get_number_treatment_allocator)
+
 - [`Regimens$get_treatment_allocator()`](#method-Regimens-get_treatment_allocator)
 
+- [`Regimens$get_number_time_selector()`](#method-Regimens-get_number_time_selector)
+
 - [`Regimens$get_time_selector()`](#method-Regimens-get_time_selector)
+
+- [`Regimens$get_number_data_modifier()`](#method-Regimens-get_number_data_modifier)
 
 - [`Regimens$get_data_modifier()`](#method-Regimens-get_data_modifier)
 
@@ -40,7 +46,8 @@ initialize regimen
   than the number of patients in the input data frame. This indicates
   that some patients' data will not be modifier. Note that the returned
   object will be passed into function \`how()\`, which is also provide
-  by users. No default value.
+  by users. This argument can also be a list of functions that will be
+  executed sequentially. No default value.
 
 - `when`:
 
@@ -52,15 +59,27 @@ initialize regimen
   returned data frame must equal the number of rows in `patient_data`,
   i.e., switching time must be specified to every patients. Note that
   the returned object will be passed into function \`how()\`, which is
-  also provided by users. No default value.
+  also provided by users. This argument can also be a list of functions
+  that will be executed sequentially. No default value.
 
 - `how`:
 
-  a function updating patients' data after treatment switching.
+  a function updating patients' data after treatment switching. Only
+  modified columns and `patient_id` are returned. A cell will be omitted
+  if `NA`, meaning no change to that patient for the endpoint or other
+  variables. Equivalently, users can also fill the cell with its
+  original value. This argument can also be a list of functions that
+  will be executed sequentially. No default value.
 
-- `...`:
+------------------------------------------------------------------------
 
-  optional arguments for the three functions. No default value.
+### Method `get_number_treatment_allocator()`
+
+return number of treatment allocators for regimen
+
+#### Usage
+
+    Regimens$get_number_treatment_allocator()
 
 ------------------------------------------------------------------------
 
@@ -70,7 +89,23 @@ return user-defined new treatment for a patient
 
 #### Usage
 
-    Regimens$get_treatment_allocator()
+    Regimens$get_treatment_allocator(index = NULL)
+
+#### Arguments
+
+- `index`:
+
+  integer. Index of allocator. Return all allocators if `NULL`.
+
+------------------------------------------------------------------------
+
+### Method `get_number_time_selector()`
+
+return number of time selector for regimen
+
+#### Usage
+
+    Regimens$get_number_time_selector()
 
 ------------------------------------------------------------------------
 
@@ -80,7 +115,23 @@ return user-defined time selector
 
 #### Usage
 
-    Regimens$get_time_selector()
+    Regimens$get_time_selector(index = NULL)
+
+#### Arguments
+
+- `index`:
+
+  integer. Index of selector. Return all selectors if `NULL`.
+
+------------------------------------------------------------------------
+
+### Method `get_number_data_modifier()`
+
+return number of data modifier for regimen
+
+#### Usage
+
+    Regimens$get_number_data_modifier()
 
 ------------------------------------------------------------------------
 
@@ -90,7 +141,13 @@ return user-defined endpoint data modifier
 
 #### Usage
 
-    Regimens$get_data_modifier()
+    Regimens$get_data_modifier(index = NULL)
+
+#### Arguments
+
+- `index`:
+
+  integer. Index of selector. Return all modifiers if `NULL`.
 
 ------------------------------------------------------------------------
 

@@ -10,7 +10,7 @@ determine the time of switching, and to update patients' endpoint data.
 ## Usage
 
 ``` r
-regimen(what, when, how, ...)
+regimen(what, when, how)
 ```
 
 ## Arguments
@@ -25,7 +25,8 @@ regimen(what, when, how, ...)
   than the number of patients in the input data frame. This indicates
   that some patients' data will not be modifier. Note that the returned
   object will be passed into function \`how()\`, which is also provide
-  by users. No default value.
+  by users. This argument can also be a list of functions that will be
+  executed sequentially. No default value.
 
 - when:
 
@@ -37,12 +38,14 @@ regimen(what, when, how, ...)
   returned data frame must equal the number of rows in `patient_data`,
   i.e., switching time must be specified to every patients. Note that
   the returned object will be passed into function \`how()\`, which is
-  also provided by users. No default value.
+  also provided by users. This argument can also be a list of functions
+  that will be executed sequentially. No default value.
 
 - how:
 
-  a function updating patients' data after treatment switching.
-
-- ...:
-
-  optional arguments for the three functions. No default value.
+  a function updating patients' data after treatment switching. Only
+  modified columns and `patient_id` are returned. A cell will be omitted
+  if `NA`, meaning no change to that patient for the endpoint or other
+  variables. Equivalently, users can also fill the cell with its
+  original value. This argument can also be a list of functions that
+  will be executed sequentially. No default value.

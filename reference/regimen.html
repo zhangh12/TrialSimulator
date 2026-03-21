@@ -70,7 +70,7 @@ endpoint data.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">regimen</span><span class="op">(</span><span class="va">what</span>, <span class="va">when</span>, <span class="va">how</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">regimen</span><span class="op">(</span><span class="va">what</span>, <span class="va">when</span>, <span class="va">how</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -87,7 +87,8 @@ The number of rows in the returned data frame may be smaller than the
 number of patients in the input data frame. This indicates that some
 patients' data will not be modifier.
 Note that the returned object will be passed into function `how()`, which
-is also provide by users. No default value.</p></dd>
+is also provide by users. This argument can also be a
+list of functions that will be executed sequentially. No default value.</p></dd>
 
 
 <dt id="arg-when">when<a class="anchor" aria-label="anchor" href="#arg-when"></a></dt>
@@ -100,15 +101,17 @@ in <code>switch_time</code> and the number of rows in the returned data frame
 must equal the number of rows in <code>patient_data</code>, i.e., switching
 time must be specified to every patients.
 Note that the returned object will be passed into function `how()`, which
-is also provided by users. No default value.</p></dd>
+is also provided by users. This argument can also be a
+list of functions that will be executed sequentially. No default value.</p></dd>
 
 
 <dt id="arg-how">how<a class="anchor" aria-label="anchor" href="#arg-how"></a></dt>
-<dd><p>a function updating patients' data after treatment switching.</p></dd>
-
-
-<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>optional arguments for the three functions. No default value.</p></dd>
+<dd><p>a function updating patients' data after treatment switching.
+Only modified columns and <code>patient_id</code> are returned. A cell will
+be omitted if <code>NA</code>, meaning no change to that patient for the endpoint
+or other variables. Equivalently, users can also fill the cell with
+its original value. This argument can also be a list of functions that
+will be executed sequentially. No default value.</p></dd>
 
 </dl></div>
 

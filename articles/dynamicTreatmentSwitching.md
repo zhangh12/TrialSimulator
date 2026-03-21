@@ -152,6 +152,11 @@ set of treatment allocator, time selector and data modifier are accepted
 for simulating multi-stage crossover. It also avoids overloading the arm
 definitions and supports partial data updates.
 
+This flowchart illustrates how `regimen` is integrated with other
+modules in `TrialSimulator`.
+
+![](simulation_flowchart.svg)
+
 ## Implement Dynamic Treatment Switching
 
 Dynamic treatment switching can be added to any simulation codes
@@ -186,7 +191,7 @@ need to make `regimen` ready before then.
 ``` r
 trial <- trial(...)
 trial$add_arms(sample_ratio, soc, low_dose, high_dose)
-trial$add_regime(regime)
+trial$add_regime(regimen)
 ```
 
     #> Error in trial$add_regimen(regimen) :
@@ -202,7 +207,8 @@ assigned to high dose, we can implement the `what()` function like
 
 ``` r
 treatment_allocator <- function(patient_data){
-
+  ## add break point to develop and debug
+  # browser()
   switch_to <- sample(c('low', 'high', 'stay'), nrow(patient_data), 
                         replace = TRUE, prob = c(.3, .4, .3))
   data.frame(
@@ -220,11 +226,13 @@ treatment_allocator <- function(patient_data){
 }
 ```
 
-The `when()` function simply returned the progression time
+The `when()` function simply returned the progression time, i.e.,
+switching does not relies on event after the switching time.
 
 ``` r
 time_selector <- function(patient_data){
-  
+  ## add break point to develop and debug
+  # browser()
   data.frame(
     patient_id = patient_data$patient_id,
     ## all patient in patient_data progress before die
@@ -244,7 +252,8 @@ simulation.
 
 ``` r
 data_modifier <- function(patient_data){
-
+  ## add break point to develop and debug
+  # browser()
   f <- ifelse(patient_data$new_treatment == 'low dose', 1.1, 1.15)
   data.frame(
     patient_id = patient_data$patient_id,
@@ -253,4 +262,99 @@ data_modifier <- function(patient_data){
   )
 
 }
+```
+
+#### Example 2: Crossover for non-responsers
+
+Here we consider a trial of a placebo arm and two active treatment arms
+(low and high dose). Patients in the low dose arm who do not respond are
+switched to a higher dose.
+
+``` r
+treatment_allocator <- function(patient_data){
+  ## add break point to develop and debug
+  # browser()
+  data.frame(
+    patient_id = patient_data$patient_id,
+    new_treatment =
+      dplyr::case_when(
+        patient_data$arm == 'low dose' & patient_data$response == 0 ~ 'high dose',
+        TRUE ~ NA_character_
+      )
+  )
+
+}
+```
+
+When implementing time selector for the function `when()`, the switching
+time is set to the readout time
+
+``` r
+time_selector <- function(patient_data){
+  ## add break point to develop and debug
+  # browser()
+  data.frame(
+    patient_id = patient_data$patient_id,
+    ## all patient in patient_data progress before die
+    ## thus pfs < os and can switch
+    switch_time = patient_data$response_readout
+  )
+  
+}
+```
+
+### Example 3: Crossover when condition deteriorates
+
+Now we assume that all patients in the placebo arm can crossover when
+their condition deteriorate significantly. Specifically, the switching
+time is 1 month before a patient dies. If the overall survival is
+shorter than a month, the switching time is set to `0.9 * os`.
+
+``` r
+treatment_allocator <- function(patient_data){
+  ## add break point to develop and debug
+  # browser()
+  data.frame(
+    patient_id = patient_data$patient_id,
+    new_treatment =
+      dplyr::case_when(
+        patient_data$arm == 'placebo' ~ 'new treatment',
+        TRUE ~ NA_character_
+      )
+  )
+
+}
+```
+
+``` r
+time_selector <- function(patient_data){
+  ## add break point to develop and debug
+  # browser()
+  data.frame(
+    patient_id = patient_data$patient_id,
+    ## all patient in patient_data progress before die
+    ## thus pfs < os and can switch
+    switch_time = ifelse(patient_data$os <= 1, .9 * patient_data$os, patient_data$os - 1)
+  )
+  
+}
+```
+
+### Example 4: Crossover multiple times
+
+We can implement multiple rounds of crossover for each patient. To do
+this, simply provide
+[`regimen()`](https://zhangh12.github.io/TrialSimulator/reference/regimen.md)
+with a list of treatment allocators for `what`, a list of time selectors
+for `when`, and a list of data modifiers for `how`.
+
+``` r
+what <- list(allocator1, allocator2, allocator3)
+when <- list(selector1, selector2, selector3)
+how <- list(modifier1, modifier2, modifier3)
+
+regimen <- regimen(what, when, how)
+
+trial <- trial(...)
+trial$add_regimen(regimen)
 ```

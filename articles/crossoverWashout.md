@@ -34,10 +34,7 @@ In simulation, we assume a balanced Latin square design of four arms
 
 The figure shows the timeline of the trial
 
-![Readout time of a trial under a balanced
-design.](crossover_readout.png)
-
-Readout time of a trial under a balanced design.
+![](crossover_readout.png)
 
 Additional settings are
 
