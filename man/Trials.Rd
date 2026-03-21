@@ -857,16 +857,13 @@ data lock time
 given the calendar time to lock the data, return it with event counts of
 each of the endpoints.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_data_lock_time_by_calendar_time(calendar_time, arms)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_data_lock_time_by_calendar_time(calendar_time)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{calendar_time}}{numeric. Calendar time to lock the data}
-
-\item{\code{arms}}{a vector of arms' name on which number of events will be
-counted.}
 }
 \if{html}{\out{</div>}}
 }

@@ -24,17 +24,14 @@ Controllers <- R6::R6Class(
     trial = NULL,
     listener = NULL,
     silent = FALSE,
-    tidy = TRUE,
     dry_run = FALSE,
     output = NULL,
 
-    run_ = function(plot_event = TRUE, silent = FALSE, tidy = TRUE, dry_run = FALSE){
+    run_ = function(plot_event = TRUE, silent = FALSE, dry_run = FALSE){
 
       private$silent <- silent
       private$dry_run <- dry_run
-      private$tidy <- tidy
       self$mute()
-      self$tidy_output()
 
       self$get_listener()$monitor(self$get_trial(), private$dry_run)
       if(plot_event){
@@ -43,12 +40,12 @@ Controllers <- R6::R6Class(
 
     },
 
-    run_sequential_ = function(n, plot_event, silent, tidy, dry_run){
+    run_sequential_ = function(n, plot_event, silent, dry_run){
 
       for(idx in 1:n){
         tryCatch(
           expr = {
-            private$run_(plot_event, silent, tidy, dry_run)
+            private$run_(plot_event, silent, dry_run)
           },
 
           error = function(e){
@@ -67,7 +64,7 @@ Controllers <- R6::R6Class(
 
     },
 
-    run_parallel_ = function(n, n_workers, silent, tidy, dry_run){
+    run_parallel_ = function(n, n_workers, silent, dry_run){
 
       if(!requireNamespace("mirai", quietly = TRUE)){
         stop('Package "mirai" is required for parallel execution (n_workers > 1). ',
@@ -116,7 +113,6 @@ Controllers <- R6::R6Class(
                   listener$reset()
 
                   trial$mute(silent)
-                  trial$tidy_output(tidy)
                   listener$mute(silent)
 
                   run_ok <- tryCatch(
@@ -143,7 +139,6 @@ Controllers <- R6::R6Class(
               #worker_seed = worker_seeds[i],
               reps = reps_per_worker[i],
               silent = silent,
-              tidy = tidy,
               dry_run = dry_run
             )
           }
@@ -186,7 +181,6 @@ Controllers <- R6::R6Class(
       private$trial <- trial
       private$listener <- listener
       private$silent <- FALSE
-      private$tidy <- TRUE
       private$dry_run <- FALSE
     },
 
@@ -208,13 +202,6 @@ Controllers <- R6::R6Class(
     mute = function(){
       self$get_trial()$mute(private$silent)
       self$get_listener()$mute(private$silent)
-    },
-
-    #' @description
-    #' control trial output. Event count per arm may not be computed
-    #' for faster run time.
-    tidy_output = function(){
-      self$get_trial()$tidy_output(private$tidy)
     },
 
     #' @description
@@ -298,14 +285,6 @@ Controllers <- R6::R6Class(
     #' \code{FALSE} when \code{n > 1} or \code{n_workers > 1}.
     #' @param silent logical. \code{TRUE} if muting all messages during a
     #' trial. Note that warning messages are still displayed.
-    #' @param tidy logical. \code{TRUE} by default, i.e., event count per arm
-    #' per endpoint is not computed and saved in returned trial output. This
-    #' can make \code{run()} 40% more faster under certain circumstances. Set it
-    #' to \code{FALSE} if more information is needed when designing a trial,
-    #' e.g., determining weights in combination test. Users can also compute
-    #' the event count per arm in action functions with locked data by themselves,
-    #' which is usually faster as event counts may only be computed for
-    #' a subset of endpoints.
     #' @param dry_run logical. We are considering retire this argument.
     #' \code{TRUE} if action function provided by users is
     #' ignored and an internal default action \code{.default_action} is called
@@ -321,11 +300,10 @@ Controllers <- R6::R6Class(
     #' possibly be added or removed, setting \code{dry_run} to \code{TRUE}
     #' is usually not helpful because adaption should be executed
     #' before estimating the milestone time.
-    run = function(n = 1, n_workers = 1, plot_event = TRUE, silent = FALSE, tidy = TRUE, dry_run = FALSE){
+    run = function(n = 1, n_workers = 1, plot_event = TRUE, silent = FALSE, dry_run = FALSE){
 
       self$get_trial()$make_arms_snapshot()
       private$output <- NULL
-      private$tidy <- tidy
 
       if(plot_event){
         if(n > 1 || n_workers > 1){
@@ -338,9 +316,9 @@ Controllers <- R6::R6Class(
       }
 
       if(n_workers == 1){
-        private$run_sequential_(n, plot_event, silent, tidy, dry_run)
+        private$run_sequential_(n, plot_event, silent, dry_run)
       }else{
-        private$run_parallel_(n, n_workers, silent, tidy, dry_run)
+        private$run_parallel_(n, n_workers, silent, dry_run)
       }
     }
   )

@@ -1223,41 +1223,6 @@ Trials <- R6::R6Class(
         stop('None of the endpoints can reach target event number during the trial. ')
       }
 
-      attr(lock_time, 'n_events') <- list()
-      event_counts <- self$get_event_tables(arms)
-
-      for(i in seq_along(event_counts)){
-        ec <- event_counts[[i]]
-        attr(lock_time, 'n_events')[[names(event_counts)[i]]] <-
-          ifelse(any(ec$calendar_time <= lock_time),
-                 max(ec$n_events[ec$calendar_time <= lock_time]),
-                 0)
-
-      }
-
-      if(private$save_event_count_per_arm){
-        event_count_per_arm <- list()
-        for(arm in arms){
-          ec <- self$get_event_tables(arms = arm)
-          for(endpoint in names(ec)){
-            count <- ifelse(any(ec[[endpoint]]$calendar_time <= lock_time),
-                            max(ec[[endpoint]]$n_events[ec[[endpoint]]$calendar_time <= lock_time]),
-                            0) %>% setNames(arm)
-
-            event_count_per_arm[[endpoint]] <- c(event_count_per_arm[[endpoint]], count)
-          }
-        }
-
-        event_count <- NULL
-        for(ep in names(event_count_per_arm)){
-          event_count <- bind_rows(event_count, data.frame(t(event_count_per_arm[[ep]])) %>% mutate(endpoint = ep))
-        }
-
-        attr(lock_time, 'n_events')[['arms']] <- I(list(event_count))
-      }
-
-      attr(lock_time, 'n_events') <- as.data.frame(attr(lock_time, 'n_events'))
-
       lock_time
 
     },
@@ -1266,55 +1231,13 @@ Trials <- R6::R6Class(
     #' given the calendar time to lock the data, return it with event counts of
     #' each of the endpoints.
     #' @param calendar_time numeric. Calendar time to lock the data
-    #' @param arms a vector of arms' name on which number of events will be
-    #' counted.
     #' @return data lock time
     #'
-    get_data_lock_time_by_calendar_time = function(calendar_time, arms){
+    get_data_lock_time_by_calendar_time = function(calendar_time){
 
       stopifnot(is.numeric(calendar_time) && length(calendar_time) && calendar_time >= 0)
 
-      if(is.null(arms)){
-        arms <- self$get_arms_name()
-      }
-      event_counts <- self$get_event_tables(arms)
-
       lock_time <- calendar_time
-
-      attr(lock_time, 'n_events') <- list()
-
-      for(i in seq_along(event_counts)){
-        ec <- event_counts[[i]]
-        attr(lock_time, 'n_events')[[names(event_counts)[i]]] <-
-          ifelse(any(ec$calendar_time <= lock_time),
-                 max(ec$n_events[ec$calendar_time <= lock_time]),
-                 0)
-
-      }
-
-      if(private$save_event_count_per_arm){
-        event_count_per_arm <- list()
-        for(arm in arms){
-          ec <- self$get_event_tables(arms = arm)
-          for(endpoint in names(ec)){
-            count <- ifelse(any(ec[[endpoint]]$calendar_time <= lock_time),
-                            max(ec[[endpoint]]$n_events[ec[[endpoint]]$calendar_time <= lock_time]),
-                            0) %>% setNames(arm)
-
-            event_count_per_arm[[endpoint]] <- c(event_count_per_arm[[endpoint]], count)
-          }
-        }
-
-        event_count <- NULL
-        for(ep in names(event_count_per_arm)){
-          event_count <- bind_rows(event_count, data.frame(t(event_count_per_arm[[ep]])) %>% mutate(endpoint = ep))
-        }
-
-        attr(lock_time, 'n_events')[['arms']] <- I(list(event_count))
-      }
-
-      attr(lock_time, 'n_events') <- as.data.frame(attr(lock_time, 'n_events'))
-
       lock_time
 
     },
@@ -3043,7 +2966,6 @@ Trials <- R6::R6Class(
     regimen = NULL,
 
     silent = FALSE,
-    save_event_count_per_arm = FALSE,
 
     output = NULL,
 
