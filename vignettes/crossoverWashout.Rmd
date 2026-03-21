@@ -59,7 +59,6 @@ In simulation, we assume a balanced Latin square design of four arms
 The figure shows the timeline of the trial
 
 ```{r dadfaiq}
-#| fig-cap: "Readout time of a trial under a balanced design."
 #| out-width: 100%
 #| echo: false
 knitr::include_graphics('crossover_readout.png')

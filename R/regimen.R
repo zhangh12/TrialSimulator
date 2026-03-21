@@ -18,7 +18,8 @@
 #' number of patients in the input data frame. This indicates that some
 #' patients' data will not be modifier.
 #' Note that the returned object will be passed into function `how()`, which
-#' is also provide by users. No default value.
+#' is also provide by users. This argument can also be a
+#' list of functions that will be executed sequentially. No default value.
 #' @param when a function determining the time at which a patient switches
 #' to another treatment regimen, measured from the time of enrollment.
 #' It takes \code{patient_data}, a data frame as
@@ -28,19 +29,23 @@
 #' must equal the number of rows in \code{patient_data}, i.e., switching
 #' time must be specified to every patients.
 #' Note that the returned object will be passed into function `how()`, which
-#' is also provided by users. No default value.
+#' is also provided by users. This argument can also be a
+#' list of functions that will be executed sequentially. No default value.
 #' @param how a function updating patients' data after treatment switching.
-#' @param ... optional arguments for the three functions. No default value.
+#' Only modified columns and \code{patient_id} are returned. A cell will
+#' be omitted if \code{NA}, meaning no change to that patient for the endpoint
+#' or other variables. Equivalently, users can also fill the cell with
+#' its original value. This argument can also be a list of functions that
+#' will be executed sequentially. No default value.
 #'
 #' @export
 #'
-regimen <- function(what, when, how, ...){
+regimen <- function(what, when, how){
 
   Regimens$new(
     what = what,
     when = when,
-    how = how,
-    ...
+    how = how
   )
 
 }

@@ -876,79 +876,107 @@ Trials <- R6::R6Class(
         ## real-time monitor to apply potential regimen switching over newly enrolled patients
 
         isValidOutput <- function(op, req_cols, func_name){
+          if(!is.data.frame(op)){
+            stop('The user-defined function ', func_name,
+                 ' must return a data frame. ',
+                 'Please set a breakpoint in ', func_name,
+                 ' to debug it. ')
+          }
+
           miss_cols <- setdiff(req_cols, names(op))
           if(length(miss_cols) > 0){
             stop('Column(s) <', paste0(miss_cols, collapse = ', '),
                  '> are missing in data frame returned from the user-defined function ',
-                 func_name, ' for regimen. ')
+                 func_name, ' for regimen. ',
+                 'Please set a breakpoint in ', func_name,
+                 ' to debug it. ')
           }
         }
 
-        new_treatment <- self$get_regimen()$get_treatment_allocator()(patient_data)
-
-        isValidOutput(new_treatment, c('patient_id', 'new_treatment'), 'what()')
-        if(any(duplicated(new_treatment$patient_id))){
-          stop('No duplicated patient ID is allowed in data frame returned from user-defined function what(). ')
-        }
-
-        new_treatment <- new_treatment %>%
-          select(patient_id, new_treatment) %>%
-          dplyr::filter(complete.cases(.))
-
-        switch_time <- self$get_regimen()$get_time_selector()(
-          patient_data %>% dplyr::filter(patient_id %in% new_treatment$patient_id))
-
-        isValidOutput(switch_time, c('patient_id', 'switch_time'), 'when()')
-
-        switch_time <- switch_time %>%
-          select(patient_id, switch_time) %>%
-          dplyr::filter(complete.cases(.))
-
-        if(nrow(switch_time) != nrow(new_treatment) ||
-           !setequal(switch_time$patient_id, new_treatment$patient_id) ||
-           any(is.na(switch_time$switch_time))){
-          stop('In the user-defined function when(), ',
-               'switch_time must be specified to all patients who switch to new treatment regimen. ',
-               'NA is not allowed, too. ')
-        }
-
-        new_regimens <- dplyr::inner_join(new_treatment, switch_time, by = 'patient_id')
-
-        merged_patient_data <- dplyr::inner_join(patient_data, new_regimens, by = 'patient_id')
-
-        updated_data <- self$get_regimen()$get_data_modifier()(merged_patient_data)
-        isValidOutput(updated_data, 'patient_id', 'how()')
-
-        setDT(patient_data)
-        setDT(updated_data)
+        n_regimen <- self$get_regimen()$get_number_treatment_allocator()
 
         no_touch_cols <- c('patient_id', 'arm', 'enroll_time', 'dropout_time', 'regimen_trajectory')
-        touch_cols <- setdiff(names(updated_data), no_touch_cols)
-        if(!all(touch_cols %in% names(patient_data))){
-          stop('The columns below must not be returned from user-defined function < how() >. ')
+
+        new_regimens <- list()
+        for(i in 1:n_regimen){
+
+          new_treatment <- self$get_regimen()$get_treatment_allocator(i)(patient_data)
+
+          isValidOutput(new_treatment, c('patient_id', 'new_treatment'), 'what()')
+          if(any(duplicated(new_treatment$patient_id))){
+            stop('No duplicated patient ID is allowed in data frame returned from user-defined function what(). ',
+                 'Set a breakpoint using browser() in your what() function to debug step-by-step. ')
+          }
+
+          new_treatment <- new_treatment %>%
+            select(patient_id, new_treatment) %>%
+            dplyr::filter(complete.cases(.))
+
+          switch_time <- self$get_regimen()$get_time_selector(i)(
+            patient_data %>% dplyr::filter(patient_id %in% new_treatment$patient_id))
+
+          isValidOutput(switch_time, c('patient_id', 'switch_time'), 'when()')
+
+          switch_time <- switch_time %>%
+            select(patient_id, switch_time) %>%
+            dplyr::filter(complete.cases(.))
+
+          if(nrow(switch_time) != nrow(new_treatment) ||
+             !setequal(switch_time$patient_id, new_treatment$patient_id) ||
+             any(is.na(switch_time$switch_time))){
+            stop('In the user-defined function when(), ',
+                 'switch_time must be specified to all patients who switch to new treatment regimen. ',
+                 'NA is not allowed, too. ',
+                 'Set a breakpoint using browser() in your when() function to debug step-by-step. ')
+          }
+
+          new_regimens[[i]] <- dplyr::inner_join(new_treatment, switch_time, by = 'patient_id')
+
+          merged_patient_data <- dplyr::inner_join(patient_data, new_regimens[[i]], by = 'patient_id')
+
+          updated_data <- self$get_regimen()$get_data_modifier(i)(merged_patient_data)
+          isValidOutput(updated_data, 'patient_id', 'how()')
+
+          touch_cols <- setdiff(names(updated_data), no_touch_cols)
+          if(!all(touch_cols %in% names(patient_data))){
+            stop('The columns below must not be returned from user-defined function < how() >: \n',
+                 paste0(setdiff(touch_cols, names(patient_data)), collapse = ', '))
+          }
+
+          if(any(names(updated_data) %in% setdiff(no_touch_cols, 'patient_id'))){
+            stop('The columns below must not be modified by user-defined function < how() >: \n',
+                 paste0(intersect(names(updated_data), setdiff(no_touch_cols, 'patient_id')), collapse = ', '))
+          }
+
+          setDT(patient_data)
+          setDT(updated_data)
+
+          for(col in touch_cols){
+            patient_data[updated_data,
+                         (col) := fifelse(
+                           is.na(get(paste0('i.', col))),
+                           get(col),
+                           get(paste0('i.', col))
+                         ),
+                         on = 'patient_id']
+          }
+
         }
 
-        for(col in touch_cols){
-          patient_data[updated_data,
-                       (col) := fifelse(
-                         is.na(get(paste0('i.', col))),
-                         get(col),
-                         get(paste0('i.', col))
-                       ),
-                       on = 'patient_id']
-        }
+        new_regimens <- bind_rows(new_regimens) %>%
+          arrange(patient_id, switch_time)
 
         regimen_trajectory <- bind_rows(
           data.frame(
             patient_id = patient_data$patient_id,
             regimen = patient_data$arm,
-            start_time = 0,
+            switch_time_from_enrollment = 0,
             stringsAsFactors = FALSE
           ),
           new_regimens %>%
             dplyr::rename(
               regimen = new_treatment,
-              start_time = switch_time
+              switch_time_from_enrollment = switch_time
             )
         )
 
@@ -1026,6 +1054,7 @@ Trials <- R6::R6Class(
           trial_data %>% dplyr::filter(...)
         },
         error = function(e){
+          self$save(e$message, 'error_message', overwrite = TRUE)
           stop('Error in filtering data for table of event count. ',
                'Please check condition in ..., ',
                'which should be compatible with dplyr::filter. ')
@@ -1481,6 +1510,18 @@ Trials <- R6::R6Class(
         arrange(enroll_time) %>%
         dplyr::select(-calendar_time)
 
+      if(!is.null(locked_data$regimen_trajectory)){
+        locked_data$regimen_trajectory <- I(
+          Map(
+            function(subdf, enroll_time){
+              subdf[enroll_time + subdf$switch_time_from_enrollment <= at_calendar_time, , drop = FALSE]
+            },
+            locked_data$regimen_trajectory,
+            locked_data$enroll_time
+          )
+        )
+      }
+
       n_events_or_readouts <- NULL
       for(tte_col in tte_cols){
         n_events_or_readouts <- c(n_events_or_readouts, sum(locked_data[[tte_col]] != 0))
@@ -1861,9 +1902,11 @@ Trials <- R6::R6Class(
             stop(cname, ' has been used to name something in the output. ',
                  'Pick another name and try again. ')
           }else{
-            warning(cname, ' exists in the output and is overwritten. ',
-                    'Set overwrite = FALSE in save() if it is not intended. ',
-                    immediate. = TRUE)
+            if(cname != 'error_message'){
+              warning(cname, ' exists in the output and is overwritten. ',
+                      'Set overwrite = FALSE in save() if it is not intended. ',
+                      immediate. = TRUE)
+            }
           }
         }
 
@@ -2158,6 +2201,7 @@ Trials <- R6::R6Class(
           self$get_locked_data(tail(milestones, 1)) %>% dplyr::filter(...)
         },
         error = function(e){
+          self$save(e$message, 'error_message', overwrite = TRUE)
           stop('Error when filtering data in independentIncrement(). ',
                'Please check condition in ..., ',
                'which should be compatible with dplyr::filter. ')

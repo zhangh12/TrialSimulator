@@ -1,0 +1,130 @@
+<svg width="540" height="640" viewBox="0 0 540 640" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr-gray" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M0 0 L10 5 L0 10" fill="none" stroke="#888780" stroke-width="1.5" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M0 0 L10 5 L0 10" fill="none" stroke="#378ADD" stroke-width="1.5" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M0 0 L10 5 L0 10" fill="none" stroke="#639922" stroke-width="1.5" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M0 0 L10 5 L0 10" fill="none" stroke="#BA7517" stroke-width="1.5" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M0 0 L10 5 L0 10" fill="none" stroke="#E24B4A" stroke-width="1.5" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M0 0 L10 5 L0 10" fill="none" stroke="#7F77DD" stroke-width="1.5" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arr-teal" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M0 0 L10 5 L0 10" fill="none" stroke="#1D9E75" stroke-width="1.5" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .label { font-size: 14px; font-weight: 500; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; fill: #444; }
+      .label-white { font-size: 14px; font-weight: 500; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; fill: #fff; }
+      .sublabel { font-size: 10px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; fill: #fff; }
+    </style>
+  </defs>
+
+  <!-- White background -->
+  <rect x="0" y="0" width="540" height="640" fill="#fff"/>
+
+  <!-- 0. Arm & Trial Configs (top entry) -->
+  <circle cx="270" cy="50" r="36" fill="#888780"/>
+  <rect x="256" y="34" width="28" height="32" rx="3" fill="#fff"/>
+  <line x1="262" y1="44" x2="268" y2="44" stroke="#888780" stroke-width="2" stroke-linecap="round"/>
+  <line x1="272" y1="44" x2="278" y2="44" stroke="#888780" stroke-width="2" stroke-linecap="round"/>
+  <line x1="262" y1="52" x2="268" y2="52" stroke="#888780" stroke-width="2" stroke-linecap="round"/>
+  <line x1="272" y1="52" x2="278" y2="52" stroke="#888780" stroke-width="2" stroke-linecap="round"/>
+  <line x1="262" y1="60" x2="268" y2="60" stroke="#888780" stroke-width="2" stroke-linecap="round"/>
+  <line x1="272" y1="60" x2="278" y2="60" stroke="#888780" stroke-width="2" stroke-linecap="round"/>
+  <text x="222" y="50" text-anchor="end" dominant-baseline="central" class="label">Arm &amp; Trial Configs</text>
+  
+  <!-- Arrow: configs → enroll -->
+  <path d="M270 96 L270 120" stroke="#888780" stroke-width="3" marker-end="url(#arr-gray)"/>
+
+  <!-- 1. Enroll Patients (12 o'clock) -->
+  <circle cx="270" cy="170" r="36" fill="#378ADD"/>
+  <circle cx="270" cy="162" r="6" fill="#fff"/>
+  <ellipse cx="270" cy="182" rx="12" ry="8" fill="#fff"/>
+  <circle cx="252" cy="166" r="5" fill="#fff" opacity="0.7"/>
+  <ellipse cx="252" cy="182" rx="9" ry="6" fill="#fff" opacity="0.7"/>
+  <circle cx="288" cy="166" r="5" fill="#fff" opacity="0.7"/>
+  <ellipse cx="288" cy="182" rx="9" ry="6" fill="#fff" opacity="0.7"/>
+  <text x="222" y="170" text-anchor="end" dominant-baseline="central" class="label">Enroll Patients</text>
+
+  <!-- Arrow: enroll → randomization -->
+  <path d="M312 198 Q385 228 402 252" fill="none" stroke="#378ADD" stroke-width="3" marker-end="url(#arr-blue)"/>
+
+  <!-- 2. Randomize to Arm (2 o'clock) -->
+  <circle cx="440" cy="290" r="36" fill="#639922"/>
+  <circle cx="440" cy="278" r="5" fill="#fff"/>
+  <path d="M440 283 L440 296 M440 296 L425 310 M440 296 L455 310" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <circle cx="425" cy="310" r="4" fill="#fff"/>
+  <circle cx="455" cy="310" r="4" fill="#fff"/>
+  <text x="392" y="290" text-anchor="end" dominant-baseline="central" class="label">Randomize to Arm</text>
+
+  <!-- Arrow: randomization → endpoint -->
+  <path d="M456 336 Q474 370 456 392" fill="none" stroke="#639922" stroke-width="3" marker-end="url(#arr-green)"/>
+
+  <!-- 3. Endpoint Generator (4 o'clock) -->
+  <circle cx="440" cy="440" r="36" fill="#BA7517"/>
+  <g transform="translate(440,440)">
+    <circle r="14" fill="#fff"/>
+    <rect x="-3" y="-20" width="6" height="8" rx="1.5" fill="#fff"/>
+    <rect x="-3" y="12" width="6" height="8" rx="1.5" fill="#fff"/>
+    <rect x="-20" y="-3" width="8" height="6" rx="1.5" fill="#fff"/>
+    <rect x="12" y="-3" width="8" height="6" rx="1.5" fill="#fff"/>
+    <g transform="rotate(45)">
+      <rect x="-3" y="-20" width="6" height="8" rx="1.5" fill="#fff"/>
+      <rect x="-3" y="12" width="6" height="8" rx="1.5" fill="#fff"/>
+      <rect x="-20" y="-3" width="8" height="6" rx="1.5" fill="#fff"/>
+      <rect x="12" y="-3" width="8" height="6" rx="1.5" fill="#fff"/>
+    </g>
+    <circle r="5" fill="#BA7517"/>
+  </g>
+  <text x="392" y="440" text-anchor="end" dominant-baseline="central" class="label">Endpoint Generator</text>
+
+  <!-- Arrow: endpoint → regimen -->
+  <path d="M402 470 Q378 492 358 500" fill="none" stroke="#BA7517" stroke-width="3" marker-end="url(#arr-amber)"/>
+
+  <!-- 4. Regimen (6 o'clock) -->
+  <rect x="192" y="500" width="156" height="110" rx="16" fill="#E24B4A"/>
+  <rect x="212" y="514" width="20" height="26" rx="3" fill="none" stroke="#fff" stroke-width="2"/>
+  <rect x="217" y="510" width="10" height="5" rx="2" fill="#fff"/>
+  <line x1="217" y1="523" x2="227" y2="523" stroke="#fff" stroke-width="2"/>
+  <line x1="217" y1="530" x2="227" y2="530" stroke="#fff" stroke-width="2"/>
+  <line x1="217" y1="537" x2="224" y2="537" stroke="#fff" stroke-width="2"/>
+  <text x="240" y="530" class="label-white">Regimen</text>
+  <text x="212" y="556" class="sublabel">• Treatment Allocation</text>
+  <text x="212" y="572" class="sublabel">• Switching Time Selection</text>
+  <text x="212" y="588" class="sublabel">• Outcome Trajectory</text>
+
+  <!-- Arrow: regimen → adaptation -->
+  <path d="M182 500 Q158 492 138 470" fill="none" stroke="#E24B4A" stroke-width="3" marker-end="url(#arr-red)"/>
+
+  <!-- 5. Adaptation (8 o'clock) -->
+  <circle cx="100" cy="440" r="36" fill="#7F77DD"/>
+  <line x1="83" y1="427" x2="83" y2="453" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+  <line x1="100" y1="427" x2="100" y2="453" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+  <line x1="117" y1="427" x2="117" y2="453" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="83" cy="435" r="4" fill="#fff"/>
+  <circle cx="100" cy="447" r="4" fill="#fff"/>
+  <circle cx="117" cy="431" r="4" fill="#fff"/>
+  <text x="148" y="440" dominant-baseline="central" class="label">Adaptation</text>
+
+  <!-- Arrow: adaptation → rollback -->
+  <path d="M84 392 Q66 362 84 336" fill="none" stroke="#7F77DD" stroke-width="3" marker-end="url(#arr-purple)"/>
+
+  <!-- 6. Rollback (10 o'clock) -->
+  <circle cx="100" cy="290" r="36" fill="#1D9E75"/>
+  <path d="M115 280 A18 18 0 1 0 115 300" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+  <path d="M119 274 L115 282 L107 278" fill="#fff"/>
+  <text x="148" y="290" dominant-baseline="central" class="label">Rollback</text>
+
+  <!-- Arrow: rollback → enroll -->
+  <path d="M138 252 Q172 222 228 198" fill="none" stroke="#1D9E75" stroke-width="3" marker-end="url(#arr-teal)"/>
+
+</svg>

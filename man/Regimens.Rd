@@ -13,8 +13,11 @@ endpoint data.
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Regimens-new}{\code{Regimens$new()}}
+\item \href{#method-Regimens-get_number_treatment_allocator}{\code{Regimens$get_number_treatment_allocator()}}
 \item \href{#method-Regimens-get_treatment_allocator}{\code{Regimens$get_treatment_allocator()}}
+\item \href{#method-Regimens-get_number_time_selector}{\code{Regimens$get_number_time_selector()}}
 \item \href{#method-Regimens-get_time_selector}{\code{Regimens$get_time_selector()}}
+\item \href{#method-Regimens-get_number_data_modifier}{\code{Regimens$get_number_data_modifier()}}
 \item \href{#method-Regimens-get_data_modifier}{\code{Regimens$get_data_modifier()}}
 \item \href{#method-Regimens-clone}{\code{Regimens$clone()}}
 }
@@ -40,7 +43,8 @@ The number of rows in the returned data frame may be smaller than the
 number of patients in the input data frame. This indicates that some
 patients' data will not be modifier.
 Note that the returned object will be passed into function `how()`, which
-is also provide by users. No default value.}
+is also provide by users. This argument can also be a
+list of functions that will be executed sequentially. No default value.}
 
 \item{\code{when}}{a function determining the time at which a patient switches
 to another treatment regimen, measured from the time of enrollment.
@@ -51,14 +55,28 @@ in \code{switch_time} and the number of rows in the returned data frame
 must equal the number of rows in \code{patient_data}, i.e., switching
 time must be specified to every patients.
 Note that the returned object will be passed into function `how()`, which
-is also provided by users. No default value.}
+is also provided by users. This argument can also be a
+list of functions that will be executed sequentially. No default value.}
 
-\item{\code{how}}{a function updating patients' data after treatment switching.}
-
-\item{\code{...}}{optional arguments for the three functions. No default value.}
+\item{\code{how}}{a function updating patients' data after treatment switching.
+Only modified columns and \code{patient_id} are returned. A cell will
+be omitted if \code{NA}, meaning no change to that patient for the endpoint
+or other variables. Equivalently, users can also fill the cell with
+its original value. This argument can also be a list of functions that
+will be executed sequentially. No default value.}
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Regimens-get_number_treatment_allocator"></a>}}
+\if{latex}{\out{\hypertarget{method-Regimens-get_number_treatment_allocator}{}}}
+\subsection{Method \code{get_number_treatment_allocator()}}{
+return number of treatment allocators for regimen
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Regimens$get_number_treatment_allocator()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Regimens-get_treatment_allocator"></a>}}
@@ -66,7 +84,24 @@ is also provided by users. No default value.}
 \subsection{Method \code{get_treatment_allocator()}}{
 return user-defined new treatment for a patient
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Regimens$get_treatment_allocator()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Regimens$get_treatment_allocator(index = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{index}}{integer. Index of allocator. Return all allocators if \code{NULL}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Regimens-get_number_time_selector"></a>}}
+\if{latex}{\out{\hypertarget{method-Regimens-get_number_time_selector}{}}}
+\subsection{Method \code{get_number_time_selector()}}{
+return number of time selector for regimen
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Regimens$get_number_time_selector()}\if{html}{\out{</div>}}
 }
 
 }
@@ -76,7 +111,24 @@ return user-defined new treatment for a patient
 \subsection{Method \code{get_time_selector()}}{
 return user-defined time selector
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Regimens$get_time_selector()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Regimens$get_time_selector(index = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{index}}{integer. Index of selector. Return all selectors if \code{NULL}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Regimens-get_number_data_modifier"></a>}}
+\if{latex}{\out{\hypertarget{method-Regimens-get_number_data_modifier}{}}}
+\subsection{Method \code{get_number_data_modifier()}}{
+return number of data modifier for regimen
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Regimens$get_number_data_modifier()}\if{html}{\out{</div>}}
 }
 
 }
@@ -86,9 +138,16 @@ return user-defined time selector
 \subsection{Method \code{get_data_modifier()}}{
 return user-defined endpoint data modifier
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Regimens$get_data_modifier()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Regimens$get_data_modifier(index = NULL)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{index}}{integer. Index of selector. Return all modifiers if \code{NULL}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Regimens-clone"></a>}}
