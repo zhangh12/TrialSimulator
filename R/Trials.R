@@ -1167,54 +1167,6 @@ Trials <- R6::R6Class(
         stop('None of the endpoints can reach target event number during the trial. ')
       }
 
-
-      attr(lock_time, 'n_events') <- list()
-
-      ## count events on all trial data in trial output
-      ## Note on Mar 15, 2026
-      # Turn off this line of code and use event_counts computed with (arms, ...) above
-      # can save 20% of running time. However, they are computing different things.
-      # The one above computes arm-specified endpoint counts accounting for filtering
-      # conditions in .... Thus, if the selected milestone time is from this condition,
-      # saved arm-specific event counts might be from a subset of all enrolled patients
-      # by the milestone time.
-      # Instead, if we use the line of code below (without ...), we are computing
-      # arm-specific event counts from all enrolled patients by the milestone
-      # time. For now, I keep using the code below for forward compatibility.
-      event_counts <- self$get_event_tables(arms)
-
-      for(i in seq_along(event_counts)){
-        ec <- event_counts[[i]]
-        attr(lock_time, 'n_events')[[names(event_counts)[i]]] <-
-          ifelse(any(ec$calendar_time <= lock_time),
-                 max(ec$n_events[ec$calendar_time <= lock_time]),
-                 0)
-
-      }
-
-      if(private$save_event_count_per_arm){
-        event_count_per_arm <- list()
-        for(arm in arms){
-          ec <- self$get_event_tables(arms = arm)
-          for(endpoint in names(ec)){
-            count <- ifelse(any(ec[[endpoint]]$calendar_time <= lock_time),
-                            max(ec[[endpoint]]$n_events[ec[[endpoint]]$calendar_time <= lock_time]),
-                            0) %>% setNames(arm)
-
-            event_count_per_arm[[endpoint]] <- c(event_count_per_arm[[endpoint]], count)
-          }
-        }
-
-        event_count <- NULL
-        for(ep in names(event_count_per_arm)){
-          event_count <- bind_rows(event_count, data.frame(t(event_count_per_arm[[ep]])) %>% mutate(endpoint = ep))
-        }
-
-        attr(lock_time, 'n_events')[['arms']] <- I(list(event_count))
-      }
-
-      attr(lock_time, 'n_events') <- as.data.frame(attr(lock_time, 'n_events'))
-
       lock_time
 
     },
@@ -1541,6 +1493,26 @@ Trials <- R6::R6Class(
                 '(3) Do you use the same unit for readout time, trial duration, and dropout time?')
       }
 
+      event_counts <- list()
+      event_counts_per_arm <- list()
+      for(event_col in event_cols){
+        tte_col <- gsub('_event$', '', event_col)
+        event_counts_per_arm[[tte_col]] <- locked_data %>%
+          group_by(arm) %>%
+          summarise(!!tte_col := sum(!!sym(event_col)))
+      }
+
+      for(readout_col in c(readout_cols, 'patient_id')){
+        ep_col <- gsub('_readout$', '', readout_col)
+        event_counts_per_arm[[ep_col]] <- locked_data %>%
+          group_by(arm) %>%
+          summarise(!!ep_col := sum(!is.na(!!sym(ep_col))))
+      }
+      event_counts_per_arm <- Reduce(function(x, y) merge(x, y, by = "arm"), event_counts_per_arm)
+
+      n_events <- as.data.frame(t(colSums(event_counts_per_arm[, -1])))
+      n_events[['arms']] <- I(list(event_counts_per_arm))
+
       unenrolled_data <- trial_data %>%
         dplyr::filter(enroll_time > at_calendar_time) %>%
         arrange(enroll_time) %>%
@@ -1556,7 +1528,7 @@ Trials <- R6::R6Class(
 
       self$save(value = at_calendar_time, name = paste0('milestone_time_<', milestone_name, '>'))
 
-      self$save(value = attr(at_calendar_time, 'n_events'),
+      self$save(value = n_events,
                 name = paste0('n_events_<', milestone_name, '>'))
 
       if(!private$silent){
