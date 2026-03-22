@@ -1442,6 +1442,7 @@ Trials <- R6::R6Class(
         dplyr::select(enroll_time, arm)
       rm(trial_data)
 
+      attr(at_calendar_time, 'n_events') <- n_events
       attr(locked_data, 'lock_time') <- at_calendar_time
       attr(locked_data, 'n_enrolled_patients') <- length(unique(locked_data$patient_id))
       attr(locked_data, 'milestone_name') <- milestone_name
@@ -1451,7 +1452,7 @@ Trials <- R6::R6Class(
 
       self$save(value = at_calendar_time, name = paste0('milestone_time_<', milestone_name, '>'))
 
-      self$save(value = n_events,
+      self$save(value = attr(at_calendar_time, 'n_events'),
                 name = paste0('n_events_<', milestone_name, '>'))
 
       if(!private$silent){
