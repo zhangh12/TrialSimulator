@@ -25,8 +25,6 @@ to end users.
 
 - [`Controllers$mute()`](#method-Controllers-mute)
 
-- [`Controllers$tidy_output()`](#method-Controllers-tidy_output)
-
 - [`Controllers$reset()`](#method-Controllers-reset)
 
 - [`Controllers$get_output()`](#method-Controllers-get_output)
@@ -95,17 +93,6 @@ mute all messages (not including warnings).
 
 ------------------------------------------------------------------------
 
-### Method `tidy_output()`
-
-control trial output. Event count per arm may not be computed for faster
-run time.
-
-#### Usage
-
-    Controllers$tidy_output()
-
-------------------------------------------------------------------------
-
 ### Method `reset()`
 
 reset the trial and listener registered to the controller before running
@@ -170,7 +157,6 @@ run trial simulation.
       n_workers = 1,
       plot_event = TRUE,
       silent = FALSE,
-      tidy = TRUE,
       dry_run = FALSE
     )
 
@@ -209,16 +195,6 @@ run trial simulation.
 
   logical. `TRUE` if muting all messages during a trial. Note that
   warning messages are still displayed.
-
-- `tidy`:
-
-  logical. `TRUE` by default, i.e., event count per arm per endpoint is
-  not computed and saved in returned trial output. This can make `run()`
-  40 to `FALSE` if more information is needed when designing a trial,
-  e.g., determining weights in combination test. Users can also compute
-  the event count per arm in action functions with locked data by
-  themselves, which is usually faster as event counts may only be
-  computed for a subset of endpoints.
 
 - `dry_run`:
 

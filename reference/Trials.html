@@ -93,7 +93,7 @@ $closedTest() perform combination test based on Dunnett's test.
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.14.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -931,18 +931,13 @@ Time of milestone is based on event counts on the subset of trial data.</p></dd>
 <p>given the calendar time to lock the data, return it with event counts of
 each of the endpoints.</p><div class="section">
 <h4 id="usage-36">Usage<a class="anchor" aria-label="anchor" href="#usage-36"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">get_data_lock_time_by_calendar_time</span><span class="op">(</span><span class="va">calendar_time</span>, <span class="va">arms</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">get_data_lock_time_by_calendar_time</span><span class="op">(</span><span class="va">calendar_time</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-19">Arguments<a class="anchor" aria-label="anchor" href="#arguments-19"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>calendar_time</code></dt>
 <dd><p>numeric. Calendar time to lock the data</p></dd>
-
-
-<dt><code>arms</code></dt>
-<dd><p>a vector of arms' name on which number of events will be
-counted.</p></dd>
 
 
 </dl><p></p></div>

@@ -81,8 +81,8 @@ controller$run(n = 1)
 #> Data is locked at time = 40 for milestone <final analysis>.
 #> Locked data can be accessed in Trial$get_locked_data('final analysis'). 
 #> Number of events at lock time: 
-#>   patient PFS
-#> 1    1000 905
+#>   PFS patient         arms
+#> 1 905    1000 c("activ....
 #> 
 
 ```

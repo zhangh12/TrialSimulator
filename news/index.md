@@ -1,10 +1,23 @@
 # Changelog
 
+## TrialSimulator 1.14.0
+
+### New Feature
+
+- Support multiple rounds of dynamic treatment switching through
+  [`regimen()`](https://zhangh12.github.io/TrialSimulator/reference/regimen.md).
+
+### Updates
+
+- New implementation that is 55% faster without regimen, or 40% faster
+  with regimen. This is achieved by avoid computing redundant event
+  counts.
+
 ## TrialSimulator 1.13.0
 
 ### New Feature
 
-- New implementation of regime that is 60% faster.
+- New implementation of regimen that is 60% faster.
 
 ### Update
 

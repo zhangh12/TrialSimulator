@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.14.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -337,8 +337,8 @@ monitored automatically when a controller is running a trial.</p>
 <span><span class="co">#&gt; Data is locked at time = 25.4 for milestone &lt;final&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('final'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
-<span><span class="co">#&gt;   patient baseline1 ep1 baseline2 ep2 baseline3 ep3 baseline4 ep4</span></span>
-<span><span class="co">#&gt; 1      60        60  60        60  60        60  60        60  60</span></span>
+<span><span class="co">#&gt;   baseline1 ep1 baseline2 ep2 baseline3 ep3 baseline4 ep4 patient         arms</span></span>
+<span><span class="co">#&gt; 1        60  60        60  60        60  60        60  60      60 c("ABCD"....</span></span>
 <span><span class="co">#&gt; </span></span></code></pre></div>
 <p><img src="crossoverWashout_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="100%"></p>
 <p>Simulation results are saved and can be retrieved by calling the
@@ -372,9 +372,6 @@ seed
 milestone_time_&lt;final&gt;
 </th>
 <th style="text-align:right;">
-n_events_&lt;final&gt;_&lt;patient_id&gt;
-</th>
-<th style="text-align:right;">
 n_events_&lt;final&gt;_&lt;baseline1&gt;
 </th>
 <th style="text-align:right;">
@@ -397,6 +394,12 @@ n_events_&lt;final&gt;_&lt;baseline4&gt;
 </th>
 <th style="text-align:right;">
 n_events_&lt;final&gt;_&lt;ep4&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;final&gt;_&lt;patient_id&gt;
+</th>
+<th style="text-align:left;">
+n_events_&lt;final&gt;_&lt;arms&gt;
 </th>
 <th style="text-align:left;">
 result
@@ -441,6 +444,9 @@ crossover-trial
 </td>
 <td style="text-align:right;">
 60
+</td>
+<td style="text-align:left;">
+c(“ABCD”….
 </td>
 <td style="text-align:left;">
 anything

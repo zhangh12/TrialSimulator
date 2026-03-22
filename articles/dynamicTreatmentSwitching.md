@@ -94,7 +94,7 @@ This custom function assigns a switching time to each selected patient.
 A patient may switch:
 
 - at progression,
-- at no response,
+- if not respond,
 - at a scheduled visit,
 - once a composite condition is met, etc.
 

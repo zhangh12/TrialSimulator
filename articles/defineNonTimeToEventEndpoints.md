@@ -194,22 +194,22 @@ controller$run()
 #> Data is locked at time = 7.9 for milestone <interim>.
 #> Locked data can be accessed in Trial$get_locked_data('interim'). 
 #> Number of events at lock time:
-#>   patient cfb orr
-#> 1      99  18  60
+#>   cfb orr patient         arms
+#> 1  18  60      99 c("place....
 #> 
 #> Condition of milestone <random> is being checked.
 #> Data is locked at time = 14 for milestone <random>.
 #> Locked data can be accessed in Trial$get_locked_data('random'). 
 #> Number of events at lock time:
-#>   patient cfb orr
-#> 1     221  96 180
+#>   cfb orr patient         arms
+#> 1  96 180     221 c("place....
 #> 
 #> Condition of milestone <final> is being checked.
 #> Data is locked at time = 30 for milestone <final>.
 #> Locked data can be accessed in Trial$get_locked_data('final'). 
 #> Number of events at lock time:
-#>   patient cfb orr
-#> 1     420 403 418
+#>   cfb orr patient         arms
+#> 1 403 418     420 c("place....
 #> 
 ```
 

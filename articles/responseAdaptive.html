@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.14.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -299,7 +299,7 @@ the trial using <code>controller$run()</code>.</p>
 <span><span class="co">#&gt; A milestone &lt;final&gt; is registered.</span></span>
 <span></span>
 <span><span class="va">controller</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/controller.html">controller</a></span><span class="op">(</span><span class="va">trial</span>, <span class="va">listener</span><span class="op">)</span></span>
-<span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1</span>, silent <span class="op">=</span> <span class="cn">TRUE</span>, tidy <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1</span>, silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; stage 1:</span></span>
 <span><span class="co">#&gt;   dose total_n new_ratio</span></span>
 <span><span class="co">#&gt; 1  0.0      13 0.2000000</span></span>
@@ -345,10 +345,10 @@ seed
 milestone_time_&lt;stage 1&gt;
 </th>
 <th style="text-align:right;">
-n_events_&lt;stage 1&gt;_&lt;patient_id&gt;
+n_events_&lt;stage 1&gt;_&lt;fev1&gt;
 </th>
 <th style="text-align:right;">
-n_events_&lt;stage 1&gt;_&lt;fev1&gt;
+n_events_&lt;stage 1&gt;_&lt;patient_id&gt;
 </th>
 <th style="text-align:left;">
 n_events_&lt;stage 1&gt;_&lt;arms&gt;
@@ -357,10 +357,10 @@ n_events_&lt;stage 1&gt;_&lt;arms&gt;
 milestone_time_&lt;stage 2&gt;
 </th>
 <th style="text-align:right;">
-n_events_&lt;stage 2&gt;_&lt;patient_id&gt;
+n_events_&lt;stage 2&gt;_&lt;fev1&gt;
 </th>
 <th style="text-align:right;">
-n_events_&lt;stage 2&gt;_&lt;fev1&gt;
+n_events_&lt;stage 2&gt;_&lt;patient_id&gt;
 </th>
 <th style="text-align:left;">
 n_events_&lt;stage 2&gt;_&lt;arms&gt;
@@ -369,10 +369,10 @@ n_events_&lt;stage 2&gt;_&lt;arms&gt;
 milestone_time_&lt;final&gt;
 </th>
 <th style="text-align:right;">
-n_events_&lt;final&gt;_&lt;patient_id&gt;
+n_events_&lt;final&gt;_&lt;fev1&gt;
 </th>
 <th style="text-align:right;">
-n_events_&lt;final&gt;_&lt;fev1&gt;
+n_events_&lt;final&gt;_&lt;patient_id&gt;
 </th>
 <th style="text-align:left;">
 n_events_&lt;final&gt;_&lt;arms&gt;
@@ -395,25 +395,25 @@ Trial-3415
 15.76
 </td>
 <td style="text-align:right;">
-66
-</td>
-<td style="text-align:right;">
 50
 </td>
+<td style="text-align:right;">
+66
+</td>
 <td style="text-align:left;">
-c(13, 10….
+c(“0.0”,….
 </td>
 <td style="text-align:right;">
 30.28
 </td>
 <td style="text-align:right;">
-153
-</td>
-<td style="text-align:right;">
 120
 </td>
+<td style="text-align:right;">
+153
+</td>
 <td style="text-align:left;">
-c(31, 24….
+c(“0.0”,….
 </td>
 <td style="text-align:right;">
 39.88
@@ -425,7 +425,7 @@ c(31, 24….
 200
 </td>
 <td style="text-align:left;">
-c(40, 40….
+c(“0.0”,….
 </td>
 <td style="text-align:left;">
 TRUE
@@ -438,30 +438,35 @@ TRUE
 <p>In the output, the columns
 <code>n_event_&lt;milestone&gt;_&lt;arms&gt;</code> contain detailed
 information on observed events or sample sizes per arm at each
-milestone. It is evident that we have pipeline patients at both interim.
-Note that to have columns
-<code>n_event_&lt;milestone&gt;_&lt;arms&gt;</code> in the simulation
-output, one must set <code>tidy = FALSE</code> when running
-<code>controller$run()</code>. Computing these columns are expensive so
-by default the option is turned off.</p>
+milestone. It is evident that we have pipeline patients at both
+interim.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">output</span><span class="op">[</span>, <span class="st">'n_events_&lt;stage 1&gt;_&lt;arms&gt;'</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
-<span><span class="co">#&gt;   X0.0 X20.0 X25.0 X30.0 X35.0   endpoint</span></span>
-<span><span class="co">#&gt; 1   13    13    13    14    13 patient_id</span></span>
-<span><span class="co">#&gt; 2   10    10    10    10    10       fev1</span></span>
+<span><span class="co">#&gt;    arm fev1 patient_id</span></span>
+<span><span class="co">#&gt; 1  0.0   10         13</span></span>
+<span><span class="co">#&gt; 2 20.0   10         13</span></span>
+<span><span class="co">#&gt; 3 25.0   10         13</span></span>
+<span><span class="co">#&gt; 4 30.0   10         14</span></span>
+<span><span class="co">#&gt; 5 35.0   10         13</span></span>
 <span></span>
 <span><span class="va">output</span><span class="op">[</span>, <span class="st">'n_events_&lt;stage 2&gt;_&lt;arms&gt;'</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
-<span><span class="co">#&gt;   X0.0 X20.0 X25.0 X30.0 X35.0   endpoint</span></span>
-<span><span class="co">#&gt; 1   31    25    26    28    43 patient_id</span></span>
-<span><span class="co">#&gt; 2   24    20    23    23    30       fev1</span></span>
+<span><span class="co">#&gt;    arm fev1 patient_id</span></span>
+<span><span class="co">#&gt; 1  0.0   24         31</span></span>
+<span><span class="co">#&gt; 2 20.0   20         25</span></span>
+<span><span class="co">#&gt; 3 25.0   23         26</span></span>
+<span><span class="co">#&gt; 4 30.0   23         28</span></span>
+<span><span class="co">#&gt; 5 35.0   30         43</span></span>
 <span></span>
 <span><span class="va">output</span><span class="op">[</span>, <span class="st">'n_events_&lt;final&gt;_&lt;arms&gt;'</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
-<span><span class="co">#&gt;   X0.0 X20.0 X25.0 X30.0 X35.0   endpoint</span></span>
-<span><span class="co">#&gt; 1   40    26    32    39    63 patient_id</span></span>
-<span><span class="co">#&gt; 2   40    26    32    39    63       fev1</span></span></code></pre></div>
+<span><span class="co">#&gt;    arm fev1 patient_id</span></span>
+<span><span class="co">#&gt; 1  0.0   40         40</span></span>
+<span><span class="co">#&gt; 2 20.0   26         26</span></span>
+<span><span class="co">#&gt; 3 25.0   32         32</span></span>
+<span><span class="co">#&gt; 4 30.0   39         39</span></span>
+<span><span class="co">#&gt; 5 35.0   63         63</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="appendix-codes-of-helper-functions">Appendix: Codes of Helper Functions<a class="anchor" aria-label="anchor" href="#appendix-codes-of-helper-functions"></a>

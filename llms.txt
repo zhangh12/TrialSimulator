@@ -113,7 +113,7 @@ we recommend reading the following vignettes in order:
     periods](https://zhangh12.github.io/TrialSimulator/articles/crossoverWashout.html)
   - [Dynamic treatment
     switching](https://zhangh12.github.io/TrialSimulator/articles/dynamicTreatmentSwitching.html)
-  - \[crossover at specified time points\] vignette is coming!
+  - \[Crossover at specified time points\] vignette is coming!
 - Built-in methods supported in `TrialSimulator`
   - [Wrapper functions of common statistical methods for estimating
     treatment

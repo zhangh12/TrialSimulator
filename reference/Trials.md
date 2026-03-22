@@ -912,17 +912,13 @@ each of the endpoints.
 
 #### Usage
 
-    Trials$get_data_lock_time_by_calendar_time(calendar_time, arms)
+    Trials$get_data_lock_time_by_calendar_time(calendar_time)
 
 #### Arguments
 
 - `calendar_time`:
 
   numeric. Calendar time to lock the data
-
-- `arms`:
-
-  a vector of arms' name on which number of events will be counted.
 
 #### Returns
 

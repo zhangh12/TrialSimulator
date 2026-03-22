@@ -27,7 +27,7 @@ $reset()
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.14.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -91,7 +91,6 @@ useful to end users.</p>
 <li><p><a href="#method-Controllers-get_listener"><code>Controllers$get_listener()</code></a></p></li>
 <li><p><a href="#method-Controllers-get_trial"><code>Controllers$get_trial()</code></a></p></li>
 <li><p><a href="#method-Controllers-mute"><code>Controllers$mute()</code></a></p></li>
-<li><p><a href="#method-Controllers-tidy_output"><code>Controllers$tidy_output()</code></a></p></li>
 <li><p><a href="#method-Controllers-reset"><code>Controllers$reset()</code></a></p></li>
 <li><p><a href="#method-Controllers-get_output"><code>Controllers$get_output()</code></a></p></li>
 <li><p><a href="#method-Controllers-run"><code>Controllers$run()</code></a></p></li>
@@ -148,21 +147,12 @@ useful to end users.</p>
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-Controllers-tidy_output"></a><div class="section">
-<h3 id="method-tidy-output-">Method <code>tidy_output()</code><a class="anchor" aria-label="anchor" href="#method-tidy-output-"></a></h3>
-<p>control trial output. Event count per arm may not be computed
-for faster run time.</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controllers</span><span class="op">$</span><span class="fu">tidy_output</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-
 </div><p></p><hr><a id="method-Controllers-reset"></a><div class="section">
 <h3 id="method-reset-">Method <code>reset()</code><a class="anchor" aria-label="anchor" href="#method-reset-"></a></h3>
 <p>reset the trial and listener registered to the controller before running
 additional replicate of simulation. This is usually done between two
 calls of <code>controller$run()</code>.</p><div class="section">
-<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controllers</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -170,7 +160,7 @@ calls of <code>controller$run()</code>.</p><div class="section">
 </div><p></p><hr><a id="method-Controllers-get_output"></a><div class="section">
 <h3 id="method-get-output-">Method <code>get_output()</code><a class="anchor" aria-label="anchor" href="#method-get-output-"></a></h3>
 <p>return a data frame of all current outputs saved by calling <code><a href="https://rdrr.io/r/base/save.html" class="external-link">save()</a></code>.</p><div class="section">
-<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controllers</span><span class="op">$</span><span class="fu">get_output</span><span class="op">(</span>cols <span class="op">=</span> <span class="cn">NULL</span>, simplify <span class="op">=</span> <span class="cn">TRUE</span>, tidy <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -210,13 +200,12 @@ custom outputs in <code><a href="https://rdrr.io/r/base/save.html" class="extern
 </div><p></p><hr><a id="method-Controllers-run"></a><div class="section">
 <h3 id="method-run-">Method <code>run()</code><a class="anchor" aria-label="anchor" href="#method-run-"></a></h3>
 <p>run trial simulation.</p><div class="section">
-<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controllers</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span></span>
 <span>  n <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  n_workers <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  plot_event <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  silent <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  tidy <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  dry_run <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -258,17 +247,6 @@ the best performance.</p></dd>
 trial. Note that warning messages are still displayed.</p></dd>
 
 
-<dt><code>tidy</code></dt>
-<dd><p>logical. <code>TRUE</code> by default, i.e., event count per arm
-per endpoint is not computed and saved in returned trial output. This
-can make <code>run()</code> 40<!-- % more faster under certain circumstances. Set it -->
-to <code>FALSE</code> if more information is needed when designing a trial,
-e.g., determining weights in combination test. Users can also compute
-the event count per arm in action functions with locked data by themselves,
-which is usually faster as event counts may only be computed for
-a subset of endpoints.</p></dd>
-
-
 <dt><code>dry_run</code></dt>
 <dd><p>logical. We are considering retire this argument.
 <code>TRUE</code> if action function provided by users is
@@ -293,7 +271,7 @@ before estimating the milestone time.</p></dd>
 </div><p></p><hr><a id="method-Controllers-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controllers</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 

@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.13.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.14.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -313,10 +313,13 @@ seed
 milestone_time_&lt;interim&gt;
 </th>
 <th style="text-align:right;">
-n_events_&lt;interim&gt;_&lt;patient_id&gt;
+n_events_&lt;interim&gt;_&lt;ep&gt;
 </th>
 <th style="text-align:right;">
-n_events_&lt;interim&gt;_&lt;ep&gt;
+n_events_&lt;interim&gt;_&lt;patient_id&gt;
+</th>
+<th style="text-align:left;">
+n_events_&lt;interim&gt;_&lt;arms&gt;
 </th>
 <th style="text-align:right;">
 z_value
@@ -328,10 +331,13 @@ interim_decision
 milestone_time_&lt;final&gt;
 </th>
 <th style="text-align:right;">
-n_events_&lt;final&gt;_&lt;patient_id&gt;
+n_events_&lt;final&gt;_&lt;ep&gt;
 </th>
 <th style="text-align:right;">
-n_events_&lt;final&gt;_&lt;ep&gt;
+n_events_&lt;final&gt;_&lt;patient_id&gt;
+</th>
+<th style="text-align:left;">
+n_events_&lt;final&gt;_&lt;arms&gt;
 </th>
 <th style="text-align:left;">
 decision
@@ -351,10 +357,13 @@ error_message
 6.8
 </td>
 <td style="text-align:right;">
-35
+30
 </td>
 <td style="text-align:right;">
-30
+35
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:right;">
 1.332786
@@ -370,6 +379,9 @@ stop trial
 </td>
 <td style="text-align:right;">
 150
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:left;">
 no-go
@@ -415,10 +427,13 @@ seed
 milestone_time_&lt;interim&gt;
 </th>
 <th style="text-align:right;">
-n_events_&lt;interim&gt;_&lt;patient_id&gt;
+n_events_&lt;interim&gt;_&lt;ep&gt;
 </th>
 <th style="text-align:right;">
-n_events_&lt;interim&gt;_&lt;ep&gt;
+n_events_&lt;interim&gt;_&lt;patient_id&gt;
+</th>
+<th style="text-align:left;">
+n_events_&lt;interim&gt;_&lt;arms&gt;
 </th>
 <th style="text-align:right;">
 z_value
@@ -430,10 +445,13 @@ interim_decision
 milestone_time_&lt;final&gt;
 </th>
 <th style="text-align:right;">
-n_events_&lt;final&gt;_&lt;patient_id&gt;
+n_events_&lt;final&gt;_&lt;ep&gt;
 </th>
 <th style="text-align:right;">
-n_events_&lt;final&gt;_&lt;ep&gt;
+n_events_&lt;final&gt;_&lt;patient_id&gt;
+</th>
+<th style="text-align:left;">
+n_events_&lt;final&gt;_&lt;arms&gt;
 </th>
 <th style="text-align:left;">
 decision
@@ -454,10 +472,13 @@ error_message
 6.8
 </td>
 <td style="text-align:right;">
-35
+30
 </td>
 <td style="text-align:right;">
-30
+35
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:right;">
 1.0350983
@@ -473,6 +494,9 @@ stop trial
 </td>
 <td style="text-align:right;">
 150
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:left;">
 go
@@ -491,10 +515,13 @@ go
 6.8
 </td>
 <td style="text-align:right;">
-35
+30
 </td>
 <td style="text-align:right;">
-30
+35
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:right;">
 -1.5191090
@@ -510,6 +537,9 @@ stop trial
 </td>
 <td style="text-align:right;">
 150
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:left;">
 no-go
@@ -528,10 +558,13 @@ no-go
 6.8
 </td>
 <td style="text-align:right;">
-35
+30
 </td>
 <td style="text-align:right;">
-30
+35
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:right;">
 1.0954461
@@ -547,6 +580,9 @@ stop trial
 </td>
 <td style="text-align:right;">
 150
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:left;">
 no-go
@@ -565,10 +601,13 @@ no-go
 6.8
 </td>
 <td style="text-align:right;">
-35
+30
 </td>
 <td style="text-align:right;">
-30
+35
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:right;">
 1.9364917
@@ -584,6 +623,9 @@ add dose arms
 </td>
 <td style="text-align:right;">
 150
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:left;">
 no-go
@@ -602,10 +644,13 @@ no-go
 6.8
 </td>
 <td style="text-align:right;">
-35
+30
 </td>
 <td style="text-align:right;">
-30
+35
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:right;">
 1.0954461
@@ -621,6 +666,9 @@ stop trial
 </td>
 <td style="text-align:right;">
 150
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:left;">
 no-go
@@ -639,10 +687,13 @@ no-go
 6.8
 </td>
 <td style="text-align:right;">
-35
+30
 </td>
 <td style="text-align:right;">
-30
+35
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:right;">
 1.5256441
@@ -658,6 +709,9 @@ stop trial
 </td>
 <td style="text-align:right;">
 150
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:left;">
 no-go
@@ -676,10 +730,13 @@ no-go
 6.8
 </td>
 <td style="text-align:right;">
-35
+30
 </td>
 <td style="text-align:right;">
-30
+35
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:right;">
 0.4330129
@@ -695,6 +752,9 @@ stop trial
 </td>
 <td style="text-align:right;">
 150
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:left;">
 no-go
@@ -713,10 +773,13 @@ no-go
 6.8
 </td>
 <td style="text-align:right;">
-35
+30
 </td>
 <td style="text-align:right;">
-30
+35
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:right;">
 1.5191090
@@ -732,6 +795,9 @@ stop trial
 </td>
 <td style="text-align:right;">
 150
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:left;">
 go
@@ -750,10 +816,13 @@ go
 6.8
 </td>
 <td style="text-align:right;">
-35
+30
 </td>
 <td style="text-align:right;">
-30
+35
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:right;">
 1.5256441
@@ -769,6 +838,9 @@ stop trial
 </td>
 <td style="text-align:right;">
 150
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:left;">
 no-go
@@ -787,10 +859,13 @@ no-go
 6.8
 </td>
 <td style="text-align:right;">
-35
+30
 </td>
 <td style="text-align:right;">
-30
+35
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:right;">
 1.9364930
@@ -806,6 +881,9 @@ add dose arms
 </td>
 <td style="text-align:right;">
 150
+</td>
+<td style="text-align:left;">
+c(“dose ….
 </td>
 <td style="text-align:left;">
 go

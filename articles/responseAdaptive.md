@@ -222,7 +222,7 @@ listener$add_milestones(stage1, stage2, final)
 #> A milestone <final> is registered.
 
 controller <- controller(trial, listener)
-controller$run(n = 1, silent = TRUE, tidy = FALSE)
+controller$run(n = 1, silent = TRUE)
 #> stage 1:
 #>   dose total_n new_ratio
 #> 1  0.0      13 0.2000000
@@ -260,36 +260,41 @@ output %>%
   scroll_box(width = "100%")
 ```
 
-| trial      |       seed | milestone_time\_\<stage 1\> | n_events\_\<stage 1\>\_\<patient_id\> | n_events\_\<stage 1\>\_\<fev1\> | n_events\_\<stage 1\>\_\<arms\> | milestone_time\_\<stage 2\> | n_events\_\<stage 2\>\_\<patient_id\> | n_events\_\<stage 2\>\_\<fev1\> | n_events\_\<stage 2\>\_\<arms\> | milestone_time\_\<final\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<fev1\> | n_events\_\<final\>\_\<arms\> | MC_test | error_message |
-|:-----------|-----------:|----------------------------:|--------------------------------------:|--------------------------------:|:--------------------------------|----------------------------:|--------------------------------------:|--------------------------------:|:--------------------------------|--------------------------:|------------------------------------:|------------------------------:|:------------------------------|:--------|:--------------|
-| Trial-3415 | 1727811904 |                       15.76 |                                    66 |                              50 | c(13, 10….                      |                       30.28 |                                   153 |                             120 | c(31, 24….                      |                     39.88 |                                 200 |                           200 | c(40, 40….                    | TRUE    |               |
+| trial      |       seed | milestone_time\_\<stage 1\> | n_events\_\<stage 1\>\_\<fev1\> | n_events\_\<stage 1\>\_\<patient_id\> | n_events\_\<stage 1\>\_\<arms\> | milestone_time\_\<stage 2\> | n_events\_\<stage 2\>\_\<fev1\> | n_events\_\<stage 2\>\_\<patient_id\> | n_events\_\<stage 2\>\_\<arms\> | milestone_time\_\<final\> | n_events\_\<final\>\_\<fev1\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | MC_test | error_message |
+|:-----------|-----------:|----------------------------:|--------------------------------:|--------------------------------------:|:--------------------------------|----------------------------:|--------------------------------:|--------------------------------------:|:--------------------------------|--------------------------:|------------------------------:|------------------------------------:|:------------------------------|:--------|:--------------|
+| Trial-3415 | 1727811904 |                       15.76 |                              50 |                                    66 | c(“0.0”,….                      |                       30.28 |                             120 |                                   153 | c(“0.0”,….                      |                     39.88 |                           200 |                                 200 | c(“0.0”,….                    | TRUE    |               |
 
 In the output, the columns `n_event_<milestone>_<arms>` contain detailed
 information on observed events or sample sizes per arm at each
 milestone. It is evident that we have pipeline patients at both interim.
-Note that to have columns `n_event_<milestone>_<arms>` in the simulation
-output, one must set `tidy = FALSE` when running `controller$run()`.
-Computing these columns are expensive so by default the option is turned
-off.
 
 ``` r
 output[, 'n_events_<stage 1>_<arms>']
 #> [[1]]
-#>   X0.0 X20.0 X25.0 X30.0 X35.0   endpoint
-#> 1   13    13    13    14    13 patient_id
-#> 2   10    10    10    10    10       fev1
+#>    arm fev1 patient_id
+#> 1  0.0   10         13
+#> 2 20.0   10         13
+#> 3 25.0   10         13
+#> 4 30.0   10         14
+#> 5 35.0   10         13
 
 output[, 'n_events_<stage 2>_<arms>']
 #> [[1]]
-#>   X0.0 X20.0 X25.0 X30.0 X35.0   endpoint
-#> 1   31    25    26    28    43 patient_id
-#> 2   24    20    23    23    30       fev1
+#>    arm fev1 patient_id
+#> 1  0.0   24         31
+#> 2 20.0   20         25
+#> 3 25.0   23         26
+#> 4 30.0   23         28
+#> 5 35.0   30         43
 
 output[, 'n_events_<final>_<arms>']
 #> [[1]]
-#>   X0.0 X20.0 X25.0 X30.0 X35.0   endpoint
-#> 1   40    26    32    39    63 patient_id
-#> 2   40    26    32    39    63       fev1
+#>    arm fev1 patient_id
+#> 1  0.0   40         40
+#> 2 20.0   26         26
+#> 3 25.0   32         32
+#> 4 30.0   39         39
+#> 5 35.0   63         63
 ```
 
 ## Appendix: Codes of Helper Functions
