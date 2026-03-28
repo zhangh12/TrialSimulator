@@ -233,7 +233,10 @@ endpoint if it is not updated for any patient. For an endpoint that is
 updated for a subset of switchers, simply set the unchanged cells to
 <code>NA</code> and the package will ignore them. We can also fill those
 cells with their original values when being passed to
-<code>how()</code>.</p>
+<code>how()</code>. Note that we should never apply dropout or censoring
+manually in <code>how()</code> because <code>TrialSimulator</code> will
+handle that automatically when triggering milestones and prepare locked
+data in action functions.</p>
 <p>The three-functions design in <code>regimen</code> provides a useful
 balance between structure and flexibility. The interface mirrors the way
 investigators naturally describe switching designs. It encourages
@@ -316,8 +319,24 @@ time.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    patient_id <span class="op">=</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">patient_id</span>,</span>
 <span>    <span class="co">## all patient in patient_data progress before die</span></span>
-<span>    <span class="co">## thus pfs &lt; os and can switch</span></span>
+<span>    <span class="co">## thus pfs &lt; os and can switch. </span></span>
+<span>    <span class="co">## See treatment_allocator()</span></span>
 <span>    switch_time <span class="op">=</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">pfs</span></span>
+<span>  <span class="op">)</span></span>
+<span>  </span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>Another common way to specify the switching time is picking a time
+point between <code>pfs</code> and <code>os</code>, i.e.,</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">time_selector</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="co">## add break point to develop and debug</span></span>
+<span>  <span class="co"># browser()</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    patient_id <span class="op">=</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">patient_id</span>,</span>
+<span>    <span class="co">## all patient in patient_data progress before die</span></span>
+<span>    <span class="co">## thus pfs &lt; os and can switch. </span></span>
+<span>    <span class="co">## See treatment_allocator()</span></span>
+<span>    switch_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span>, min <span class="op">=</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">pfs</span>, max <span class="op">=</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">os</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span>  </span>
 <span><span class="op">}</span></span></code></pre></div>
@@ -327,7 +346,7 @@ the assigned dose. Here we only update the overall survival
 <code>os</code> and leave other endpoints (e.g., response status) or
 variables unchanged, assuming that we won’t use their values after
 switching when summarizing the simulation.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data_modifier</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="co">## add break point to develop and debug</span></span>
 <span>  <span class="co"># browser()</span></span>
@@ -335,7 +354,7 @@ switching when summarizing the simulation.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    patient_id <span class="op">=</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">patient_id</span>,</span>
 <span>    <span class="co">## other_endpoint = ..., </span></span>
-<span>    os <span class="op">=</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">switch_time</span> <span class="op">+</span> <span class="va">f</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="va">patient_data</span><span class="op">$</span><span class="va">os</span> <span class="op">-</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">switch_time</span>, <span class="fl">0</span><span class="op">)</span></span>
+<span>    os <span class="op">=</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">switch_time</span> <span class="op">+</span> <span class="va">f</span> <span class="op">*</span> <span class="op">(</span><span class="va">patient_data</span><span class="op">$</span><span class="va">os</span> <span class="op">-</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">switch_time</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="op">}</span></span></code></pre></div>
@@ -346,7 +365,7 @@ switching when summarizing the simulation.</p>
 <p>Here we consider a trial of a placebo arm and two active treatment
 arms (low and high dose). Patients in the low dose arm who do not
 respond are switched to a higher dose.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">treatment_allocator</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="co">## add break point to develop and debug</span></span>
 <span>  <span class="co"># browser()</span></span>
@@ -362,7 +381,7 @@ respond are switched to a higher dose.</p>
 <span><span class="op">}</span></span></code></pre></div>
 <p>When implementing time selector for the function <code>when()</code>,
 the switching time is set to the readout time</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">time_selector</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="co">## add break point to develop and debug</span></span>
 <span>  <span class="co"># browser()</span></span>
@@ -383,7 +402,7 @@ their condition deteriorate significantly. Specifically, the switching
 time is 1 month before a patient dies. If the overall survival is
 shorter than a month, the switching time is set to
 <code>0.9 * os</code>.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">treatment_allocator</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="co">## add break point to develop and debug</span></span>
 <span>  <span class="co"># browser()</span></span>
@@ -397,7 +416,7 @@ shorter than a month, the switching time is set to
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">time_selector</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="co">## add break point to develop and debug</span></span>
 <span>  <span class="co"># browser()</span></span>
@@ -418,7 +437,7 @@ this, simply provide <code><a href="../reference/regimen.html">regimen()</a></co
 allocators for <code>what</code>, a list of time selectors for
 <code>when</code>, and a list of data modifiers for
 <code>how</code>.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">what</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">allocator1</span>, <span class="va">allocator2</span>, <span class="va">allocator3</span><span class="op">)</span></span>
 <span><span class="va">when</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">selector1</span>, <span class="va">selector2</span>, <span class="va">selector3</span><span class="op">)</span></span>
 <span><span class="va">how</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">modifier1</span>, <span class="va">modifier2</span>, <span class="va">modifier3</span><span class="op">)</span></span>
