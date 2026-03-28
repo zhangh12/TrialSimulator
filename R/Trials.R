@@ -617,6 +617,22 @@ Trials <- R6::R6Class(
 
       }
 
+      endpoint_names <- NULL
+      for(arm in self$get_arms()){
+        if(is.null(endpoint_names)){
+          endpoint_names <- arm$get_endpoints_name()
+        }else{
+          if(!setequal(endpoint_names, arm$get_endpoints_name())){
+            stop('Arm <', arm$get_name(), '> ',
+                 'has endpoint(s) that are different from other arm(s): \n',
+                 '<', paste0(arm$get_endpoints_name(), collapse = ', '),
+                 '> v.s. <',
+                 paste0(endpoint_names, collapse = ', '), '>. \n',
+                 'You may have typo when naming the endpoints in function endpoint(). ')
+          }
+        }
+      }
+
       if(!private$silent){
         message('Arm(s) <', paste0(arm_names, collapse = ', '),
                 '> are added to the trial. \n')
@@ -846,20 +862,15 @@ Trials <- R6::R6Class(
 
         arms_data[[arm]] <- cbind(arms_data[[arm]], self$get_an_arm(arm)$generate_data(n_patients_in_arm))
 
-        if(!is.null(patient_data)){
-          diff_cols1 <- setdiff(names(arms_data[[arm]]), names(patient_data))
-          diff_cols2 <- setdiff(names(patient_data), names(arms_data[[arm]]))
-          if(length(diff_cols1) > 0){
-            stop('Arm <', arm, '> may have endpoints different from other arms: <',
-                 paste0(diff_cols1, collapse = ', '), '>.')
-          }
-
-          if(length(diff_cols2) > 0){
-            stop('Arm <', arm, '> may have endpoints different from other arms: <',
-                 paste0(diff_cols2, collapse = ', '), '>.')
-          }
+        if(!is.null(patient_data) && ncol(arms_data[[arm]]) != ncol(patient_data)){
+          stop('Arm <', arm, '> may have endpoints different from other arms. ',
+               'You may have typo when naming endpoints in other arms, ',
+               'or forgot to add *_event columns for time-to-event endpoints. ')
         }
 
+        ## we have codes in trial$add_arms() that makes sure arms have
+        ## same endpoints, so row bind should be fine, and pre-check codes
+        ## are deleted
         patient_data <- bind_rows(patient_data, arms_data[[arm]])
       }
 

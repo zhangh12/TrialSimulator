@@ -167,7 +167,10 @@ endpoints that are altered. We do not have to return an endpoint if it
 is not updated for any patient. For an endpoint that is updated for a
 subset of switchers, simply set the unchanged cells to `NA` and the
 package will ignore them. We can also fill those cells with their
-original values when being passed to `how()`.
+original values when being passed to `how()`. Note that we should never 
+apply dropout or censoring manually in `how()` because `TrialSimulator` 
+will handle that automatically when triggering milestones and prepare 
+locked data in action functions. 
 
 The three-functions design in `regimen` provides a useful balance
 between structure and flexibility. The interface mirrors the way
@@ -273,8 +276,26 @@ time_selector <- function(patient_data){
   data.frame(
     patient_id = patient_data$patient_id,
     ## all patient in patient_data progress before die
-    ## thus pfs < os and can switch
+    ## thus pfs < os and can switch. 
+    ## See treatment_allocator()
     switch_time = patient_data$pfs
+  )
+  
+}
+```
+
+Another common way to specify the switching time is picking a time point between `pfs` and `os`, i.e.,
+
+```{r eval=FALSE}
+time_selector <- function(patient_data){
+  ## add break point to develop and debug
+  # browser()
+  data.frame(
+    patient_id = patient_data$patient_id,
+    ## all patient in patient_data progress before die
+    ## thus pfs < os and can switch. 
+    ## See treatment_allocator()
+    switch_time = runif(nrow(patient_data), min = patient_data$pfs, max = patient_data$os)
   )
   
 }
@@ -295,7 +316,7 @@ data_modifier <- function(patient_data){
   data.frame(
     patient_id = patient_data$patient_id,
     ## other_endpoint = ..., 
-    os = patient_data$switch_time + f * pmax(patient_data$os - patient_data$switch_time, 0)
+    os = patient_data$switch_time + f * (patient_data$os - patient_data$switch_time)
   )
 
 }
