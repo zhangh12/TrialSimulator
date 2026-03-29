@@ -194,7 +194,7 @@ controller$run(n = 1, plot_event = TRUE)
 
 ![](doseRanging_files/figure-html/unnamed-chunk-7-1.png)
 
-In this trial, the z statistic at interim is relatively low (1.33), thus
+In this trial, the z statistic at interim is relatively low (0.93), thus
 is early terminated even if in simulation we keep going with three newly
 added dose arms.
 
@@ -209,9 +209,9 @@ output %>%
   scroll_box(width = "100%")
 ```
 
-| trial |       seed | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<ep\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<arms\> |  z_value | interim_decision | milestone_time\_\<final\> | n_events\_\<final\>\_\<ep\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | decision | error_message |
-|:------|-----------:|----------------------------:|------------------------------:|--------------------------------------:|:--------------------------------|---------:|:-----------------|--------------------------:|----------------------------:|------------------------------------:|:------------------------------|:---------|:--------------|
-| 123   | 1960520344 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 1.332786 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | no-go    |               |
+| trial |       seed | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<ep\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<arms\> |   z_value | interim_decision | milestone_time\_\<final\> | n_events\_\<final\>\_\<ep\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | decision | error_message |
+|:------|-----------:|----------------------------:|------------------------------:|--------------------------------------:|:--------------------------------|----------:|:-----------------|--------------------------:|----------------------------:|------------------------------------:|:------------------------------|:---------|:--------------|
+| 123   | 1960520344 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 0.9258209 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | no-go    |               |
 
 We can call `controller$run(n = 10)` to simulate additional trials. in
 the function `action_at_final()`, the go/no-go decision (`decision` in
@@ -237,18 +237,18 @@ res %>%
   scroll_box(width = "100%")
 ```
 
-| trial |       seed | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<ep\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<arms\> |    z_value | interim_decision | milestone_time\_\<final\> | n_events\_\<final\>\_\<ep\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | decision | error_message |
-|:------|-----------:|----------------------------:|------------------------------:|--------------------------------------:|:--------------------------------|-----------:|:-----------------|--------------------------:|----------------------------:|------------------------------------:|:------------------------------|:---------|:--------------|
-| 123   | 2006631926 |                         6.8 |                            30 |                                    35 | c(“dose ….                      |  1.0350983 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | go       |               |
-| 123   |  447300730 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | -1.5191090 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | no-go    |               |
-| 123   | 1544385735 |                         6.8 |                            30 |                                    35 | c(“dose ….                      |  1.0954461 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | no-go    |               |
-| 123   | 2131809493 |                         6.8 |                            30 |                                    35 | c(“dose ….                      |  1.9364917 | add dose arms    |                      13.7 |                         150 |                                 150 | c(“dose ….                    | no-go    |               |
-| 123   |  799237881 |                         6.8 |                            30 |                                    35 | c(“dose ….                      |  1.0954461 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | no-go    |               |
-| 123   | 1359695008 |                         6.8 |                            30 |                                    35 | c(“dose ….                      |  1.5256441 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | no-go    |               |
-| 123   | 2040133893 |                         6.8 |                            30 |                                    35 | c(“dose ….                      |  0.4330129 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | no-go    |               |
-| 123   |  715681929 |                         6.8 |                            30 |                                    35 | c(“dose ….                      |  1.5191090 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | go       |               |
-| 123   | 1222856748 |                         6.8 |                            30 |                                    35 | c(“dose ….                      |  1.5256441 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | no-go    |               |
-| 123   | 1512640951 |                         6.8 |                            30 |                                    35 | c(“dose ….                      |  1.9364930 | add dose arms    |                      13.7 |                         150 |                                 150 | c(“dose ….                    | go       |               |
+| trial |       seed | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<ep\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<arms\> |   z_value | interim_decision | milestone_time\_\<final\> | n_events\_\<final\>\_\<ep\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | decision | error_message |
+|:------|-----------:|----------------------------:|------------------------------:|--------------------------------------:|:--------------------------------|----------:|:-----------------|--------------------------:|----------------------------:|------------------------------------:|:------------------------------|:---------|:--------------|
+| 123   | 1915467752 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 0.6123731 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | go       |               |
+| 123   | 1678009487 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 0.9258209 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | no-go    |               |
+| 123   | 1177293210 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 0.4918697 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | no-go    |               |
+| 123   |  155620919 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 1.3327856 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | go       |               |
+| 123   | 1745672662 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 1.2247450 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | go       |               |
+| 123   |  484372378 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 1.9364930 | add dose arms    |                      13.7 |                         150 |                                 150 | c(“dose ….                    | go       |               |
+| 123   |    2788507 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 0.4330129 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | no-go    |               |
+| 123   | 1945408685 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 0.4918697 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | no-go    |               |
+| 123   |  737764402 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 0.9258209 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | go       |               |
+| 123   |  787086561 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 1.0954461 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | go       |               |
 
 ``` r
 ## Number of overall Go
@@ -257,7 +257,7 @@ sum(res$interim_decision == 'add dose arms' & 'decision' == 'go')
 
 ## Number of early trial termination
 sum(res$interim_decision == 'stop trial')
-#> [1] 8
+#> [1] 9
 ```
 
 ## Appendix: Code of Helper Function

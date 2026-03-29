@@ -22,11 +22,6 @@ full trial life cycle.
   optional, but they make it simple to construct and evaluate complex
   trial designs without sacrificing flexibility.
 
-## Shiny App
-
-An online version of this app is hosted on
-[shinyapps.io](https://bx7ttm-han-zhang.shinyapps.io/trialsimulatorstarter/).
-
 ## Validation
 
 The validation documents for this R package are hosted

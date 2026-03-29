@@ -23,6 +23,7 @@ trial(
   seed = NULL,
   enroller,
   dropout = NULL,
+  stratification_factors = NULL,
   silent = FALSE,
   ...
 )
@@ -71,6 +72,18 @@ trial(
   time point, or `rweibull` if dropout rates are set at two time points.
   See
   [`?TrialSimulator::weibullDropout`](https://zhangh12.github.io/TrialSimulator/reference/weibullDropout.md).
+
+- stratification_factors:
+
+  character. Names of baseline characteristics to define stratums in
+  stratified permuted block randomization. Stratification factors must
+  be defined in
+  [`endpoint()`](https://zhangh12.github.io/TrialSimulator/reference/endpoint.md)
+  with `readout = 0`. As a natural assumption for randomized trial,
+  `TrialSimulator` assumes that the baseline characteristics share the
+  same distribution across arms, but endpoints can have same or
+  different distributions given baseline characteristics. `NULL` by
+  default, i.e., unstratified permuted block randomization is executed.
 
 - silent:
 
@@ -139,7 +152,7 @@ trial
 
 trial$add_arms(sample_ratio = c(1, 2), placebo, active)
 #> Arm(s) <pbo, ac> are added to the trial. 
-#> Randomization is done for 100 potential patients. 
+#> Randomization is done for 1 potential patients. 
 #> Data of 100 potential patients are generated for the trial with 2 arm(s) <pbo, ac>. 
 
 ## updated information after arms are registered

@@ -140,7 +140,7 @@ trial <- trial(
 
 trial$add_arms(sample_ratio = c(1, 1, 1), low, high, pbo)
 #> Arm(s) <low dose, high dose, placebo> are added to the trial.
-#> Randomization is done for 1000 potential patients.
+#> Randomization is done for 1 potential patients.
 #> Data of 1000 potential patients are generated for the trial with 3 arm(s) <low dose, high dose, placebo>.
 ```
 
@@ -300,27 +300,21 @@ controller$run(plot_event = TRUE)
 #> Locked data can be accessed in Trial$get_locked_data('dose selection'). 
 #> Number of events at lock time:
 #>   pfs os surrogate patient         arms
-#> 1 141 65       300     357 c("high ....
+#> 1 137 72       300     357 c("high ....
 #> 
-#> Arm <high dose> is removed.
-#> Sample ratio is updated to be <low dose: 1, placebo: 1>.
-#> Trial data is rolling back to time = 11.1205128205128. 
-#> Randomization will be carried out again for unenrolled patients.
-#> Randomization is done for 643 potential patients.
-#> Data of 643 potential patients are generated for the trial with 2 arm(s) <low dose, placebo>.
 #> Condition of milestone <interim> is being checked.
-#> Data is locked at time = 17.9949397642942 for milestone <interim>.
+#> Data is locked at time = 16.2618127953581 for milestone <interim>.
 #> Locked data can be accessed in Trial$get_locked_data('interim'). 
 #> Number of events at lock time:
 #>   pfs  os surrogate patient         arms
-#> 1 336 158       624     700 c("high ....
+#> 1 300 154       556     614 c("high ....
 #> 
 #> Condition of milestone <final> is being checked.
-#> Data is locked at time = 25.7475563250256 for milestone <final>.
+#> Data is locked at time = 23.98 for milestone <final>.
 #> Locked data can be accessed in Trial$get_locked_data('final'). 
 #> Number of events at lock time:
 #>   pfs  os surrogate patient         arms
-#> 1 632 320       980    1000 c("high ....
+#> 1 594 333       941    1000 c("high ....
 #> 
 ```
 
@@ -341,7 +335,7 @@ controller$get_output() %>%
 
 | trial      |       seed | milestone_time\_\<dose selection\> | n_events\_\<dose selection\>\_\<pfs\> | n_events\_\<dose selection\>\_\<os\> | n_events\_\<dose selection\>\_\<surrogate\> | n_events\_\<dose selection\>\_\<patient_id\> | n_events\_\<dose selection\>\_\<arms\> | kept_arm | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<pfs\> | n_events\_\<interim\>\_\<os\> | n_events\_\<interim\>\_\<surrogate\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<arms\> | futility | milestone_time\_\<final\> | n_events\_\<final\>\_\<pfs\> | n_events\_\<final\>\_\<os\> | n_events\_\<final\>\_\<surrogate\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | pfs_high_dose_decision | pfs_low_dose_decision | os_high_dose_decision | os_low_dose_decision | error_message |
 |:-----------|-----------:|-----------------------------------:|--------------------------------------:|-------------------------------------:|--------------------------------------------:|---------------------------------------------:|:---------------------------------------|:---------|----------------------------:|-------------------------------:|------------------------------:|-------------------------------------:|--------------------------------------:|:--------------------------------|:---------|--------------------------:|-----------------------------:|----------------------------:|-----------------------------------:|------------------------------------:|:------------------------------|:-----------------------|:----------------------|:----------------------|:---------------------|:--------------|
-| Trial-3415 | 1727811904 |                           11.12051 |                                   141 |                                   65 |                                         300 |                                          357 | c(“high ….                             | low      |                    17.99494 |                            336 |                           158 |                                  624 |                                   700 | c(“high ….                      | negative |                  25.74756 |                          632 |                         320 |                                980 |                                1000 | c(“high ….                    | accept                 | reject                | accept                | accept               |               |
+| Trial-3415 | 1727811904 |                           11.12051 |                                   137 |                                   72 |                                         300 |                                          357 | c(“high ….                             | both     |                    16.26181 |                            300 |                           154 |                                  556 |                                   614 | c(“high ….                      | negative |                     23.98 |                          594 |                         333 |                                941 |                                1000 | c(“high ….                    | reject                 | reject                | accept                | accept               |               |
 
 Here we dive into the action function (`action3`) for the final
 analysis. We can literally execute the function line by line with locked
@@ -374,8 +368,8 @@ ct_os <- trial$closedTest(dt_os, treatments = c('high dose', 'low dose'),
 
 print(ct_pfs)
 #>         arm decision milestone_at_reject reject_time
-#> 1 high dose   accept                <NA>         Inf
-#> 2  low dose   reject               final    25.74756
+#> 1 high dose   reject               final       23.98
+#> 2  low dose   reject               final       23.98
 print(ct_os)
 #>         arm decision milestone_at_reject reject_time
 #> 1 high dose   accept                  NA         Inf

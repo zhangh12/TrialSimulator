@@ -224,26 +224,26 @@ listener$add_milestones(stage1, stage2, final)
 controller <- controller(trial, listener)
 controller$run(n = 1, silent = TRUE)
 #> stage 1:
-#>   dose total_n new_ratio
-#> 1  0.0      13 0.2000000
-#> 2 20.0      13 0.1056760
-#> 3 25.0      13 0.1469556
-#> 4 30.0      14 0.2253870
-#> 5 35.0      13 0.3219814
+#>   dose total_n  new_ratio
+#> 1  0.0      13 0.20000000
+#> 2 20.0      13 0.02037218
+#> 3 25.0      13 0.11204701
+#> 4 30.0      14 0.26483839
+#> 5 35.0      13 0.40274241
 #> stage 2:
 #>   dose total_n  new_ratio
-#> 1  0.0      31 0.20000000
-#> 2 20.0      25 0.03908046
-#> 3 25.0      26 0.10344828
-#> 4 30.0      28 0.21839080
-#> 5 35.0      43 0.43908046
+#> 1  0.0      33 0.20000000
+#> 2 20.0      16 0.04338395
+#> 3 25.0      21 0.11453362
+#> 4 30.0      37 0.23427332
+#> 5 35.0      46 0.40780911
 #> final:
 #>   dose total_n
-#> 1  0.0      40
-#> 2 20.0      26
-#> 3 25.0      32
-#> 4 30.0      39
-#> 5 35.0      63
+#> 1  0.0      44
+#> 2 20.0      17
+#> 3 25.0      29
+#> 4 30.0      51
+#> 5 35.0      59
 ```
 
 ![](responseAdaptive_files/figure-html/sdlatiow-1.png)
@@ -281,20 +281,20 @@ output[, 'n_events_<stage 1>_<arms>']
 output[, 'n_events_<stage 2>_<arms>']
 #> [[1]]
 #>    arm fev1 patient_id
-#> 1  0.0   24         31
-#> 2 20.0   20         25
-#> 3 25.0   23         26
-#> 4 30.0   23         28
-#> 5 35.0   30         43
+#> 1  0.0   24         33
+#> 2 20.0   14         16
+#> 3 25.0   19         21
+#> 4 30.0   27         37
+#> 5 35.0   36         46
 
 output[, 'n_events_<final>_<arms>']
 #> [[1]]
 #>    arm fev1 patient_id
-#> 1  0.0   40         40
-#> 2 20.0   26         26
-#> 3 25.0   32         32
-#> 4 30.0   39         39
-#> 5 35.0   63         63
+#> 1  0.0   44         44
+#> 2 20.0   17         17
+#> 3 25.0   29         29
+#> 4 30.0   51         51
+#> 5 35.0   59         59
 ```
 
 ## Appendix: Codes of Helper Functions
@@ -302,7 +302,8 @@ output[, 'n_events_<final>_<arms>']
 For completeness, the full code of the helper functions
 `compute_sample_ratio()` and `multiple_contrast_test()` is included
 below, which determine the new sample ratio and performs the multiple
-contrast test.
+contrast test. Note that the implementation to these two functions are
+completely project-specific.
 
 ``` r
 compute_sample_ratio <- function(data){

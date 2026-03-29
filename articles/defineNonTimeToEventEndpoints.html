@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.14.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.15.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -203,7 +203,7 @@ function:</p>
 <span><span class="co">## add arms to the trial</span></span>
 <span><span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, <span class="va">trt</span>, <span class="va">pbo</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Arm(s) &lt;treatment, placebo&gt; are added to the trial.</span></span>
-<span><span class="co">#&gt; Randomization is done for 420 potential patients.</span></span>
+<span><span class="co">#&gt; Randomization is done for 1 potential patients.</span></span>
 <span><span class="co">#&gt; Data of 420 potential patients are generated for the trial with 2 arm(s) &lt;treatment, placebo&gt;.</span></span>
 <span><span class="va">trial</span></span>
 <span><span class="co">#&gt;  ⚕⚕         Trial Name:  Trial-31415  </span></span>
@@ -279,21 +279,21 @@ controller to monitor and execute the trial.</p>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('interim'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   cfb orr patient         arms</span></span>
-<span><span class="co">#&gt; 1  18  60      99 c("place....</span></span>
+<span><span class="co">#&gt; 1  19  60      99 c("place....</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;random&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 14 for milestone &lt;random&gt;.</span></span>
+<span><span class="co">#&gt; Data is locked at time = 13.95 for milestone &lt;random&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('random'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   cfb orr patient         arms</span></span>
-<span><span class="co">#&gt; 1  96 180     221 c("place....</span></span>
+<span><span class="co">#&gt; 1  96 180     220 c("place....</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;final&gt; is being checked.</span></span>
 <span><span class="co">#&gt; Data is locked at time = 30 for milestone &lt;final&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('final'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   cfb orr patient         arms</span></span>
-<span><span class="co">#&gt; 1 403 418     420 c("place....</span></span>
+<span><span class="co">#&gt; 1 401 417     420 c("place....</span></span>
 <span><span class="co">#&gt; </span></span></code></pre></div>
 <p><img src="defineNonTimeToEventEndpoints_files/figure-html/ihhf-1.png" class="r-plt" alt="" width="100%"></p>
 <p>We can inspect the dataset locked at different milestone by calling
@@ -305,13 +305,13 @@ decision is made based on data locked at the time of a milestone.</p>
 <span><span class="va">random_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span>milestone_name <span class="op">=</span> <span class="st">'random'</span><span class="op">)</span></span>
 <span><span class="va">final_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span>milestone_name <span class="op">=</span> <span class="st">'final'</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">interim_data</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   patient_id       arm enroll_time dropout_time       cfb cfb_readout orr</span></span>
-<span><span class="co">#&gt; 1          1 treatment         0.0    21.180883 -4.434289           6   0</span></span>
-<span><span class="co">#&gt; 2          2   placebo         0.1     2.977640        NA           6   0</span></span>
-<span><span class="co">#&gt; 3          3   placebo         0.2    28.175451 -1.657398           6   1</span></span>
-<span><span class="co">#&gt; 4          4 treatment         0.3    27.254577  1.004898           6   0</span></span>
-<span><span class="co">#&gt; 5          5 treatment         0.4     5.663727        NA           6   0</span></span>
-<span><span class="co">#&gt; 6          6   placebo         0.5    27.379476  6.093597           6   0</span></span>
+<span><span class="co">#&gt;   patient_id       arm enroll_time dropout_time        cfb cfb_readout orr</span></span>
+<span><span class="co">#&gt; 1          1 treatment         0.0     29.78530 -0.2980363           6   1</span></span>
+<span><span class="co">#&gt; 2          2   placebo         0.1     15.04569  8.1479693           6   0</span></span>
+<span><span class="co">#&gt; 3          3   placebo         0.2     15.91130  0.3772291           6   0</span></span>
+<span><span class="co">#&gt; 4          4 treatment         0.3     20.39311 -2.7864167           6   0</span></span>
+<span><span class="co">#&gt; 5          5 treatment         0.4     16.47514 -0.9595334           6   0</span></span>
+<span><span class="co">#&gt; 6          6   placebo         0.5     19.78626 -0.5136511           6   0</span></span>
 <span><span class="co">#&gt;   orr_readout</span></span>
 <span><span class="co">#&gt; 1           2</span></span>
 <span><span class="co">#&gt; 2           2</span></span>
@@ -335,23 +335,23 @@ milestones</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   patient_id       arm enroll_time dropout_time cfb cfb_readout orr orr_readout</span></span>
-<span><span class="co">#&gt; 1         61 treatment        6.00     22.58184  NA           6  NA           2</span></span>
-<span><span class="co">#&gt; 2         62   placebo        6.05     62.17731  NA           6  NA           2</span></span>
-<span><span class="co">#&gt; 3         63 treatment        6.10     23.76025  NA           6  NA           2</span></span>
-<span><span class="co">#&gt; 4         64   placebo        6.15     29.50080  NA           6  NA           2</span></span>
-<span><span class="co">#&gt; 5         66   placebo        6.25     26.44169  NA           6  NA           2</span></span>
-<span><span class="co">#&gt; 6         67   placebo        6.30     25.48133  NA           6  NA           2</span></span>
+<span><span class="co">#&gt; 1         61 treatment        6.00     53.16813  NA           6  NA           2</span></span>
+<span><span class="co">#&gt; 2         62   placebo        6.05     15.06647  NA           6  NA           2</span></span>
+<span><span class="co">#&gt; 3         63 treatment        6.10     24.75709  NA           6  NA           2</span></span>
+<span><span class="co">#&gt; 4         65 treatment        6.20     27.24852  NA           6  NA           2</span></span>
+<span><span class="co">#&gt; 5         66   placebo        6.25     24.53303  NA           6  NA           2</span></span>
+<span><span class="co">#&gt; 6         67   placebo        6.30     19.54081  NA           6  NA           2</span></span>
 <span></span>
 <span><span class="va">random_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">patient_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">not_ready_at_interim</span><span class="op">$</span><span class="va">patient_id</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   patient_id       arm enroll_time dropout_time       cfb cfb_readout orr</span></span>
-<span><span class="co">#&gt; 1         61 treatment        6.00     22.58184 -1.167254           6   0</span></span>
-<span><span class="co">#&gt; 2         62   placebo        6.05     62.17731 -3.808641           6   0</span></span>
-<span><span class="co">#&gt; 3         63 treatment        6.10     23.76025 -4.813609           6   0</span></span>
-<span><span class="co">#&gt; 4         64   placebo        6.15     29.50080  1.547169           6   0</span></span>
-<span><span class="co">#&gt; 5         66   placebo        6.25     26.44169 -3.164815           6   0</span></span>
-<span><span class="co">#&gt; 6         67   placebo        6.30     25.48133 -3.931915           6   0</span></span>
+<span><span class="co">#&gt; 1         61 treatment        6.00     53.16813 -4.923353           6   1</span></span>
+<span><span class="co">#&gt; 2         62   placebo        6.05     15.06647  1.153043           6   0</span></span>
+<span><span class="co">#&gt; 3         63 treatment        6.10     24.75709 -4.559905           6   0</span></span>
+<span><span class="co">#&gt; 4         65 treatment        6.20     27.24852 -4.448258           6   0</span></span>
+<span><span class="co">#&gt; 5         66   placebo        6.25     24.53303  4.342807           6   0</span></span>
+<span><span class="co">#&gt; 6         67   placebo        6.30     19.54081  1.623136           6   0</span></span>
 <span><span class="co">#&gt;   orr_readout</span></span>
 <span><span class="co">#&gt; 1           2</span></span>
 <span><span class="co">#&gt; 2           2</span></span>

@@ -21,7 +21,7 @@ time, trial duration, and readout of non-tte endpoints are consistent."><meta pr
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.14.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.15.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -84,6 +84,7 @@ time, trial duration, and readout of non-tte endpoints are consistent.</p>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">enroller</span>,</span>
 <span>  dropout <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  stratification_factors <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  silent <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -133,6 +134,18 @@ It can be any random number generator with first argument <code>n</code>,
 the number of enrolled patients. Usually <code>rexp</code> if dropout rate
 is set at a single time point, or <code>rweibull</code> if dropout rates are
 set at two time points. See <code><a href="weibullDropout.html">?TrialSimulator::weibullDropout</a></code>.</p></dd>
+
+
+<dt id="arg-stratification-factors">stratification_factors<a class="anchor" aria-label="anchor" href="#arg-stratification-factors"></a></dt>
+<dd><p>character. Names of baseline characteristics
+to define stratums in stratified permuted block randomization.
+Stratification factors must be defined in <code><a href="endpoint.html">endpoint()</a></code> with
+<code>readout = 0</code>. As a natural assumption for randomized trial,
+<code>TrialSimulator</code> assumes that the baseline
+characteristics share the same distribution across arms, but endpoints
+can have same or different distributions given baseline characteristics.
+<code>NULL</code> by default, i.e., unstratified permuted block randomization is
+executed.</p></dd>
 
 
 <dt id="arg-silent">silent<a class="anchor" aria-label="anchor" href="#arg-silent"></a></dt>
@@ -202,7 +215,7 @@ simulation. Default: <code>FALSE</code>.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, <span class="va">placebo</span>, <span class="va">active</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Arm(s) &lt;pbo, ac&gt; are added to the trial. </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Randomization is done for 100 potential patients. </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Randomization is done for 1 potential patients. </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Data of 100 potential patients are generated for the trial with 2 arm(s) &lt;pbo, ac&gt;. </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## updated information after arms are registered</span></span></span>

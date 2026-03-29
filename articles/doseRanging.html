@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.14.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.15.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -288,7 +288,7 @@ reflecting the new randomization ratio 1:2:2:2:1.</p>
 <span><span class="va">controller</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/controller.html">controller</a></span><span class="op">(</span><span class="va">trial</span>, <span class="va">listener</span><span class="op">)</span></span>
 <span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1</span>, plot_event <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="doseRanging_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="100%"></p>
-<p>In this trial, the z statistic at interim is relatively low (1.33),
+<p>In this trial, the z statistic at interim is relatively low (0.93),
 thus is early terminated even if in simulation we keep going with three
 newly added dose arms.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
@@ -366,7 +366,7 @@ error_message
 c(“dose ….
 </td>
 <td style="text-align:right;">
-1.332786
+0.9258209
 </td>
 <td style="text-align:left;">
 stop trial
@@ -466,7 +466,7 @@ error_message
 123
 </td>
 <td style="text-align:right;">
-2006631926
+1915467752
 </td>
 <td style="text-align:right;">
 6.8
@@ -481,7 +481,7 @@ error_message
 c(“dose ….
 </td>
 <td style="text-align:right;">
-1.0350983
+0.6123731
 </td>
 <td style="text-align:left;">
 stop trial
@@ -509,7 +509,7 @@ go
 123
 </td>
 <td style="text-align:right;">
-447300730
+1678009487
 </td>
 <td style="text-align:right;">
 6.8
@@ -524,7 +524,7 @@ go
 c(“dose ….
 </td>
 <td style="text-align:right;">
--1.5191090
+0.9258209
 </td>
 <td style="text-align:left;">
 stop trial
@@ -552,7 +552,7 @@ no-go
 123
 </td>
 <td style="text-align:right;">
-1544385735
+1177293210
 </td>
 <td style="text-align:right;">
 6.8
@@ -567,7 +567,7 @@ no-go
 c(“dose ….
 </td>
 <td style="text-align:right;">
-1.0954461
+0.4918697
 </td>
 <td style="text-align:left;">
 stop trial
@@ -595,7 +595,7 @@ no-go
 123
 </td>
 <td style="text-align:right;">
-2131809493
+155620919
 </td>
 <td style="text-align:right;">
 6.8
@@ -610,7 +610,93 @@ no-go
 c(“dose ….
 </td>
 <td style="text-align:right;">
-1.9364917
+1.3327856
+</td>
+<td style="text-align:left;">
+stop trial
+</td>
+<td style="text-align:right;">
+13.7
+</td>
+<td style="text-align:right;">
+150
+</td>
+<td style="text-align:right;">
+150
+</td>
+<td style="text-align:left;">
+c(“dose ….
+</td>
+<td style="text-align:left;">
+go
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+123
+</td>
+<td style="text-align:right;">
+1745672662
+</td>
+<td style="text-align:right;">
+6.8
+</td>
+<td style="text-align:right;">
+30
+</td>
+<td style="text-align:right;">
+35
+</td>
+<td style="text-align:left;">
+c(“dose ….
+</td>
+<td style="text-align:right;">
+1.2247450
+</td>
+<td style="text-align:left;">
+stop trial
+</td>
+<td style="text-align:right;">
+13.7
+</td>
+<td style="text-align:right;">
+150
+</td>
+<td style="text-align:right;">
+150
+</td>
+<td style="text-align:left;">
+c(“dose ….
+</td>
+<td style="text-align:left;">
+go
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+123
+</td>
+<td style="text-align:right;">
+484372378
+</td>
+<td style="text-align:right;">
+6.8
+</td>
+<td style="text-align:right;">
+30
+</td>
+<td style="text-align:right;">
+35
+</td>
+<td style="text-align:left;">
+c(“dose ….
+</td>
+<td style="text-align:right;">
+1.9364930
 </td>
 <td style="text-align:left;">
 add dose arms
@@ -628,7 +714,7 @@ add dose arms
 c(“dose ….
 </td>
 <td style="text-align:left;">
-no-go
+go
 </td>
 <td style="text-align:left;">
 </td>
@@ -638,93 +724,7 @@ no-go
 123
 </td>
 <td style="text-align:right;">
-799237881
-</td>
-<td style="text-align:right;">
-6.8
-</td>
-<td style="text-align:right;">
-30
-</td>
-<td style="text-align:right;">
-35
-</td>
-<td style="text-align:left;">
-c(“dose ….
-</td>
-<td style="text-align:right;">
-1.0954461
-</td>
-<td style="text-align:left;">
-stop trial
-</td>
-<td style="text-align:right;">
-13.7
-</td>
-<td style="text-align:right;">
-150
-</td>
-<td style="text-align:right;">
-150
-</td>
-<td style="text-align:left;">
-c(“dose ….
-</td>
-<td style="text-align:left;">
-no-go
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-123
-</td>
-<td style="text-align:right;">
-1359695008
-</td>
-<td style="text-align:right;">
-6.8
-</td>
-<td style="text-align:right;">
-30
-</td>
-<td style="text-align:right;">
-35
-</td>
-<td style="text-align:left;">
-c(“dose ….
-</td>
-<td style="text-align:right;">
-1.5256441
-</td>
-<td style="text-align:left;">
-stop trial
-</td>
-<td style="text-align:right;">
-13.7
-</td>
-<td style="text-align:right;">
-150
-</td>
-<td style="text-align:right;">
-150
-</td>
-<td style="text-align:left;">
-c(“dose ….
-</td>
-<td style="text-align:left;">
-no-go
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-123
-</td>
-<td style="text-align:right;">
-2040133893
+2788507
 </td>
 <td style="text-align:right;">
 6.8
@@ -767,7 +767,7 @@ no-go
 123
 </td>
 <td style="text-align:right;">
-715681929
+1945408685
 </td>
 <td style="text-align:right;">
 6.8
@@ -782,50 +782,7 @@ no-go
 c(“dose ….
 </td>
 <td style="text-align:right;">
-1.5191090
-</td>
-<td style="text-align:left;">
-stop trial
-</td>
-<td style="text-align:right;">
-13.7
-</td>
-<td style="text-align:right;">
-150
-</td>
-<td style="text-align:right;">
-150
-</td>
-<td style="text-align:left;">
-c(“dose ….
-</td>
-<td style="text-align:left;">
-go
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-123
-</td>
-<td style="text-align:right;">
-1222856748
-</td>
-<td style="text-align:right;">
-6.8
-</td>
-<td style="text-align:right;">
-30
-</td>
-<td style="text-align:right;">
-35
-</td>
-<td style="text-align:left;">
-c(“dose ….
-</td>
-<td style="text-align:right;">
-1.5256441
+0.4918697
 </td>
 <td style="text-align:left;">
 stop trial
@@ -853,7 +810,7 @@ no-go
 123
 </td>
 <td style="text-align:right;">
-1512640951
+737764402
 </td>
 <td style="text-align:right;">
 6.8
@@ -868,10 +825,53 @@ no-go
 c(“dose ….
 </td>
 <td style="text-align:right;">
-1.9364930
+0.9258209
 </td>
 <td style="text-align:left;">
-add dose arms
+stop trial
+</td>
+<td style="text-align:right;">
+13.7
+</td>
+<td style="text-align:right;">
+150
+</td>
+<td style="text-align:right;">
+150
+</td>
+<td style="text-align:left;">
+c(“dose ….
+</td>
+<td style="text-align:left;">
+go
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+123
+</td>
+<td style="text-align:right;">
+787086561
+</td>
+<td style="text-align:right;">
+6.8
+</td>
+<td style="text-align:right;">
+30
+</td>
+<td style="text-align:right;">
+35
+</td>
+<td style="text-align:left;">
+c(“dose ….
+</td>
+<td style="text-align:right;">
+1.0954461
+</td>
+<td style="text-align:left;">
+stop trial
 </td>
 <td style="text-align:right;">
 13.7
@@ -901,7 +901,7 @@ go
 <span></span>
 <span><span class="co">## Number of early trial termination</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">interim_decision</span> <span class="op">==</span> <span class="st">'stop trial'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 8</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 9</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="appendix-code-of-helper-function">Appendix: Code of Helper Function<a class="anchor" aria-label="anchor" href="#appendix-code-of-helper-function"></a>

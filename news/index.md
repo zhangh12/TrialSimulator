@@ -1,5 +1,13 @@
 # Changelog
 
+## TrialSimulator 1.15.0
+
+### New Feature
+
+- Support stratified permuted block randomization in
+  [`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md)
+  using argument `stratification_factors`.
+
 ## TrialSimulator 1.14.0
 
 ### New Feature

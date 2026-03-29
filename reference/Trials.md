@@ -118,6 +118,8 @@ to end users.
 
 - [`Trials$get_number_unenrolled_patients()`](#method-Trials-get_number_unenrolled_patients)
 
+- [`Trials$get_stratum_queue()`](#method-Trials-get_stratum_queue)
+
 - [`Trials$get_randomization_queue()`](#method-Trials-get_randomization_queue)
 
 - [`Trials$get_enroll_time()`](#method-Trials-get_enroll_time)
@@ -194,6 +196,10 @@ to end users.
 
 - [`Trials$get_arm_removal_time()`](#method-Trials-get_arm_removal_time)
 
+- [`Trials$get_stratification_factors()`](#method-Trials-get_stratification_factors)
+
+- [`Trials$has_stratification_factors()`](#method-Trials-has_stratification_factors)
+
 - [`Trials$clone()`](#method-Trials-clone)
 
 ------------------------------------------------------------------------
@@ -212,6 +218,7 @@ initialize a trial
       seed = NULL,
       enroller,
       dropout = NULL,
+      stratification_factors = NULL,
       silent = FALSE,
       ...
     )
@@ -259,6 +266,18 @@ initialize a trial
   time point, or `rweibull` if dropout rates are set at two time points.
   See
   [`?TrialSimulator::weibullDropout`](https://zhangh12.github.io/TrialSimulator/reference/weibullDropout.md).
+
+- `stratification_factors`:
+
+  character. Names of baseline characteristics to define stratums in
+  stratified permuted block randomization. Stratification factors must
+  be defined in
+  [`endpoint()`](https://zhangh12.github.io/TrialSimulator/reference/endpoint.md)
+  with `readout = 0`. As a natural assumption for randomized trial,
+  `TrialSimulator` assumes that the baseline characteristics share the
+  same distribution across arms, but endpoints can have same or
+  different distributions given baseline characteristics. `NULL` by
+  default, i.e., unstratified permuted block randomization is executed.
 
 - `silent`:
 
@@ -693,6 +712,24 @@ return number of unenrolled patients
 #### Usage
 
     Trials$get_number_unenrolled_patients()
+
+------------------------------------------------------------------------
+
+### Method `get_stratum_queue()`
+
+return stratum queue of planned but not yet enrolled patients. This
+function does not update stratum_queue, just return its value for
+debugging purpose.
+
+#### Usage
+
+    Trials$get_stratum_queue(index = NULL)
+
+#### Arguments
+
+- `index`:
+
+  index to be extracted. Return all queue if `NULL`.
 
 ------------------------------------------------------------------------
 
@@ -1739,6 +1776,26 @@ get time when an arm is removed from the trial
 - `arm`:
 
   arm name.
+
+------------------------------------------------------------------------
+
+### Method `get_stratification_factors()`
+
+return stratification factors
+
+#### Usage
+
+    Trials$get_stratification_factors()
+
+------------------------------------------------------------------------
+
+### Method `has_stratification_factors()`
+
+has stratification factors
+
+#### Usage
+
+    Trials$has_stratification_factors()
 
 ------------------------------------------------------------------------
 
