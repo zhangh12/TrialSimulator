@@ -267,7 +267,7 @@ output[, 'n_events_<final>_<arms>']
 
 ## Appendix: Codes of Helper Functions
 
-For completeness, the full code of the helper functions `compute_sample_ratio()` and `multiple_contrast_test()` is included below, which determine the new sample ratio and performs the multiple contrast test. 
+For completeness, the full code of the helper functions `compute_sample_ratio()` and `multiple_contrast_test()` is included below, which determine the new sample ratio and performs the multiple contrast test. Note that the implementation to these two functions are completely project-specific. 
 
 ```{r ref.label='helpers', eval=FALSE}
 ```

@@ -17,10 +17,6 @@ developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.re
 - For **adaptation**, it includes execution functions that modify trial settings *in place*. 
 - For **analysis**, it implements methods such as regression models, group sequential tests, graphical multiple testing procedures, combination tests, and closed tests. These tools are entirely optional, but they make it simple to construct and evaluate complex trial designs without sacrificing flexibility.
 
-## Shiny App
-
-An online version of this app is hosted on [shinyapps.io](https://bx7ttm-han-zhang.shinyapps.io/trialsimulatorstarter/). 
-
 ## Validation
 
 The validation documents for this R package are hosted [here](https://github.com/zhangh12/TrialSimulatorDocuments) and are continuously updated.

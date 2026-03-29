@@ -578,7 +578,8 @@ Trials <- R6::R6Class(
     #' of the same distribution.
     add_arms = function(sample_ratio, ...){
 
-      stopifnot(is.numeric(sample_ratio) && all(is.wholenumber(sample_ratio)))
+      # stopifnot(is.numeric(sample_ratio) && all(is.wholenumber(sample_ratio)))
+      stopifnot(is.numeric(sample_ratio))
 
       arm_list <- list(...)
       enforce <- arm_list$enforce
@@ -3148,6 +3149,7 @@ Trials <- R6::R6Class(
                                               size = self$get_number_unenrolled_patients(),
                                               replace = TRUE,
                                               prob = private$sample_ratio)
+        private$stratum_queue <- rep('all', self$get_number_unenrolled_patients())
 
         if(!private$silent){
           message('Randomization is done for ',
