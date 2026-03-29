@@ -912,9 +912,10 @@ Trials <- R6::R6Class(
           rename(stratum = Var1, target_size = Freq)
 
         patient_pool <- NULL
-        prop <- 1.2
+        prop <- 1.1
+        min_sample_size <- 20
         while(TRUE){
-          new_sets <- self$get_an_arm(arm)$generate_data(max(ceiling(n_patients_in_arm * prop), 10))
+          new_sets <- self$get_an_arm(arm)$generate_data(max(ceiling(n_patients_in_arm * prop), min_sample_size))
           new_sets$stratum <- make_stratum(new_sets)
           patient_pool <- rbind(patient_pool, new_sets)
 
@@ -926,6 +927,7 @@ Trials <- R6::R6Class(
             break
           }
           prop <- .2
+          min_sample_size <- with(tmp, max((target_size - current_size) * 3, 10))
         }
 
         col_idx <- which(names(patient_pool) == 'stratum')
