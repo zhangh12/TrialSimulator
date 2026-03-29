@@ -129,6 +129,7 @@ trial$closedTest(dt, treatments = c('high dose', 'low dose'),
 \item \href{#method-Trials-get_number_patients}{\code{Trials$get_number_patients()}}
 \item \href{#method-Trials-get_number_enrolled_patients}{\code{Trials$get_number_enrolled_patients()}}
 \item \href{#method-Trials-get_number_unenrolled_patients}{\code{Trials$get_number_unenrolled_patients()}}
+\item \href{#method-Trials-get_stratum_queue}{\code{Trials$get_stratum_queue()}}
 \item \href{#method-Trials-get_randomization_queue}{\code{Trials$get_randomization_queue()}}
 \item \href{#method-Trials-get_enroll_time}{\code{Trials$get_enroll_time()}}
 \item \href{#method-Trials-enroll_patients}{\code{Trials$enroll_patients()}}
@@ -167,6 +168,8 @@ trial$closedTest(dt, treatments = c('high dose', 'low dose'),
 \item \href{#method-Trials-get_arm_added_time}{\code{Trials$get_arm_added_time()}}
 \item \href{#method-Trials-set_arm_removal_time}{\code{Trials$set_arm_removal_time()}}
 \item \href{#method-Trials-get_arm_removal_time}{\code{Trials$get_arm_removal_time()}}
+\item \href{#method-Trials-get_stratification_factors}{\code{Trials$get_stratification_factors()}}
+\item \href{#method-Trials-has_stratification_factors}{\code{Trials$has_stratification_factors()}}
 \item \href{#method-Trials-clone}{\code{Trials$clone()}}
 }
 }
@@ -184,6 +187,7 @@ initialize a trial
   seed = NULL,
   enroller,
   dropout = NULL,
+  stratification_factors = NULL,
   silent = FALSE,
   ...
 )}\if{html}{\out{</div>}}
@@ -219,6 +223,16 @@ It can be any random number generator with first argument \code{n},
 the number of enrolled patients. Usually \code{rexp} if dropout rate
 is set at a single time point, or \code{rweibull} if dropout rates are
 set at two time points. See \code{?TrialSimulator::weibullDropout}.}
+
+\item{\code{stratification_factors}}{character. Names of baseline characteristics
+to define stratums in stratified permuted block randomization.
+Stratification factors must be defined in \code{endpoint()} with
+\code{readout = 0}. As a natural assumption for randomized trial,
+\code{TrialSimulator} assumes that the baseline
+characteristics share the same distribution across arms, but endpoints
+can have same or different distributions given baseline characteristics.
+\code{NULL} by default, i.e., unstratified permuted block randomization is
+executed.}
 
 \item{\code{silent}}{logical. \code{TRUE} to mute messages. However, warning
 message is still displayed.}
@@ -652,6 +666,25 @@ return number of unenrolled patients
 \if{html}{\out{<div class="r">}}\preformatted{Trials$get_number_unenrolled_patients()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-get_stratum_queue"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-get_stratum_queue}{}}}
+\subsection{Method \code{get_stratum_queue()}}{
+return stratum queue of planned but not yet enrolled patients.
+This function does not update stratum_queue, just return its value
+for debugging purpose.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_stratum_queue(index = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{index}}{index to be extracted. Return all queue if \code{NULL}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Trials-get_randomization_queue"></a>}}
@@ -1655,6 +1688,26 @@ get time when an arm is removed from the trial
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-get_stratification_factors"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-get_stratification_factors}{}}}
+\subsection{Method \code{get_stratification_factors()}}{
+return stratification factors
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_stratification_factors()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-has_stratification_factors"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-has_stratification_factors}{}}}
+\subsection{Method \code{has_stratification_factors()}}{
+has stratification factors
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$has_stratification_factors()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Trials-clone"></a>}}

@@ -33,6 +33,15 @@
 #' the number of enrolled patients. Usually \code{rexp} if dropout rate
 #' is set at a single time point, or \code{rweibull} if dropout rates are
 #' set at two time points. See \code{?TrialSimulator::weibullDropout}.
+#' @param stratification_factors character. Names of baseline characteristics
+#' to define stratums in stratified permuted block randomization.
+#' Stratification factors must be defined in \code{endpoint()} with
+#' \code{readout = 0}. As a natural assumption for randomized trial,
+#' \code{TrialSimulator} assumes that the baseline
+#' characteristics share the same distribution across arms, but endpoints
+#' can have same or different distributions given baseline characteristics.
+#' \code{NULL} by default, i.e., unstratified permuted block randomization is
+#' executed.
 #' @param silent logical. \code{TRUE} to mute messages. However, warning
 #' message is still displayed. Usually set it to \code{TRUE} in formal
 #' simulation. Default: \code{FALSE}.
@@ -98,6 +107,7 @@ trial =
     seed = NULL,
     enroller,
     dropout = NULL,
+    stratification_factors = NULL,
     silent = FALSE,
     ...
   ){
@@ -110,6 +120,7 @@ trial =
       seed = seed,
       enroller = enroller,
       dropout = dropout,
+      stratification_factors = stratification_factors,
       silent = silent,
       ...
     )

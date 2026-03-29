@@ -83,6 +83,15 @@ Trials <- R6::R6Class(
     #' the number of enrolled patients. Usually \code{rexp} if dropout rate
     #' is set at a single time point, or \code{rweibull} if dropout rates are
     #' set at two time points. See \code{?TrialSimulator::weibullDropout}.
+    #' @param stratification_factors character. Names of baseline characteristics
+    #' to define stratums in stratified permuted block randomization.
+    #' Stratification factors must be defined in \code{endpoint()} with
+    #' \code{readout = 0}. As a natural assumption for randomized trial,
+    #' \code{TrialSimulator} assumes that the baseline
+    #' characteristics share the same distribution across arms, but endpoints
+    #' can have same or different distributions given baseline characteristics.
+    #' \code{NULL} by default, i.e., unstratified permuted block randomization is
+    #' executed.
     #' @param silent logical. \code{TRUE} to mute messages. However, warning
     #' message is still displayed.
     #' @param ... (optional) arguments of \code{enroller} and \code{dropout}.
@@ -95,12 +104,15 @@ Trials <- R6::R6Class(
         seed = NULL,
         enroller,
         dropout = NULL,
+        stratification_factors = NULL,
         silent = FALSE,
         ...
       ){
 
+        # stratification_factors will be checked again when an arm is added
         private$validate_arguments(
-          name, n_patients, duration, description, seed, enroller, dropout, silent, ...)
+          name, n_patients, duration, description, seed,
+          enroller, dropout, stratification_factors, silent, ...)
 
         private$silent <- silent
 
@@ -133,6 +145,8 @@ Trials <- R6::R6Class(
         }
 
         self$set_enroller(enroller, ...)
+
+        private$stratification_factors <- stratification_factors
 
         self$make_snapshot()
 
@@ -564,7 +578,8 @@ Trials <- R6::R6Class(
     #' of the same distribution.
     add_arms = function(sample_ratio, ...){
 
-      stopifnot(is.numeric(sample_ratio) && all(is.wholenumber(sample_ratio)))
+      # stopifnot(is.numeric(sample_ratio) && all(is.wholenumber(sample_ratio)))
+      stopifnot(is.numeric(sample_ratio))
 
       arm_list <- list(...)
       enforce <- arm_list$enforce
@@ -759,6 +774,29 @@ Trials <- R6::R6Class(
     },
 
     #' @description
+    #' return stratum queue of planned but not yet enrolled patients.
+    #' This function does not update stratum_queue, just return its value
+    #' for debugging purpose.
+    #' @param index index to be extracted. Return all queue if \code{NULL}.
+    get_stratum_queue = function(index = NULL){
+      if(length(private$stratum_queue) == 0){
+        private$stratum_queue <- NULL
+      }
+
+      if(!is.null(index) && is.null(private$stratum_queue)){
+        stop('Cannot randomize patients from empty list. ')
+      }
+
+      if(is.null(index)){ # return all
+        return(private$stratum_queue)
+      }
+      stopifnot(max(abs(index)) <= length(private$stratum_queue))
+
+      private$stratum_queue[index]
+
+    },
+
+    #' @description
     #' return randomization queue of planned but not yet enrolled patients.
     #' This function does not update randomization_queue, just return its value
     #' for debugging purpose.
@@ -836,51 +874,98 @@ Trials <- R6::R6Class(
       private$permuted_block_randomization()
 
       next_enroll_arms <- self$get_randomization_queue(1:n_patients)
-      ## update randomization_queue after enrolling a new patient.
-      ## randomization_queue only keep randomization queue for future patients
+      next_enroll_stratums <- self$get_stratum_queue(1:n_patients)
+
+      ## update randomization_queue and stratum_queue after enrolling new patients.
+      ## randomization_queue only keeps randomization queue for future patients
+      ## stratum_queue only keeps stratum queue for future patients under
+      ## stratified randomization. If simple randomization is used,
+      ## stratum_queue is a constant vector of "all"
       private$randomization_queue <- self$get_randomization_queue(-c(1:n_patients))
+      private$stratum_queue <- self$get_stratum_queue(-c(1:n_patients))
 
       next_enroll_time <- self$get_enroll_time(1:n_patients)
       private$enroll_time <- self$get_enroll_time(-c(1:n_patients))
 
-      patient_data <- NULL
-      arms_data <- list()
+      ## create patient pool
+      arms_stratums_data <- list()
       arms_in_trial <- sort(unique(next_enroll_arms))
-      regimen_trajectory <- list()
+      stratums_in_trial <- sort(unique(next_enroll_stratums))
+
+      make_stratum <- function(dat){
+        if(!self$has_stratification_factors()){
+          return(rep('all', nrow(dat)))
+        }else{
+          return(
+            do.call(paste,
+                    c(dat[, self$get_stratification_factors(),
+                                   drop = FALSE],
+                      sep = '|'))
+          )
+        }
+      }
 
       for(i in seq_along(arms_in_trial)){
         arm <- arms_in_trial[i]
-        patients_index <- which(next_enroll_arms %in% arm)
-        n_patients_in_arm <- length(patients_index)
-        arms_data[[arm]] <-
-          data.frame(
-            patient_id = self$get_number_enrolled_patients() + patients_index,
-            arm = arm,
-            enroll_time = next_enroll_time[patients_index],
-            dropout_time = self$get_dropout()(n = n_patients_in_arm)
-          )
+        n_patients_in_arm <- sum(next_enroll_arms %in% arm)
+        target_size_per_stratum <-
+          as.data.frame(table(next_enroll_stratums[next_enroll_arms %in% arm])) %>%
+          rename(stratum = Var1, target_size = Freq)
 
-        arms_data[[arm]] <- cbind(arms_data[[arm]], self$get_an_arm(arm)$generate_data(n_patients_in_arm))
+        patient_pool <- NULL
+        prop <- 1.1
+        min_sample_size <- 20
+        while(TRUE){
+          new_sets <- self$get_an_arm(arm)$generate_data(max(ceiling(n_patients_in_arm * prop), min_sample_size))
+          new_sets$stratum <- make_stratum(new_sets)
+          patient_pool <- rbind(patient_pool, new_sets)
 
-        if(!is.null(patient_data) && ncol(arms_data[[arm]]) != ncol(patient_data)){
-          stop('Arm <', arm, '> may have endpoints different from other arms. ',
-               'You may have typo when naming endpoints in other arms, ',
-               'or forgot to add *_event columns for time-to-event endpoints. ')
+          size_per_stratum <- as.data.frame(table(patient_pool$stratum)) %>%
+            rename(stratum = Var1, current_size = Freq)
+
+          tmp <- merge(size_per_stratum, target_size_per_stratum, by = 'stratum')
+          if(with(tmp, all(current_size >= target_size))){
+            break
+          }
+          prop <- .2
+          min_sample_size <- with(tmp, max((target_size - current_size) * 3, 10))
         }
 
-        ## we have codes in trial$add_arms() that makes sure arms have
-        ## same endpoints, so row bind should be fine, and pre-check codes
-        ## are deleted
-        patient_data <- bind_rows(patient_data, arms_data[[arm]])
+        col_idx <- which(names(patient_pool) == 'stratum')
+        patient_pool <- split(
+          patient_pool[, -col_idx, drop = FALSE],
+          patient_pool$stratum
+        )
+
+        arms_stratums_data[[arm]] <- list()
+        for(j in seq_along(stratums_in_trial)){
+          stratum <- stratums_in_trial[j]
+          patients_index <- which(next_enroll_arms %in% arm &
+                                    next_enroll_stratums %in% stratum)
+          n_patients_in_arm_stratum <- length(patients_index)
+          stopifnot(target_size_per_stratum$target_size[target_size_per_stratum$stratum == stratum] == n_patients_in_arm_stratum)
+
+          arms_stratums_data[[arm]][[stratum]] <-
+            data.frame(
+              patient_id = self$get_number_enrolled_patients() + patients_index,
+              arm = arm,
+              enroll_time = next_enroll_time[patients_index],
+              dropout_time = self$get_dropout()(n = n_patients_in_arm_stratum)
+            )
+
+          arms_stratums_data[[arm]][[stratum]] <-
+            cbind(
+              arms_stratums_data[[arm]][[stratum]],
+              patient_pool[[stratum]][1:n_patients_in_arm_stratum, ]
+            )
+
+        }
+
+        arms_stratums_data[[arm]] <- bind_rows(arms_stratums_data[[arm]])
       }
 
-
-      ## before this line, patient_data is created to have the right size,
-      ## but its content does not matter. Its correct content is added in the
-      ## for loop below
-      for(arm in arms_in_trial){
-        patient_data[which(next_enroll_arms %in% arm), ] <- arms_data[[arm]]
-      }
+      patient_data <- bind_rows(arms_stratums_data) %>%
+        arrange(enroll_time)
 
       if(self$has_regimen()){
         # message('Set regimen when there are ', self$get_number_enrolled_patients(), ' patients in the trial. ')
@@ -2939,6 +3024,18 @@ Trials <- R6::R6Class(
       }else{
         return(private$arm_time[[arm]][['time_removed']])
       }
+    },
+
+    #' @description
+    #' return stratification factors
+    get_stratification_factors = function(){
+      private$stratification_factors
+    },
+
+    #' @description
+    #' has stratification factors
+    has_stratification_factors = function(){
+      !is.null(self$get_stratification_factors())
     }
 
   ),
@@ -2966,8 +3063,11 @@ Trials <- R6::R6Class(
     enroller = NULL,
     enroll_time = NULL,
     enroll_time_with_redundant = NULL,
+    stratum_queue = NULL,
 
     dropout = NULL, # function to generate dropout time
+
+    stratification_factors = NULL,
 
     trial_data = NULL,
     locked_data = list(),
@@ -2988,11 +3088,13 @@ Trials <- R6::R6Class(
 
     validate_arguments =
       function(name, n_patients, duration, description, seed,
-               enroller, dropout, silent, ...){
+               enroller, dropout, stratification_factors, silent, ...){
 
       stopifnot(is.null(seed) || is.wholenumber(seed))
       stopifnot(is.character(name))
       stopifnot(is.character(description))
+      stopifnot(is.null(stratification_factors) ||
+                  is.character(stratification_factors))
 
       stopifnot(is.numeric(n_patients) &&
                   (length(n_patients) == 1) &&
@@ -3047,6 +3149,7 @@ Trials <- R6::R6Class(
                                               size = self$get_number_unenrolled_patients(),
                                               replace = TRUE,
                                               prob = private$sample_ratio)
+        private$stratum_queue <- rep('all', self$get_number_unenrolled_patients())
 
         if(!private$silent){
           message('Randomization is done for ',
@@ -3062,18 +3165,48 @@ Trials <- R6::R6Class(
         block_size <- sum(self$get_sample_ratio())
       }
 
-      block <- rep(seq(private$sample_ratio), times = private$sample_ratio)
-      blocks <- rep(block, length.out = self$get_number_unenrolled_patients())
-      randomization_queue <-
-        lapply(
-          split(blocks, ceiling(seq_along(blocks) / block_size)),
-          sample
-        ) %>%
-        unlist() %>%
-        unname()
+      ## create stratum and randomization queue
+      if(!self$has_arm()){
+        stop('No arm registered to the trial yet. Cannot randomize patients. ')
+      }
+
+      if(self$has_stratification_factors()){
+        any_arm <- self$get_an_arm(self$get_arms_name()[1])
+        stratum_queue <- any_arm$generate_data(self$get_number_unenrolled_patients())
+        stratum_queue <-
+          do.call(paste, c(stratum_queue[, self$get_stratification_factors(), drop = FALSE],
+                           sep = '|')
+          )
+
+        size_per_stratum <- c(table(stratum_queue))
+      }else{
+        stratum_queue <- rep('all', self$get_number_unenrolled_patients())
+        size_per_stratum <- c(all = self$get_number_unenrolled_patients())
+      }
 
       arm_names <- names(private$sample_ratio)
-      private$randomization_queue <- arm_names[randomization_queue]
+      block <- rep(seq(private$sample_ratio), times = private$sample_ratio)
+      randomization_queue <- list()
+      for(str in names(size_per_stratum)){
+        blocks <- rep(block, length.out = size_per_stratum[str])
+        randomization_queue[[str]] <-
+          lapply(
+            split(blocks, ceiling(seq_along(blocks) / block_size)),
+            sample
+          ) %>%
+          unlist() %>%
+          unname()
+        randomization_queue[[str]] <- arm_names[randomization_queue[[str]]]
+      }
+
+      private$randomization_queue <- rep(NA, self$get_number_unenrolled_patients())
+      for(str in names(size_per_stratum)){
+        private$randomization_queue[stratum_queue %in% str] <- randomization_queue[[str]]
+      }
+
+      private$stratum_queue <- stratum_queue
+
+      stopifnot(length(private$stratum_queue) == length(private$randomization_queue))
 
       if(!private$silent){
         message('Randomization is done for ', length(randomization_queue),
