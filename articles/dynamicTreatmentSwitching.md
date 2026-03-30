@@ -30,7 +30,7 @@ the availability of alternative regimen depend on analysis result of
 unblinded data and can only happen at interim. We will show how to do
 that in other vignette. For crossover design with wash-out periods,
 please refer to this
-[vignette](https://cran.r-project.org/package=TrialSimulator/vignettes/crossoverWashout.html).
+[vignette](https://zhangh12.github.io/TrialSimulator/articles/crossoverWashout.html).
 
 ## A Common Structure
 

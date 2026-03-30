@@ -7,14 +7,14 @@ effects. A crossover trial is a longitudinal design where participants
 receive multiple treatments sequentially, acting as their own control if
 the carry-over effect can be minimized by the use of untreated wash-out
 period. We can use the similar idea in the [vignette of longitudinal
-endpoints](https://cran.r-project.org/package=TrialSimulator/vignettes/defineLongitudinalEndpoints.html)
+endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineLongitudinalEndpoints.html)
 to implement simulation, where endpoints at the end of each treatment in
 the pre-determined and randomized sequence are defined in function
 [`endpoint()`](https://zhangh12.github.io/TrialSimulator/reference/endpoint.md)
 with its argument `readout` is set.
 
 To simulate dynamic treatment switching, please refer to its
-[vignette](https://cran.r-project.org/package=TrialSimulator/vignettes/dynamicTreatmentSwitching.html).
+[vignette](https://zhangh12.github.io/TrialSimulator/articles/dynamicTreatmentSwitching.html).
 
 ## Simulation Settings
 
@@ -254,7 +254,7 @@ column `result` we saved manually in action function, along with many
 other columns saved by the controller automatically. To know more about
 the naming convention of auto saved columns, please refer to [vignette
 of action
-function](https://cran.r-project.org/package=TrialSimulator/vignettes/actionFunctions.html).
+function](https://zhangh12.github.io/TrialSimulator/articles/actionFunctions.html).
 To run more replicates of simulation, simply set `n` to a greater
 integer in `controller$run()`.
 
