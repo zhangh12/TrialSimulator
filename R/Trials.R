@@ -923,11 +923,12 @@ Trials <- R6::R6Class(
           size_per_stratum <- as.data.frame(table(patient_pool$stratum)) %>%
             rename(stratum = Var1, current_size = Freq)
 
-          tmp <- merge(size_per_stratum, target_size_per_stratum, by = 'stratum')
+          tmp <- merge(size_per_stratum, target_size_per_stratum, by = 'stratum', all.y = TRUE)
+          tmp$current_size[is.na(tmp$current_size)] <- 0
           if(with(tmp, all(current_size >= target_size))){
             break
           }
-          prop <- .2
+          prop <- ifelse(any(tmp$current_size <= 10), 1, .2)
           min_sample_size <- with(tmp, max((target_size - current_size) * 3, 10))
         }
 
@@ -942,7 +943,12 @@ Trials <- R6::R6Class(
           stratum <- stratums_in_trial[j]
           patients_index <- which(next_enroll_arms %in% arm &
                                     next_enroll_stratums %in% stratum)
+
           n_patients_in_arm_stratum <- length(patients_index)
+          if(n_patients_in_arm_stratum == 0){
+            next
+          }
+
           stopifnot(target_size_per_stratum$target_size[target_size_per_stratum$stratum == stratum] == n_patients_in_arm_stratum)
 
           arms_stratums_data[[arm]][[stratum]] <-
