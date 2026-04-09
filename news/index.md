@@ -8,6 +8,12 @@
   [`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md)
   using argument `stratification_factors`.
 
+### Bug Fix
+
+- Fix a bug in
+  [`regimen()`](https://zhangh12.github.io/TrialSimulator/reference/regimen.md)
+  to support both single or multiple switching.
+
 ## TrialSimulator 1.14.0
 
 ### New Feature
