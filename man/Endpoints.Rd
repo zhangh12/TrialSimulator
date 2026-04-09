@@ -65,7 +65,7 @@ print(ep, categorical_vars = 'y')
 \subsection{Method \code{new()}}{
 initialize an endpoint.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Endpoints$new(name, type = c("tte", "non-tte"), readout = NULL, generator, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Endpoints$new(name, type, readout = NULL, generator, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

@@ -72,7 +72,7 @@ Endpoints <- R6::R6Class(
     #' @param ... optional arguments for \code{generator}.
     initialize = function(
       name,
-      type = c('tte', 'non-tte'),
+      type,
       readout = NULL,
       generator,
       ...
@@ -82,7 +82,6 @@ Endpoints <- R6::R6Class(
       private$name <- name
       private$uid <- paste0(name, collapse = '/')
 
-      type <- match.arg(type, several.ok = TRUE)
       if(length(type) == 1 && length(name) > 1){
         type <- rep(type, length(name))
       }
@@ -269,7 +268,7 @@ Endpoints <- R6::R6Class(
 
     validate_arguments = function(
       name,
-      type = c('tte', 'non-tte'),
+      type,
       readout,
       generator,
       ...
@@ -277,7 +276,11 @@ Endpoints <- R6::R6Class(
       stopifnot(is.character(name))
       stopifnot(is.character(type))
       stopifnot((length(name) == length(type)) || (length(type) == 1))
-      type <- match.arg(type, several.ok = TRUE)
+      if(!all(type %in% c('tte', 'non-tte'))){
+        stop('Type of endpoint can only be either "tte" or "non-tte". ',
+             'You use <', paste0(setdiff(type, c('tte', 'non-tte')), collapse = ', '),
+             '> in endpoint(). ')
+      }
 
       stopifnot(!is.null(generator))
 

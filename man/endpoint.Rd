@@ -4,7 +4,7 @@
 \alias{endpoint}
 \title{Define Endpoints}
 \usage{
-endpoint(name, type = c("tte", "non-tte"), readout = NULL, generator, ...)
+endpoint(name, type, readout = NULL, generator, ...)
 }
 \arguments{
 \item{name}{character vector. Name(s) of endpoint(s)}

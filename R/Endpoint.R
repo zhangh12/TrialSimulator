@@ -154,7 +154,7 @@
 #' @export
 endpoint = function(
     name,
-    type = c('tte', 'non-tte'),
+    type,
     readout = NULL,
     generator,
     ...
