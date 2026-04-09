@@ -11,7 +11,7 @@ consistent.
 ## Usage
 
 ``` r
-endpoint(name, type = c("tte", "non-tte"), readout = NULL, generator, ...)
+endpoint(name, type, readout = NULL, generator, ...)
 ```
 
 ## Arguments

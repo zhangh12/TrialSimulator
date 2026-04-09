@@ -42,7 +42,7 @@ initialize an endpoint.
 
 #### Usage
 
-    Endpoints$new(name, type = c("tte", "non-tte"), readout = NULL, generator, ...)
+    Endpoints$new(name, type, readout = NULL, generator, ...)
 
 #### Arguments
 
