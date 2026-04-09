@@ -4,6 +4,10 @@
 
 - Support stratified permuted block randomization in `trial()` using argument `stratification_factors`. 
 
+## Bug Fix
+
+- Fix a bug in `regimen()` to support both single or multiple switching. 
+
 # TrialSimulator 1.14.0
 
 ## New Feature

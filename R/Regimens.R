@@ -48,6 +48,12 @@ Regimens <- R6::R6Class(
 
         private$validate_arguments(what, when, how)
 
+        if(is.function(what)){ ## all validation have been done in validate_arguments()
+          what <- list(what)
+          when <- list(when)
+          how <- list(how)
+        }
+
         private$treatment_allocator <- what
         private$time_selector <- when
         private$data_modifier <- how
