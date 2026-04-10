@@ -22,6 +22,8 @@
 #' \item \code{$add_arms()} add arms to a trial. This function is used to add
 #' arms to a newly defined trial, or add arms under adaptive design, e.g.,
 #' dose-ranging, etc.
+#' \item \code{$add_regimen()} register a \code{regimen} object to a trial.
+#' Must be called before \code{$add_arms()}.
 #' \item \code{$get_locked_data()} request for data snapshot at a milestone.
 #' Calling this function is recommended as the first action in any action
 #' function as long as trial data is needed in statistical analysis or decision
@@ -1002,7 +1004,9 @@ Trials <- R6::R6Class(
         new_regimens <- list()
         for(i in 1:n_regimen){
 
-          new_treatment <- self$get_regimen()$get_treatment_allocator(i)(patient_data)
+          new_treatment <- do.call(self$get_regimen()$get_treatment_allocator(i),
+                                   c(list(patient_data),
+                                     self$get_regimen()$get_treatment_allocator_args(i)))
 
           isValidOutput(new_treatment, c('patient_id', 'new_treatment'), 'what()')
           if(any(duplicated(new_treatment$patient_id))){
@@ -1014,8 +1018,9 @@ Trials <- R6::R6Class(
             select(patient_id, new_treatment) %>%
             dplyr::filter(complete.cases(.))
 
-          switch_time <- self$get_regimen()$get_time_selector(i)(
-            patient_data %>% dplyr::filter(patient_id %in% new_treatment$patient_id))
+          switch_time <- do.call(self$get_regimen()$get_time_selector(i),
+                                  c(list(patient_data %>% dplyr::filter(patient_id %in% new_treatment$patient_id)),
+                                    self$get_regimen()$get_time_selector_args(i)))
 
           isValidOutput(switch_time, c('patient_id', 'switch_time'), 'when()')
 
@@ -1036,7 +1041,9 @@ Trials <- R6::R6Class(
 
           merged_patient_data <- dplyr::inner_join(patient_data, new_regimens[[i]], by = 'patient_id')
 
-          updated_data <- self$get_regimen()$get_data_modifier(i)(merged_patient_data)
+          updated_data <- do.call(self$get_regimen()$get_data_modifier(i),
+                                   c(list(merged_patient_data),
+                                     self$get_regimen()$get_data_modifier_args(i)))
           isValidOutput(updated_data, 'patient_id', 'how()')
 
           touch_cols <- setdiff(names(updated_data), no_touch_cols)

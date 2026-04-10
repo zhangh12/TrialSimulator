@@ -43,8 +43,16 @@ Regimens <- R6::R6Class(
     #' or other variables. Equivalently, users can also fill the cell with
     #' its original value. This argument can also be a list of functions that
     #' will be executed sequentially. No default value.
+    #' @param ... (optional) named arguments routed to one or more of
+    #' \code{what}, \code{when}, and \code{how}.
     initialize =
-      function(what, when, how){
+      function(what, when, how, ...){
+
+        dots <- list(...)
+        if(length(dots) && (is.null(names(dots)) || any(names(dots) == ''))){
+          stop('All extra arguments to regimen(...) must be named; ',
+               'they are routed to `what`, `when`, and/or `how`.')
+        }
 
         private$validate_arguments(what, when, how)
 
@@ -57,6 +65,25 @@ Regimens <- R6::R6Class(
         private$treatment_allocator <- what
         private$time_selector <- when
         private$data_modifier <- how
+
+        private$what_args <- private$route_args(what, dots, 'what')
+        private$when_args <- private$route_args(when, dots, 'when')
+        private$how_args  <- private$route_args(how,  dots, 'how')
+
+        ## Every dot arg must match at least one parameter across all functions
+        all_consumed <- unique(unlist(lapply(
+          c(what, when, how),
+          function(f){
+            fnames <- names(formals(f))
+            if('...' %in% fnames) names(dots) else intersect(names(dots), fnames)
+          }
+        )))
+        unmatched <- setdiff(names(dots), all_consumed)
+        if(length(unmatched)){
+          stop('Unknown argument(s) <',
+               paste0(unmatched, collapse = ', '),
+               '> not found in any of `what`, `when`, or `how` functions. ')
+        }
 
       },
 
@@ -130,6 +157,27 @@ Regimens <- R6::R6Class(
         }
         return(private$data_modifier[[index]])
       }
+    },
+
+    #' @description
+    #' return pre-bound arguments for the i-th treatment allocator
+    #' @param index integer.
+    get_treatment_allocator_args = function(index){
+      private$what_args[[index]]
+    },
+
+    #' @description
+    #' return pre-bound arguments for the i-th time selector
+    #' @param index integer.
+    get_time_selector_args = function(index){
+      private$when_args[[index]]
+    },
+
+    #' @description
+    #' return pre-bound arguments for the i-th data modifier
+    #' @param index integer.
+    get_data_modifier_args = function(index){
+      private$how_args[[index]]
     }
   ),
 
@@ -137,19 +185,21 @@ Regimens <- R6::R6Class(
     treatment_allocator = NULL,
     time_selector = NULL,
     data_modifier = NULL,
+    what_args = NULL,
+    when_args = NULL,
+    how_args  = NULL,
 
     validate_arguments = function(what, when, how){
 
-      isValidFunction <- function(func, func_type, func_name, args_order){
+      isValidFunction <- function(func, func_type, func_name){
         if(!is.function(func)){
           stop(func_name, ' is not a function. ')
         }
 
-        if(!identical(names(formals(func)), args_order)){
+        if(length(formals(func)) == 0 || names(formals(func))[1] != 'patient_data'){
           stop('The <', func_type, '> function <', func_name, '> passed to regimen has arguments <',
                paste0(names(formals(func)), collapse = ', '), '>. \n',
-               'The TrialSimulator convention requires that this function must take the following arguments in the specified order: \n',
-               paste0(args_order, collapse = ', '))
+               'The TrialSimulator convention requires that this function\'s first argument must be `patient_data`.')
         }
       }
 
@@ -169,11 +219,40 @@ Regimens <- R6::R6Class(
       }
 
       for(i in seq_along(what)){
-        isValidFunction(what[[i]], 'what', deparse(substitute(what[[i]])), 'patient_data')
-        isValidFunction(when[[i]], 'when', deparse(substitute(when))[[i]], 'patient_data')
-        isValidFunction(how[[i]], 'how', deparse(substitute(how))[[i]], 'patient_data')
+        isValidFunction(what[[i]], 'what', deparse(substitute(what[[i]])))
+        isValidFunction(when[[i]], 'when', deparse(substitute(when))[[i]])
+        isValidFunction(how[[i]], 'how', deparse(substitute(how))[[i]])
       }
 
+    },
+
+    ## For each function in func_list, extract matching args from dots.
+    ## Validates that required args (no default) are present in dots.
+    route_args = function(func_list, dots, slot_name){
+      lapply(func_list, function(f){
+        fnames <- names(formals(f))
+        extra  <- setdiff(fnames, c('patient_data', '...'))
+
+        if('...' %in% fnames){
+          matched <- dots
+        }else{
+          idx <- intersect(names(dots), extra)
+          matched <- if(length(idx)) dots[idx] else list()
+        }
+
+        ## check required args (no default value)
+        req_mask <- vapply(formals(f)[extra],
+                           function(x) identical(x, quote(expr=)), logical(1))
+        required <- extra[req_mask]
+        missing_req <- setdiff(required, names(matched))
+        if(length(missing_req)){
+          stop('Missing required argument(s) <',
+               paste0(missing_req, collapse = ', '),
+               '> for a `', slot_name, '` function in regimen(). ')
+        }
+
+        matched
+      })
     }
   )
 

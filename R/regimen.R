@@ -37,15 +37,21 @@
 #' or other variables. Equivalently, users can also fill the cell with
 #' its original value. This argument can also be a list of functions that
 #' will be executed sequentially. No default value.
+#' @param ... (optional) named arguments to be passed to one or more of
+#' \code{what}, \code{when}, and \code{how}. Each argument is routed to every
+#' function whose formal parameter list contains that name. All arguments must
+#' be named, and every name must match at least one parameter of at least one
+#' function in \code{what}, \code{when}, or \code{how}.
 #'
 #' @export
 #'
-regimen <- function(what, when, how){
+regimen <- function(what, when, how, ...){
 
   Regimens$new(
     what = what,
     when = when,
-    how = how
+    how = how,
+    ...
   )
 
 }

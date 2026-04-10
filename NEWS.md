@@ -3,6 +3,7 @@
 ## New Feature
 
 - Support stratified permuted block randomization in `trial()` using argument `stratification_factors`. 
+- Support `...` in `regimen()` to pass arguments to `what()`, `when()` and `how()`. 
 
 ## Bug Fix
 

@@ -19,6 +19,9 @@ endpoint data.
 \item \href{#method-Regimens-get_time_selector}{\code{Regimens$get_time_selector()}}
 \item \href{#method-Regimens-get_number_data_modifier}{\code{Regimens$get_number_data_modifier()}}
 \item \href{#method-Regimens-get_data_modifier}{\code{Regimens$get_data_modifier()}}
+\item \href{#method-Regimens-get_treatment_allocator_args}{\code{Regimens$get_treatment_allocator_args()}}
+\item \href{#method-Regimens-get_time_selector_args}{\code{Regimens$get_time_selector_args()}}
+\item \href{#method-Regimens-get_data_modifier_args}{\code{Regimens$get_data_modifier_args()}}
 \item \href{#method-Regimens-clone}{\code{Regimens$clone()}}
 }
 }
@@ -28,7 +31,7 @@ endpoint data.
 \subsection{Method \code{new()}}{
 initialize regimen
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Regimens$new(what, when, how)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Regimens$new(what, when, how, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -64,6 +67,9 @@ be omitted if \code{NA}, meaning no change to that patient for the endpoint
 or other variables. Equivalently, users can also fill the cell with
 its original value. This argument can also be a list of functions that
 will be executed sequentially. No default value.}
+
+\item{\code{...}}{(optional) named arguments routed to one or more of
+\code{what}, \code{when}, and \code{how}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -145,6 +151,57 @@ return user-defined endpoint data modifier
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{index}}{integer. Index of selector. Return all modifiers if \code{NULL}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Regimens-get_treatment_allocator_args"></a>}}
+\if{latex}{\out{\hypertarget{method-Regimens-get_treatment_allocator_args}{}}}
+\subsection{Method \code{get_treatment_allocator_args()}}{
+return pre-bound arguments for the i-th treatment allocator
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Regimens$get_treatment_allocator_args(index)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{index}}{integer.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Regimens-get_time_selector_args"></a>}}
+\if{latex}{\out{\hypertarget{method-Regimens-get_time_selector_args}{}}}
+\subsection{Method \code{get_time_selector_args()}}{
+return pre-bound arguments for the i-th time selector
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Regimens$get_time_selector_args(index)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{index}}{integer.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Regimens-get_data_modifier_args"></a>}}
+\if{latex}{\out{\hypertarget{method-Regimens-get_data_modifier_args}{}}}
+\subsection{Method \code{get_data_modifier_args()}}{
+return pre-bound arguments for the i-th data modifier
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Regimens$get_data_modifier_args(index)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{index}}{integer.}
 }
 \if{html}{\out{</div>}}
 }

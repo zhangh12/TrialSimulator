@@ -27,6 +27,8 @@ function can be used in enrichment design.
 \item \code{$add_arms()} add arms to a trial. This function is used to add
 arms to a newly defined trial, or add arms under adaptive design, e.g.,
 dose-ranging, etc.
+\item \code{$add_regimen()} register a \code{regimen} object to a trial.
+Must be called before \code{$add_arms()}.
 \item \code{$get_locked_data()} request for data snapshot at a milestone.
 Calling this function is recommended as the first action in any action
 function as long as trial data is needed in statistical analysis or decision

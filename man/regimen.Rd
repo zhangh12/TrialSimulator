@@ -4,7 +4,7 @@
 \alias{regimen}
 \title{Define a Regimen}
 \usage{
-regimen(what, when, how)
+regimen(what, when, how, ...)
 }
 \arguments{
 \item{what}{a function determining whether patients' data would be
@@ -37,6 +37,12 @@ be omitted if \code{NA}, meaning no change to that patient for the endpoint
 or other variables. Equivalently, users can also fill the cell with
 its original value. This argument can also be a list of functions that
 will be executed sequentially. No default value.}
+
+\item{...}{(optional) named arguments to be passed to one or more of
+\code{what}, \code{when}, and \code{how}. Each argument is routed to every
+function whose formal parameter list contains that name. All arguments must
+be named, and every name must match at least one parameter of at least one
+function in \code{what}, \code{when}, or \code{how}.}
 }
 \description{
 Define a regimen of a trial. This is a user-friendly wrapper for
