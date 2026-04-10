@@ -22,6 +22,12 @@ to update patients' endpoint data.
 
 - [`Regimens$get_data_modifier()`](#method-Regimens-get_data_modifier)
 
+- [`Regimens$get_treatment_allocator_args()`](#method-Regimens-get_treatment_allocator_args)
+
+- [`Regimens$get_time_selector_args()`](#method-Regimens-get_time_selector_args)
+
+- [`Regimens$get_data_modifier_args()`](#method-Regimens-get_data_modifier_args)
+
 - [`Regimens$clone()`](#method-Regimens-clone)
 
 ------------------------------------------------------------------------
@@ -32,7 +38,7 @@ initialize regimen
 
 #### Usage
 
-    Regimens$new(what, when, how)
+    Regimens$new(what, when, how, ...)
 
 #### Arguments
 
@@ -70,6 +76,11 @@ initialize regimen
   variables. Equivalently, users can also fill the cell with its
   original value. This argument can also be a list of functions that
   will be executed sequentially. No default value.
+
+- `...`:
+
+  (optional) named arguments routed to one or more of `what`, `when`,
+  and `how`.
 
 ------------------------------------------------------------------------
 
@@ -148,6 +159,54 @@ return user-defined endpoint data modifier
 - `index`:
 
   integer. Index of selector. Return all modifiers if `NULL`.
+
+------------------------------------------------------------------------
+
+### Method `get_treatment_allocator_args()`
+
+return pre-bound arguments for the i-th treatment allocator
+
+#### Usage
+
+    Regimens$get_treatment_allocator_args(index)
+
+#### Arguments
+
+- `index`:
+
+  integer.
+
+------------------------------------------------------------------------
+
+### Method `get_time_selector_args()`
+
+return pre-bound arguments for the i-th time selector
+
+#### Usage
+
+    Regimens$get_time_selector_args(index)
+
+#### Arguments
+
+- `index`:
+
+  integer.
+
+------------------------------------------------------------------------
+
+### Method `get_data_modifier_args()`
+
+return pre-bound arguments for the i-th data modifier
+
+#### Usage
+
+    Regimens$get_data_modifier_args(index)
+
+#### Arguments
+
+- `index`:
+
+  integer.
 
 ------------------------------------------------------------------------
 

@@ -19,6 +19,8 @@ function can be used in enrichment design.
 $add_arms() add arms to a trial. This function is used to add
 arms to a newly defined trial, or add arms under adaptive design, e.g.,
 dose-ranging, etc.
+$add_regimen() register a regimen object to a trial.
+Must be called before $add_arms().
 $get_locked_data() request for data snapshot at a milestone.
 Calling this function is recommended as the first action in any action
 function as long as trial data is needed in statistical analysis or decision
@@ -62,6 +64,8 @@ function can be used in enrichment design.
 $add_arms() add arms to a trial. This function is used to add
 arms to a newly defined trial, or add arms under adaptive design, e.g.,
 dose-ranging, etc.
+$add_regimen() register a regimen object to a trial.
+Must be called before $add_arms().
 $get_locked_data() request for data snapshot at a milestone.
 Calling this function is recommended as the first action in any action
 function as long as trial data is needed in statistical analysis or decision
@@ -155,6 +159,8 @@ function can be used in enrichment design.</p></li>
 <li><p><code>$add_arms()</code> add arms to a trial. This function is used to add
 arms to a newly defined trial, or add arms under adaptive design, e.g.,
 dose-ranging, etc.</p></li>
+<li><p><code>$add_regimen()</code> register a <code>regimen</code> object to a trial.
+Must be called before <code>$add_arms()</code>.</p></li>
 <li><p><code>$get_locked_data()</code> request for data snapshot at a milestone.
 Calling this function is recommended as the first action in any action
 function as long as trial data is needed in statistical analysis or decision

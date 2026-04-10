@@ -7,6 +7,9 @@
 - Support stratified permuted block randomization in
   [`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md)
   using argument `stratification_factors`.
+- Support `...` in
+  [`regimen()`](https://zhangh12.github.io/TrialSimulator/reference/regimen.md)
+  to pass arguments to `what()`, `when()` and `how()`.
 
 ### Bug Fix
 

@@ -70,7 +70,7 @@ endpoint data.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">regimen</span><span class="op">(</span><span class="va">what</span>, <span class="va">when</span>, <span class="va">how</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">regimen</span><span class="op">(</span><span class="va">what</span>, <span class="va">when</span>, <span class="va">how</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -112,6 +112,14 @@ be omitted if <code>NA</code>, meaning no change to that patient for the endpoin
 or other variables. Equivalently, users can also fill the cell with
 its original value. This argument can also be a list of functions that
 will be executed sequentially. No default value.</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>(optional) named arguments to be passed to one or more of
+<code>what</code>, <code>when</code>, and <code>how</code>. Each argument is routed to every
+function whose formal parameter list contains that name. All arguments must
+be named, and every name must match at least one parameter of at least one
+function in <code>what</code>, <code>when</code>, or <code>how</code>.</p></dd>
 
 </dl></div>
 

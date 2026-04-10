@@ -27,6 +27,9 @@ to end users.
   to a newly defined trial, or add arms under adaptive design, e.g.,
   dose-ranging, etc.
 
+- `$add_regimen()` register a `regimen` object to a trial. Must be
+  called before `$add_arms()`.
+
 - `$get_locked_data()` request for data snapshot at a milestone. Calling
   this function is recommended as the first action in any action
   function as long as trial data is needed in statistical analysis or

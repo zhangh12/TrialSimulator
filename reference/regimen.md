@@ -10,7 +10,7 @@ determine the time of switching, and to update patients' endpoint data.
 ## Usage
 
 ``` r
-regimen(what, when, how)
+regimen(what, when, how, ...)
 ```
 
 ## Arguments
@@ -49,3 +49,11 @@ regimen(what, when, how)
   variables. Equivalently, users can also fill the cell with its
   original value. This argument can also be a list of functions that
   will be executed sequentially. No default value.
+
+- ...:
+
+  (optional) named arguments to be passed to one or more of `what`,
+  `when`, and `how`. Each argument is routed to every function whose
+  formal parameter list contains that name. All arguments must be named,
+  and every name must match at least one parameter of at least one
+  function in `what`, `when`, or `how`.
