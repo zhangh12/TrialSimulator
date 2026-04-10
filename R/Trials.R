@@ -1273,7 +1273,8 @@ Trials <- R6::R6Class(
         )
 
       if(is.infinite(lock_time)){
-        stop('None of the endpoints can reach target event number during the trial. ')
+        stop('None of the endpoints can reach target event number during the trial. \n',
+             'Consider reducing the target in milestone() and/or extending trial duration in trial(). ')
       }
 
       lock_time
@@ -1329,7 +1330,8 @@ Trials <- R6::R6Class(
       lock_time <- milestone_time
 
       if(is.infinite(lock_time)){
-        stop('None of the endpoints can reach target event number during the trial. ')
+        stop('None of the endpoints can reach target event number during the trial. \n',
+             'Consider reducing the target in milestone() and/or extending trial duration in trial(). ')
       }
 
       lock_time
@@ -1359,7 +1361,16 @@ Trials <- R6::R6Class(
     #' data to be extracted.
     get_locked_data = function(milestone_name){
       if(!(milestone_name %in% names(private$locked_data))){
-        stop('Locked data for milestone <', milestone_name, '> cannot be found. ')
+        triggered_milestone_names <- self$get_locked_data_name()
+        if(length(triggered_milestone_names) == 0){
+          stop('Locked data for milestone <', milestone_name, '> cannot be found. ',
+               'No milestone has been triggered yet. ',
+               'Make sure the controller has run before calling get_locked_data(). ')
+        }else{
+          stop('Locked data for milestone <', milestone_name, '> cannot be found. ',
+               'Triggered milestone(s): <',
+               paste0(triggered_milestone_names, collapse = ', '), '>. ')
+        }
       }
 
       private$locked_data[[milestone_name]]
