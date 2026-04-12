@@ -1,3 +1,9 @@
+# TrialSimulator 1.16.0
+
+## Updates
+
+- Cut running time by ~50%. This is achieved by replacing dplyr pipelines with base R in `get_event_tables()` and `lock_data()`, which are called repeatedly during milestone condition evaluation.
+
 # TrialSimulator 1.15.0
 
 ## New Feature
