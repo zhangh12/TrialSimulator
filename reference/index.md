@@ -49,6 +49,8 @@
 - [`eventNumber()`](https://zhangh12.github.io/TrialSimulator/reference/eventNumber.md)
   : Triggering Condition by Number of Events or Non-missing Observations
   of an Endpoint
+- [`expandRegimen()`](https://zhangh12.github.io/TrialSimulator/reference/expandRegimen.md)
+  : Expand regimen trajectory into long format
 - [`fitCoxph()`](https://zhangh12.github.io/TrialSimulator/reference/fitCoxph.md)
   : Fit Cox Proportional Hazard Ratio model
 - [`fitFarringtonManning()`](https://zhangh12.github.io/TrialSimulator/reference/fitFarringtonManning.md)

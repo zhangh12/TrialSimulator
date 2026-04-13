@@ -225,20 +225,20 @@ interim_data <- trial$get_locked_data(milestone_name = 'interim')
 random_data <- trial$get_locked_data(milestone_name = 'random')
 final_data <- trial$get_locked_data(milestone_name = 'final')
 head(interim_data)
-#>   patient_id       arm enroll_time dropout_time        cfb cfb_readout orr
-#> 1          1 treatment         0.0     29.78530 -0.2980363           6   1
-#> 2          2   placebo         0.1     15.04569  8.1479693           6   0
-#> 3          3   placebo         0.2     15.91130  0.3772291           6   0
-#> 4          4 treatment         0.3     20.39311 -2.7864167           6   0
-#> 5          5 treatment         0.4     16.47514 -0.9595334           6   0
-#> 6          6   placebo         0.5     19.78626 -0.5136511           6   0
-#>   orr_readout
-#> 1           2
-#> 2           2
-#> 3           2
-#> 4           2
-#> 5           2
-#> 6           2
+#>             patient_id       arm enroll_time dropout_time        cfb
+#> treatment.1          1 treatment         0.0     29.78530 -0.2980363
+#> placebo.1            2   placebo         0.1     15.04569  8.1479693
+#> placebo.2            3   placebo         0.2     15.91130  0.3772291
+#> treatment.2          4 treatment         0.3     20.39311 -2.7864167
+#> treatment.3          5 treatment         0.4     16.47514 -0.9595334
+#> placebo.3            6   placebo         0.5     19.78626 -0.5136511
+#>             cfb_readout orr orr_readout
+#> treatment.1           6   1           2
+#> placebo.1             6   0           2
+#> placebo.2             6   0           2
+#> treatment.2           6   0           2
+#> treatment.3           6   0           2
+#> placebo.3             6   0           2
 ```
 
 Since `cfb` has a 6-month readout time, at interim analysis, some
@@ -256,31 +256,38 @@ not_ready_at_interim <-
                   enroll_time + 6 < dropout_time) %>% 
   head() %>% 
   print()
-#>   patient_id       arm enroll_time dropout_time cfb cfb_readout orr orr_readout
-#> 1         61 treatment        6.00     53.16813  NA           6  NA           2
-#> 2         62   placebo        6.05     15.06647  NA           6  NA           2
-#> 3         63 treatment        6.10     24.75709  NA           6  NA           2
-#> 4         65 treatment        6.20     27.24852  NA           6  NA           2
-#> 5         66   placebo        6.25     24.53303  NA           6  NA           2
-#> 6         67   placebo        6.30     19.54081  NA           6  NA           2
+#>              patient_id       arm enroll_time dropout_time cfb cfb_readout orr
+#> treatment.31         61 treatment        6.00     53.16813  NA           6  NA
+#> placebo.31           62   placebo        6.05     15.06647  NA           6  NA
+#> treatment.32         63 treatment        6.10     24.75709  NA           6  NA
+#> treatment.33         65 treatment        6.20     27.24852  NA           6  NA
+#> placebo.33           66   placebo        6.25     24.53303  NA           6  NA
+#> placebo.34           67   placebo        6.30     19.54081  NA           6  NA
+#>              orr_readout
+#> treatment.31           2
+#> placebo.31             2
+#> treatment.32           2
+#> treatment.33           2
+#> placebo.33             2
+#> placebo.34             2
 
 random_data %>% 
   dplyr::filter(patient_id %in% not_ready_at_interim$patient_id) %>% 
   print()
-#>   patient_id       arm enroll_time dropout_time       cfb cfb_readout orr
-#> 1         61 treatment        6.00     53.16813 -4.923353           6   1
-#> 2         62   placebo        6.05     15.06647  1.153043           6   0
-#> 3         63 treatment        6.10     24.75709 -4.559905           6   0
-#> 4         65 treatment        6.20     27.24852 -4.448258           6   0
-#> 5         66   placebo        6.25     24.53303  4.342807           6   0
-#> 6         67   placebo        6.30     19.54081  1.623136           6   0
-#>   orr_readout
-#> 1           2
-#> 2           2
-#> 3           2
-#> 4           2
-#> 5           2
-#> 6           2
+#>              patient_id       arm enroll_time dropout_time       cfb
+#> treatment.31         61 treatment        6.00     53.16813 -4.923353
+#> placebo.31           62   placebo        6.05     15.06647  1.153043
+#> treatment.32         63 treatment        6.10     24.75709 -4.559905
+#> treatment.33         65 treatment        6.20     27.24852 -4.448258
+#> placebo.33           66   placebo        6.25     24.53303  4.342807
+#> placebo.34           67   placebo        6.30     19.54081  1.623136
+#>              cfb_readout orr orr_readout
+#> treatment.31           6   1           2
+#> placebo.31             6   0           2
+#> treatment.32           6   0           2
+#> treatment.33           6   0           2
+#> placebo.33             6   0           2
+#> placebo.34             6   0           2
 ```
 
 In this example, we simulate tumor size change from baseline (`cfb`).
