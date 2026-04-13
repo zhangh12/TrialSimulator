@@ -51,6 +51,11 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.16.0" id="trialsimulator-1160">TrialSimulator 1.16.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1160"></a></h2>
 <div class="section level3">
+<h3 id="new-feature-1-16-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-1-16-0"></a></h3>
+<ul><li>Add <code>n_switches</code> column to locked data returned by <code>get_locked_data()</code>, counting the number of treatment switches per patient within the data lock window.</li>
+<li>Add <code><a href="../reference/expandRegimen.html">expandRegimen()</a></code> to expand the <code>regimen_trajectory</code> column in locked data into a long-format data frame with one row per regimen segment per patient.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="updates-1-16-0">Updates<a class="anchor" aria-label="anchor" href="#updates-1-16-0"></a></h3>
 <ul><li>Cut running time by ~75% via base R rewrites.</li>
 </ul></div>
