@@ -7,7 +7,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/zhangh12/TrialSimulator/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/zhangh12/TrialSimulator/blob/v1.16.0/DESCRIPTION)
 
 Zhang H (2026). *TrialSimulator: Clinical Trial Simulator*. R package
 version 1.16.0, <https://zhangh12.github.io/TrialSimulator/>.
