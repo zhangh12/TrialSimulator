@@ -1008,7 +1008,9 @@ Trials <- R6::R6Class(
 
         no_touch_cols <- c('patient_id', 'arm', 'enroll_time', 'dropout_time', 'regimen_trajectory')
 
-        new_regimens <- list()
+        ## initialize trajectory; switches are appended inside the loop below
+        patient_data$regimen_trajectory <- paste0(as.character(patient_data$arm), "@0")
+
         for(i in 1:n_regimen){
 
           new_treatment <- do.call(self$get_regimen()$get_treatment_allocator(i),
@@ -1044,9 +1046,16 @@ Trials <- R6::R6Class(
                  'Set a breakpoint using browser() in your when() function to debug step-by-step. ')
           }
 
-          new_regimens[[i]] <- dplyr::inner_join(new_treatment, switch_time, by = 'patient_id')
+          new_regimen <- dplyr::inner_join(new_treatment, switch_time, by = 'patient_id')
 
-          merged_patient_data <- dplyr::inner_join(patient_data, new_regimens[[i]], by = 'patient_id')
+          ## append this round's switches to each patient's trajectory string
+          idx <- match(new_regimen$patient_id, patient_data$patient_id)
+          patient_data$regimen_trajectory[idx] <- paste0(
+            patient_data$regimen_trajectory[idx], ";",
+            new_regimen$new_treatment, "@", new_regimen$switch_time
+          )
+
+          merged_patient_data <- dplyr::inner_join(patient_data, new_regimen, by = 'patient_id')
 
           updated_data <- do.call(self$get_regimen()$get_data_modifier(i),
                                    c(list(merged_patient_data),
@@ -1078,27 +1087,6 @@ Trials <- R6::R6Class(
           }
 
         }
-
-        new_regimens <- bind_rows(new_regimens) %>%
-          arrange(patient_id, switch_time)
-
-        regimen_trajectory <- bind_rows(
-          data.frame(
-            patient_id = patient_data$patient_id,
-            regimen = patient_data$arm,
-            switch_time_from_enrollment = 0,
-            stringsAsFactors = FALSE
-          ),
-          new_regimens %>%
-            dplyr::rename(
-              regimen = new_treatment,
-              switch_time_from_enrollment = switch_time
-            )
-        )
-
-        id_col <- which(names(regimen_trajectory) == 'patient_id')
-        lst <- split(regimen_trajectory[, -id_col, drop = FALSE], regimen_trajectory$patient_id)
-        patient_data$regimen_trajectory <- I(unname(lst[match(patient_data$patient_id, names(lst))]))
 
       }
 
@@ -1522,14 +1510,15 @@ Trials <- R6::R6Class(
       locked_data   <- locked_data[order(locked_data$enroll_time), , drop = FALSE]
 
       if(!is.null(locked_data$regimen_trajectory)){
-        locked_data$regimen_trajectory <- I(
-          Map(
-            function(subdf, enroll_time){
-              subdf[enroll_time + subdf$switch_time_from_enrollment <= at_calendar_time, , drop = FALSE]
-            },
-            locked_data$regimen_trajectory,
-            locked_data$enroll_time
-          )
+        locked_data$regimen_trajectory <- mapply(
+          function(traj_str, enroll_time){
+            entries <- strsplit(traj_str, ';', fixed = TRUE)[[1]]
+            times   <- as.numeric(sub('.*@', '', entries))
+            paste(entries[enroll_time + times <= at_calendar_time], collapse = ';')
+          },
+          locked_data$regimen_trajectory,
+          locked_data$enroll_time,
+          SIMPLIFY = TRUE, USE.NAMES = FALSE
         )
       }
 
