@@ -202,27 +202,20 @@ milestone name <code>"final"</code>.</p>
 <code class="sourceCode R"><span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1</span>, plot_event <span class="op">=</span> <span class="cn">FALSE</span>, silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'final'</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">locked_data</span><span class="op">)</span></span>
-<span><span class="co">#&gt;        patient_id  arm enroll_time dropout_time       pfs pfs_event        cep</span></span>
-<span><span class="co">#&gt; pbo.1           1  pbo  0.00000000     8.015946  8.015946         0 -0.9347262</span></span>
-<span><span class="co">#&gt; high.1          2 high  0.03333333   181.907651 59.719535         1  2.0994964</span></span>
-<span><span class="co">#&gt; low.1           3  low  0.06666667   208.113743  2.093918         1  1.0685059</span></span>
-<span><span class="co">#&gt; low.2           4  low  0.10000000   183.582186 19.297349         1  1.1374167</span></span>
-<span><span class="co">#&gt; pbo.2           5  pbo  0.13333333    93.209441  2.798993         1 -1.0593631</span></span>
-<span><span class="co">#&gt; high.2          6 high  0.16666667   342.746964  1.801312         1  1.5301519</span></span>
-<span><span class="co">#&gt;        cep_readout bep bep_readout biomarker biomarker_readout          x</span></span>
-<span><span class="co">#&gt; pbo.1            0   0           0         1                 0 -1.5830337</span></span>
-<span><span class="co">#&gt; high.1           0   1           0         0                 0 -1.5856812</span></span>
-<span><span class="co">#&gt; low.1            0   0           0         1                 0 -0.4026810</span></span>
-<span><span class="co">#&gt; low.2            0   1           0         0                 0  1.5182975</span></span>
-<span><span class="co">#&gt; pbo.2            0   1           0         1                 0  0.9951762</span></span>
-<span><span class="co">#&gt; high.2           0   1           0         0                 0  0.1088044</span></span>
-<span><span class="co">#&gt;        x_readout</span></span>
-<span><span class="co">#&gt; pbo.1          0</span></span>
-<span><span class="co">#&gt; high.1         0</span></span>
-<span><span class="co">#&gt; low.1          0</span></span>
-<span><span class="co">#&gt; low.2          0</span></span>
-<span><span class="co">#&gt; pbo.2          0</span></span>
-<span><span class="co">#&gt; high.2         0</span></span>
+<span><span class="co">#&gt;   patient_id  arm enroll_time dropout_time       pfs pfs_event        cep</span></span>
+<span><span class="co">#&gt; 1          1  pbo  0.00000000     8.015946  8.015946         0 -0.9347262</span></span>
+<span><span class="co">#&gt; 2          2 high  0.03333333   181.907651 59.719535         1  2.0994964</span></span>
+<span><span class="co">#&gt; 3          3  low  0.06666667   208.113743  2.093918         1  1.0685059</span></span>
+<span><span class="co">#&gt; 4          4  low  0.10000000   183.582186 19.297349         1  1.1374167</span></span>
+<span><span class="co">#&gt; 5          5  pbo  0.13333333    93.209441  2.798993         1 -1.0593631</span></span>
+<span><span class="co">#&gt; 6          6 high  0.16666667   342.746964  1.801312         1  1.5301519</span></span>
+<span><span class="co">#&gt;   cep_readout bep bep_readout biomarker biomarker_readout          x x_readout</span></span>
+<span><span class="co">#&gt; 1           0   0           0         1                 0 -1.5830337         0</span></span>
+<span><span class="co">#&gt; 2           0   1           0         0                 0 -1.5856812         0</span></span>
+<span><span class="co">#&gt; 3           0   0           0         1                 0 -0.4026810         0</span></span>
+<span><span class="co">#&gt; 4           0   1           0         0                 0  1.5182975         0</span></span>
+<span><span class="co">#&gt; 5           0   1           0         1                 0  0.9951762         0</span></span>
+<span><span class="co">#&gt; 6           0   1           0         0                 0  0.1088044         0</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">locked_data</span><span class="op">$</span><span class="va">arm</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>

@@ -72,27 +72,20 @@ using the `get_locked_data()` method with the milestone name `"final"`.
 controller$run(n = 1, plot_event = FALSE, silent = TRUE)
 locked_data <- trial$get_locked_data('final')
 head(locked_data)
-#>        patient_id  arm enroll_time dropout_time       pfs pfs_event        cep
-#> pbo.1           1  pbo  0.00000000     8.015946  8.015946         0 -0.9347262
-#> high.1          2 high  0.03333333   181.907651 59.719535         1  2.0994964
-#> low.1           3  low  0.06666667   208.113743  2.093918         1  1.0685059
-#> low.2           4  low  0.10000000   183.582186 19.297349         1  1.1374167
-#> pbo.2           5  pbo  0.13333333    93.209441  2.798993         1 -1.0593631
-#> high.2          6 high  0.16666667   342.746964  1.801312         1  1.5301519
-#>        cep_readout bep bep_readout biomarker biomarker_readout          x
-#> pbo.1            0   0           0         1                 0 -1.5830337
-#> high.1           0   1           0         0                 0 -1.5856812
-#> low.1            0   0           0         1                 0 -0.4026810
-#> low.2            0   1           0         0                 0  1.5182975
-#> pbo.2            0   1           0         1                 0  0.9951762
-#> high.2           0   1           0         0                 0  0.1088044
-#>        x_readout
-#> pbo.1          0
-#> high.1         0
-#> low.1          0
-#> low.2          0
-#> pbo.2          0
-#> high.2         0
+#>   patient_id  arm enroll_time dropout_time       pfs pfs_event        cep
+#> 1          1  pbo  0.00000000     8.015946  8.015946         0 -0.9347262
+#> 2          2 high  0.03333333   181.907651 59.719535         1  2.0994964
+#> 3          3  low  0.06666667   208.113743  2.093918         1  1.0685059
+#> 4          4  low  0.10000000   183.582186 19.297349         1  1.1374167
+#> 5          5  pbo  0.13333333    93.209441  2.798993         1 -1.0593631
+#> 6          6 high  0.16666667   342.746964  1.801312         1  1.5301519
+#>   cep_readout bep bep_readout biomarker biomarker_readout          x x_readout
+#> 1           0   0           0         1                 0 -1.5830337         0
+#> 2           0   1           0         0                 0 -1.5856812         0
+#> 3           0   0           0         1                 0 -0.4026810         0
+#> 4           0   1           0         0                 0  1.5182975         0
+#> 5           0   1           0         1                 0  0.9951762         0
+#> 6           0   1           0         0                 0  0.1088044         0
 
 table(locked_data$arm)
 #> 
