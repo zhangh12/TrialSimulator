@@ -113,6 +113,46 @@ test_that('regimen_trajectory accumulates two switching rounds for the same pati
   expect_true(all(n_segments == 3L))
 })
 
+test_that('when() returning rows in shuffled order still assigns correct switch times', {
+
+  skip_if_not_installed('TrialSimulator')
+
+  # when() reverses its output rows — if the framework used row position instead
+  # of matching on patient_id, each patient would get the wrong switch time.
+  # switch_time is set to patient_id * 0.01 so every patient has a unique,
+  # patient_id-dependent value we can verify after the run.
+  pfs_e <- endpoint(name = 'pfs', type = 'tte', generator = rexp, rate = log(2)/8)
+  pbo <- arm(name = 'placebo'); pbo$add_endpoints(pfs_e)
+  trt <- arm(name = 'trt');     trt$add_endpoints(pfs_e)
+
+  tr <- trial(name = 't', n_patients = 40, seed = 7, duration = 200,
+              enroller = StaggeredRecruiter,
+              accrual_rate = data.frame(end_time = Inf, piecewise_rate = 20),
+              silent = TRUE)
+  tr$add_regimen(regimen(
+    what = function(patient_data)
+      data.frame(patient_id = patient_data$patient_id, new_treatment = 'switched'),
+    when = function(patient_data) {
+      df <- data.frame(patient_id = patient_data$patient_id,
+                       switch_time = patient_data$patient_id * 0.01)
+      df[rev(seq_len(nrow(df))), , drop = FALSE]   # deliberately reversed
+    },
+    how = function(patient_data) data.frame(patient_id = patient_data$patient_id)
+  ))
+  tr$add_arms(sample_ratio = c(1, 1), pbo, trt)
+
+  lst <- listener(silent = TRUE)
+  lst$add_milestones(milestone(name = 'final', when = calendarTime(time = 200)))
+  controller(tr, lst)$run(n = 1, silent = TRUE, plot_event = FALSE)
+
+  long <- expandRegimen(tr$get_locked_data('final'))
+  switched <- long[long$switch_time_from_enrollment > 0, ]
+
+  # each patient's switch_time must equal their patient_id * 0.01
+  expect_equal(switched$switch_time_from_enrollment,
+               switched$patient_id * 0.01)
+})
+
 test_that('lock_data trims switch entries that fall after the calendar lock time', {
 
   skip_if_not_installed('TrialSimulator')
@@ -439,6 +479,38 @@ test_that('runtime error when what() returns duplicate patient IDs', {
     ),
     when = function(patient_data) data.frame(patient_id = patient_data$patient_id, switch_time = 1),
     how  = function(patient_data) data.frame(patient_id = patient_data$patient_id)
+  )
+  expect_error(make_trial_with_regimen(reg)$run(n = 1, silent = TRUE, plot_event = FALSE),
+               regexp = 'duplicated')
+})
+
+test_that('runtime error when when() returns duplicate patient IDs', {
+
+  skip_if_not_installed('TrialSimulator')
+
+  reg <- regimen(
+    what = function(patient_data) data.frame(patient_id = patient_data$patient_id, new_treatment = 'trt'),
+    when = function(patient_data) data.frame(
+      patient_id  = c(patient_data$patient_id, patient_data$patient_id[1]),
+      switch_time = 1
+    ),
+    how  = function(patient_data) data.frame(patient_id = patient_data$patient_id)
+  )
+  expect_error(make_trial_with_regimen(reg)$run(n = 1, silent = TRUE, plot_event = FALSE),
+               regexp = 'duplicated')
+})
+
+test_that('runtime error when how() returns duplicate patient IDs', {
+
+  skip_if_not_installed('TrialSimulator')
+
+  reg <- regimen(
+    what = function(patient_data) data.frame(patient_id = patient_data$patient_id, new_treatment = 'trt'),
+    when = function(patient_data) data.frame(patient_id = patient_data$patient_id, switch_time = 1),
+    how  = function(patient_data) data.frame(
+      patient_id = c(patient_data$patient_id, patient_data$patient_id[1]),
+      os         = 1
+    )
   )
   expect_error(make_trial_with_regimen(reg)$run(n = 1, silent = TRUE, plot_event = FALSE),
                regexp = 'duplicated')

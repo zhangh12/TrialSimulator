@@ -50,8 +50,6 @@
 #'
 #' @docType class
 #'
-#' @import data.table
-#'
 #' @examples
 #' # Instead of using Trials$new, please use trial(), a user-friendly
 #' # wrapper. See examples in ?trial.
@@ -1022,21 +1020,22 @@ Trials <- R6::R6Class(
             stop('No duplicated patient ID is allowed in data frame returned from user-defined function what(). ',
                  'Set a breakpoint using browser() in your what() function to debug step-by-step. ')
           }
+          new_treatment <- new_treatment[!is.na(new_treatment$new_treatment),
+                                        c('patient_id', 'new_treatment'), drop = FALSE]
 
-          new_treatment <- new_treatment %>%
-            select(patient_id, new_treatment) %>%
-            dplyr::filter(complete.cases(.))
+          pd_for_when <- patient_data[match(new_treatment$patient_id, patient_data$patient_id), , drop = FALSE]
 
           switch_time <- do.call(self$get_regimen()$get_time_selector(i),
-                                  c(list(patient_data %>% dplyr::filter(patient_id %in% new_treatment$patient_id)),
+                                  c(list(pd_for_when),
                                     self$get_regimen()$get_time_selector_args(i)))
 
           isValidOutput(switch_time, c('patient_id', 'switch_time'), 'when()')
-
-          switch_time <- switch_time %>%
-            select(patient_id, switch_time) %>%
-            dplyr::filter(complete.cases(.))
-
+          if(any(duplicated(switch_time$patient_id))){
+            stop('No duplicated patient ID is allowed in data frame returned from user-defined function when(). ',
+                 'Set a breakpoint using browser() in your when() function to debug step-by-step. ')
+          }
+          switch_time <- switch_time[!is.na(switch_time$switch_time),
+                                     c('patient_id', 'switch_time'), drop = FALSE]
           if(nrow(switch_time) != nrow(new_treatment) ||
              !setequal(switch_time$patient_id, new_treatment$patient_id) ||
              any(is.na(switch_time$switch_time))){
@@ -1046,21 +1045,29 @@ Trials <- R6::R6Class(
                  'Set a breakpoint using browser() in your when() function to debug step-by-step. ')
           }
 
-          new_regimen <- dplyr::inner_join(new_treatment, switch_time, by = 'patient_id')
+          m <- match(new_treatment$patient_id, switch_time$patient_id)
+          nr_pid <- new_treatment$patient_id
+          nr_trt <- new_treatment$new_treatment
+          nr_time <- switch_time$switch_time[m]
 
           ## append this round's switches to each patient's trajectory string
-          idx <- match(new_regimen$patient_id, patient_data$patient_id)
+          idx <- match(nr_pid, patient_data$patient_id)
           patient_data$regimen_trajectory[idx] <- paste0(
-            patient_data$regimen_trajectory[idx], ";",
-            new_regimen$new_treatment, "@", new_regimen$switch_time
+            patient_data$regimen_trajectory[idx], ";", nr_trt, "@", nr_time
           )
 
-          merged_patient_data <- dplyr::inner_join(patient_data, new_regimen, by = 'patient_id')
+          merged_patient_data <- patient_data[idx, , drop = FALSE]
+          merged_patient_data$new_treatment <- nr_trt
+          merged_patient_data$switch_time <- nr_time
 
           updated_data <- do.call(self$get_regimen()$get_data_modifier(i),
                                    c(list(merged_patient_data),
                                      self$get_regimen()$get_data_modifier_args(i)))
           isValidOutput(updated_data, 'patient_id', 'how()')
+          if(any(duplicated(updated_data$patient_id))){
+            stop('No duplicated patient ID is allowed in data frame returned from user-defined function how(). ',
+                 'Set a breakpoint using browser() in your how() function to debug step-by-step. ')
+          }
 
           touch_cols <- setdiff(names(updated_data), no_touch_cols)
           if(!all(touch_cols %in% names(patient_data))){
@@ -1073,17 +1080,11 @@ Trials <- R6::R6Class(
                  paste0(intersect(names(updated_data), setdiff(no_touch_cols, 'patient_id')), collapse = ', '))
           }
 
-          setDT(patient_data)
-          setDT(updated_data)
-
+          upd_idx <- match(updated_data$patient_id, patient_data$patient_id)
           for(col in touch_cols){
-            patient_data[updated_data,
-                         (col) := fifelse(
-                           is.na(get(paste0('i.', col))),
-                           get(col),
-                           get(paste0('i.', col))
-                         ),
-                         on = 'patient_id']
+            new_vals <- updated_data[[col]]
+            keep <- !is.na(new_vals)
+            if(any(keep)) patient_data[[col]][upd_idx[keep]] <- new_vals[keep]
           }
 
         }
@@ -1510,16 +1511,21 @@ Trials <- R6::R6Class(
       locked_data   <- locked_data[order(locked_data$enroll_time), , drop = FALSE]
 
       if(!is.null(locked_data$regimen_trajectory)){
-        locked_data$regimen_trajectory <- mapply(
-          function(traj_str, enroll_time){
-            entries <- strsplit(traj_str, ';', fixed = TRUE)[[1]]
-            times   <- as.numeric(sub('.*@', '', entries))
-            paste(entries[enroll_time + times <= at_calendar_time], collapse = ';')
-          },
-          locked_data$regimen_trajectory,
-          locked_data$enroll_time,
-          SIMPLIFY = TRUE, USE.NAMES = FALSE
-        )
+        ## only patients with switching events need filtering; non-switchers
+        ## have a single "arm@0" segment that always survives the lock window
+        switchers <- grep(';', locked_data$regimen_trajectory, fixed = TRUE)
+        if(length(switchers) > 0){
+          locked_data$regimen_trajectory[switchers] <- mapply(
+            function(traj_str, enroll_time){
+              entries <- strsplit(traj_str, ';', fixed = TRUE)[[1]]
+              times <- as.numeric(sub('.*@', '', entries))
+              paste(entries[enroll_time + times <= at_calendar_time], collapse = ';')
+            },
+            locked_data$regimen_trajectory[switchers],
+            locked_data$enroll_time[switchers],
+            SIMPLIFY = TRUE, USE.NAMES = FALSE
+          )
+        }
       }
 
       n_events_or_readouts <- NULL

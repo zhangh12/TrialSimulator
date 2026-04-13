@@ -1,4 +1,4 @@
-#' @import data.table survival ggplot2
+#' @import survival ggplot2
 #'
 #' @importFrom dplyr %>% mutate rename bind_rows arrange row_number case_when
 #' @importFrom dplyr filter select group_by summarise contains all_of matches
