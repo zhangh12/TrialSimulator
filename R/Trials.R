@@ -50,8 +50,6 @@
 #'
 #' @docType class
 #'
-#' @import data.table
-#'
 #' @examples
 #' # Instead of using Trials$new, please use trial(), a user-friendly
 #' # wrapper. See examples in ?trial.
@@ -305,9 +303,9 @@ Trials <- R6::R6Class(
 
       current_time <- self$get_current_time()
 
-      private$enroll_time <- (self$get_trial_data() %>%
-        dplyr::filter(enroll_time > current_time) %>%
-        arrange(enroll_time))$enroll_time
+      td <- self$get_trial_data()
+      future_mask <- td$enroll_time > current_time
+      private$enroll_time <- sort(td$enroll_time[future_mask])
 
       ## self$get_number_patients(), i.e. private$n_patients may have been
       ## updated by calling Trials$resize() to resize the trial, in this case
@@ -336,9 +334,9 @@ Trials <- R6::R6Class(
           private$enroll_time_with_redundant[-c(1:number_new_patients)]
       }
 
-      private$trial_data <- self$get_trial_data() %>%
-        dplyr::filter(enroll_time <= current_time) %>%
-        arrange(enroll_time)
+      past_mask <- td$enroll_time <= current_time
+      past_td   <- td[past_mask, , drop = FALSE]
+      private$trial_data <- past_td[order(past_td$enroll_time), , drop = FALSE]
 
       if(!private$silent){
         message('Trial data is rolling back to time = ', current_time, '. \n',
@@ -910,9 +908,12 @@ Trials <- R6::R6Class(
       for(i in seq_along(arms_in_trial)){
         arm <- arms_in_trial[i]
         n_patients_in_arm <- sum(next_enroll_arms %in% arm)
-        target_size_per_stratum <-
-          as.data.frame(table(next_enroll_stratums[next_enroll_arms %in% arm])) %>%
-          rename(stratum = Var1, target_size = Freq)
+        tbl <- table(next_enroll_stratums[next_enroll_arms %in% arm])
+        target_size_per_stratum <- data.frame(
+          stratum     = names(tbl),
+          target_size = as.integer(tbl),
+          stringsAsFactors = FALSE
+        )
 
         patient_pool <- NULL
         prop <- 1.1
@@ -922,8 +923,12 @@ Trials <- R6::R6Class(
           new_sets$stratum <- make_stratum(new_sets)
           patient_pool <- rbind(patient_pool, new_sets)
 
-          size_per_stratum <- as.data.frame(table(patient_pool$stratum)) %>%
-            rename(stratum = Var1, current_size = Freq)
+          tbl1 <- table(patient_pool$stratum)
+          size_per_stratum <- data.frame(
+            stratum      = names(tbl1),
+            current_size = as.integer(tbl1),
+            stringsAsFactors = FALSE
+          )
 
           tmp <- merge(size_per_stratum, target_size_per_stratum, by = 'stratum', all.y = TRUE)
           tmp$current_size[is.na(tmp$current_size)] <- 0
@@ -972,8 +977,8 @@ Trials <- R6::R6Class(
         arms_stratums_data[[arm]] <- bind_rows(arms_stratums_data[[arm]])
       }
 
-      patient_data <- bind_rows(arms_stratums_data) %>%
-        arrange(enroll_time)
+      patient_data <- do.call(rbind, arms_stratums_data)
+      patient_data <- patient_data[order(patient_data$enroll_time), , drop = FALSE]
 
       if(self$has_regimen()){
         # message('Set regimen when there are ', self$get_number_enrolled_patients(), ' patients in the trial. ')
@@ -1001,7 +1006,9 @@ Trials <- R6::R6Class(
 
         no_touch_cols <- c('patient_id', 'arm', 'enroll_time', 'dropout_time', 'regimen_trajectory')
 
-        new_regimens <- list()
+        ## initialize trajectory; switches are appended inside the loop below
+        patient_data$regimen_trajectory <- paste0(as.character(patient_data$arm), "@0")
+
         for(i in 1:n_regimen){
 
           new_treatment <- do.call(self$get_regimen()$get_treatment_allocator(i),
@@ -1013,21 +1020,22 @@ Trials <- R6::R6Class(
             stop('No duplicated patient ID is allowed in data frame returned from user-defined function what(). ',
                  'Set a breakpoint using browser() in your what() function to debug step-by-step. ')
           }
+          new_treatment <- new_treatment[!is.na(new_treatment$new_treatment),
+                                        c('patient_id', 'new_treatment'), drop = FALSE]
 
-          new_treatment <- new_treatment %>%
-            select(patient_id, new_treatment) %>%
-            dplyr::filter(complete.cases(.))
+          pd_for_when <- patient_data[match(new_treatment$patient_id, patient_data$patient_id), , drop = FALSE]
 
           switch_time <- do.call(self$get_regimen()$get_time_selector(i),
-                                  c(list(patient_data %>% dplyr::filter(patient_id %in% new_treatment$patient_id)),
+                                  c(list(pd_for_when),
                                     self$get_regimen()$get_time_selector_args(i)))
 
           isValidOutput(switch_time, c('patient_id', 'switch_time'), 'when()')
-
-          switch_time <- switch_time %>%
-            select(patient_id, switch_time) %>%
-            dplyr::filter(complete.cases(.))
-
+          if(any(duplicated(switch_time$patient_id))){
+            stop('No duplicated patient ID is allowed in data frame returned from user-defined function when(). ',
+                 'Set a breakpoint using browser() in your when() function to debug step-by-step. ')
+          }
+          switch_time <- switch_time[!is.na(switch_time$switch_time),
+                                     c('patient_id', 'switch_time'), drop = FALSE]
           if(nrow(switch_time) != nrow(new_treatment) ||
              !setequal(switch_time$patient_id, new_treatment$patient_id) ||
              any(is.na(switch_time$switch_time))){
@@ -1037,14 +1045,29 @@ Trials <- R6::R6Class(
                  'Set a breakpoint using browser() in your when() function to debug step-by-step. ')
           }
 
-          new_regimens[[i]] <- dplyr::inner_join(new_treatment, switch_time, by = 'patient_id')
+          m <- match(new_treatment$patient_id, switch_time$patient_id)
+          nr_pid <- new_treatment$patient_id
+          nr_trt <- new_treatment$new_treatment
+          nr_time <- switch_time$switch_time[m]
 
-          merged_patient_data <- dplyr::inner_join(patient_data, new_regimens[[i]], by = 'patient_id')
+          ## append this round's switches to each patient's trajectory string
+          idx <- match(nr_pid, patient_data$patient_id)
+          patient_data$regimen_trajectory[idx] <- paste0(
+            patient_data$regimen_trajectory[idx], ";", nr_trt, "@", nr_time
+          )
+
+          merged_patient_data <- patient_data[idx, , drop = FALSE]
+          merged_patient_data$new_treatment <- nr_trt
+          merged_patient_data$switch_time <- nr_time
 
           updated_data <- do.call(self$get_regimen()$get_data_modifier(i),
                                    c(list(merged_patient_data),
                                      self$get_regimen()$get_data_modifier_args(i)))
           isValidOutput(updated_data, 'patient_id', 'how()')
+          if(any(duplicated(updated_data$patient_id))){
+            stop('No duplicated patient ID is allowed in data frame returned from user-defined function how(). ',
+                 'Set a breakpoint using browser() in your how() function to debug step-by-step. ')
+          }
 
           touch_cols <- setdiff(names(updated_data), no_touch_cols)
           if(!all(touch_cols %in% names(patient_data))){
@@ -1057,41 +1080,14 @@ Trials <- R6::R6Class(
                  paste0(intersect(names(updated_data), setdiff(no_touch_cols, 'patient_id')), collapse = ', '))
           }
 
-          setDT(patient_data)
-          setDT(updated_data)
-
+          upd_idx <- match(updated_data$patient_id, patient_data$patient_id)
           for(col in touch_cols){
-            patient_data[updated_data,
-                         (col) := fifelse(
-                           is.na(get(paste0('i.', col))),
-                           get(col),
-                           get(paste0('i.', col))
-                         ),
-                         on = 'patient_id']
+            new_vals <- updated_data[[col]]
+            keep <- !is.na(new_vals)
+            if(any(keep)) patient_data[[col]][upd_idx[keep]] <- new_vals[keep]
           }
 
         }
-
-        new_regimens <- bind_rows(new_regimens) %>%
-          arrange(patient_id, switch_time)
-
-        regimen_trajectory <- bind_rows(
-          data.frame(
-            patient_id = patient_data$patient_id,
-            regimen = patient_data$arm,
-            switch_time_from_enrollment = 0,
-            stringsAsFactors = FALSE
-          ),
-          new_regimens %>%
-            dplyr::rename(
-              regimen = new_treatment,
-              switch_time_from_enrollment = switch_time
-            )
-        )
-
-        id_col <- which(names(regimen_trajectory) == 'patient_id')
-        lst <- split(regimen_trajectory[, -id_col, drop = FALSE], regimen_trajectory$patient_id)
-        patient_data$regimen_trajectory <- I(unname(lst[match(patient_data$patient_id, names(lst))]))
 
       }
 
@@ -1153,13 +1149,11 @@ Trials <- R6::R6Class(
              '> cannot be found in the trial, debug Trial$get_event_tables. ')
       }
 
-      trial_data <- self$get_trial_data() %>%
-        dplyr::filter(arm %in% arms)
+      trial_data <- self$get_trial_data()
+      trial_data <- trial_data[trial_data$arm %in% arms, , drop = FALSE]
 
-      trial_data <- if(...length() == 0){
-        trial_data
-      }else{
-        tryCatch({
+      if(...length() != 0L){
+        trial_data <- tryCatch({
           trial_data %>% dplyr::filter(...)
         },
         error = function(e){
@@ -1170,37 +1164,54 @@ Trials <- R6::R6Class(
         })
       }
 
+      n_rows <- nrow(trial_data)
       event_counts <- list()
 
       ## add event count for patient_id
-      event_counts[['patient_id']] <- trial_data %>%
-        dplyr::select(all_of(c('patient_id', 'arm', 'enroll_time'))) %>%
-        mutate(calendar_time := enroll_time) %>%
-        arrange(calendar_time) %>%
-        mutate(n_events = row_number())
+      ## patient_id: sorted by enroll_time
+      ord <- order(trial_data$enroll_time)
+      event_counts[['patient_id']] <- data.frame(
+        patient_id    = trial_data$patient_id[ord],
+        arm           = trial_data$arm[ord],
+        enroll_time   = trial_data$enroll_time[ord],
+        calendar_time = trial_data$enroll_time[ord],
+        n_events      = seq_len(n_rows),
+        stringsAsFactors = FALSE
+      )
 
       ## add event counts for time-to-event endpoints
       event_cols <- grep('_event$', names(trial_data), value = TRUE)
       for(event_col in event_cols){
         tte_col <- gsub('_event$', '', event_col)
-        event_counts[[tte_col]] <- trial_data %>%
-          dplyr::select(all_of(c('patient_id', 'arm', 'enroll_time', tte_col, event_col))) %>%
-          mutate(calendar_time := enroll_time + !!sym(tte_col)) %>%
-          arrange(calendar_time) %>%
-          mutate(n_events = cumsum(get(event_col)))
-
+        cal_time <- trial_data$enroll_time + trial_data[[tte_col]]
+        ord      <- order(cal_time)
+        event_counts[[tte_col]] <- data.frame(
+          patient_id    = trial_data$patient_id[ord],
+          arm           = trial_data$arm[ord],
+          enroll_time   = trial_data$enroll_time[ord],
+          calendar_time = cal_time[ord],
+          n_events      = cumsum(trial_data[[event_col]][ord]),
+          stringsAsFactors = FALSE
+        )
       }
 
       ## add event counts for non-time-to-event endpoints
       readout_cols <- grep('_readout$', names(trial_data), value = TRUE)
       for(readout_col in readout_cols){
         ep_col <- gsub('_readout$', '', readout_col)
-        event_counts[[ep_col]] <- trial_data %>%
-          dplyr::select(all_of(c('patient_id', 'arm', 'enroll_time', ep_col, readout_col))) %>%
-          mutate(calendar_time := enroll_time + !!sym(readout_col)) %>%
-          dplyr::filter(!is.na(!!sym(ep_col))) %>%
-          arrange(calendar_time) %>%
-          mutate(n_events = row_number())
+        valid    <- !is.na(trial_data[[ep_col]])
+        td_sub   <- trial_data[valid, , drop = FALSE]
+        cal_time <- td_sub$enroll_time + td_sub[[readout_col]]
+        ord      <- order(cal_time)
+        m        <- nrow(td_sub)
+        event_counts[[ep_col]] <- data.frame(
+          patient_id    = td_sub$patient_id[ord],
+          arm           = td_sub$arm[ord],
+          enroll_time   = td_sub$enroll_time[ord],
+          calendar_time = cal_time[ord],
+          n_events      = seq_len(m),
+          stringsAsFactors = FALSE
+        )
       }
 
       event_counts
@@ -1470,51 +1481,51 @@ Trials <- R6::R6Class(
       trial_data <- self$get_trial_data()
 
       event_cols <- grep('_event$', names(trial_data), value = TRUE)
+      tte_cols   <- sub('_event$', '', event_cols)
 
-      tte_cols <- NULL
-
-      for(event_col in event_cols){
-        tte_col <- gsub('_event$', '', event_col)
-        tte_cols <- c(tte_cols, tte_col)
-        trial_data <- trial_data %>%
-          mutate(calendar_time := enroll_time + !!sym(tte_col)) %>%
-          mutate(!!event_col := ifelse(calendar_time > at_calendar_time, 0, !!sym(event_col))) %>%
-          mutate(!!tte_col :=
-                   ifelse(calendar_time > at_calendar_time,
-                          at_calendar_time - enroll_time,
-                          !!sym(tte_col)
-                          )
-                 )
+      ## Censor TTE endpoints: if event falls after lock time, mark as censored.
+      for(k in seq_along(event_cols)){
+        event_col <- event_cols[k]
+        tte_col   <- tte_cols[k]
+        cal_time  <- trial_data$enroll_time + trial_data[[tte_col]]
+        late      <- cal_time > at_calendar_time
+        trial_data[[event_col]][late] <- 0L
+        trial_data[[tte_col]][late]   <- at_calendar_time - trial_data$enroll_time[late]
       }
 
       readout_cols <- grep('_readout$', names(trial_data), value = TRUE)
+      ep_cols      <- sub('_readout$', '', readout_cols)
 
-      ep_cols <- NULL
-      for(readout_col in readout_cols){
-        ep_col <- gsub('_readout$', '', readout_col)
-        ep_cols <- c(ep_cols, ep_col)
-        trial_data <- trial_data %>%
-          mutate(calendar_time := enroll_time + !!sym(readout_col)) %>%
-          ## in locked data, some patients may have been enrolled, but
-          ## their non-tte endpoints have no readout, thus set to be NA
-          mutate(!!ep_col := ifelse(calendar_time > at_calendar_time, NA, !!sym(ep_col)))
+      ## Null-out non-TTE readouts that have not yet occurred by lock time.
+      for(k in seq_along(readout_cols)){
+        readout_col <- readout_cols[k]
+        ep_col      <- ep_cols[k]
+        cal_time    <- trial_data$enroll_time + trial_data[[readout_col]]
+        ## in locked data, some patients may have been enrolled, but
+        ## their non-tte endpoints have no readout, thus set to be NA
+        trial_data[[ep_col]][cal_time > at_calendar_time] <- NA
       }
 
-      locked_data <- trial_data %>%
-        dplyr::filter(enroll_time <= at_calendar_time) %>%
-        arrange(enroll_time) %>%
-        dplyr::select(-calendar_time)
+      enrolled_mask <- trial_data$enroll_time <= at_calendar_time
+      locked_data   <- trial_data[enrolled_mask, , drop = FALSE]
+      locked_data   <- locked_data[order(locked_data$enroll_time), , drop = FALSE]
 
       if(!is.null(locked_data$regimen_trajectory)){
-        locked_data$regimen_trajectory <- I(
-          Map(
-            function(subdf, enroll_time){
-              subdf[enroll_time + subdf$switch_time_from_enrollment <= at_calendar_time, , drop = FALSE]
+        ## only patients with switching events need filtering; non-switchers
+        ## have a single "arm@0" segment that always survives the lock window
+        switchers <- grep(';', locked_data$regimen_trajectory, fixed = TRUE)
+        if(length(switchers) > 0){
+          locked_data$regimen_trajectory[switchers] <- mapply(
+            function(traj_str, enroll_time){
+              entries <- strsplit(traj_str, ';', fixed = TRUE)[[1]]
+              times <- as.numeric(sub('.*@', '', entries))
+              paste(entries[enroll_time + times <= at_calendar_time], collapse = ';')
             },
-            locked_data$regimen_trajectory,
-            locked_data$enroll_time
+            locked_data$regimen_trajectory[switchers],
+            locked_data$enroll_time[switchers],
+            SIMPLIFY = TRUE, USE.NAMES = FALSE
           )
-        )
+        }
       }
 
       n_events_or_readouts <- NULL
@@ -1536,30 +1547,34 @@ Trials <- R6::R6Class(
                 '(3) Do you use the same unit for readout time, trial duration, and dropout time?')
       }
 
-      event_counts <- list()
-      event_counts_per_arm <- list()
+      ## Build per-arm event/readout counts without dplyr group_by+summarise.
+      arms_in_locked <- sort(unique(locked_data$arm))
+      arm_factor     <- factor(locked_data$arm, levels = arms_in_locked)
+
+      event_counts_per_arm <- data.frame(arm = arms_in_locked, stringsAsFactors = FALSE)
+
       for(event_col in event_cols){
-        tte_col <- gsub('_event$', '', event_col)
-        event_counts_per_arm[[tte_col]] <- locked_data %>%
-          group_by(arm) %>%
-          summarise(!!tte_col := sum(!!sym(event_col)))
+        tte_col <- sub('_event$', '', event_col)
+        event_counts_per_arm[[tte_col]] <- as.integer(
+          tapply(locked_data[[event_col]], arm_factor, sum)
+        )
       }
 
-      for(readout_col in c(readout_cols, 'patient_id')){
-        ep_col <- gsub('_readout$', '', readout_col)
-        event_counts_per_arm[[ep_col]] <- locked_data %>%
-          group_by(arm) %>%
-          summarise(!!ep_col := sum(!is.na(!!sym(ep_col))))
+      for(readout_col in readout_cols){
+        ep_col <- sub('_readout$', '', readout_col)
+        event_counts_per_arm[[ep_col]] <- as.integer(
+          tapply(!is.na(locked_data[[ep_col]]), arm_factor, sum)
+        )
       }
-      event_counts_per_arm <- Reduce(function(x, y) merge(x, y, by = "arm"), event_counts_per_arm)
+
+      event_counts_per_arm[['patient_id']] <- as.integer(tabulate(arm_factor))
 
       n_events <- as.data.frame(t(colSums(event_counts_per_arm[, -1])))
       n_events[['arms']] <- I(list(event_counts_per_arm))
 
-      unenrolled_data <- trial_data %>%
-        dplyr::filter(enroll_time > at_calendar_time) %>%
-        arrange(enroll_time) %>%
-        dplyr::select(enroll_time, arm)
+      unenrolled_mask <- trial_data$enroll_time > at_calendar_time
+      unenrolled_data <- trial_data[unenrolled_mask, c('enroll_time', 'arm'), drop = FALSE]
+      unenrolled_data <- unenrolled_data[order(unenrolled_data$enroll_time), , drop = FALSE]
       rm(trial_data)
 
       attr(at_calendar_time, 'n_events') <- n_events
@@ -1809,48 +1824,38 @@ Trials <- R6::R6Class(
       event_cols <- grep('_event$', names(trial_data), value = TRUE)
       readout_cols <- grep('_readout$', names(trial_data), value = TRUE)
 
+      ## base R: precompute the arm/enroll mask once (shared by all endpoint loops)
+      sel <- (trial_data$arm %in% selected_arms) & (trial_data$enroll_time <= enrolled_before)
+
       for(event_col in event_cols){
         tte_col <- gsub('_event$', '', event_col)
-        trial_data <- trial_data %>%
-          mutate(!!event_col := ifelse((!!sym(tte_col) > dropout_time) &
-                                         (arm %in% selected_arms) &
-                                         (enroll_time <= enrolled_before),
-                                       0, !!sym(event_col))) %>%
-          mutate(!!tte_col := ifelse((!!sym(tte_col) > dropout_time) &
-                                       (arm %in% selected_arms) &
-                                       (enroll_time <= enrolled_before),
-                                     dropout_time, !!sym(tte_col))) %>%
-          mutate(calendar_time := enroll_time + !!sym(tte_col)) %>%
-          mutate(!!event_col := ifelse((calendar_time > censor_at) &
-                                         (arm %in% selected_arms) &
-                                         (enroll_time <= enrolled_before),
-                                       0, !!sym(event_col))) %>%
-          mutate(!!tte_col := ifelse((calendar_time > censor_at) &
-                                       (arm %in% selected_arms) &
-                                       (enroll_time <= enrolled_before),
-                                     censor_at - enroll_time, !!sym(tte_col))) %>%
-          mutate(!!tte_col := ifelse(!!sym(tte_col) < 0, 0, !!sym(tte_col))) %>%
-          dplyr::select(-calendar_time) %>%
-          arrange(enroll_time)
+        ## dropout censoring: event falls after dropout
+        drop_mask <- sel & (trial_data[[tte_col]] > trial_data$dropout_time)
+        trial_data[[event_col]][drop_mask] <- 0L
+        trial_data[[tte_col]][drop_mask]   <- trial_data$dropout_time[drop_mask]
+        ## calendar-time censoring: event falls after data lock
+        cal_time  <- trial_data$enroll_time + trial_data[[tte_col]]
+        late_mask <- sel & (cal_time > censor_at)
+        trial_data[[event_col]][late_mask] <- 0L
+        trial_data[[tte_col]][late_mask]   <- censor_at - trial_data$enroll_time[late_mask]
+        ## defensive clip (censor_at - enroll_time can be negative for patients not yet enrolled)
+        neg_mask <- trial_data[[tte_col]] < 0
+        trial_data[[tte_col]][neg_mask] <- 0
       }
 
       for(readout_col in readout_cols){
         ep_col <- gsub('_readout$', '', readout_col)
-        trial_data <- trial_data %>%
-          mutate(!!ep_col := ifelse((!!sym(readout_col) > dropout_time) &
-                                      (arm %in% selected_arms) &
-                                      (enroll_time <= enrolled_before),
-                                    NA, !!sym(ep_col))) %>%
-          mutate(calendar_time := enroll_time + !!sym(readout_col)) %>%
-          mutate(!!ep_col := ifelse((calendar_time > censor_at) &
-                                      (arm %in% selected_arms) &
-                                      (enroll_time <= enrolled_before),
-                                    NA, !!sym(ep_col))) %>%
-          dplyr::select(-calendar_time) %>%
-          arrange(enroll_time)
+        ## dropout censoring
+        drop_mask <- sel & (trial_data[[readout_col]] > trial_data$dropout_time)
+        trial_data[[ep_col]][drop_mask] <- NA
+        ## calendar-time censoring
+        cal_time  <- trial_data$enroll_time + trial_data[[readout_col]]
+        late_mask <- sel & (cal_time > censor_at)
+        trial_data[[ep_col]][late_mask] <- NA
       }
 
-      private$trial_data <- trial_data
+      ## sort once at the end (dplyr version re-sorted inside every loop iteration)
+      private$trial_data <- trial_data[order(trial_data$enroll_time), , drop = FALSE]
     },
 
     #' @description

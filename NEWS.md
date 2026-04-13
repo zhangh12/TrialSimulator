@@ -1,3 +1,9 @@
+# TrialSimulator 1.16.0
+
+## Updates
+
+- Cut running time by ~75% via base R rewrites. 
+
 # TrialSimulator 1.15.0
 
 ## New Feature

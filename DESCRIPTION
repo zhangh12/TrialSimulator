@@ -1,14 +1,13 @@
 Package: TrialSimulator
 Type: Package
 Title: Clinical Trial Simulator
-Version: 1.15.0
+Version: 1.16.0
 Description: Simulate phase II and/or phase III clinical trials. It supports various types of endpoints and adaptive strategies. Tools for carrying out graphical testing procedure and combination test under group sequential design are also provided. 
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports: 
     base64enc,
-    data.table,
     dplyr,
     emmeans,
     ggplot2,
@@ -24,7 +23,8 @@ Imports:
 Authors@R: 
     person("Han", "Zhang", , "zhangh.ustc@gmail.com", role = c("cre", "aut"))
 RoxygenNote: 7.3.3
-Suggests: 
+Suggests:
+    data.table,
     DoseFinding,
     graphicalMCP,
     kableExtra,
