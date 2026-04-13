@@ -2,7 +2,7 @@
 #'
 #' @importFrom dplyr %>% mutate rename bind_rows arrange row_number case_when
 #' @importFrom dplyr filter select group_by summarise contains all_of matches
-#' @importFrom rlang expr_text sym .data enquos
+#' @importFrom rlang expr_text sym .data enquos :=
 #' @importFrom mvtnorm pmvnorm
 #' @importFrom stats as.formula pnorm model.frame model.response rexp cor runif
 #' @importFrom stats IQR complete.cases median sd setNames glm pt terms uniroot

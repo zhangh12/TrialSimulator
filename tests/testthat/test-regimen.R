@@ -353,6 +353,7 @@ test_that('expandRegimen expands switchers into multiple rows per patient', {
 
 test_that('expandRegimen accepts data.table input without error', {
 
+  skip_if_not_installed('data.table')
   d <- data.table::data.table(
     patient_id = 1:2,
     regimen_trajectory = c('placebo@0;high dose@3', 'trt@0')
