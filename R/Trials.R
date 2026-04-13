@@ -305,9 +305,9 @@ Trials <- R6::R6Class(
 
       current_time <- self$get_current_time()
 
-      private$enroll_time <- (self$get_trial_data() %>%
-        dplyr::filter(enroll_time > current_time) %>%
-        arrange(enroll_time))$enroll_time
+      td <- self$get_trial_data()
+      future_mask <- td$enroll_time > current_time
+      private$enroll_time <- sort(td$enroll_time[future_mask])
 
       ## self$get_number_patients(), i.e. private$n_patients may have been
       ## updated by calling Trials$resize() to resize the trial, in this case
@@ -336,9 +336,9 @@ Trials <- R6::R6Class(
           private$enroll_time_with_redundant[-c(1:number_new_patients)]
       }
 
-      private$trial_data <- self$get_trial_data() %>%
-        dplyr::filter(enroll_time <= current_time) %>%
-        arrange(enroll_time)
+      past_mask <- td$enroll_time <= current_time
+      past_td   <- td[past_mask, , drop = FALSE]
+      private$trial_data <- past_td[order(past_td$enroll_time), , drop = FALSE]
 
       if(!private$silent){
         message('Trial data is rolling back to time = ', current_time, '. \n',
@@ -910,9 +910,12 @@ Trials <- R6::R6Class(
       for(i in seq_along(arms_in_trial)){
         arm <- arms_in_trial[i]
         n_patients_in_arm <- sum(next_enroll_arms %in% arm)
-        target_size_per_stratum <-
-          as.data.frame(table(next_enroll_stratums[next_enroll_arms %in% arm])) %>%
-          rename(stratum = Var1, target_size = Freq)
+        tbl <- table(next_enroll_stratums[next_enroll_arms %in% arm])
+        target_size_per_stratum <- data.frame(
+          stratum     = names(tbl),
+          target_size = as.integer(tbl),
+          stringsAsFactors = FALSE
+        )
 
         patient_pool <- NULL
         prop <- 1.1
@@ -922,8 +925,12 @@ Trials <- R6::R6Class(
           new_sets$stratum <- make_stratum(new_sets)
           patient_pool <- rbind(patient_pool, new_sets)
 
-          size_per_stratum <- as.data.frame(table(patient_pool$stratum)) %>%
-            rename(stratum = Var1, current_size = Freq)
+          tbl1 <- table(patient_pool$stratum)
+          size_per_stratum <- data.frame(
+            stratum      = names(tbl1),
+            current_size = as.integer(tbl1),
+            stringsAsFactors = FALSE
+          )
 
           tmp <- merge(size_per_stratum, target_size_per_stratum, by = 'stratum', all.y = TRUE)
           tmp$current_size[is.na(tmp$current_size)] <- 0
@@ -972,8 +979,8 @@ Trials <- R6::R6Class(
         arms_stratums_data[[arm]] <- bind_rows(arms_stratums_data[[arm]])
       }
 
-      patient_data <- bind_rows(arms_stratums_data) %>%
-        arrange(enroll_time)
+      patient_data <- do.call(rbind, arms_stratums_data)
+      patient_data <- patient_data[order(patient_data$enroll_time), , drop = FALSE]
 
       if(self$has_regimen()){
         # message('Set regimen when there are ', self$get_number_enrolled_patients(), ' patients in the trial. ')
@@ -1822,48 +1829,38 @@ Trials <- R6::R6Class(
       event_cols <- grep('_event$', names(trial_data), value = TRUE)
       readout_cols <- grep('_readout$', names(trial_data), value = TRUE)
 
+      ## base R: precompute the arm/enroll mask once (shared by all endpoint loops)
+      sel <- (trial_data$arm %in% selected_arms) & (trial_data$enroll_time <= enrolled_before)
+
       for(event_col in event_cols){
         tte_col <- gsub('_event$', '', event_col)
-        trial_data <- trial_data %>%
-          mutate(!!event_col := ifelse((!!sym(tte_col) > dropout_time) &
-                                         (arm %in% selected_arms) &
-                                         (enroll_time <= enrolled_before),
-                                       0, !!sym(event_col))) %>%
-          mutate(!!tte_col := ifelse((!!sym(tte_col) > dropout_time) &
-                                       (arm %in% selected_arms) &
-                                       (enroll_time <= enrolled_before),
-                                     dropout_time, !!sym(tte_col))) %>%
-          mutate(calendar_time := enroll_time + !!sym(tte_col)) %>%
-          mutate(!!event_col := ifelse((calendar_time > censor_at) &
-                                         (arm %in% selected_arms) &
-                                         (enroll_time <= enrolled_before),
-                                       0, !!sym(event_col))) %>%
-          mutate(!!tte_col := ifelse((calendar_time > censor_at) &
-                                       (arm %in% selected_arms) &
-                                       (enroll_time <= enrolled_before),
-                                     censor_at - enroll_time, !!sym(tte_col))) %>%
-          mutate(!!tte_col := ifelse(!!sym(tte_col) < 0, 0, !!sym(tte_col))) %>%
-          dplyr::select(-calendar_time) %>%
-          arrange(enroll_time)
+        ## dropout censoring: event falls after dropout
+        drop_mask <- sel & (trial_data[[tte_col]] > trial_data$dropout_time)
+        trial_data[[event_col]][drop_mask] <- 0L
+        trial_data[[tte_col]][drop_mask]   <- trial_data$dropout_time[drop_mask]
+        ## calendar-time censoring: event falls after data lock
+        cal_time  <- trial_data$enroll_time + trial_data[[tte_col]]
+        late_mask <- sel & (cal_time > censor_at)
+        trial_data[[event_col]][late_mask] <- 0L
+        trial_data[[tte_col]][late_mask]   <- censor_at - trial_data$enroll_time[late_mask]
+        ## defensive clip (censor_at - enroll_time can be negative for patients not yet enrolled)
+        neg_mask <- trial_data[[tte_col]] < 0
+        trial_data[[tte_col]][neg_mask] <- 0
       }
 
       for(readout_col in readout_cols){
         ep_col <- gsub('_readout$', '', readout_col)
-        trial_data <- trial_data %>%
-          mutate(!!ep_col := ifelse((!!sym(readout_col) > dropout_time) &
-                                      (arm %in% selected_arms) &
-                                      (enroll_time <= enrolled_before),
-                                    NA, !!sym(ep_col))) %>%
-          mutate(calendar_time := enroll_time + !!sym(readout_col)) %>%
-          mutate(!!ep_col := ifelse((calendar_time > censor_at) &
-                                      (arm %in% selected_arms) &
-                                      (enroll_time <= enrolled_before),
-                                    NA, !!sym(ep_col))) %>%
-          dplyr::select(-calendar_time) %>%
-          arrange(enroll_time)
+        ## dropout censoring
+        drop_mask <- sel & (trial_data[[readout_col]] > trial_data$dropout_time)
+        trial_data[[ep_col]][drop_mask] <- NA
+        ## calendar-time censoring
+        cal_time  <- trial_data$enroll_time + trial_data[[readout_col]]
+        late_mask <- sel & (cal_time > censor_at)
+        trial_data[[ep_col]][late_mask] <- NA
       }
 
-      private$trial_data <- trial_data
+      ## sort once at the end (dplyr version re-sorted inside every loop iteration)
+      private$trial_data <- trial_data[order(trial_data$enroll_time), , drop = FALSE]
     },
 
     #' @description
