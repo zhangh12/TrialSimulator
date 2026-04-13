@@ -979,6 +979,7 @@ Trials <- R6::R6Class(
 
       patient_data <- do.call(rbind, arms_stratums_data)
       patient_data <- patient_data[order(patient_data$enroll_time), , drop = FALSE]
+      rownames(patient_data) <- NULL
 
       if(self$has_regimen()){
         # message('Set regimen when there are ', self$get_number_enrolled_patients(), ' patients in the trial. ')
@@ -1509,6 +1510,7 @@ Trials <- R6::R6Class(
       enrolled_mask <- trial_data$enroll_time <= at_calendar_time
       locked_data   <- trial_data[enrolled_mask, , drop = FALSE]
       locked_data   <- locked_data[order(locked_data$enroll_time), , drop = FALSE]
+      rownames(locked_data) <- NULL
 
       if(!is.null(locked_data$regimen_trajectory)){
         ## only patients with switching events need filtering; non-switchers
@@ -1526,6 +1528,8 @@ Trials <- R6::R6Class(
             SIMPLIFY = TRUE, USE.NAMES = FALSE
           )
         }
+        ## number of switches = number of '@' minus 1 (the initial arm@0 entry)
+        locked_data$n_switches <- lengths(gregexpr('@', locked_data$regimen_trajectory, fixed = TRUE)) - 1L
       }
 
       n_events_or_readouts <- NULL
@@ -1856,6 +1860,7 @@ Trials <- R6::R6Class(
 
       ## sort once at the end (dplyr version re-sorted inside every loop iteration)
       private$trial_data <- trial_data[order(trial_data$enroll_time), , drop = FALSE]
+      rownames(private$trial_data) <- NULL
     },
 
     #' @description

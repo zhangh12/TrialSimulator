@@ -1,5 +1,10 @@
 # TrialSimulator 1.16.0
 
+## New Feature
+
+- Add `n_switches` column to locked data returned by `get_locked_data()`, counting the number of treatment switches per patient within the data lock window.
+- Add `expandRegimen()` to expand the `regimen_trajectory` column in locked data into a long-format data frame with one row per regimen segment per patient.
+
 ## Updates
 
 - Cut running time by ~75% via base R rewrites. 
