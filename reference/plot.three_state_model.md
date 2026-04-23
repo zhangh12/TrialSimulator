@@ -1,6 +1,6 @@
-# Plot result of three-state ill-death model
+# Plot result of three-state illness-death model
 
-Plot result of three-state ill-death model
+Plot result of three-state illness-death model
 
 ## Usage
 

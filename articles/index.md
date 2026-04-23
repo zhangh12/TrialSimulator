@@ -26,7 +26,11 @@
   Endpoints](https://zhangh12.github.io/TrialSimulator/articles/fixedDesign.md):
 - [Designs with Response-Adaptive
   Randomization](https://zhangh12.github.io/TrialSimulator/articles/responseAdaptive.md):
+- [Simulate Correlated Progression-Free Survival and Overall Survival
+  Using a Gumbel
+  Copula](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsGumbel.md):
 - [Simulate Correlated Progression-Free Survival and Overall Survival as
-  Endpoints](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOs.md):
+  Endpoints Under Illness-Death
+  Model](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsIdm.md):
 - [Wrapper Functions of Common Statistical Methods in
   TrialSimulator](https://zhangh12.github.io/TrialSimulator/articles/wrappers.md):

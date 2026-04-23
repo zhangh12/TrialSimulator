@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.16.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.17.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,7 +30,8 @@
     <li><a class="dropdown-item" href="../articles/dynamicTreatmentSwitching.html">Simulate Trials with Dynamic Treatment Switching</a></li>
     <li><a class="dropdown-item" href="../articles/fixedDesign.html">An Example of Fixed Design with Two Correlated Endpoints</a></li>
     <li><a class="dropdown-item" href="../articles/responseAdaptive.html">Designs with Response-Adaptive Randomization</a></li>
-    <li><a class="dropdown-item" href="../articles/simulatePfsAndOs.html">Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints</a></li>
+    <li><a class="dropdown-item" href="../articles/simulatePfsAndOsGumbel.html">Simulate Correlated Progression-Free Survival and Overall Survival Using a Gumbel Copula</a></li>
+    <li><a class="dropdown-item" href="../articles/simulatePfsAndOsIdm.html">Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints Under Illness-Death Model</a></li>
     <li><a class="dropdown-item" href="../articles/wrappers.html">Wrapper Functions of Common Statistical Methods in TrialSimulator</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -45,11 +46,22 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/v1.16.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.16.0" id="trialsimulator-1160">TrialSimulator 1.16.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1160"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.17.0" id="trialsimulator-1170">TrialSimulator 1.17.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1170"></a></h2>
+<div class="section level3">
+<h3 id="new-feature-1-17-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-1-17-0"></a></h3>
+<ul><li>Add <code><a href="../reference/CorrelatedPfsAndOs2.html">CorrelatedPfsAndOs2()</a></code> to simulate correlated PFS and OS using a Gumbel copula while targeting marginal PFS/OS medians and Kendall’s tau between observed, uncensored PFS and OS times.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="updates-1-17-0">Updates<a class="anchor" aria-label="anchor" href="#updates-1-17-0"></a></h3>
+<ul><li>Add a vignette for simulating correlated PFS and OS using the Gumbel copula method, alongside the existing illness-death model vignette.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.16.0" id="trialsimulator-1160">TrialSimulator 1.16.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1160"></a></h2><p class="text-muted">CRAN release: 2026-04-13</p>
 <div class="section level3">
 <h3 id="new-feature-1-16-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-1-16-0"></a></h3>
 <ul><li>Add <code>n_switches</code> column to locked data returned by <code>get_locked_data()</code>, counting the number of treatment switches per patient within the data lock window.</li>

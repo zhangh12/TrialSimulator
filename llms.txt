@@ -76,8 +76,11 @@ we recommend reading the following vignettes in order:
 - Define endpoints and arms
   - [Time-to-event (TTE)
     endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineTimeToEventEndpoints.html)
-    - [Special case: simulate correlated PFS and
-      OS](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOs.html)
+    - [Special case: simulate correlated PFS and OS using a Gumbel
+      copula](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsGumbel.html)
+    - [Special case: simulate correlated PFS and OS under an
+      illness-death
+      model](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsIdm.html)
   - [Non-TTE
     endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineNonTimeToEventEndpoints.html)
     - [Special case: longitudinal
@@ -130,8 +133,11 @@ we recommend reading the following vignettes in order:
   : Class of Arm
 - [`Controllers`](https://zhangh12.github.io/TrialSimulator/reference/Controllers.md)
   : Class of Controller
+- [`CorrelatedPfsAndOs2()`](https://zhangh12.github.io/TrialSimulator/reference/CorrelatedPfsAndOs2.md)
+  : Generate Correlated PFS and OS Using Gumbel Copula
 - [`CorrelatedPfsAndOs3()`](https://zhangh12.github.io/TrialSimulator/reference/CorrelatedPfsAndOs3.md)
-  : Generate Correlated PFS and OS
+  : Generate Correlated PFS and OS Using the Three-States Illness-Death
+  Model
 - [`CorrelatedPfsAndOs4()`](https://zhangh12.github.io/TrialSimulator/reference/CorrelatedPfsAndOs4.md)
   : Generate Correlated PFS, OS and Objective Response
 - [`DynamicRNGFunction()`](https://zhangh12.github.io/TrialSimulator/reference/DynamicRNGFunction.md)
@@ -196,7 +202,7 @@ we recommend reading the following vignettes in order:
 - [`plot(`*`<milestone_time_summary>`*`)`](https://zhangh12.github.io/TrialSimulator/reference/plot.milestone_time_summary.md)
   : Plot Triggering Time of Milestones in Simulated Trials
 - [`plot(`*`<three_state_model>`*`)`](https://zhangh12.github.io/TrialSimulator/reference/plot.three_state_model.md)
-  : Plot result of three-state ill-death model
+  : Plot result of three-state illness-death model
 - [`qPiecewiseExponential()`](https://zhangh12.github.io/TrialSimulator/reference/qPiecewiseExponential.md)
   : Quantile Function of Piecewise Exponential Distribution
 - [`rconst()`](https://zhangh12.github.io/TrialSimulator/reference/rconst.md)
@@ -214,7 +220,7 @@ we recommend reading the following vignettes in order:
 - [`solvePiecewiseConstantExponentialDistribution()`](https://zhangh12.github.io/TrialSimulator/reference/solvePiecewiseConstantExponentialDistribution.md)
   : Compute Constant Rates of Piecewise Exponential Distribution
 - [`solveThreeStateModel()`](https://zhangh12.github.io/TrialSimulator/reference/solveThreeStateModel.md)
-  : Solve Parameters in a Three-State Ill-Death Model
+  : Solve Parameters in a Three-State Illness-death Model
 - [`summarizeDataFrame()`](https://zhangh12.github.io/TrialSimulator/reference/summarizeDataFrame.md)
   : Summarize A Data Frame
 - [`summarizeMilestoneTime()`](https://zhangh12.github.io/TrialSimulator/reference/summarizeMilestoneTime.md)
@@ -256,7 +262,11 @@ we recommend reading the following vignettes in order:
   Endpoints](https://zhangh12.github.io/TrialSimulator/articles/fixedDesign.md):
 - [Designs with Response-Adaptive
   Randomization](https://zhangh12.github.io/TrialSimulator/articles/responseAdaptive.md):
+- [Simulate Correlated Progression-Free Survival and Overall Survival
+  Using a Gumbel
+  Copula](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsGumbel.md):
 - [Simulate Correlated Progression-Free Survival and Overall Survival as
-  Endpoints](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOs.md):
+  Endpoints Under Illness-Death
+  Model](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsIdm.md):
 - [Wrapper Functions of Common Statistical Methods in
   TrialSimulator](https://zhangh12.github.io/TrialSimulator/articles/wrappers.md):

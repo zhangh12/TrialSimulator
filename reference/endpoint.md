@@ -178,5 +178,5 @@ ep2
 #> Summary generated.
 
 ## Example 4: generate correlated pfs and os
-## See vignette('simulatePfsAndOs')
+## See vignette('simulatePfsAndOsIdm') and vignette('simulatePfsAndOsGumbel')
 ```

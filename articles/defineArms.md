@@ -52,8 +52,16 @@ In this generator,
   4.5 years, respectively.
 - A constraint ensures that PFS does not exceed OS. To define correlated
   PFS and OS that satisfy this constraint in a more natural way, refer
-  to the vignette of [multi-state
-  model](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOs.md)
+  to the vignette of the [illness-death
+  model](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsIdm.md).
+  Note that data generated under the illness-death model may induce a
+  time-varying OS hazard ratio between treatment arms, violating the
+  proportional hazards (PH) assumption in a Cox model. For a data model
+  that is more suitable for PH Cox analysis, refer to the built-in
+  generator
+  [`CorrelatedPfsAndOs2()`](https://zhangh12.github.io/TrialSimulator/reference/CorrelatedPfsAndOs2.md)
+  and the vignette of the [Gumbel copula
+  method](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsGumbel.md).
 - PSA readout times are 0 (at baseline) and 1 (at year 1).
 
 The following code defines the endpoints and uses the `print` method to

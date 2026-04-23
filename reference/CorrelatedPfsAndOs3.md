@@ -1,4 +1,4 @@
-# Generate Correlated PFS and OS
+# Generate Correlated PFS and OS Using the Three-States Illness-Death Model
 
 Generate correlated PFS and OS endpoints using the three-states model.
 This function can be used as custom `generator` in the function

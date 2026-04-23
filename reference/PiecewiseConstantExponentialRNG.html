@@ -13,7 +13,7 @@ This distribution can be used to simulate delayed treatment effect."><meta prope
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.16.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.17.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,7 +36,8 @@ This distribution can be used to simulate delayed treatment effect."><meta prope
     <li><a class="dropdown-item" href="../articles/dynamicTreatmentSwitching.html">Simulate Trials with Dynamic Treatment Switching</a></li>
     <li><a class="dropdown-item" href="../articles/fixedDesign.html">An Example of Fixed Design with Two Correlated Endpoints</a></li>
     <li><a class="dropdown-item" href="../articles/responseAdaptive.html">Designs with Response-Adaptive Randomization</a></li>
-    <li><a class="dropdown-item" href="../articles/simulatePfsAndOs.html">Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints</a></li>
+    <li><a class="dropdown-item" href="../articles/simulatePfsAndOsGumbel.html">Simulate Correlated Progression-Free Survival and Overall Survival Using a Gumbel Copula</a></li>
+    <li><a class="dropdown-item" href="../articles/simulatePfsAndOsIdm.html">Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints Under Illness-Death Model</a></li>
     <li><a class="dropdown-item" href="../articles/wrappers.html">Wrapper Functions of Common Statistical Methods in TrialSimulator</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -51,7 +52,7 @@ This distribution can be used to simulate delayed treatment effect."><meta prope
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Generate Time-to-Event Endpoint from Piecewise Constant Exponential Distribution</h1>
-      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/v1.16.0/R/PiecewiseConstantExponentialRNG.R" class="external-link"><code>R/PiecewiseConstantExponentialRNG.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/R/PiecewiseConstantExponentialRNG.R" class="external-link"><code>R/PiecewiseConstantExponentialRNG.R</code></a></small>
       <div class="d-none name"><code>PiecewiseConstantExponentialRNG.Rd</code></div>
     </div>
 
@@ -124,15 +125,15 @@ being censoring at the last <code>end_time</code> unless it is set to <code>Inf<
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">PiecewiseConstantExponentialRNG</span><span class="op">(</span><span class="fl">10</span>, <span class="va">risk</span>, <span class="st">'PFS'</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          PFS PFS_event</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   3.357111         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  26.462804         1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2  52.000000         0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  52.000000         0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  52.000000         0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  52.000000         0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  42.063216         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   1.671844         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  38.115798         1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6  52.000000         0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  13.534581         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7   3.954107         1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 8  52.000000         0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9   3.832545         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9   6.316340         1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 10 52.000000         0</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

@@ -6,8 +6,11 @@
   : Class of Arm
 - [`Controllers`](https://zhangh12.github.io/TrialSimulator/reference/Controllers.md)
   : Class of Controller
+- [`CorrelatedPfsAndOs2()`](https://zhangh12.github.io/TrialSimulator/reference/CorrelatedPfsAndOs2.md)
+  : Generate Correlated PFS and OS Using Gumbel Copula
 - [`CorrelatedPfsAndOs3()`](https://zhangh12.github.io/TrialSimulator/reference/CorrelatedPfsAndOs3.md)
-  : Generate Correlated PFS and OS
+  : Generate Correlated PFS and OS Using the Three-States Illness-Death
+  Model
 - [`CorrelatedPfsAndOs4()`](https://zhangh12.github.io/TrialSimulator/reference/CorrelatedPfsAndOs4.md)
   : Generate Correlated PFS, OS and Objective Response
 - [`DynamicRNGFunction()`](https://zhangh12.github.io/TrialSimulator/reference/DynamicRNGFunction.md)
@@ -72,7 +75,7 @@
 - [`plot(`*`<milestone_time_summary>`*`)`](https://zhangh12.github.io/TrialSimulator/reference/plot.milestone_time_summary.md)
   : Plot Triggering Time of Milestones in Simulated Trials
 - [`plot(`*`<three_state_model>`*`)`](https://zhangh12.github.io/TrialSimulator/reference/plot.three_state_model.md)
-  : Plot result of three-state ill-death model
+  : Plot result of three-state illness-death model
 - [`qPiecewiseExponential()`](https://zhangh12.github.io/TrialSimulator/reference/qPiecewiseExponential.md)
   : Quantile Function of Piecewise Exponential Distribution
 - [`rconst()`](https://zhangh12.github.io/TrialSimulator/reference/rconst.md)
@@ -90,7 +93,7 @@
 - [`solvePiecewiseConstantExponentialDistribution()`](https://zhangh12.github.io/TrialSimulator/reference/solvePiecewiseConstantExponentialDistribution.md)
   : Compute Constant Rates of Piecewise Exponential Distribution
 - [`solveThreeStateModel()`](https://zhangh12.github.io/TrialSimulator/reference/solveThreeStateModel.md)
-  : Solve Parameters in a Three-State Ill-Death Model
+  : Solve Parameters in a Three-State Illness-death Model
 - [`summarizeDataFrame()`](https://zhangh12.github.io/TrialSimulator/reference/summarizeDataFrame.md)
   : Summarize A Data Frame
 - [`summarizeMilestoneTime()`](https://zhangh12.github.io/TrialSimulator/reference/summarizeMilestoneTime.md)

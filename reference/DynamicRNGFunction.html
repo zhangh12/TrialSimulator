@@ -13,7 +13,7 @@ changing to arguments of random number generator. See examples below."><meta pro
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.16.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.17.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,7 +36,8 @@ changing to arguments of random number generator. See examples below."><meta pro
     <li><a class="dropdown-item" href="../articles/dynamicTreatmentSwitching.html">Simulate Trials with Dynamic Treatment Switching</a></li>
     <li><a class="dropdown-item" href="../articles/fixedDesign.html">An Example of Fixed Design with Two Correlated Endpoints</a></li>
     <li><a class="dropdown-item" href="../articles/responseAdaptive.html">Designs with Response-Adaptive Randomization</a></li>
-    <li><a class="dropdown-item" href="../articles/simulatePfsAndOs.html">Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints</a></li>
+    <li><a class="dropdown-item" href="../articles/simulatePfsAndOsGumbel.html">Simulate Correlated Progression-Free Survival and Overall Survival Using a Gumbel Copula</a></li>
+    <li><a class="dropdown-item" href="../articles/simulatePfsAndOsIdm.html">Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints Under Illness-Death Model</a></li>
     <li><a class="dropdown-item" href="../articles/wrappers.html">Wrapper Functions of Common Statistical Methods in TrialSimulator</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -51,7 +52,7 @@ changing to arguments of random number generator. See examples below."><meta pro
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>A wrapper of random number generator.</h1>
-      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/v1.16.0/R/DynamicRNGFunction.R" class="external-link"><code>R/DynamicRNGFunction.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/R/DynamicRNGFunction.R" class="external-link"><code>R/DynamicRNGFunction.R</code></a></small>
       <div class="d-none name"><code>DynamicRNGFunction.Rd</code></div>
     </div>
 
@@ -111,7 +112,7 @@ later. For example, <code>foo(n = 100, mean = -1)</code> will generate data from
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">dfunc</span><span class="op">(</span><span class="fl">1e3</span>, mean <span class="op">=</span> <span class="fl">3.5</span><span class="op">)</span> <span class="co"># mean can be changed</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 3.620964</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 3.525356</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">dfunc</span><span class="op">(</span><span class="fl">1e3</span>, sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="co"># error because sd is fixed in dfunc</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error in dfunc(1000, sd = 1) : Cannot override fixed arguments: sd</span>

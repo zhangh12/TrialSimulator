@@ -1,17 +1,18 @@
-# Solve Parameters in a Three-State Ill-Death Model
+# Solve Parameters in a Three-State Illness-death Model
 
-The ill-death model consists of three states, `initial`, `progression`,
-and `death`. It can be used to model the progression-free survival (PFS)
-and overall survival (OS) in clinical trial simulation. It models the
-correlation PFS and OS without assumptions on latent status and copula.
-Also, it does not assume PFS and OS satisfy the proportional hazard
-assumption simultaneously. The three-state ill-death model ensures a
-nice property that PFS \<= OS with probability one. However, it requires
-three hazard parameters under the homogeneous Markov assumption. In
-practice, hazard parameters are hard to specify intuitively especially
-when no trial data is available at the planning stage.
+The illness-death model consists of three states, `initial`,
+`progression`, and `death`. It can be used to model the progression-free
+survival (PFS) and overall survival (OS) in clinical trial simulation.
+It models the correlation between PFS and OS without assumptions on
+latent status and copula. Also, it does not assume PFS and OS satisfy
+the proportional hazard assumption simultaneously. The three-state
+illness-death model ensures a nice property that PFS \<= OS with
+probability one. However, it requires three hazard parameters under the
+homogeneous Markov assumption. In practice, hazard parameters are hard
+to specify intuitively especially when no trial data is available at the
+planning stage.
 
-This function reparametrizes the ill-death model in term of three
+This function reparametrizes the illness-death model in term of three
 parameters, i.e. median of PFS, median of OS, and correlation between
 PFS and OS. The output of this function, which consists of the three
 hazard parameters, can be used to generate PFS and OS with desired
@@ -20,7 +21,7 @@ property. It can be used with the built-in data generator
 when defining endpoints in `TrialSimulator`.
 
 For more information, refer to [this
-vignette](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOs.html).
+vignette](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsIdm.html).
 
 ## Usage
 

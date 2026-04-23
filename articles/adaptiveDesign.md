@@ -68,12 +68,20 @@ twice for each arm to define `PFS` and `OS`. This implicitly assumes
 independence between the two time-to-event endpoints. `TrialSimulator`
 offers a built-in generator
 [`CorrelatedPfsAndOs3()`](https://zhangh12.github.io/TrialSimulator/reference/CorrelatedPfsAndOs3.md)
-to generate `PFS` and `OS` with correlation based on the ill-death
+to generate `PFS` and `OS` with correlation based on the illness-death
 model, which enjoys several nice properties. For selection of its
 arguments (i.e.  transition hazards), refer to vignette [Simulate
 Correlated Progression-Free Survival and Overall Survival as Endpoints
-in Clinical
-Trials](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOs.md).
+Under Illness-Death
+Model](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsIdm.md).
+Note that data generated under the illness-death model may induce a
+time-varying OS hazard ratio between treatment arms, violating the
+proportional hazards (PH) assumption in a Cox model. For a data model
+that is more suitable for PH Cox analysis, refer to the built-in
+generator
+[`CorrelatedPfsAndOs2()`](https://zhangh12.github.io/TrialSimulator/reference/CorrelatedPfsAndOs2.md)
+and vignette of the [Gumbel copula
+method](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsGumbel.md).
 
 ``` r
 #' define three arms

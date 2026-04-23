@@ -1,6 +1,23 @@
 # Changelog
 
+## TrialSimulator 1.17.0
+
+### New Feature
+
+- Add
+  [`CorrelatedPfsAndOs2()`](https://zhangh12.github.io/TrialSimulator/reference/CorrelatedPfsAndOs2.md)
+  to simulate correlated PFS and OS using a Gumbel copula while
+  targeting marginal PFS/OS medians and Kendall’s tau between observed,
+  uncensored PFS and OS times.
+
+### Updates
+
+- Add a vignette for simulating correlated PFS and OS using the Gumbel
+  copula method, alongside the existing illness-death model vignette.
+
 ## TrialSimulator 1.16.0
+
+CRAN release: 2026-04-13
 
 ### New Feature
 

@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.16.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.17.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,7 +50,8 @@
     <li><a class="dropdown-item" href="../articles/dynamicTreatmentSwitching.html">Simulate Trials with Dynamic Treatment Switching</a></li>
     <li><a class="dropdown-item" href="../articles/fixedDesign.html">An Example of Fixed Design with Two Correlated Endpoints</a></li>
     <li><a class="dropdown-item" href="../articles/responseAdaptive.html">Designs with Response-Adaptive Randomization</a></li>
-    <li><a class="dropdown-item" href="../articles/simulatePfsAndOs.html">Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints</a></li>
+    <li><a class="dropdown-item" href="../articles/simulatePfsAndOsGumbel.html">Simulate Correlated Progression-Free Survival and Overall Survival Using a Gumbel Copula</a></li>
+    <li><a class="dropdown-item" href="../articles/simulatePfsAndOsIdm.html">Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints Under Illness-Death Model</a></li>
     <li><a class="dropdown-item" href="../articles/wrappers.html">Wrapper Functions of Common Statistical Methods in TrialSimulator</a></li>
   </ul>
 </li>
@@ -76,7 +77,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>An Example of Fixed Design with Two Correlated Endpoints</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/v1.16.0/vignettes/fixedDesign.Rmd" class="external-link"><code>vignettes/fixedDesign.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/vignettes/fixedDesign.Rmd" class="external-link"><code>vignettes/fixedDesign.Rmd</code></a></small>
       <div class="d-none name"><code>fixedDesign.Rmd</code></div>
     </div>
 
@@ -100,7 +101,7 @@ standard-of-care arm.</p></li>
 exponential distribution, with rate parameter
 <code>-log(1 - 0.1)/18</code>.</p></li>
 <li>
-<p>Modeled by a three-state ill-death model, two endpoints
+<p>Modeled by a three-state illness-death model, two endpoints
 <code>PFS</code> and <code>OS</code> are simulated.</p>
 <ul>
 <li>Primary endpoint <code>OS</code> has a medians of 15, 18.5, 20
@@ -135,16 +136,22 @@ than
 <div class="section level2">
 <h2 id="transition-hazards-of-pfs-and-os">Transition Hazards of <code>PFS</code> and <code>OS</code><a class="anchor" aria-label="anchor" href="#transition-hazards-of-pfs-and-os"></a>
 </h2>
-<p>We adopt the ill-death model to simulate the two endpoints. This
+<p>We adopt the illness-death model to simulate the two endpoints. This
 ensures <code>PFS</code>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>≤</mo><annotation encoding="application/x-tex">\leq</annotation></semantics></math><code>OS</code> with probability one, and makes no assumption on latent
 variables or copula parameters. <code>TrialSimulator</code> offers a
 function <code><a href="../reference/solveThreeStateModel.html">solveThreeStateModel()</a></code> to convert endpoints’
 medians and correlation to the transition hazards, which are required by
 the built-in generator <code><a href="../reference/CorrelatedPfsAndOs3.html">CorrelatedPfsAndOs3()</a></code>. Refer to the
-vignette <a href="simulatePfsAndOs.html">Simulate Correlated
-Progression-Free Survival and Overall Survival as Endpoints in Clinical
-Trials</a> for more details.</p>
+vignette <a href="simulatePfsAndOsIdm.html">Simulate Correlated
+Progression-Free Survival and Overall Survival as Endpoints Under
+Illness-Death Model</a>. Note that data generated under the
+illness-death model may induce a time-varying OS hazard ratio between
+treatment arms, violating the proportional hazards (PH) assumption in a
+Cox model. For a data model that is more suitable for PH Cox analysis,
+refer to the built-in generator <code><a href="../reference/CorrelatedPfsAndOs2.html">CorrelatedPfsAndOs2()</a></code> and
+vignette of the <a href="simulatePfsAndOsGumbel.html">Gumbel copula
+method</a>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pars_soc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/solveThreeStateModel.html">solveThreeStateModel</a></span><span class="op">(</span>median_pfs <span class="op">=</span> <span class="fl">7</span>, median_os <span class="op">=</span> <span class="fl">15</span>, corr <span class="op">=</span> <span class="fl">.68</span>, </span>
 <span>                                 h12 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">.07</span>, <span class="fl">.10</span>, length.out <span class="op">=</span> <span class="fl">50</span><span class="op">)</span><span class="op">)</span></span>
@@ -311,7 +318,7 @@ events for <code>OS</code> and 800 events for <code>PFS</code>. In the
 action function, we compute one-sided p-value of <code>PFS</code> using
 the proportional hazard Cox model, and one-sided p-value of
 <code>OS</code> using the logrank test. This is consistent with the
-assumption of ill-death model implemented in data generator
+assumption of illness-death model implemented in data generator
 <code><a href="../reference/CorrelatedPfsAndOs3.html">CorrelatedPfsAndOs3()</a></code>. Note that five columns are available
 in locked data: <code>arm</code>, <code>pfs</code>, ‘os’, ‘pfs_event’,
 and ‘os_event’, which are used to construct model formula. Estimates of

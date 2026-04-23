@@ -17,8 +17,8 @@ milestone is specified for final analysis.
 - Dropout rate is 10% at month 18, which is modeled by an exponential
   distribution, with rate parameter `-log(1 - 0.1)/18`.
 
-- Modeled by a three-state ill-death model, two endpoints `PFS` and `OS`
-  are simulated.
+- Modeled by a three-state illness-death model, two endpoints `PFS` and
+  `OS` are simulated.
 
   - Primary endpoint `OS` has a medians of 15, 18.5, 20 months in
     standard-of-care, low dose and high dose arms, respectively.
@@ -41,17 +41,25 @@ milestone is specified for final analysis.
 
 ## Transition Hazards of `PFS` and `OS`
 
-We adopt the ill-death model to simulate the two endpoints. This ensures
-`PFS` $\leq$`OS` with probability one, and makes no assumption on latent
-variables or copula parameters. `TrialSimulator` offers a function
+We adopt the illness-death model to simulate the two endpoints. This
+ensures `PFS` $\leq$`OS` with probability one, and makes no assumption
+on latent variables or copula parameters. `TrialSimulator` offers a
+function
 [`solveThreeStateModel()`](https://zhangh12.github.io/TrialSimulator/reference/solveThreeStateModel.md)
 to convert endpoints’ medians and correlation to the transition hazards,
 which are required by the built-in generator
 [`CorrelatedPfsAndOs3()`](https://zhangh12.github.io/TrialSimulator/reference/CorrelatedPfsAndOs3.md).
 Refer to the vignette [Simulate Correlated Progression-Free Survival and
-Overall Survival as Endpoints in Clinical
-Trials](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOs.md)
-for more details.
+Overall Survival as Endpoints Under Illness-Death
+Model](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsIdm.md).
+Note that data generated under the illness-death model may induce a
+time-varying OS hazard ratio between treatment arms, violating the
+proportional hazards (PH) assumption in a Cox model. For a data model
+that is more suitable for PH Cox analysis, refer to the built-in
+generator
+[`CorrelatedPfsAndOs2()`](https://zhangh12.github.io/TrialSimulator/reference/CorrelatedPfsAndOs2.md)
+and vignette of the [Gumbel copula
+method](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsGumbel.md).
 
 ``` r
 pars_soc <- solveThreeStateModel(median_pfs = 7, median_os = 15, corr = .68, 
@@ -174,7 +182,7 @@ performed when we have at least 700 events for `OS` and 800 events for
 `PFS`. In the action function, we compute one-sided p-value of `PFS`
 using the proportional hazard Cox model, and one-sided p-value of `OS`
 using the logrank test. This is consistent with the assumption of
-ill-death model implemented in data generator
+illness-death model implemented in data generator
 [`CorrelatedPfsAndOs3()`](https://zhangh12.github.io/TrialSimulator/reference/CorrelatedPfsAndOs3.md).
 Note that five columns are available in locked data: `arm`, `pfs`, ‘os’,
 ‘pfs_event’, and ‘os_event’, which are used to construct model formula.
