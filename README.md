@@ -58,8 +58,8 @@ To efficiently utilize `TrialSimulator` for clinical trial simulations, we recom
 
 - Define endpoints and arms
   - [Time-to-event (TTE) endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineTimeToEventEndpoints.html)
-    - [Special case: simulate correlated PFS and OS using a Gumbel copula](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsGumbel.html)
-    - [Special case: simulate correlated PFS and OS under an illness-death model](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsIdm.html)
+    - [Correlated PFS and OS using a Gumbel copula](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsGumbel.html)
+    - [Correlated PFS and OS under an illness-death model](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsIdm.html)
   - [Non-TTE endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineNonTimeToEventEndpoints.html)
     - [Special case: longitudinal endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineLongitudinalEndpoints.html)
   - [Define and summarize arms](https://zhangh12.github.io/TrialSimulator/articles/defineArms.html)
