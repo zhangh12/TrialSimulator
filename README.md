@@ -5,6 +5,7 @@
 [![Project Status: Active – The project has reached a stable, usable
 state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![Code Coverage](https://codecov.io/gh/zhangh12/TrialSimulator/branch/main/graph/badge.svg)](https://app.codecov.io/gh/zhangh12/TrialSimulator)
 <!-- badges: end -->
 
 **&#x2695; No `for` loop in clinical trial simulation &#x2695;**
