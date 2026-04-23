@@ -1,8 +1,8 @@
 ---
-title: "Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints"
+title: "Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints Under Illness-Death Model"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints}
+  %\VignetteIndexEntry{Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints Under Illness-Death Model}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -10,7 +10,7 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  cache.path = 'cache/simulatePfsAndOs/',
+  cache.path = 'cache/simulatePfsAndOsIdm/',
   comment = '#>',
   dpi = 300,
   out.width = '100%'
@@ -30,7 +30,7 @@ Several methods have been proposed to achieve this, but many rely on latent vari
 
 ```{r pplloott}
 #| fig-alt: |
-#|   A three-state ill-death model for PFS and OS.
+#|   A three-state illness-death model for PFS and OS.
 #| out-width: 80%
 #| echo: false
 knitr::include_graphics('three_state_ill_death_model.png')

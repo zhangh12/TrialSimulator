@@ -1,0 +1,491 @@
+---
+title: "Simulate Correlated Progression-Free Survival and Overall Survival Using a Gumbel Copula"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Simulate Correlated Progression-Free Survival and Overall Survival Using a Gumbel Copula}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  cache.path = 'cache/simulatePfsAndOsGumbel/',
+  comment = '#>',
+  dpi = 300,
+  out.width = '100%'
+)
+```
+
+```{r setup, echo = FALSE, message = FALSE}
+library(dplyr)
+library(knitr)
+library(ggplot2)
+library(TrialSimulator)
+
+if (!requireNamespace('copula', quietly = TRUE)) {
+  knitr::opts_chunk$set(eval = FALSE)
+}
+```
+
+Progression-free survival (PFS) and overall survival (OS) are common time-to-event endpoints in oncology trials. Because progression or death defines a PFS event, simulated trial data should always satisfy $\mbox{PFS} \leq \mbox{OS}$. At the same time, the two endpoints are often highly correlated, so independent marginal simulation is usually not appropriate.
+
+This vignette describes the copula-based generator implemented in `TrialSimulator::CorrelatedPfsAndOs2()`. The function is intended for simulation settings where the user wants to specify three interpretable quantities:
+
+- the marginal median PFS,
+- the marginal median OS,
+- Kendall's tau between the observed, uncensored PFS and OS times.
+
+The method uses a Gumbel survival copula for a latent time to progression (TTP) and OS, and then defines
+
+$$
+\mbox{PFS} = \min(\mbox{TTP}, \mbox{OS}).
+$$
+
+This construction guarantees $\mbox{PFS} \leq \mbox{OS}$ for every simulated patient. It also keeps both marginal PFS and OS exponential, so the inputs can be specified directly through their medians.
+
+This is a useful distinction from the illness-death model in `TrialSimulator::CorrelatedPfsAndOs3()`. The illness-death model gives a clinically interpretable transition structure, but OS generated from that model can have a time-varying hazard ratio between treatment arms. Therefore, if OS will be analyzed using a proportional hazards Cox model and the simulation should be consistent with that analysis model, the copula-based method described here is often more appropriate.
+
+## Model
+
+Let $X$ denote latent TTP and let $Y$ denote OS. The model assumes exponential marginal survival functions
+
+$$
+\Pr(X > x) = \exp(-\lambda_X x), \qquad
+\Pr(Y > y) = \exp(-\lambda_Y y),
+$$
+
+and a Gumbel--Hougaard survival copula
+
+$$
+\Pr(X > x, Y > y)
+=
+\exp\left[
+-\left\{(\lambda_X x)^\theta + (\lambda_Y y)^\theta\right\}^{1/\theta}
+\right],
+\qquad \theta \geq 1.
+$$
+
+The observed PFS time is
+
+$$
+P = \min(X, Y).
+$$
+
+Under this model, OS is exponential with rate $\lambda_Y$. PFS is also exponential, with survival function
+
+$$
+\Pr(P > t)
+=
+\Pr(X > t, Y > t)
+=
+\exp\left[
+-\left\{(\lambda_X^\theta + \lambda_Y^\theta)t^\theta\right\}^{1/\theta}
+\right]
+=
+\exp(-\lambda_P t),
+$$
+
+where
+
+$$
+\lambda_P = \left(\lambda_X^\theta + \lambda_Y^\theta\right)^{1/\theta}.
+$$
+
+Therefore, if the target medians are $m_P$ for PFS and $m_Y$ for OS,
+
+$$
+\lambda_P = \frac{\log(2)}{m_P},
+\qquad
+\lambda_Y = \frac{\log(2)}{m_Y}.
+$$
+
+For a candidate value of $\theta$, the latent TTP rate is then
+
+$$
+\lambda_X =
+\left(\lambda_P^\theta - \lambda_Y^\theta\right)^{1/\theta}.
+$$
+
+This requires $m_P < m_Y$, as expected for PFS and OS.
+
+## Choosing the Copula Parameter
+
+For the Gumbel copula, Kendall's tau between latent TTP and OS is
+
+$$
+\tau(X,Y) = 1 - \frac{1}{\theta}.
+$$
+
+However, `CorrelatedPfsAndOs2()` asks for Kendall's tau between the observed, uncensored endpoints $P=\min(X,Y)$ and $Y$, not between latent TTP and OS. These are not the same quantity. The formula below is derived in the appendix. Under the model above,
+
+$$
+\tau(P,Y)
+=
+1 - \frac{1}{\theta}
+\left[
+1 - \left(\frac{m_P}{m_Y}\right)^\theta
+\right].
+$$
+
+Equivalently, writing $\tau_X = \tau(X,Y)$ and $\theta = 1/(1-\tau_X)$,
+
+$$
+\tau(P,Y)
+=
+1 -
+(1-\tau_X)
+\left[
+1 -
+\left(\frac{m_P}{m_Y}\right)^{1/(1-\tau_X)}
+\right].
+$$
+
+`CorrelatedPfsAndOs2()` solves this equation numerically for the latent Kendall's tau $\tau_X$, converts it to $\theta$, and then simulates from the Gumbel copula.
+
+For any finite $\theta$, $\tau(P,Y)$ is larger than $\tau(X,Y)$:
+
+$$
+\tau(P,Y)-\tau(X,Y)
+=
+\frac{1}{\theta}
+\left(\frac{m_P}{m_Y}\right)^\theta
+> 0.
+$$
+
+Intuitively, even if latent TTP and OS have a weaker association, observed PFS contains deaths by construction, which increases the association between observed PFS and OS.
+
+The requested value of $\tau(P,Y)$ has a lower bound. When $\theta=1$, TTP and OS are independent, but PFS still contains OS deaths through the definition $P=\min(X,Y)$. In this limiting case,
+
+$$
+\tau(P,Y) = \frac{m_P}{m_Y}.
+$$
+
+Thus, for fixed medians $m_P$ and $m_Y$, `CorrelatedPfsAndOs2()` can only target
+
+$$
+\frac{m_P}{m_Y} \leq \tau(P,Y) < 1.
+$$
+
+If the requested Kendall's tau is too small for the two medians, the function stops with an error.
+
+## Example
+
+Suppose we want to simulate PFS with median 5 months and OS with median 11 months, targeting Kendall's tau of 0.6 between observed, uncensored PFS and OS times.
+
+```{r example-endpoint, results = 'asis'}
+pfs_and_os <- endpoint(name = c('pfs', 'os'),
+                       type = c('tte', 'tte'),
+                       generator = CorrelatedPfsAndOs2,
+                       median_pfs = 5,
+                       median_os = 11,
+                       kendall = 0.6,
+                       pfs_name = 'pfs',
+                       os_name = 'os')
+
+pfs_and_os
+```
+
+For verification only, we can call the generator directly. This is not the recommended way to use `TrialSimulator` for simulation studies; in practice, the generator should usually be supplied to `endpoint()` and used inside the trial simulation workflow. Direct calls are helpful here because they let us check the marginal medians, the observed Kendall's tau, and the ordering $\mbox{PFS} \leq \mbox{OS}$ before adding enrollment, censoring, treatment arms, and analyses.
+
+```{r direct-generator}
+set.seed(123)
+dat <- CorrelatedPfsAndOs2(n = 100000,
+                           median_pfs = 5,
+                           median_os = 11,
+                           kendall = 0.6)
+
+head(dat, 2)
+```
+
+The simulation should approximately recover the requested medians and Kendall's tau between observed, uncensored PFS and OS times.
+
+```{r validation}
+with(dat, median(pfs))
+with(dat, median(os))
+with(dat, cor(pfs, os, method = 'kendall'))
+with(dat, all(pfs <= os))
+```
+
+Because this generator returns event indicators equal to 1 for both endpoints, censoring and staggered enrollment should be handled by the broader trial simulation workflow rather than by this endpoint generator.
+
+## Practical Guidance
+
+This generator is most useful when the simulation objective is to specify marginal PFS and OS medians and a rank-based association between the two observed endpoints. Kendall's tau is often more stable and interpretable than Pearson correlation for skewed time-to-event variables, and it is directly connected to the Gumbel copula parameter.
+
+There are still modeling assumptions to keep in mind:
+
+- PFS and OS are both marginally exponential.
+- Dependence is induced through a Gumbel survival copula on latent TTP and OS.
+- The Gumbel copula only allows non-negative dependence.
+- The requested Kendall's tau is for observed PFS and OS event times before censoring is applied.
+- The attainable Kendall's tau between observed PFS and OS is constrained by the PFS/OS median ratio.
+
+For simulations that require transition-specific hazards or a mechanistic disease process, the illness-death model implemented in `TrialSimulator::CorrelatedPfsAndOs3()` may be more appropriate. For simulations where the main requirement is a direct medians-plus-Kendall's-tau specification, especially when OS will be analyzed under a proportional hazards Cox model, `CorrelatedPfsAndOs2()` provides a compact alternative.
+
+## Appendix: Kendall's Tau for Observed PFS and OS
+
+This appendix gives the derivation behind the formula used in `CorrelatedPfsAndOs2()`.
+
+Let $X$ and $Y$ be nonnegative random variables with exponential margins
+
+$$
+X \sim \operatorname{Exp}(\lambda_X),
+\qquad
+Y \sim \operatorname{Exp}(\lambda_Y),
+$$
+
+and joint survival function
+
+$$
+S_{X,Y}(x,y)
+=
+\Pr(X>x, Y>y)
+=
+\exp\left[
+-\left\{(\lambda_X x)^\theta + (\lambda_Y y)^\theta\right\}^{1/\theta}
+\right],
+\qquad \theta \ge 1.
+$$
+
+Define $P=\min(X,Y)$. We want Kendall's tau between $P$ and $Y$.
+
+Standardize the margins by setting
+
+$$
+A=\lambda_X X, \qquad B=\lambda_Y Y.
+$$
+
+Then the joint survival function of $(A,B)$ is
+
+$$
+\Pr(A>a, B>b)
+=
+\exp\left\{-(a^\theta+b^\theta)^{1/\theta}\right\}.
+$$
+
+Use the polar-type transformation
+
+$$
+R=(A^\theta+B^\theta)^{1/\theta},
+\qquad
+W=\frac{A^\theta}{A^\theta+B^\theta}.
+$$
+
+A Jacobian calculation gives the joint density
+
+$$
+f_{R,W}(r,w)=\frac{1}{\theta} e^{-r}(r+\theta-1),
+\qquad r>0,\; 0<w<1.
+$$
+
+Thus, $R$ and $W$ are independent and $W \sim \operatorname{Unif}(0,1)$. The inverse transformation is
+
+$$
+A = R W^{1/\theta},
+\qquad
+B = R(1-W)^{1/\theta}.
+$$
+
+Let
+
+$$
+a=\lambda_X^\theta,
+\qquad
+b=\lambda_Y^\theta,
+\qquad
+c=\frac{a}{a+b},
+\qquad
+d=\frac{b}{a+b}.
+$$
+
+The event $X \le Y$ is equivalent to $W \le c$:
+
+$$
+X \le Y
+\iff
+\frac{A}{\lambda_X} \le \frac{B}{\lambda_Y}
+\iff
+W \le c,
+$$
+
+so
+
+$$
+P=
+\begin{cases}
+X, & W \le c,\\
+Y, & W > c.
+\end{cases}
+$$
+
+Using the survival-copula representation of Kendall's tau,
+
+$$
+\tau(P,Y)=4E\{S_{P,Y}(P,Y)\}-1.
+$$
+
+When $W \le c$, $P=X$ and
+
+$$
+S_{P,Y}(P,Y)=S_{X,Y}(X,Y)=e^{-R}.
+$$
+
+When $W>c$, $P=Y$. Since
+
+$$
+S_{P,Y}(y,y)=\Pr(P>y,Y>y)=\Pr(X>y,Y>y),
+$$
+
+we have, using $Y=B/\lambda_Y=R(1-W)^{1/\theta}/\lambda_Y$,
+
+$$
+S_{P,Y}(Y,Y)
+=
+\exp\left[
+-R\left(\frac{1-W}{d}\right)^{1/\theta}
+\right].
+$$
+
+Therefore,
+
+$$
+E\{S_{P,Y}(P,Y)\}
+=
+E\{e^{-R}\mathbf 1(W\le c)\}
++
+E\left[
+e^{-R((1-W)/d)^{1/\theta}}
+\mathbf 1(W>c)
+\right].
+$$
+
+By independence of $R$ and $W$,
+
+$$
+E\{S_{P,Y}(P,Y)\}
+=
+cL_R(1)
++
+\int_c^1
+L_R\left\{\left(\frac{1-w}{d}\right)^{1/\theta}\right\}
+dw,
+$$
+
+where $L_R(s)=E(e^{-sR})$. From the density of $R$,
+
+$$
+L_R(s)
+=
+\frac{1}{\theta}
+\int_0^\infty e^{-(1+s)r}(r+\theta-1)\,dr
+=
+\frac{\theta+(\theta-1)s}{\theta(1+s)^2}.
+$$
+
+In particular,
+
+$$
+L_R(1)=\frac{2\theta-1}{4\theta}.
+$$
+
+For the integral term, use the substitution
+
+$$
+t=\left(\frac{1-w}{d}\right)^{1/\theta},
+\qquad
+dw=-d\theta t^{\theta-1}dt.
+$$
+
+Then
+
+$$
+\int_c^1
+L_R\left\{\left(\frac{1-w}{d}\right)^{1/\theta}\right\}
+dw
+=
+d\theta\int_0^1 t^{\theta-1}L_R(t)\,dt.
+$$
+
+Substituting $L_R(t)$ gives
+
+$$
+d\int_0^1
+\frac{\theta t^{\theta-1}+(\theta-1)t^\theta}{(1+t)^2}
+dt.
+$$
+
+Because
+
+$$
+\frac{d}{dt}\left(\frac{t^\theta}{1+t}\right)
+=
+\frac{\theta t^{\theta-1}+(\theta-1)t^\theta}{(1+t)^2},
+$$
+
+the integral is
+
+$$
+d\left[\frac{t^\theta}{1+t}\right]_0^1
+=
+\frac{d}{2}.
+$$
+
+Thus,
+
+$$
+E\{S_{P,Y}(P,Y)\}
+=
+c\frac{2\theta-1}{4\theta}+\frac{d}{2}
+=
+\frac{2\theta-1+d}{4\theta},
+$$
+
+using $c+d=1$. Finally,
+
+$$
+\tau(P,Y)
+=
+4E\{S_{P,Y}(P,Y)\}-1
+=
+\frac{\theta-1+d}{\theta}
+=
+1-\frac{1}{\theta}
+\left(
+\frac{\lambda_X^\theta}{\lambda_X^\theta+\lambda_Y^\theta}
+\right).
+$$
+
+Since $P$ has rate
+
+$$
+\lambda_P =
+\left(\lambda_X^\theta+\lambda_Y^\theta\right)^{1/\theta},
+$$
+
+this can also be written as
+
+$$
+\tau(P,Y)
+=
+1-\frac{1}{\theta}
+\left(
+\frac{\lambda_X^\theta}{\lambda_P^\theta}
+\right)
+=
+1-\frac{1}{\theta}
+\left[
+1-\left(\frac{\lambda_Y}{\lambda_P}\right)^\theta
+\right].
+$$
+
+Because $\lambda_Y/\lambda_P = m_P/m_Y$, the formula used by `CorrelatedPfsAndOs2()` is
+
+$$
+\tau(P,Y)
+=
+1-\frac{1}{\theta}
+\left[
+1-\left(\frac{m_P}{m_Y}\right)^\theta
+\right].
+$$

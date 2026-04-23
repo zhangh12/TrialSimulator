@@ -149,7 +149,7 @@
 #' }
 #'
 #' ## Example 4: generate correlated pfs and os
-#' ## See vignette('simulatePfsAndOs')
+#' ## See vignette('simulatePfsAndOsIdm') and vignette('simulatePfsAndOsGumbel')
 #'
 #' @export
 endpoint = function(
@@ -169,4 +169,3 @@ endpoint = function(
   )
 
 }
-

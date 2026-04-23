@@ -1,6 +1,6 @@
 
 
-#' Generate Correlated PFS and OS
+#' Generate Correlated PFS and OS Using the Three-States Illness-Death Model
 #'
 #' @description
 #' Generate correlated PFS and OS endpoints using the three-states model. This

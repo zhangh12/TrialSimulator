@@ -38,7 +38,7 @@ for final analysis.
 -   Dropout rate is 10% at month 18, which is modeled by an exponential 
     distribution, with rate parameter `-log(1 - 0.1)/18`. 
 
--   Modeled by a three-state ill-death model, two endpoints `PFS` and `OS` 
+-   Modeled by a three-state illness-death model, two endpoints `PFS` and `OS` 
     are simulated.
     -   Primary endpoint `OS` has a medians of 15, 18.5, 20 months in standard-of-care, 
         low dose and high dose arms, respectively. 
@@ -60,12 +60,17 @@ for final analysis.
     
 ## Transition Hazards of `PFS` and `OS`
 
-We adopt the ill-death model to simulate the two endpoints. This ensures `PFS` 
+We adopt the illness-death model to simulate the two endpoints. This ensures `PFS` 
 $\leq$ `OS` with probability one, and makes no assumption on latent variables or 
 copula parameters. `TrialSimulator` offers a function `solveThreeStateModel()` 
 to convert endpoints' medians and correlation to the transition hazards, which 
 are required by the built-in generator `CorrelatedPfsAndOs3()`. Refer to the 
-vignette [Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints in Clinical Trials](simulatePfsAndOs.html) for more details. 
+vignette [Simulate Correlated Progression-Free Survival and Overall Survival as Endpoints Under Illness-Death Model](simulatePfsAndOsIdm.html). Note that data generated under the illness-death
+model may induce a time-varying OS hazard ratio between treatment arms,
+violating the proportional hazards (PH) assumption in a Cox model. For a data
+model that is more suitable for PH Cox analysis, refer to the built-in
+generator `CorrelatedPfsAndOs2()` and vignette of the 
+[Gumbel copula method](simulatePfsAndOsGumbel.html).
 
 ```{r iioeal}
 pars_soc <- solveThreeStateModel(median_pfs = 7, median_os = 15, corr = .68, 
@@ -162,7 +167,7 @@ To ensure sufficient powers of testing `PFS` and `OS`, final analysis is perform
 when we have at least 700 events for `OS` and 800 events for `PFS`. In the 
 action function, we compute one-sided p-value of `PFS` using the proportional 
 hazard Cox model, and one-sided p-value of `OS` using the logrank test. This is 
-consistent with the assumption of ill-death model implemented in data generator 
+consistent with the assumption of illness-death model implemented in data generator 
 `CorrelatedPfsAndOs3()`. Note that five columns are available in locked data: 
 `arm`, `pfs`, 'os', 'pfs_event', and 'os_event', which are used to construct 
 model formula. Estimates of hazard ratio are also computed. Built-in functions 
@@ -268,4 +273,3 @@ Note that `OS` does not satisfy the proportional hazard assumption, and a
 composite condition on event numbers is used to trigger the final analysis. 
 Thus, the powers in the table above would not match to the output from power 
 calculation packages, which is as expected. 
-

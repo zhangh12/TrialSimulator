@@ -2,7 +2,7 @@
 % Please edit documentation in R/CorrelatedPfsAndOs3.R
 \name{CorrelatedPfsAndOs3}
 \alias{CorrelatedPfsAndOs3}
-\title{Generate Correlated PFS and OS}
+\title{Generate Correlated PFS and OS Using the Three-States Illness-Death Model}
 \usage{
 CorrelatedPfsAndOs3(n, h01, h02, h12, pfs_name = "pfs", os_name = "os")
 }

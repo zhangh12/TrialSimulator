@@ -2,7 +2,7 @@
 % Please edit documentation in R/solveThreeStateModel.R
 \name{plot.three_state_model}
 \alias{plot.three_state_model}
-\title{Plot result of three-state ill-death model}
+\title{Plot result of three-state illness-death model}
 \usage{
 \method{plot}{three_state_model}(x, ...)
 }
@@ -12,5 +12,5 @@
 \item{...}{currently not supported.}
 }
 \description{
-Plot result of three-state ill-death model
+Plot result of three-state illness-death model
 }

@@ -58,7 +58,8 @@ To efficiently utilize `TrialSimulator` for clinical trial simulations, we recom
 
 - Define endpoints and arms
   - [Time-to-event (TTE) endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineTimeToEventEndpoints.html)
-    - [Special case: simulate correlated PFS and OS](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOs.html)
+    - [Special case: simulate correlated PFS and OS using a Gumbel copula](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsGumbel.html)
+    - [Special case: simulate correlated PFS and OS under an illness-death model](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsIdm.html)
   - [Non-TTE endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineNonTimeToEventEndpoints.html)
     - [Special case: longitudinal endpoints](https://zhangh12.github.io/TrialSimulator/articles/defineLongitudinalEndpoints.html)
   - [Define and summarize arms](https://zhangh12.github.io/TrialSimulator/articles/defineArms.html)
@@ -84,7 +85,6 @@ To efficiently utilize `TrialSimulator` for clinical trial simulations, we recom
   - [Group sequential test] See `?GroupSequentialTest`. 
   - [Graphical testing procedure] See `?GraphicalTesting`. 
   - [Combination test based on independent increment] extended from [Jorgens et al. 2019](https://onlinelibrary.wiley.com/doi/10.1002/pst.1926). Vignette is under development. 
-
 
 
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/solveThreeStateModel.R
 \name{solveThreeStateModel}
 \alias{solveThreeStateModel}
-\title{Solve Parameters in a Three-State Ill-Death Model}
+\title{Solve Parameters in a Three-State Illness-death Model}
 \usage{
 solveThreeStateModel(
   median_pfs,
@@ -36,18 +36,18 @@ derived from \code{h01}, \code{h02}, and \code{h12}. }
 }
 }
 \description{
-The ill-death model consists of three states, \code{initial}, \code{progression},
+The illness-death model consists of three states, \code{initial}, \code{progression},
 and \code{death}. It can be used to model the progression-free survival (PFS)
 and overall survival (OS) in clinical trial simulation. It models the
-correlation PFS and OS without assumptions on latent status and copula.
+correlation between PFS and OS without assumptions on latent status and copula.
 Also, it does not assume PFS and OS satisfy the proportional hazard assumption
-simultaneously. The three-state ill-death model ensures a nice property that
+simultaneously. The three-state illness-death model ensures a nice property that
 PFS <= OS with probability one. However, it requires three hazard parameters
 under the homogeneous Markov assumption. In practice, hazard parameters are
 hard to specify intuitively especially when no trial data is available at
 the planning stage.
 
-This function reparametrizes the ill-death model in term of three parameters,
+This function reparametrizes the illness-death model in term of three parameters,
 i.e. median of PFS, median of OS, and correlation between PFS and OS. The
 output of this function, which consists of the three hazard parameters, can
 be used to generate PFS and OS with desired property. It can be used with
@@ -55,7 +55,7 @@ the built-in data generator \code{CorrelatedPfsAndOs3()} when defining
 endpoints in \code{TrialSimulator}.
 
 For more information, refer to
-\href{https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOs.html}{this vignette}.
+\href{https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsIdm.html}{this vignette}.
 }
 \examples{
 
