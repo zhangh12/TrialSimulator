@@ -150,6 +150,7 @@ test_that("censor_trial_data: selected_arms leaves other arms untouched", {
 ## ── stratified randomization: per-stratum balance ─────────────────────────────
 test_that("stratified randomization produces balanced strata", {
 
+  skip_on_cran()
   skip_if_not_installed("TrialSimulator")
 
   set.seed(5)

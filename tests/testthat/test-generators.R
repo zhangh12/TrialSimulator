@@ -61,6 +61,8 @@ test_that("PiecewiseConstantExponentialRNG returns expected columns and events",
 
 test_that("PiecewiseConstantExponentialRNG approximates a constant-hazard exponential", {
 
+  skip_on_cran()
+
   risk <- data.frame(end_time = c(1000), piecewise_risk = 0.1)
 
   set.seed(101)
@@ -101,6 +103,8 @@ test_that("PiecewiseConstantExponentialRNG rejects bad risk tables", {
 })
 
 test_that("CorrelatedPfsAndOs3 produces PFS <= OS and renames columns", {
+
+  skip_on_cran()
 
   set.seed(2024)
   d <- CorrelatedPfsAndOs3(5000, h01 = 0.10, h02 = 0.05, h12 = 0.12,
