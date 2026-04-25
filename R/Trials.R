@@ -1153,7 +1153,9 @@ Trials <- R6::R6Class(
       trial_data <- self$get_trial_data()
       trial_data <- trial_data[trial_data$arm %in% arms, , drop = FALSE]
 
-      if(...length() != 0L){
+      ## Note: ...length() can report >0 when callers splice an empty list of
+      ## quosures with !!!. Use enquos() to test for real filter expressions.
+      if(length(rlang::enquos(...)) > 0L){
         trial_data <- tryCatch({
           trial_data %>% dplyr::filter(...)
         },

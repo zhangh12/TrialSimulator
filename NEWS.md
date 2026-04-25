@@ -7,6 +7,7 @@
 ## Updates
 
 - Add a vignette for simulating correlated PFS and OS using the Gumbel copula method, alongside the existing illness-death model vignette.
+- Skip an unnecessary `dplyr::filter()` call in `Trials$get_event_tables()` when no filter expression is provided, reducing total simulation wall time by roughly 5-10% in trials with frequent milestone condition checks.
 
 # TrialSimulator 1.16.0
 
