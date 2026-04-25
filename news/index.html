@@ -58,6 +58,7 @@
 <div class="section level3">
 <h3 id="updates-1-17-0">Updates<a class="anchor" aria-label="anchor" href="#updates-1-17-0"></a></h3>
 <ul><li>Add a vignette for simulating correlated PFS and OS using the Gumbel copula method, alongside the existing illness-death model vignette.</li>
+<li>Skip an unnecessary <code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter()</a></code> call in <code>Trials$get_event_tables()</code> when no filter expression is provided, reducing total simulation wall time by roughly 5-10% in trials with frequent milestone condition checks.</li>
 </ul></div>
 </div>
     <div class="section level2">
