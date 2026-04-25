@@ -20,7 +20,7 @@ developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.re
 
 ## Shiny App
 
-An online version of this app is hosted on [shinyapps.io](https://bx7ttm-han-zhang.shinyapps.io/TrialDesigner/). This app is still under development. 
+An online version of this app, `TrialDesigner`, is hosted on [shinyapps.io](https://bx7ttm-han-zhang.shinyapps.io/TrialDesigner/). This app is still under development. 
 
 ## Validation
 
