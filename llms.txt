@@ -24,7 +24,7 @@ full trial life cycle.
 
 ## Shiny App
 
-An online version of this app is hosted on
+An online version of this app, `TrialDesigner`, is hosted on
 [shinyapps.io](https://bx7ttm-han-zhang.shinyapps.io/TrialDesigner/).
 This app is still under development.
 
