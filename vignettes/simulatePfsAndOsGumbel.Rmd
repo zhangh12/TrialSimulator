@@ -190,7 +190,7 @@ For verification only, we can call the generator directly. This is not the recom
 
 ```{r direct-generator}
 set.seed(123)
-dat <- CorrelatedPfsAndOs2(n = 100000,
+dat <- CorrelatedPfsAndOs2(n = 10000,
                            median_pfs = 5,
                            median_os = 11,
                            kendall = 0.6)

@@ -265,15 +265,21 @@ incorporate the interim results—specifically, the trial must not be stopped at
 interim (i.e., `interim_decision == "add dose arms"`), 
 and the function `go_nogo()` must return `"go"` at the final analysis. 
 
-```{r message=FALSE}
+```{r eval=FALSE, message=FALSE}
 ## important: reset before calling run() again
 controller$reset()
 controller$run(n = 10, plot_event = FALSE, silent = TRUE)
 res <- controller$get_output()
+```
 
-res %>% 
-  kable(escape = FALSE) %>% 
-  kable_styling(bootstrap_options = "striped", 
+```{r echo=FALSE}
+res <- TrialSimulator:::getDoseRangingOutput()
+```
+
+```{r}
+res %>%
+  kable(escape = FALSE) %>%
+  kable_styling(bootstrap_options = "striped",
                 full_width = FALSE,
                 position = "left") %>%
   scroll_box(width = "100%")

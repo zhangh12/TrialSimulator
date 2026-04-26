@@ -1,3 +1,10 @@
+# TrialSimulator 1.17.1
+
+## Updates
+
+- Reduce vignette compilation time for CRAN (`doseRanging.Rmd` now loads pre-computed simulation output; `simulatePfsAndOsGumbel.Rmd` uses a smaller validation sample).
+- Skip a few stochastic unit tests on CRAN to avoid occasional flakes from RNG variation.
+
 # TrialSimulator 1.17.0
 
 ## New Feature
