@@ -146,15 +146,15 @@ adding enrollment, censoring, treatment arms, and analyses.
 
 ``` r
 set.seed(123)
-dat <- CorrelatedPfsAndOs2(n = 100000,
+dat <- CorrelatedPfsAndOs2(n = 10000,
                            median_pfs = 5,
                            median_os = 11,
                            kendall = 0.6)
 
 head(dat, 2)
-#>        pfs        os pfs_event os_event
-#> 1 6.828217 14.728535         1        1
-#> 2 2.153555  2.617195         1        1
+#>        pfs       os pfs_event os_event
+#> 1 6.534539 6.534539         1        1
+#> 2 3.116476 3.116476         1        1
 ```
 
 The simulation should approximately recover the requested medians and
@@ -162,11 +162,11 @@ Kendall’s tau between observed, uncensored PFS and OS times.
 
 ``` r
 with(dat, median(pfs))
-#> [1] 4.989699
+#> [1] 5.013457
 with(dat, median(os))
-#> [1] 11.0149
+#> [1] 11.35727
 with(dat, cor(pfs, os, method = 'kendall'))
-#> [1] 0.598662
+#> [1] 0.6068072
 with(dat, all(pfs <= os))
 #> [1] TRUE
 ```

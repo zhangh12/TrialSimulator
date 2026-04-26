@@ -289,24 +289,24 @@ marginal medians, the observed Kendall’s tau, and the ordering
 before adding enrollment, censoring, treatment arms, and analyses.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
-<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/CorrelatedPfsAndOs2.html">CorrelatedPfsAndOs2</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">100000</span>,</span>
+<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/CorrelatedPfsAndOs2.html">CorrelatedPfsAndOs2</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">10000</span>,</span>
 <span>                           median_pfs <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>                           median_os <span class="op">=</span> <span class="fl">11</span>,</span>
 <span>                           kendall <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">dat</span>, <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="co">#&gt;        pfs        os pfs_event os_event</span></span>
-<span><span class="co">#&gt; 1 6.828217 14.728535         1        1</span></span>
-<span><span class="co">#&gt; 2 2.153555  2.617195         1        1</span></span></code></pre></div>
+<span><span class="co">#&gt;        pfs       os pfs_event os_event</span></span>
+<span><span class="co">#&gt; 1 6.534539 6.534539         1        1</span></span>
+<span><span class="co">#&gt; 2 3.116476 3.116476         1        1</span></span></code></pre></div>
 <p>The simulation should approximately recover the requested medians and
 Kendall’s tau between observed, uncensored PFS and OS times.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">dat</span>, <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">pfs</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 4.989699</span></span>
+<span><span class="co">#&gt; [1] 5.013457</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">dat</span>, <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">os</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 11.0149</span></span>
+<span><span class="co">#&gt; [1] 11.35727</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">dat</span>, <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">pfs</span>, <span class="va">os</span>, method <span class="op">=</span> <span class="st">'kendall'</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.598662</span></span>
+<span><span class="co">#&gt; [1] 0.6068072</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">dat</span>, <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">pfs</span> <span class="op">&lt;=</span> <span class="va">os</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
 <p>Because this generator returns event indicators equal to 1 for both

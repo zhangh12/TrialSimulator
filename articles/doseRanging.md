@@ -228,10 +228,12 @@ must return `"go"` at the final analysis.
 controller$reset()
 controller$run(n = 10, plot_event = FALSE, silent = TRUE)
 res <- controller$get_output()
+```
 
-res %>% 
-  kable(escape = FALSE) %>% 
-  kable_styling(bootstrap_options = "striped", 
+``` r
+res %>%
+  kable(escape = FALSE) %>%
+  kable_styling(bootstrap_options = "striped",
                 full_width = FALSE,
                 position = "left") %>%
   scroll_box(width = "100%")
