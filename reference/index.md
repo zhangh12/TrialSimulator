@@ -66,6 +66,8 @@
   : Carry out log rank test
 - [`getAdaptiveDesignOutput()`](https://zhangh12.github.io/TrialSimulator/reference/getAdaptiveDesignOutput.md)
   : Get simulation output in the vignette adaptiveDesign.Rmd
+- [`getDoseRangingOutput()`](https://zhangh12.github.io/TrialSimulator/reference/getDoseRangingOutput.md)
+  : Get simulation output in the vignette doseRanging.Rmd
 - [`getFixedDesignOutput()`](https://zhangh12.github.io/TrialSimulator/reference/getFixedDesignOutput.md)
   : Get simulation output in the vignette fixedDesign.Rmd
 - [`listener()`](https://zhangh12.github.io/TrialSimulator/reference/listener.md)
