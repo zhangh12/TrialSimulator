@@ -17,6 +17,8 @@
 #' @importFrom grDevices dev.off png
 #' @importFrom graphics axis barplot hist par
 #' @importFrom rstudioapi isAvailable viewer
+#' @importFrom Rcpp sourceCpp
+#' @useDynLib TrialSimulator, .registration = TRUE
 NULL
 
 

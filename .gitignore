@@ -7,3 +7,8 @@
 inst/doc
 docs
 *.tar.gz
+
+# Compiled C++ artifacts
+*.o
+*.so
+*.dll

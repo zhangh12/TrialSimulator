@@ -6,7 +6,7 @@ Description: Simulate phase II and/or phase III clinical trials. It supports var
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports: 
+Imports:
     base64enc,
     copula,
     dplyr,
@@ -16,11 +16,14 @@ Imports:
     htmltools,
     mvtnorm,
     R6,
+    Rcpp,
     rlang,
     rpact,
     rstudioapi,
     survival,
     utils
+LinkingTo:
+    Rcpp
 Authors@R: 
     person("Han", "Zhang", , "zhangh.ustc@gmail.com", role = c("cre", "aut"))
 RoxygenNote: 7.3.3
