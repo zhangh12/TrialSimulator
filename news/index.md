@@ -1,5 +1,18 @@
 # Changelog
 
+## TrialSimulator 1.18.0
+
+### New Feature
+
+- Accelerate milestone trigger evaluation via C++ helpers (Rcpp) for
+  [`eventNumber()`](https://zhangh12.github.io/TrialSimulator/reference/eventNumber.md)
+  and
+  [`enrollment()`](https://zhangh12.github.io/TrialSimulator/reference/enrollment.md)
+  conditions. Wall-time reduction ranges from a few percent to ~20%
+  depending on how condition-evaluation-heavy the design is, with no
+  change to results. Set `options(trialsimulator.use_cpp = FALSE)` to
+  fall back to the original R implementation.
+
 ## TrialSimulator 1.17.1
 
 ### Updates

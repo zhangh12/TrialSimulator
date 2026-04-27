@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.17.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.18.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,6 +49,13 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.18.0" id="trialsimulator-1180">TrialSimulator 1.18.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1180"></a></h2>
+<div class="section level3">
+<h3 id="new-feature-1-18-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-1-18-0"></a></h3>
+<ul><li>Accelerate milestone trigger evaluation via C++ helpers (Rcpp) for <code><a href="../reference/eventNumber.html">eventNumber()</a></code> and <code><a href="../reference/enrollment.html">enrollment()</a></code> conditions. Wall-time reduction ranges from a few percent to ~20% depending on how condition-evaluation-heavy the design is, with no change to results. Set <code>options(trialsimulator.use_cpp = FALSE)</code> to fall back to the original R implementation.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.17.1" id="trialsimulator-1171">TrialSimulator 1.17.1<a class="anchor" aria-label="anchor" href="#trialsimulator-1171"></a></h2>
 <div class="section level3">
