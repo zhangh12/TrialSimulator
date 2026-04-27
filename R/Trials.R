@@ -1253,11 +1253,13 @@ Trials <- R6::R6Class(
         arms <- self$get_arms_name()
       }
 
-      ## Fast path: when no filter expressions are passed (the common case),
-      ## use C++ helpers that compute the lock time directly without building
-      ## intermediate event-count data.frames. The R fallback below is used
-      ## when callers pass filter conditions via ... (which require dplyr).
-      if(length(rlang::enquos(...)) == 0L){
+      ## Fast path: when no filter expressions are passed AND the C++ toggle
+      ## is enabled (the default), use C++ helpers that compute the lock time
+      ## directly without building intermediate event-count data.frames.
+      ## The R fallback is used when callers pass filter conditions via ...
+      ## (which require dplyr) OR when the user has set
+      ## options(trialsimulator.use_cpp = FALSE).
+      if(.use_cpp_lock_time() && length(rlang::enquos(...)) == 0L){
         td <- self$get_trial_data()
         td <- td[td$arm %in% arms, , drop = FALSE]
         milestone_times <- vapply(seq_along(endpoints), function(i){
@@ -1357,10 +1359,11 @@ Trials <- R6::R6Class(
         arms <- self$get_arms_name()
       }
 
-      ## Fast path: when no filter expressions are passed, use the C++ helper
-      ## that computes the enrollment lock time directly. Filter expressions
-      ## still go through the dplyr-backed get_event_tables() path.
-      if(length(rlang::enquos(...)) == 0L){
+      ## Fast path: when no filter expressions are passed AND the C++ toggle
+      ## is enabled, use the C++ helper that computes the enrollment lock
+      ## time directly. Filter expressions or options(trialsimulator.use_cpp=FALSE)
+      ## route through the dplyr-backed R path.
+      if(.use_cpp_lock_time() && length(rlang::enquos(...)) == 0L){
         td <- self$get_trial_data()
         et <- td$enroll_time[td$arm %in% arms]
         milestone_time <- find_enrollment_lock_time_cpp(
