@@ -1,3 +1,9 @@
+# TrialSimulator 1.18.1
+
+## Bug Fix
+
+- Fix a bug where a composite milestone triggering condition combined with `'or'` would error out when not all of its branches could be reached, instead of resolving to the reachable branch.
+
 # TrialSimulator 1.18.0
 
 ## New Feature
