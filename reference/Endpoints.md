@@ -224,6 +224,7 @@ print an endpoint object
 
 #### Examples
 
+
     rng <- function(n){
       data.frame(x = sample(1:3, n, replace = TRUE),
                  y = sample(1:3, n, replace = TRUE)

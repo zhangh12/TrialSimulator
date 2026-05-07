@@ -14,6 +14,7 @@ further background information, refer to
 of the `DoseFinding` package.
 
 ``` r
+
 mods <- DoseFinding::Mods(sigEmax = rbind(c(1, 3)), 
                           placEff = log(.1/(1 - .1)), 
                           maxEff = log(.25/(1 - .25)) - log(.1/(1 - .1)),
@@ -25,6 +26,7 @@ DoseFinding::plotMods(mods, trafo = function(x) 1/(1+exp(-x)))
 ![](doseRanging_files/figure-html/flaf-1.png)
 
 ``` r
+
 
 ## response rates on curve
 x <- DoseFinding::getResp(mods, doses = c(0, 0.5, 1.5, 2.5, 4))
@@ -69,6 +71,7 @@ In our simulation, we assume
 ## Define Placebo and High Dose Arms
 
 ``` r
+
 ep <- endpoint(name = 'ep', type = 'non-tte', readout = c(ep = 1),
                generator = rbinom, size = 1, prob = 0.1)
 pbo <- arm(name = 'dose = 0.0')
@@ -83,6 +86,7 @@ trt4$add_endpoints(ep)
 ## Define a Trial
 
 ``` r
+
 accrual_rate <- data.frame(end_time = c(7, Inf),
                            piecewise_rate = c(5, 20))
 
@@ -110,6 +114,7 @@ respectively. Note that the 30 readouts are from the placebo and the
 highest dose arm, while the 150 readouts are from all five arms.
 
 ``` r
+
 interim <- milestone(name = 'interim',
                      when = eventNumber(endpoint = 'ep', n = 30),
                      action = action_at_interim)
@@ -125,6 +130,7 @@ save the z statistic for summary later, e.g., computing the proportion
 of early termination.
 
 ``` r
+
 action_at_interim <- function(trial){
 
   ## get data snapshot
@@ -168,6 +174,7 @@ calls a helper function `go_nogo()` which can be found in the Appendix
 below.
 
 ``` r
+
 action_at_final <- function(trial){
 
   locked_data <- trial$get_locked_data('final')
@@ -185,6 +192,7 @@ randomized to the three newly added arms after interim, reflecting the
 new randomization ratio 1:2:2:2:1.
 
 ``` r
+
 listener <- listener()
 listener$add_milestones(interim, final)
 
@@ -199,6 +207,7 @@ is early terminated even if in simulation we keep going with three newly
 added dose arms.
 
 ``` r
+
 output <- controller$get_output()
 
 output %>% 
@@ -209,9 +218,9 @@ output %>%
   scroll_box(width = "100%")
 ```
 
-| trial |       seed | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<ep\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<arms\> |   z_value | interim_decision | milestone_time\_\<final\> | n_events\_\<final\>\_\<ep\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | decision | error_message |
-|:------|-----------:|----------------------------:|------------------------------:|--------------------------------------:|:--------------------------------|----------:|:-----------------|--------------------------:|----------------------------:|------------------------------------:|:------------------------------|:---------|:--------------|
-| 123   | 1960520344 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 0.9258209 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | no-go    |               |
+| trial | seed | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<ep\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<arms\> | z_value | interim_decision | milestone_time\_\<final\> | n_events\_\<final\>\_\<ep\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | decision | error_message |
+|:---|---:|---:|---:|---:|:---|---:|:---|---:|---:|---:|:---|:---|:---|
+| 123 | 1960520344 | 6.8 | 30 | 35 | c(“dose …. | 0.9258209 | stop trial | 13.7 | 150 | 150 | c(“dose …. | no-go |  |
 
 We can call `controller$run(n = 10)` to simulate additional trials. in
 the function `action_at_final()`, the go/no-go decision (`decision` in
@@ -224,6 +233,7 @@ results—specifically, the trial must not be stopped at interim (i.e.,
 must return `"go"` at the final analysis.
 
 ``` r
+
 ## important: reset before calling run() again
 controller$reset()
 controller$run(n = 10, plot_event = FALSE, silent = TRUE)
@@ -231,6 +241,7 @@ res <- controller$get_output()
 ```
 
 ``` r
+
 res %>%
   kable(escape = FALSE) %>%
   kable_styling(bootstrap_options = "striped",
@@ -239,20 +250,21 @@ res %>%
   scroll_box(width = "100%")
 ```
 
-| trial |       seed | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<ep\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<arms\> |   z_value | interim_decision | milestone_time\_\<final\> | n_events\_\<final\>\_\<ep\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | decision | error_message |
-|:------|-----------:|----------------------------:|------------------------------:|--------------------------------------:|:--------------------------------|----------:|:-----------------|--------------------------:|----------------------------:|------------------------------------:|:------------------------------|:---------|:--------------|
-| 123   | 1915467752 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 0.6123731 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | go       |               |
-| 123   | 1678009487 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 0.9258209 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | no-go    |               |
-| 123   | 1177293210 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 0.4918697 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | no-go    |               |
-| 123   |  155620919 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 1.3327856 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | go       |               |
-| 123   | 1745672662 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 1.2247450 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | go       |               |
-| 123   |  484372378 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 1.9364930 | add dose arms    |                      13.7 |                         150 |                                 150 | c(“dose ….                    | go       |               |
-| 123   |    2788507 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 0.4330129 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | no-go    |               |
-| 123   | 1945408685 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 0.4918697 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | no-go    |               |
-| 123   |  737764402 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 0.9258209 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | go       |               |
-| 123   |  787086561 |                         6.8 |                            30 |                                    35 | c(“dose ….                      | 1.0954461 | stop trial       |                      13.7 |                         150 |                                 150 | c(“dose ….                    | go       |               |
+| trial | seed | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<ep\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<arms\> | z_value | interim_decision | milestone_time\_\<final\> | n_events\_\<final\>\_\<ep\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | decision | error_message |
+|:---|---:|---:|---:|---:|:---|---:|:---|---:|---:|---:|:---|:---|:---|
+| 123 | 1915467752 | 6.8 | 30 | 35 | c(“dose …. | 0.6123731 | stop trial | 13.7 | 150 | 150 | c(“dose …. | go |  |
+| 123 | 1678009487 | 6.8 | 30 | 35 | c(“dose …. | 0.9258209 | stop trial | 13.7 | 150 | 150 | c(“dose …. | no-go |  |
+| 123 | 1177293210 | 6.8 | 30 | 35 | c(“dose …. | 0.4918697 | stop trial | 13.7 | 150 | 150 | c(“dose …. | no-go |  |
+| 123 | 155620919 | 6.8 | 30 | 35 | c(“dose …. | 1.3327856 | stop trial | 13.7 | 150 | 150 | c(“dose …. | go |  |
+| 123 | 1745672662 | 6.8 | 30 | 35 | c(“dose …. | 1.2247450 | stop trial | 13.7 | 150 | 150 | c(“dose …. | go |  |
+| 123 | 484372378 | 6.8 | 30 | 35 | c(“dose …. | 1.9364930 | add dose arms | 13.7 | 150 | 150 | c(“dose …. | go |  |
+| 123 | 2788507 | 6.8 | 30 | 35 | c(“dose …. | 0.4330129 | stop trial | 13.7 | 150 | 150 | c(“dose …. | no-go |  |
+| 123 | 1945408685 | 6.8 | 30 | 35 | c(“dose …. | 0.4918697 | stop trial | 13.7 | 150 | 150 | c(“dose …. | no-go |  |
+| 123 | 737764402 | 6.8 | 30 | 35 | c(“dose …. | 0.9258209 | stop trial | 13.7 | 150 | 150 | c(“dose …. | go |  |
+| 123 | 787086561 | 6.8 | 30 | 35 | c(“dose …. | 1.0954461 | stop trial | 13.7 | 150 | 150 | c(“dose …. | go |  |
 
 ``` r
+
 ## Number of overall Go
 sum(res$interim_decision == 'add dose arms' & 'decision' == 'go')
 #> [1] 0
@@ -268,6 +280,7 @@ For completeness, the full code of the helper functions `go_nogo()` is
 included below, which informs go/no-go decision at the end of the trial.
 
 ``` r
+
 go_nogo <- function(data){
 
   ## candidate models for MCPMod

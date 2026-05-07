@@ -31,6 +31,7 @@ controller(trial, listener)
 ## Examples
 
 ``` r
+
 # a minimum, meaningful, and executable example,
 # where a randomized trial with two arms is simulated and analyzed.
 

@@ -56,12 +56,12 @@ Dr. Dmitrienko’s materials.
 
   - Bootstrap estimates from
     [`DoseFinding::maFitMod()`](https://openpharma.github.io/DoseFinding/reference/maFitMod.html)
-    are used to calculate, for each dose $d \in \{ 20,25,30,35\}$, the
-    probability $p_{d}$ that the estimated treatment effect exceeds
+    are used to calculate, for each dose $`d \in \{20, 25, 30, 35\}`$,
+    the probability $`p_d`$ that the estimated treatment effect exceeds
     0.08.
 
   - The randomization ratio for each active dose is set proportional to
-    $p_{d}$
+    $`p_d`$
 
   - The placebo ratio remains fixed at 20%.
 
@@ -75,6 +75,7 @@ The following function generates `fev1` outcomes using the assumed
 defining endpoints.
 
 ``` r
+
 rng <- function(n, dose){
 
   model <- DoseFinding::Mods(
@@ -95,6 +96,7 @@ Each treatment arm is associated with an endpoint definition, specifying
 the dose and data generator.
 
 ``` r
+
 fev1 <- endpoint(name = 'fev1', type = 'non-tte', readout = c(fev1 = 4),
                  generator = rng, dose = 0)
 pbo <- arm(name = '0.0')
@@ -128,6 +130,7 @@ of 36 months. The total trial duration is extended to 40 months to
 account for a 4-month follow-up after last enrollment.
 
 ``` r
+
 accrual_rate <- data.frame(end_time = c(24, Inf),
                            piecewise_rate = c(100/24, 100/12))
 trial <- trial(
@@ -157,6 +160,7 @@ analysis. The same action is used for both interims, while a separate
 one is used for the final.
 
 ``` r
+
 stage1 <- milestone(name = 'stage 1',
                     when = eventNumber('fev1', n = 50),
                     action = stage_action, milestone_name = 'stage 1')
@@ -176,6 +180,7 @@ probabilities. It utilities a helper function `compute_sample_ratio()`
 which can be found in the Appendix below.
 
 ``` r
+
 stage_action <- function(trial, milestone_name){
 
   locked_data <- trial$get_locked_data(milestone_name)
@@ -196,6 +201,7 @@ multiple contrast test and stores the result. It calls a helper function
 `multiple_contrast_test()`, which can be found in the Appendix below.
 
 ``` r
+
 final_action <- function(trial){
 
   locked_data <- trial$get_locked_data('final')
@@ -215,6 +221,7 @@ After registering all milestones with a listener object, we simulate the
 trial using `controller$run()`.
 
 ``` r
+
 listener <- listener()
 listener$add_milestones(stage1, stage2, final)
 #> A milestone <stage 1> is registered.
@@ -250,6 +257,7 @@ controller$run(n = 1, silent = TRUE)
 
 ``` r
 
+
 output <- controller$get_output()
 
 output %>% 
@@ -260,15 +268,16 @@ output %>%
   scroll_box(width = "100%")
 ```
 
-| trial      |       seed | milestone_time\_\<stage 1\> | n_events\_\<stage 1\>\_\<fev1\> | n_events\_\<stage 1\>\_\<patient_id\> | n_events\_\<stage 1\>\_\<arms\> | milestone_time\_\<stage 2\> | n_events\_\<stage 2\>\_\<fev1\> | n_events\_\<stage 2\>\_\<patient_id\> | n_events\_\<stage 2\>\_\<arms\> | milestone_time\_\<final\> | n_events\_\<final\>\_\<fev1\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | MC_test | error_message |
-|:-----------|-----------:|----------------------------:|--------------------------------:|--------------------------------------:|:--------------------------------|----------------------------:|--------------------------------:|--------------------------------------:|:--------------------------------|--------------------------:|------------------------------:|------------------------------------:|:------------------------------|:--------|:--------------|
-| Trial-3415 | 1727811904 |                       15.76 |                              50 |                                    66 | c(“0.0”,….                      |                       30.28 |                             120 |                                   153 | c(“0.0”,….                      |                     39.88 |                           200 |                                 200 | c(“0.0”,….                    | TRUE    |               |
+| trial | seed | milestone_time\_\<stage 1\> | n_events\_\<stage 1\>\_\<fev1\> | n_events\_\<stage 1\>\_\<patient_id\> | n_events\_\<stage 1\>\_\<arms\> | milestone_time\_\<stage 2\> | n_events\_\<stage 2\>\_\<fev1\> | n_events\_\<stage 2\>\_\<patient_id\> | n_events\_\<stage 2\>\_\<arms\> | milestone_time\_\<final\> | n_events\_\<final\>\_\<fev1\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | MC_test | error_message |
+|:---|---:|---:|---:|---:|:---|---:|---:|---:|:---|---:|---:|---:|:---|:---|:---|
+| Trial-3415 | 1727811904 | 15.76 | 50 | 66 | c(“0.0”,…. | 30.28 | 120 | 153 | c(“0.0”,…. | 39.88 | 200 | 200 | c(“0.0”,…. | TRUE |  |
 
 In the output, the columns `n_event_<milestone>_<arms>` contain detailed
 information on observed events or sample sizes per arm at each
 milestone. It is evident that we have pipeline patients at both interim.
 
 ``` r
+
 output[, 'n_events_<stage 1>_<arms>']
 #> [[1]]
 #>    arm fev1 patient_id
@@ -306,6 +315,7 @@ contrast test. Note that the implementation to these two functions are
 completely project-specific.
 
 ``` r
+
 compute_sample_ratio <- function(data){
 
   data$dose <- as.numeric(data$arm)

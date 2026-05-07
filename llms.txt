@@ -41,6 +41,7 @@ continuously updated.
 You can install the current release version from `CRAN` with:
 
 ``` r
+
 install.packages("TrialSimulator")
 ```
 
@@ -50,6 +51,7 @@ You can install the development version from
 [GitHub](https://github.com/zhangh12/TrialSimulator) with:
 
 ``` r
+
 if(!requireNamespace("remotes", quietly = TRUE)){
   install.packages("remotes")
 }

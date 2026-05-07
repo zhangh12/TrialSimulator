@@ -34,6 +34,7 @@ binary biomarker used to define subgroups.
 The placebo arm is constructed as follows:
 
 ``` r
+
 ## time-to-event endpoint
 pfs <- endpoint(name = 'pfs', type = 'tte', generator = rexp, rate = .07)
 ## continuous endpoint
@@ -69,6 +70,7 @@ Now we execute the trial. After simulation, locked data can be retrieved
 using the `get_locked_data()` method with the milestone name `"final"`.
 
 ``` r
+
 controller$run(n = 1, plot_event = FALSE, silent = TRUE)
 locked_data <- trial$get_locked_data('final')
 head(locked_data)
@@ -102,6 +104,7 @@ compatible with that of
 [`dplyr::filter()`](https://dplyr.tidyverse.org/reference/filter.html).
 
 ``` r
+
 ## adjust for covariate x
 fitCoxph(Surv(pfs, pfs_event) ~ arm + x, placebo = 'pbo', 
          data = locked_data, alternative = 'less', 
@@ -146,6 +149,7 @@ We analyze the continuous endpoint `cep` using linear models, with and
 without covariate adjustment.
 
 ``` r
+
 ## ATE accounting for covariate x
 fitLinear(cep ~ arm * x, placebo = 'pbo', 
           data = locked_data, alternative = 'greater')
@@ -178,6 +182,7 @@ estimands (e.g., odds ratio, risk ratio, risk difference) can be
 computed by specifying the `scale` argument.
 
 ``` r
+
 ## compute regression coefficient of arm
 fitLogistic(bep ~ arm * x + biomarker, placebo = 'pbo', 
             data = locked_data, alternative = 'greater', 
@@ -208,6 +213,7 @@ the Farrington-Manning test. Note that the latter does not support
 covariate adjustment.
 
 ``` r
+
 ## compute risk difference (ATE)
 fitLogistic(bep ~ arm + x * biomarker, placebo = 'pbo', 
             data = locked_data, alternative = 'greater', 

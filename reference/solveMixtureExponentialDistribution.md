@@ -59,6 +59,7 @@ a named vector of `median2` or `overall_median`.
 ## Examples
 
 ``` r
+
 library(dplyr)
 #> 
 #> Attaching package: ‘dplyr’

@@ -36,13 +36,13 @@ milestone is specified for final analysis.
   - `PFS` is tested using one-sided p-value from the Cox proportional
     hazard model as the PH assumption is assumed.
   - The Bonferroni correction is adopted to split overall
-    $\alpha = 5\%$, i.e., claiming significant effect for an endpoint
-    when p-value is lower than $0.05/4$.
+    $`\alpha = 5\%`$, i.e., claiming significant effect for an endpoint
+    when p-value is lower than $`0.05/4`$.
 
 ## Transition Hazards of `PFS` and `OS`
 
 We adopt the illness-death model to simulate the two endpoints. This
-ensures `PFS` $\leq$`OS` with probability one, and makes no assumption
+ensures `PFS` $`\leq`$`OS` with probability one, and makes no assumption
 on latent variables or copula parameters. `TrialSimulator` offers a
 function
 [`solveThreeStateModel()`](https://zhangh12.github.io/TrialSimulator/reference/solveThreeStateModel.md)
@@ -62,6 +62,7 @@ and vignette of the [Gumbel copula
 method](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsGumbel.md).
 
 ``` r
+
 pars_soc <- solveThreeStateModel(median_pfs = 7, median_os = 15, corr = .68, 
                                  h12 = seq(.07, .10, length.out = 50))
 pars_soc
@@ -70,6 +71,7 @@ pars_soc
 ```
 
 ``` r
+
 pars_low <- solveThreeStateModel(median_pfs = 9, median_os = 18.5, corr = .65, 
                                  h12 = seq(.04, .07, length.out = 50))
 pars_low
@@ -78,6 +80,7 @@ pars_low
 ```
 
 ``` r
+
 pars_high <- solveThreeStateModel(median_pfs = 10, median_os = 20, corr = .60, 
                                   h12 = seq(.02, .06, length.out = 50))
 pars_high
@@ -91,7 +94,7 @@ pars_high
 | low  | 0.051 | 0.026 | 0.062 |
 | high | 0.040 | 0.030 | 0.047 |
 
-Transition hazards in three treatment arms
+Transition hazards in three treatment arms {.table}
 
 ## Define Treatment Arms
 
@@ -104,6 +107,7 @@ and
 define the three treatment arms.
 
 ``` r
+
 #' define SoC
 pfs_os_in_soc <- endpoint(name = c('pfs', 'os'), 
                           type = c('tte', 'tte'), 
@@ -137,8 +141,11 @@ printing the arm object in R console. The medians of `PFS` and `OS`
 matches to the settings very well.
 
 ``` r
+
 high
 ```
+
+CjwhRE9DVFlQRSBodG1sPgo8aHRtbD4KPGhlYWQ+CiAgICA8bWV0YSBjaGFyc2V0PSJVVEYtOCI+CiAgICA8dGl0bGU+QXJtIE5hbWU6IGhpZ2g8L3RpdGxlPgogICAgPHN0eWxlPgogICAgICAgIGJvZHkgewogICAgICAgICAgICBmb250LWZhbWlseTogQXJpYWwsIHNhbnMtc2VyaWY7CiAgICAgICAgICAgIG1hcmdpbjogMjBweDsKICAgICAgICAgICAgYmFja2dyb3VuZC1jb2xvcjogd2hpdGU7CiAgICAgICAgICAgIGRpc3BsYXk6IGZsZXg7CiAgICAgICAgICAgIGZsZXgtZGlyZWN0aW9uOiBjb2x1bW47CiAgICAgICAgICAgIGFsaWduLWl0ZW1zOiBjZW50ZXI7CiAgICAgICAgfQogICAgICAgIGgxIHsKICAgICAgICAgICAgY29sb3I6IGJsYWNrOwogICAgICAgICAgICB0ZXh0LWFsaWduOiBjZW50ZXI7CiAgICAgICAgICAgIG1hcmdpbi1ib3R0b206IDIwcHg7CiAgICAgICAgICAgIGZvbnQtc2l6ZTogMjBweDsKICAgICAgICB9CiAgICAgICAgLnN1YnRpdGxlIHsKICAgICAgICAgICAgdGV4dC1hbGlnbjogY2VudGVyOwogICAgICAgICAgICBjb2xvcjogIzY2NjsKICAgICAgICAgICAgbWFyZ2luLWJvdHRvbTogMjBweDsKICAgICAgICAgICAgZm9udC1zaXplOiAxNnB4OwogICAgICAgIH0KICAgICAgICB0YWJsZSB7CiAgICAgICAgICAgIGJvcmRlci1jb2xsYXBzZTogY29sbGFwc2U7CiAgICAgICAgICAgIGZvbnQtc2l6ZTogMTRweDsKICAgICAgICAgICAgYm9yZGVyOiAxcHggc29saWQgIzk5OTsKICAgICAgICAgICAgd2lkdGg6IGF1dG87CiAgICAgICAgICAgIG1hcmdpbjogMCBhdXRvOwogICAgICAgIH0KICAgICAgICB0aCB7CiAgICAgICAgICAgIGJhY2tncm91bmQtY29sb3I6ICNmMGYwZjA7CiAgICAgICAgICAgIGNvbG9yOiBibGFjazsKICAgICAgICAgICAgcGFkZGluZzogMTBweDsKICAgICAgICAgICAgdGV4dC1hbGlnbjogbGVmdDsKICAgICAgICAgICAgZm9udC13ZWlnaHQ6IG5vcm1hbDsKICAgICAgICAgICAgYm9yZGVyOiAxcHggc29saWQgIzk5OTsKICAgICAgICAgICAgd2hpdGUtc3BhY2U6IG5vd3JhcDsKICAgICAgICAgICAgZm9udC1zaXplOiAxNHB4OwogICAgICAgIH0KICAgICAgICB0ZCB7CiAgICAgICAgICAgIHBhZGRpbmc6IDEwcHg7CiAgICAgICAgICAgIGJvcmRlcjogMXB4IHNvbGlkICM5OTk7CiAgICAgICAgICAgIHZlcnRpY2FsLWFsaWduOiB0b3A7CiAgICAgICAgICAgIGxpbmUtaGVpZ2h0OiAxLjQ7CiAgICAgICAgICAgIGZvbnQtc2l6ZTogMTRweDsKICAgICAgICB9CiAgICAgICAgLm5vLWNvbCB7CiAgICAgICAgICAgIHRleHQtYWxpZ246IGNlbnRlcjsKICAgICAgICAgICAgd2hpdGUtc3BhY2U6IG5vd3JhcDsKICAgICAgICB9CiAgICAgICAgLnZhcmlhYmxlLWNvbCB7CiAgICAgICAgICAgIHdoaXRlLXNwYWNlOiBub3dyYXA7CiAgICAgICAgfQogICAgICAgIC5zdGF0cy1jb2wgewogICAgICAgIH0KICAgICAgICAuZnJlcXMtY29sIHsKICAgICAgICAgICAgbGluZS1oZWlnaHQ6IDIwcHg7CiAgICAgICAgfQogICAgICAgIC5ncmFwaC1jb2wgewogICAgICAgICAgICB0ZXh0LWFsaWduOiBjZW50ZXI7CiAgICAgICAgICAgIHdoaXRlLXNwYWNlOiBub3dyYXA7CiAgICAgICAgICAgIHZlcnRpY2FsLWFsaWduOiB0b3A7CiAgICAgICAgfQogICAgICAgIGltZyB7CiAgICAgICAgICAgIGRpc3BsYXk6IGJsb2NrOwogICAgICAgICAgICBtYXJnaW46IDAgYXV0bzsKICAgICAgICAgICAgdmVydGljYWwtYWxpZ246IHRvcDsKICAgICAgICB9CiAgICA8L3N0eWxlPgo8L2hlYWQ+Cjxib2R5PgogICAgPGgxPkFybSBOYW1lOiBoaWdoPC9oMT4KICAgIDxkaXYgY2xhc3M9InN1YnRpdGxlIiBzdHlsZT0idGV4dC1hbGlnbjogbGVmdDsiPgogICAgICAgIEVuZHBvaW50cyAoMik6cGZzLCBvczxicj4KICAgIDwvZGl2PgoKICAgIDx0YWJsZT4KICAgICAgICA8dGhlYWQ+CiAgICAgICAgICAgIDx0cj4KICAgICAgICAgICAgICAgIDx0aCBjbGFzcz0ibm8tY29sIj5ObzwvdGg+CiAgICAgICAgICAgICAgICA8dGggY2xhc3M9InZhcmlhYmxlLWNvbCI+VmFyaWFibGU8L3RoPgogICAgICAgICAgICAgICAgPHRoIGNsYXNzPSJzdGF0cy1jb2wiPlN0YXRzIC8gRnJlcXM8L3RoPgogICAgICAgICAgICAgICAgPHRoIGNsYXNzPSJncmFwaC1jb2wiPkdyYXBoPC90aD4KICAgICAgICAgICAgPC90cj4KICAgICAgICA8L3RoZWFkPgogICAgICAgIDx0Ym9keT4KICAgICAgICAgICAgPHRyPgogICAgICAgICAgICAgICAgPHRkIGNsYXNzPSJuby1jb2wiPjE8L3RkPgogICAgICAgICAgICAgICAgPHRkIGNsYXNzPSJ2YXJpYWJsZS1jb2wiPnBmczxicj5bdGltZS10by1ldmVudF08L3RkPgogICAgICAgICAgICAgICAgPHRkIGNsYXNzPSJzdGF0cy1jb2wiPk1lZGlhbiB0aW1lOiAxMC4wOTxicj5FdmVudHM6IDEwMDAwPGJyPk1pc3Npbmc6IDAgKDAlKTwvdGQ+CiAgICAgICAgICAgICAgICA8dGQgY2xhc3M9ImdyYXBoLWNvbCI+PGltZyBzcmM9ImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxpVkJPUncwS0dnb0FBQUFOU1VoRVVnQUFBSGdBQUFCUUNBSUFBQUJkK1NiZUFBQUFDWEJJV1hNQUFBN0RBQUFPd3dISGI2aGtBQUFJRVVsRVFWUjRuTzJjWFV3VDZSckgzeGxHS0xWUVd1Z1g3bG44V0tta0gxcytqNmFJWUk4ZU9iWVhHcnRpMUN0aXhNVEVyOFE3RXVWR0V5L2t4c1RrYk1pSlIwVE1raFgwSUNBZ3hvL0txZ1ZST2FkMWJWMUxTNnNVTExTRmxrNW5MOWdZenNwMFNqc2RaWnpmRlhUZWVlYmYvMHlmbVhuZjkza2hETU1BUStLQlA3ZUFyd1hHYUlwZ2pLWUlHSVI4N3ZkdVgraHpDNkU3U2JKdnkwRjYwTnIzZENvdlY4UmMzd2tES1MyRUJ4MnVsTzhVcXhEY1JwY3ZYN2JaYkI2UDUrelpzd0FBaDhNeE1qSlNVbEpDbmN5bER5ekoxMVJXVmxhczVZVHdIL1BHeHNic2R2dkZpeGZuL2gwY0hEeDE2aFExK21nREZIYjFYdW53WjJWL285cjhmWVRVNFhBNGlvdUw3WFk3QU1CdXQ1ZVVsTXo5elJBbENDVGNzRU9md2s2Rm90OW54WW9WZ1VEQTdYWm5abVltVGhuTmdBRmdMY3JsT1JRS3hmUG56eE1oaUs3RStKd2hrOGxldm54SnJoUjZFNlBSS3BWcVlHQ0FYQ24wSmthamk0cUtuang1UXE0VWVoT2owWEs1M0dxMStudytjdFhRbUJpTlJoQkVLcFV5YVRwNmtKNUxQNzRPOGJOWTZmTGRmOHROV3NTZTY5ZXZmL1RvRWZOK0dDVXdqOC9uWjBCd1drWTYvak9leFdJWkdocENVWFQraHhzMmJEQVlEQWtYU0Jzd0RNTXdESFhZSENpR2gxNnZWeXFWcWFtcDh6ODBtODFyMXF6QjNZZmgvNEg2ZnZyUFRCb0NBdW5yL3JFK0J6OTF6SDhGLzNpR0pCTEo0T0NnV0N5bTRvcFk0c0JjRG9haUtNWko0eXp5dmdoQlVHbHA2ZjM3OXhNampHNGdxcjl2VjhXNnMxcXRmdkRnd2E1ZHU4aFVSRlBpNnVvdkxTMjlkKzhlV1ZMb1RWeEc1K2ZubTgxbXY5OVBsaG9hRTVmUkNJSW9sVXFqMFVpV0dob1Q3eWdoY3orTWtuaU4xbWcwM2QzZHBFaWhOL0F6bzlIUTl2UDFkcU1ySE12K0d6ZHVOQnFOVEpvbUJQYSsrZVgrLzN5WWIyb3Fwamw0TEJhcnNMQ1F5UjZFUUJpR0FRRENveU11MFRjU25FUlNWbFkyTkRRME16TXpNelB6NmRZelo4NThuSW5BZ0FjOGRMdWpzNnVyMnpTWmpOK3AxTkhSWVRBWStIeitnbHUzYmR0MjY5YXRSQW1rQzdCN0lvU2lLT3I1TUlXZm85bHNOcGZMaGFDRlQ0VktwWEs3M1NNakk0blNTQXVRaWgrMGNZYUFJR2pyMXEwM2I5NnNxYWtoUlJNdElXZTJYVlZWVlZOVEV5bWg2QW81Um0vZXZQblZxMWMybTQyVWFMU0VIS01SQk5GcXRXMXRiYVJFb3lXa1RkVGRzMmZQbFN0WHlJcEdQMGd6dXF5c3pHcTFNdGtERHhpZDlveS9OLzNYUEJtTUwxQlNVcEplcjJkdWlYakFnZC82R3YvMTQ4LzNSdjF4bDhIdDI3ZXZvYUVCWStycEZnVERNR3htZk96WHR4Rkd3WThmUDY3VmFqa2NEdUZZcjBxbHVuUG5Eam5qeHZRQ2RnMzFkZDE5OG1LYUpjQlAxenFkVHFmVHNWZ3N3dE4yOE9EQmhvWUdNaThFdWdEMzljOW1TYkt3WjQrRzhRdXp5c3ZMdFZwdGNuSXlZYmlxcXFyMjluYVh5MFdtUmxvQVlRR1BhMnlhbFNYaVJyVHgwM2tkZUp3NGNRSkYwZnI2ZXRJMDBvTW9VNHpkYnMvT3pvNm1wZFBwek16TWZQdjJiUndKallhUVgxa29Fb21xcTZ2UG56OVBldVFsVFVKS09JOGRPM2JwMGlVbVU4OG5JVWFMeGVMcTZ1cVRKMDhtSXZnU0pWRkZ5YlcxdFoyZG5jUER3d21LditTQVo2Y21wbVlCQ0FiaWZBWC9FeHdPcDdhMjlzQ0JBMythVmYzVkFyZGNlL3J3MnI4N2Z1cnVKOWRwQUE0ZE9wU1Nrc0lVTTgrQnFQTUZpT0t2a3oxUElmekowZGV2WHplYnpRc09nVWNBaHVIbTVtYVZTbFZRVUxCang0NTRsUzV4a0w4b3YzTlB6S3dvVk16aXArc1hMMTZZVEtaUWFOR0xlZ2dFZ3JhMnRzcktTcUZRcUZhcjQxSzYxTG4yejY3SGcwOTdHMjg4bTQzMHZCMzlDOHVuZEhWMUNRU0N1M2Z2eHJZN1BZQkxDK0gzRGhjbUs4N0RYNjhqVHJaczJYTDE2bFc5WHQvYTJwcW9ZM3o1UkhsQzRybWk1eGdZR01qSnlUbDkralNLNG5mSTBoZnFGdmRScVZUOS9mMmRuWjI3ZCs5MnU5MlVIZmNMZ2RKVmxFUWlVVzl2YjA1T2prS2hhR2xwd2I2cXNaZ29yL3o0VThkOERBYURRcUdReStYTnpjM1QwOU5raGYyUytUeEd6OUhhMnFyUmFMS3lzZzRmUHR6ZTNoNEtoY2lOLzBYeHg3UmRRcUx2K0Y4c1ZxdTFxYW5weG8wYlZxdTF2THg4MDZaTnhjWEZTcVV5bWdHZEpVVHNsYk9rOCtiTm01NmVub2NQSC9iMzkxc3NGb2xFc25MbHlxS2lJcWxVdW5idDJ1enNiSkZJeE9Gd0VpY2dvVUFESFRjZFlSaG1mVnRjTHN2RW1TTHRjcmtzRnN2T25UdEhSMGVwa1JVSUJHdzIyK3ZYcng4L2Ztd3ltYXhXcThQaGVQZnVYVGdjNXZQNVhDNVhMQmJETUx4OCtYSTJtNTJXbGdZQTRQRjRNQXh6dVZ3QVFGcGFHb0lnQUFBMm01MlNrZ0lBWUxGWXFhbXBmM3huQ01ySXlDRFVzR3pac3NXZVZ6YWJqVmV3SGRXTS8rM2J0dzhQRDRkQ29jOCtFY252OTQrUGozczhIcWZUaVdHWTErdjErLzFlcnhmRHNBOGZQcUFvT2prNUNRQ1luSnljNnpYMCtYekJZQkFBTUQwOS9iR3ZKaHdPZXp3ZXdtUE56czU2dmQ1RnlWdTFhaFZlNlZTMHFZTWhUaEF1Qi9PaEtMeVlvdnY2K3ZxNnVqb2VqeGU1R1lxaVkyTmpJcEdJTUtEVDZSUUtoVEJNb0dCaVltSitCc0RENy9jSGcwSEM1QkFLaGNiSHg0VkNJYUc4MGRGUnNWaU1WL0R3RWJmYmZlSENoYjE3OXk2NE5aYWlleDZQVjFGUmNlN2N1Y2pOYkRiYi92MzdiOSsrVFJoUXJWWTNOallTTGtkeDlPaFJqVWFqMCtraU4ydHNiRFNaVEhWMWRaR2JtYzNtSTBlT1JGTjlVMUJRME5MU01wZjlJMUJUVXpOM3QxaVFXSHFTeEdLeFZDcGR2WHAxNUdicDZlbDVlWG1FelFBQU1wa3NMeStQOENjaWxVb1ZDZ1ZoUUxsY0RrRVFZYlBrNU9RbzVjbmw4blhyMWhIK2tuSnpjd1VDQWQ3V2FKK2pHZUtFV1RHYUloaWpLWUl4bWlJWW95bUNNWm9pR0tNcGdqR2FJaGlqS1lJeG1pSVlveW1DTVpvaWZnZncxVXVFdjdqcFdRQUFBQUJKUlU1RXJrSmdnZz09IiBhbHQ9IktNIGN1cnZlIj48L3RkPgogICAgICAgICAgICA8L3RyPgogICAgICAgICAgICA8dHI+CiAgICAgICAgICAgICAgICA8dGQgY2xhc3M9Im5vLWNvbCI+MjwvdGQ+CiAgICAgICAgICAgICAgICA8dGQgY2xhc3M9InZhcmlhYmxlLWNvbCI+b3M8YnI+W3RpbWUtdG8tZXZlbnRdPC90ZD4KICAgICAgICAgICAgICAgIDx0ZCBjbGFzcz0ic3RhdHMtY29sIj5NZWRpYW4gdGltZTogMjAuMTU8YnI+RXZlbnRzOiAxMDAwMDxicj5NaXNzaW5nOiAwICgwJSk8L3RkPgogICAgICAgICAgICAgICAgPHRkIGNsYXNzPSJncmFwaC1jb2wiPjxpbWcgc3JjPSJkYXRhOmltYWdlL3BuZztiYXNlNjQsaVZCT1J3MEtHZ29BQUFBTlNVaEVVZ0FBQUhnQUFBQlFDQU1BQUFEbFJVRzdBQUFDNkZCTVZFVUFBQUFIQndjSkNRa01EQXdPRGc0UER3OFFFQkFSRVJFU0VoSVRFeE1VRkJRVkZSVVdGaFlYRnhjWUdCZ1pHUmthR2hvYkd4c2NIQndkSFIwZ0lDQWlJaUlqSXlNa0pDUW1KaVlwS1NrcUtpb3VMaTR2THk4eU1qSXpNek0xTlRVMk5qWTVPVGs2T2pvOVBUMCtQajQvUHo5Q1FrSkRRME5FUkVSSFIwZEtTa3BMUzB0TVRFeE5UVTFRVUZCU1VsSlRVMU5VVkZSVlZWVldWbFpiVzF0Y1hGeGRYVjFpWW1Ka1pHUmxaV1ZtWm1abloyZG9hR2hxYW1wcmEydHNiR3h0YlcxdWJtNXZiMjl5Y25KMGRIUjFkWFYyZG5aM2QzZDRlSGg1ZVhsNmVucDdlM3Q4Zkh4OWZYMStmbjUvZjMrQWdJQ0RnNE9FaElTRmhZV0ZuTmlHaG9hSGg0ZUlpSWlKaVltS2lhT0tpb3FMaTR1TWpJeU5qWTJQajQrUWtKQ1JrWkdTaW5TU2twS1hsNWVabVptWm5hMmVucDZnb0tDaG9hR2lvcUtqbzZPa29iU2twS1NtcHFhbm5MdW9tcnFvcUtpcHFhbXFtN3FxcXFxcnE2dXJyYTZzckt5dHBidXVxc0N2cjYrdnNzdXZ0YzJ4c2JHeXNyS3pzN08wdExTMXRiVzF0cmEyc01XMnRyYTNwYlMzdDdlM3Z0UzRwS0s0c3NlNHVMaTR1Ym00dTlDNXVicTV2OVc2dXJxN3U3dThvWnU4dkx5OXZiMjl5ZUM5ME9pK3BiTytxYk8vcExLL3Y3L0FyTFhBd01EQTArckJ3Y0hDK2YvRXJaZkV4TVRHc2E3R3hzYkl5TWpKeWNuTDBNM016TXpOczYzTnpjM04wczdPenM3UHVMVFF6YzNSdXJmUisvL1UxTlRWMWRYVzF0YlcyZkhYMTlmWXQ3L1kyTmpaMmRuWi9QL2EydHJiMjl2Yi9QL2QzZDNmL1AvZzRPRGcvUC9pemREaTR1TGs1T1RsNWVYbXpyem01dWJtK3ZMbS9mL241K2ZuL2YvbzBiL281ZWpvNk9qby9mL3A2ZW5yNit2czNPTHM2dXpzL3YvdDZ0anQ3ZTN1N3U3dS92L3Y3Ky92L3YvdzhQRHcrZi94OGZIeTh2THkrdi95Ly8vejZ1eno4L1AwKy8vMTE3RDE5ZlgxOXY3Mjl2YjQrUGo1K2ZuNS8vLzY4dTc2K3ZyNi8vLzcrL3Y3Ly8vODl2RDk1dVA5L2YzKzZiNys3dXorL3Y3LytPNy8rZkgvK2ZqLysvVC8vL2YvLy8rbHZrVjJBQUFBQ1hCSVdYTUFBQTdEQUFBT3d3SEhiNmhrQUFBRERVbEVRVlJvZ2UzWmVWZ01ZUndIOEVXeDJ4MDJOeW5IVXFRdFJaUXp0NXhwSGVWYVY4VG1QaVBKa1dQZFFvNGk5NUV6Y2xWdUluZHVvc2g5NXZldldtYmFkMlpLejZOM2ZvL0gvdjZaL2Y1bTl2bk04Kzd1TzdQdlNBQ3BKQVpZTkRnNzlSa09QSGJycXIwb2NITFlpc2RNQ1BSdEM1QzBSUndZNFBNZEpnUjRHUU1zVVlnRGZ4cTU4Q3Fia3F3QWJrbS9pQUwvZUtHWGNtRW9mMUFVbUVnNnVNbGdKSGlFS3hKOHhob0pCdmt4Sk5nMUVBa2UwRndNZU9tUVNVYzVjSXl0R1BDMkNWTXZNaUVoM0R4M2sybjBVZ1FZNE1ONUppZ3JGZGR0N2RlSkFLK05tSCtLVGIrR0dueTZpQUR2Q3AxN2d3dEgxaEFCSnRKdk9OUDRJUTRNRGlGSXNLbzFFaHhURFFsK0swM0RnY0ZoT25WNDkrWnA1SzJQcnZ4YlVJYzM5cDU4bkEvSHk2bkQrbE9tdlhFeDVtVzVJN1RoUFJHTDJaa3JQYzZTZWRuU256YThPblQyQ1RheFF3M0xhdEtHaVpRSFo4bnU0c0RnRkl3RWoxSWl3V25TZEJ3WUhDY2l3VUZPZE9IM053KzhFb1NmeWxLb3dzOEg5cnduQ0VOVEZWVVl2bDVucDh4V2ppWDBkbTJYZjZRSlgxcTAvaDBUSXRVbSt2dnN3bW5DWTNhc3lWdDhJWVlhaHRlakNYKzdmRDh2a1hDRzJVbUtNSkZJR0RwNklzSFhLUDZpQ29UQnN5c1NIRzk2QVFlR05vMnB3YThmZlJlZU1uVjEyenFLRmp4NjNwd04rY01RWERtTEVuejYzQ0YyS1dLS1Nzbzd3SkhTZjJWSmR1b1RkaEcxVzBNajNnR0pwc3Zwd01SNk5YK29BYUxNRGxPQms4Tld2aWtRaHFIeXN6UmdJZ25DME4xbVB3NE1RZVlhSEJoMlZuUjdnQUpEdXBkMS93d01PT2RHcUg2WlBrWDVKU3MwbkRQZWJpWHQrdTBycWdjV2dpdDcrVlZHU0NNYldSMXY5YWJFditlSmxiMHIwUlovZkVOU2lKKzdyWlhFUkY2bGxyT0h0KzhndFdiY2VLMVdHeDNMcTdnRWdXSXZzOFNLUU4yeXBRdDd3aWtKc1ZxTld0V3VtWWVMc29GQ29haGVsVmNWNUFKVm00V0pvUmF4eUVYVTNBb294VDFMeTBKMExQZ2RLYS9qb0EvelRtV1lFL2R6NmN2cnFKeTVIVDhsdDlQTGhkdnA0VjRndktBOXR4UGVnZHVaMVluYm1kbVoxL0hoZG1ib1g5ci93eWZtQnRnQUcyQUQvTS9CUHdITG5MVlp0N2VvNkFBQUFBQkpSVTVFcmtKZ2dnPT0iIGFsdD0iS00gY3VydmUiPjwvdGQ+CiAgICAgICAgICAgIDwvdHI+CiAgICAgICAgICAgIDx0cj4KICAgICAgICAgICAgICAgIDx0ZCBjbGFzcz0ibm8tY29sIj4zPC90ZD4KICAgICAgICAgICAgICAgIDx0ZCBjbGFzcz0idmFyaWFibGUtY29sIj5wZnNfZXZlbnQ8YnI+W2V2ZW50IGluZGljYXRvcl08L3RkPgogICAgICAgICAgICAgICAgPHRkIGNsYXNzPSJzdGF0cy1jb2wiPjE6IDEwMDAwICgxMDAlKTxicj5NaXNzaW5nOiAwICgwJSk8L3RkPgogICAgICAgICAgICAgICAgPHRkIGNsYXNzPSJncmFwaC1jb2wiPjxpbWcgc3JjPSJkYXRhOmltYWdlL3BuZztiYXNlNjQsaVZCT1J3MEtHZ29BQUFBTlNVaEVVZ0FBQUhnQUFBQW9DQU1BQUFBQ05NNFhBQUFBTFZCTVZFV1ptWm1vcUtpcnE2dXRyYTJ3c0xDMnRyYTV1Ym0vdjcvSXlNak56YzNUMDlQZjM5L2w1ZVhyNit2Ly8vL1Qrc1ErQUFBQUNYQklXWE1BQUE3REFBQU93d0hIYjZoa0FBQUFTVWxFUVZSWWhlM1d1UUdBTUJERXdPVUhQOWQvdVM1REJGSURreW9GbFJHb3ZqZWlTMWhZV0ZoWStJL3c5aEtkbVFkVHNQWEI0UGxCY0wrRmhZV0ZoWVdGYVhnOEVNeXdWUXZrVU5wMEhiRUptUUFBQUFCSlJVNUVya0pnZ2c9PSIgYWx0PSJiYXJwbG90IiBzdHlsZT0iaGVpZ2h0OiBhdXRvOyB3aWR0aDogMTIwcHg7Ij48L3RkPgogICAgICAgICAgICA8L3RyPgogICAgICAgICAgICA8dHI+CiAgICAgICAgICAgICAgICA8dGQgY2xhc3M9Im5vLWNvbCI+NDwvdGQ+CiAgICAgICAgICAgICAgICA8dGQgY2xhc3M9InZhcmlhYmxlLWNvbCI+b3NfZXZlbnQ8YnI+W2V2ZW50IGluZGljYXRvcl08L3RkPgogICAgICAgICAgICAgICAgPHRkIGNsYXNzPSJzdGF0cy1jb2wiPjE6IDEwMDAwICgxMDAlKTxicj5NaXNzaW5nOiAwICgwJSk8L3RkPgogICAgICAgICAgICAgICAgPHRkIGNsYXNzPSJncmFwaC1jb2wiPjxpbWcgc3JjPSJkYXRhOmltYWdlL3BuZztiYXNlNjQsaVZCT1J3MEtHZ29BQUFBTlNVaEVVZ0FBQUhnQUFBQW9DQU1BQUFBQ05NNFhBQUFBTFZCTVZFV1ptWm1vcUtpcnE2dXRyYTJ3c0xDMnRyYTV1Ym0vdjcvSXlNak56YzNUMDlQZjM5L2w1ZVhyNit2Ly8vL1Qrc1ErQUFBQUNYQklXWE1BQUE3REFBQU93d0hIYjZoa0FBQUFTVWxFUVZSWWhlM1d1UUdBTUJERXdPVUhQOWQvdVM1REJGSURreW9GbFJHb3ZqZWlTMWhZV0ZoWStJL3c5aEtkbVFkVHNQWEI0UGxCY0wrRmhZV0ZoWVdGYVhnOEVNeXdWUXZrVU5wMEhiRUptUUFBQUFCSlJVNUVya0pnZ2c9PSIgYWx0PSJiYXJwbG90IiBzdHlsZT0iaGVpZ2h0OiBhdXRvOyB3aWR0aDogMTIwcHg7Ij48L3RkPgogICAgICAgICAgICA8L3RyPgogICAgICAgIDwvdGJvZHk+CiAgICA8L3RhYmxlPgo8L2JvZHk+CjwvaHRtbD4K
 
 ## Define a Trial
 
@@ -152,6 +159,7 @@ of trial through a pre-defined milestone later. Note that if
 reproducibility.
 
 ``` r
+
 accrual_rate <- data.frame(end_time = c(10, Inf),
                            piecewise_rate = c(30, 50))
 trial <- trial(
@@ -191,6 +199,7 @@ Estimates of hazard ratio are also computed. Built-in functions
 documants for more details.
 
 ``` r
+
 action <- function(trial){
   
   locked_data <- trial$get_locked_data('final')
@@ -230,6 +239,7 @@ Now we can define and register the milestone to a listener, which
 monitors the trial for us through a controller
 
 ``` r
+
 final <- milestone(name = 'final', action = action, 
                    when = eventNumber(endpoint = 'pfs', n = 450, 
                                       arms = c('soc', 'high')) & 
@@ -249,11 +259,13 @@ operating characteristics of a trial design by specifying `n` in
 the member function `get_output()` of the controller.
 
 ``` r
+
 controller$run(n = 1000, plot_event = FALSE, silent = TRUE)
 output <- controller$get_output()
 ```
 
 ``` r
+
 output %>% 
   head(5) %>% 
   kable(escape = FALSE) %>% 
@@ -263,18 +275,19 @@ output %>%
   scroll_box(width = "100%")
 ```
 
-| trial      |       seed | milestone_time\_\<final\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<pfs\> | n_events\_\<final\>\_\<os\> | n_events\_\<final\>\_\<arms\> | pfs_low\_\<estimate\> | pfs_low\_\<decision\> | pfs_low\_\<info\> | pfs_high\_\<estimate\> | pfs_high\_\<decision\> | pfs_high\_\<info\> | os_low\_\<decision\> | os_low\_\<info\> | os_high\_\<decision\> | os_high\_\<info\> | error_message |
-|:-----------|-----------:|--------------------------:|------------------------------------:|-----------------------------:|----------------------------:|:------------------------------|----------------------:|:----------------------|------------------:|-----------------------:|:-----------------------|-------------------:|:---------------------|-----------------:|:----------------------|------------------:|:--------------|
-| Trial-3415 | 1727811904 |                  39.79807 |                                1000 |                          726 |                         550 | c(334, 2….                    |             0.8373861 | accept                |               490 |              0.8470156 | accept                 |                485 | reject               |              372 | accept                |               378 |               |
-| Trial-3415 | 1580839845 |                  36.97289 |                                1000 |                          731 |                         550 | c(334, 2….                    |             0.8293869 | accept                |               504 |              0.7566906 | reject                 |                491 | reject               |              383 | accept                |               372 |               |
-| Trial-3415 | 1644140445 |                  35.81142 |                                1000 |                          738 |                         550 | c(334, 2….                    |             0.7382446 | reject                |               498 |              0.7208539 | reject                 |                504 | accept               |              368 | accept                |               372 |               |
-| Trial-3415 |  157892763 |                  36.98769 |                                1000 |                          732 |                         550 | c(334, 2….                    |             0.6802710 | reject                |               502 |              0.6518396 | reject                 |                490 | reject               |              389 | reject                |               380 |               |
-| Trial-3415 | 1672612707 |                  37.67231 |                                1000 |                          745 |                         550 | c(334, 2….                    |             0.8062252 | reject                |               513 |              0.6809993 | reject                 |                493 | reject               |              381 | reject                |               374 |               |
+| trial | seed | milestone_time\_\<final\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<pfs\> | n_events\_\<final\>\_\<os\> | n_events\_\<final\>\_\<arms\> | pfs_low\_\<estimate\> | pfs_low\_\<decision\> | pfs_low\_\<info\> | pfs_high\_\<estimate\> | pfs_high\_\<decision\> | pfs_high\_\<info\> | os_low\_\<decision\> | os_low\_\<info\> | os_high\_\<decision\> | os_high\_\<info\> | error_message |
+|:---|---:|---:|---:|---:|---:|:---|---:|:---|---:|---:|:---|---:|:---|---:|:---|---:|:---|
+| Trial-3415 | 1727811904 | 39.79807 | 1000 | 726 | 550 | c(334, 2…. | 0.8373861 | accept | 490 | 0.8470156 | accept | 485 | reject | 372 | accept | 378 |  |
+| Trial-3415 | 1580839845 | 36.97289 | 1000 | 731 | 550 | c(334, 2…. | 0.8293869 | accept | 504 | 0.7566906 | reject | 491 | reject | 383 | accept | 372 |  |
+| Trial-3415 | 1644140445 | 35.81142 | 1000 | 738 | 550 | c(334, 2…. | 0.7382446 | reject | 498 | 0.7208539 | reject | 504 | accept | 368 | accept | 372 |  |
+| Trial-3415 | 157892763 | 36.98769 | 1000 | 732 | 550 | c(334, 2…. | 0.6802710 | reject | 502 | 0.6518396 | reject | 490 | reject | 389 | reject | 380 |  |
+| Trial-3415 | 1672612707 | 37.67231 | 1000 | 745 | 550 | c(334, 2…. | 0.8062252 | reject | 513 | 0.6809993 | reject | 493 | reject | 381 | reject | 374 |  |
 
 For example, we can compute the powers and summarize the estimates of
 hazard ratio for `PFS`.
 
 ``` r
+
 output %>% 
   summarise(
     across(matches('_<decision>$'), ~ mean(. == 'reject') * 100, .names = 'Power_{.col}'), 

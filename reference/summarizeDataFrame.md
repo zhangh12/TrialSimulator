@@ -60,6 +60,7 @@ a data frame of summary
 ## Examples
 
 ``` r
+
 set.seed(123)
 
 n <- 1000

@@ -599,6 +599,7 @@ The objects of this class are cloneable with this method.
 ## Examples
 
 ``` r
+
 ## Example 1
 ## dry-run to study the behavior of a graph
 ## without group sequential design

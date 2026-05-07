@@ -39,6 +39,7 @@ triggers using these functions, which could be passed to the argument
 #### A trial has been running for 6 months
 
 ``` r
+
 ## Note: the unit of time depends on the context of a trial
 ##       It is users responsibility to align it with trial's parameters
 calendarTime(time = 6)
@@ -48,6 +49,7 @@ calendarTime(time = 6)
 #### At least 520 patients have been enrolled
 
 ``` r
+
 enrollment(n = 520)
 #> Number of randomized patients >=  520
 ```
@@ -55,6 +57,7 @@ enrollment(n = 520)
 #### At least 400 patients have been enrolled, and each has received a minimum of 3 weeks of treatment
 
 ``` r
+
 enrollment(n = 400, min_treatment_duration = 3)
 #> Number of randomized patients >=  400 and all enrolled patients have been treated for < 3 > (unit time)
 ```
@@ -62,6 +65,7 @@ enrollment(n = 400, min_treatment_duration = 3)
 #### At least 340 PFS events are observed
 
 ``` r
+
 ## condition is based on number of event in the placebo arm
 ## Note: 'pfs' is the name of the endpoint, i.e., endpoints(name = 'pfs', ...)
 ## Note: 'pbo' is the name of the placebo arm, i.e., arm(name = 'pbo', ...)
@@ -82,6 +86,7 @@ eventNumber(endpoint = 'pfs', n = 340)
 #### Other examples
 
 ``` r
+
 ## observe at least 200 OS events on at least 500 enrolled patients, or
 ## the trial has been running for at least 12 months
 (enrollment(n = 500) & eventNumber(endpoint = 'os', n = 200)) | 

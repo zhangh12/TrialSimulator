@@ -84,6 +84,7 @@ a data frame with columns:
 ## Examples
 
 ``` r
+
 dat <- CorrelatedPfsAndOs3(1e6, h01 = .1, h02 = .05, h12 = .12)
 
 cor(dat$pfs, dat$os) ## 0.65

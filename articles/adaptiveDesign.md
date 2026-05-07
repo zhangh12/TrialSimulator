@@ -4,9 +4,9 @@ In this vignette, we illustrate how to use `TrialSimulator` to simulate
 a trial with seamless adaptive design of multiple endpoints, where dose
 selection, futility analysis, interim analysis are triggered by
 user-defined milestones. Family-wise error rate are controlled by closed
-test with Dunnett’s test, with $\alpha$ split for the endpoints. Please
-refer to another vignette where graphical testing procedure is adopted
-instead.
+test with Dunnett’s test, with $`\alpha`$ split for the endpoints.
+Please refer to another vignette where graphical testing procedure is
+adopted instead.
 
 ## Simulation Settings
 
@@ -20,6 +20,7 @@ instead.
   Weibull distribution can be computed using helper function
 
 ``` r
+
 weibullDropout(time = c(12, 18), dropout_rate = c(.08, .18))
 #>     shape     scale 
 #>  2.138567 38.343517
@@ -29,10 +30,10 @@ weibullDropout(time = c(12, 18), dropout_rate = c(.08, .18))
   are under consideration, where a higher rate of `surrogate` is better.
 - `surrogate` has a readout time of 5 weeks.
 - `surrogate` is used for dose selection using a hypothetical rule. Let
-  $z_{h}$ (or $z_{l}$) be the z statistics of `surrogate` between high
+  $`z_h`$ (or $`z_l`$) be the z statistics of `surrogate` between high
   (or low) dose and placebo.
-  - low dose arm is selected if $z_{l} > 1.28$;
-  - high dose arm is selected if $z_{h} > 1.28 > z_{l}$;
+  - low dose arm is selected if $`z_l > 1.28`$;
+  - high dose arm is selected if $`z_h > 1.28 > z_l`$;
   - keep both arms otherwise.
 - Rates of `surrogate` are
   - 0.05 in placebo
@@ -56,7 +57,7 @@ weibullDropout(time = c(12, 18), dropout_rate = c(.08, .18))
   Meanwhile, the trial has reached at least 28 months or at least 520
   events are observed for `PFS`.
 - To control the family-wise error rate accounting for `PFS` and `OS`,
-  as well as adaptation of dose-selection, we split $\alpha$ between
+  as well as adaptation of dose-selection, we split $`\alpha`$ between
   `PFS` (0.5%) and `OS` (2%), and adopt closed test with Dunnett’s test
   for intersection hypotheses.
 
@@ -84,6 +85,7 @@ and vignette of the [Gumbel copula
 method](https://zhangh12.github.io/TrialSimulator/articles/simulatePfsAndOsGumbel.md).
 
 ``` r
+
 #' define three arms
 pbo <- arm(name = 'placebo')
 low <- arm(name = 'low dose')
@@ -137,6 +139,7 @@ pre-defined milestones later. Note that if `seed = NULL`,
 `TrialSimulator` will pick a seed for the purpose of reproducibility.
 
 ``` r
+
 accrual_rate <- data.frame(end_time = c(10, Inf),
                            piecewise_rate = c(30, 50))
 trial <- trial(
@@ -164,6 +167,7 @@ returns a data frame (see
 [`?fitFarringtonManning`](https://zhangh12.github.io/TrialSimulator/reference/fitFarringtonManning.md)).
 
 ``` r
+
 action1 <- function(trial){
   
   locked_data <- trial$get_locked_data('dose selection')
@@ -196,6 +200,7 @@ all p-values. If no futility analysis is planned, we can simply set
 `action = doNothing` in `milestone`.
 
 ``` r
+
 action2 <- function(trial){
   
   locked_data <- trial$get_locked_data('interim')
@@ -220,6 +225,7 @@ At final analysis, we conduct a closed test using Dunnett’s test for
 intersection hypotheses. The action function is as follows.
 
 ``` r
+
 action3 <- function(trial){
   
   locked_data <- trial$get_locked_data('final')
@@ -265,6 +271,7 @@ action3 <- function(trial){
 Next, we register three trial milestones to a listener
 
 ``` r
+
 dose_selection <- milestone(name = 'dose selection', action = action1,   
                             when = eventNumber(endpoint = 'surrogate', n = 300)
                             )
@@ -301,6 +308,7 @@ for each of the arms. We can set it to `FALSE` if a massive number of
 simulation replicates is run to save time.
 
 ``` r
+
 controller <- controller(trial, listener)
 controller$run(plot_event = TRUE)
 #> Condition of milestone <dose selection> is being checked.
@@ -333,6 +341,7 @@ intermediate results for summary purpose, which can be accessed anytime
 and anywhere by calling `get_output()`
 
 ``` r
+
 controller$get_output() %>% 
   kable(escape = FALSE) %>% 
   kable_styling(bootstrap_options = "striped", 
@@ -341,9 +350,9 @@ controller$get_output() %>%
   scroll_box(width = "100%")
 ```
 
-| trial      |       seed | milestone_time\_\<dose selection\> | n_events\_\<dose selection\>\_\<pfs\> | n_events\_\<dose selection\>\_\<os\> | n_events\_\<dose selection\>\_\<surrogate\> | n_events\_\<dose selection\>\_\<patient_id\> | n_events\_\<dose selection\>\_\<arms\> | kept_arm | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<pfs\> | n_events\_\<interim\>\_\<os\> | n_events\_\<interim\>\_\<surrogate\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<arms\> | futility | milestone_time\_\<final\> | n_events\_\<final\>\_\<pfs\> | n_events\_\<final\>\_\<os\> | n_events\_\<final\>\_\<surrogate\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | pfs_high_dose_decision | pfs_low_dose_decision | os_high_dose_decision | os_low_dose_decision | error_message |
-|:-----------|-----------:|-----------------------------------:|--------------------------------------:|-------------------------------------:|--------------------------------------------:|---------------------------------------------:|:---------------------------------------|:---------|----------------------------:|-------------------------------:|------------------------------:|-------------------------------------:|--------------------------------------:|:--------------------------------|:---------|--------------------------:|-----------------------------:|----------------------------:|-----------------------------------:|------------------------------------:|:------------------------------|:-----------------------|:----------------------|:----------------------|:---------------------|:--------------|
-| Trial-3415 | 1727811904 |                           11.12051 |                                   137 |                                   72 |                                         300 |                                          357 | c(“high ….                             | both     |                    16.26181 |                            300 |                           154 |                                  556 |                                   614 | c(“high ….                      | negative |                     23.98 |                          594 |                         333 |                                941 |                                1000 | c(“high ….                    | reject                 | reject                | accept                | accept               |               |
+| trial | seed | milestone_time\_\<dose selection\> | n_events\_\<dose selection\>\_\<pfs\> | n_events\_\<dose selection\>\_\<os\> | n_events\_\<dose selection\>\_\<surrogate\> | n_events\_\<dose selection\>\_\<patient_id\> | n_events\_\<dose selection\>\_\<arms\> | kept_arm | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<pfs\> | n_events\_\<interim\>\_\<os\> | n_events\_\<interim\>\_\<surrogate\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<arms\> | futility | milestone_time\_\<final\> | n_events\_\<final\>\_\<pfs\> | n_events\_\<final\>\_\<os\> | n_events\_\<final\>\_\<surrogate\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | pfs_high_dose_decision | pfs_low_dose_decision | os_high_dose_decision | os_low_dose_decision | error_message |
+|:---|---:|---:|---:|---:|---:|---:|:---|:---|---:|---:|---:|---:|---:|:---|:---|---:|---:|---:|---:|---:|:---|:---|:---|:---|:---|:---|
+| Trial-3415 | 1727811904 | 11.12051 | 137 | 72 | 300 | 357 | c(“high …. | both | 16.26181 | 300 | 154 | 556 | 614 | c(“high …. | negative | 23.98 | 594 | 333 | 941 | 1000 | c(“high …. | reject | reject | accept | accept |  |
 
 Here we dive into the action function (`action3`) for the final
 analysis. We can literally execute the function line by line with locked
@@ -354,6 +363,7 @@ data loaded. Note that the member functions `Trial$dunnettTest` and
 unnecessary.
 
 ``` r
+
 ## test PFS
 dt_pfs <- trial$dunnettTest(Surv(pfs, pfs_event) ~ arm, placebo = 'placebo',
                             treatments = c('high dose', 'low dose'),
@@ -404,6 +414,7 @@ operating characteristics of a trial design by specifying `n` in
 `n_workers`.
 
 ``` r
+
 ## reset a controller if $run has been executed before
 controller$reset()
 controller$run(n = 1000, plot_event = FALSE, silent = TRUE)
@@ -411,6 +422,7 @@ output <- controller$get_output()
 ```
 
 ``` r
+
 output %>% 
   head(5) %>% 
   kable(escape = FALSE) %>% 
@@ -420,15 +432,16 @@ output %>%
   scroll_box(width = "100%")
 ```
 
-| trial      |       seed | milestone_time\_\<dose selection\> | n_events\_\<dose selection\>\_\<patient_id\> | n_events\_\<dose selection\>\_\<pfs\> | n_events\_\<dose selection\>\_\<os\> | n_events\_\<dose selection\>\_\<surrogate\> | n_events\_\<dose selection\>\_\<arms\> | kept_arm | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<pfs\> | n_events\_\<interim\>\_\<os\> | n_events\_\<interim\>\_\<surrogate\> | n_events\_\<interim\>\_\<arms\> | futility | milestone_time\_\<final\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<pfs\> | n_events\_\<final\>\_\<os\> | n_events\_\<final\>\_\<surrogate\> | n_events\_\<final\>\_\<arms\> | pfs_high_dose_decision | pfs_low_dose_decision | os_high_dose_decision | os_low_dose_decision | error_message |
-|:-----------|-----------:|-----------------------------------:|---------------------------------------------:|--------------------------------------:|-------------------------------------:|--------------------------------------------:|:---------------------------------------|:---------|----------------------------:|--------------------------------------:|-------------------------------:|------------------------------:|-------------------------------------:|:--------------------------------|:---------|--------------------------:|------------------------------------:|-----------------------------:|----------------------------:|-----------------------------------:|:------------------------------|:-----------------------|:----------------------|:----------------------|:---------------------|:--------------|
-| Trial-3415 | 1727811904 |                           11.31385 |                                          366 |                                   142 |                                   65 |                                         300 | c(122, 4….                             | low      |                    19.16584 |                                   637 |                            300 |                           146 |                                  534 | c(319, 1….                      | negative |                  29.44763 |                                 878 |                          542 |                         300 |                                744 | c(439, 2….                    | accept                 | reject                | accept                | reject               |               |
-| Trial-3415 |  776792356 |                           11.33385 |                                          367 |                                   139 |                                   68 |                                         300 | c(123, 4….                             | high     |                    19.52434 |                                   654 |                            300 |                           145 |                                  544 | c(327, 1….                      | negative |                  29.56296 |                                 877 |                          520 |                         300 |                                748 | c(439, 2….                    | reject                 | accept                | reject                | accept               |               |
-| Trial-3415 | 1430198130 |                           11.41385 |                                          371 |                                   138 |                                   64 |                                         300 | c(124, 4….                             | low      |                    19.99458 |                                   677 |                            300 |                           158 |                                  554 | c(339, 1….                      | negative |                  30.26166 |                                 877 |                          546 |                         300 |                                740 | c(439, 2….                    | accept                 | reject                | accept                | reject               |               |
-| Trial-3415 | 1400866922 |                           11.29385 |                                          365 |                                   154 |                                   65 |                                         300 | c(122, 4….                             | high     |                    19.48899 |                                   653 |                            300 |                           140 |                                  547 | c(326, 1….                      | negative |                  28.74682 |                                 878 |                          541 |                         300 |                                755 | c(439, 2….                    | reject                 | accept                | reject                | accept               |               |
-| Trial-3415 | 1898009641 |                           11.19385 |                                          360 |                                   131 |                                   60 |                                         300 | c(120, 4….                             | low      |                    19.73958 |                                   667 |                            300 |                           151 |                                  550 | c(334, 1….                      | negative |                  28.64718 |                                 880 |                          534 |                         300 |                                743 | c(440, 2….                    | accept                 | reject                | accept                | reject               |               |
+| trial | seed | milestone_time\_\<dose selection\> | n_events\_\<dose selection\>\_\<patient_id\> | n_events\_\<dose selection\>\_\<pfs\> | n_events\_\<dose selection\>\_\<os\> | n_events\_\<dose selection\>\_\<surrogate\> | n_events\_\<dose selection\>\_\<arms\> | kept_arm | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<pfs\> | n_events\_\<interim\>\_\<os\> | n_events\_\<interim\>\_\<surrogate\> | n_events\_\<interim\>\_\<arms\> | futility | milestone_time\_\<final\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<pfs\> | n_events\_\<final\>\_\<os\> | n_events\_\<final\>\_\<surrogate\> | n_events\_\<final\>\_\<arms\> | pfs_high_dose_decision | pfs_low_dose_decision | os_high_dose_decision | os_low_dose_decision | error_message |
+|:---|---:|---:|---:|---:|---:|---:|:---|:---|---:|---:|---:|---:|---:|:---|:---|---:|---:|---:|---:|---:|:---|:---|:---|:---|:---|:---|
+| Trial-3415 | 1727811904 | 11.31385 | 366 | 142 | 65 | 300 | c(122, 4…. | low | 19.16584 | 637 | 300 | 146 | 534 | c(319, 1…. | negative | 29.44763 | 878 | 542 | 300 | 744 | c(439, 2…. | accept | reject | accept | reject |  |
+| Trial-3415 | 776792356 | 11.33385 | 367 | 139 | 68 | 300 | c(123, 4…. | high | 19.52434 | 654 | 300 | 145 | 544 | c(327, 1…. | negative | 29.56296 | 877 | 520 | 300 | 748 | c(439, 2…. | reject | accept | reject | accept |  |
+| Trial-3415 | 1430198130 | 11.41385 | 371 | 138 | 64 | 300 | c(124, 4…. | low | 19.99458 | 677 | 300 | 158 | 554 | c(339, 1…. | negative | 30.26166 | 877 | 546 | 300 | 740 | c(439, 2…. | accept | reject | accept | reject |  |
+| Trial-3415 | 1400866922 | 11.29385 | 365 | 154 | 65 | 300 | c(122, 4…. | high | 19.48899 | 653 | 300 | 140 | 547 | c(326, 1…. | negative | 28.74682 | 878 | 541 | 300 | 755 | c(439, 2…. | reject | accept | reject | accept |  |
+| Trial-3415 | 1898009641 | 11.19385 | 360 | 131 | 60 | 300 | c(120, 4…. | low | 19.73958 | 667 | 300 | 151 | 550 | c(334, 1…. | negative | 28.64718 | 880 | 534 | 300 | 743 | c(440, 2…. | accept | reject | accept | reject |  |
 
 ``` r
+
 output %>% 
   summarise(
     time_dose_selection = mean(`milestone_time_<dose selection>`), 
@@ -451,9 +464,11 @@ output %>%
 
 [TABLE]
 
-Number of Randomized Patients at Stages
+Number of Randomized Patients at Stages {.table .table
+style="margin-left: auto; margin-right: auto;"}
 
 ``` r
+
 output %>% 
   summarise(
     n_pfs_dose_selection = mean(`n_events_<dose selection>_<pfs>`), 
@@ -472,9 +487,11 @@ output %>%
 
 [TABLE]
 
-Number of Events of PFS and OS at Stages
+Number of Events of PFS and OS at Stages {.table .table
+style="margin-left: auto; margin-right: auto;"}
 
 ``` r
+
 output %>% 
   summarise(
     power_pfs_low = mean(pfs_low_dose_decision == 'reject') * 100, 
@@ -495,9 +512,11 @@ output %>%
 
 [TABLE]
 
-Power of Testing PFS and OS
+Power of Testing PFS and OS {.table .table
+style="margin-left: auto; margin-right: auto;"}
 
 ``` r
+
 output %>% 
   summarise(
     power_pfs_not_os = mean((pfs_low_dose_decision == 'reject' | pfs_high_dose_decision == 'reject') & 
@@ -518,4 +537,5 @@ output %>%
 
 [TABLE]
 
-Power of Testing PFS and OS (Cont.)
+Power of Testing PFS and OS (Cont.) {.table .table
+style="margin-left: auto; margin-right: auto;"}

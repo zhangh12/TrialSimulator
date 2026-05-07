@@ -81,6 +81,7 @@ add one or multiple endpoints to the arm.
 
 #### Examples
 
+
     a <- arm(name = 'trt')
     x <- endpoint(name = 'x', type = 'tte',
                   generator = rexp) # median = log(2)/1 = 0.7

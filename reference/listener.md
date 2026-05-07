@@ -25,5 +25,6 @@ listener(silent = FALSE)
 ## Examples
 
 ``` r
+
 listener <- listener()
 ```

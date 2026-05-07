@@ -1434,6 +1434,7 @@ This function returns a data frame with columns:
 
 #### Examples
 
+
     \dontrun{
     trial$independentIncrement(Surv(pfs, pfs_event) ~ arm, 'pbo',
                                listener$get_milestone_names(),

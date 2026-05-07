@@ -1,5 +1,13 @@
 # Changelog
 
+## TrialSimulator 1.18.1
+
+### Bug Fix
+
+- Fix a bug where a composite milestone triggering condition combined
+  with `'or'` would error out when not all of its branches could be
+  reached, instead of resolving to the reachable branch.
+
 ## TrialSimulator 1.18.0
 
 ### New Feature
@@ -14,6 +22,8 @@
   fall back to the original R implementation.
 
 ## TrialSimulator 1.17.1
+
+CRAN release: 2026-04-27
 
 ### Updates
 

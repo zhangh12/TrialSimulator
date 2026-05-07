@@ -46,6 +46,7 @@ In the example below, we define two types of endpoints:
   `size = 1` and custom `prob`.
 
 ``` r
+
 ## endpoints in placebo arm
 tumor_cfb_pbo <- endpoint(name = 'cfb', type = 'non-tte', 
                           readout = c(cfb = 6),
@@ -87,22 +88,26 @@ dropout rates are set as follows:
 
 These constraints are resolved using the Weibull dropout function:
 
-$$\begin{array}{rlr}
-0.15 & = & {1 - e^{- {(12/\lambda)}^{k}}} \\
-0.30 & = & {1 - e^{- {(18/\lambda)}^{k}}}
-\end{array}$$
+``` math
+\begin{split}
+0.15 & = & 1 - e^{-(12/\lambda)^k} \\
+0.30 & = & 1 - e^{-(18/\lambda)^k}
+\end{split}
+```
 
 ``` r
+
 dropout_pars <- weibullDropout(c(12, 18), c(.15, .30))
 dropout_pars
 #>     shape     scale 
 #>  1.938589 30.635696
 ```
 
-Using the computed scale parameter $\lambda =$ 30.636 and shape
-parameter $k =$ 1.939, we specify the trial setup:
+Using the computed scale parameter $`\lambda=`$ 30.636 and shape
+parameter $`k=`$ 1.939, we specify the trial setup:
 
 ``` r
+
 accrual_rate <- data.frame(end_time = c(6, Inf), 
                            piecewise_rate = c(10, 20))
 
@@ -152,6 +157,7 @@ milestones:
 3.  Final Analysis: Occurs when the trial reaches 30 months.
 
 ``` r
+
 interim <- milestone(name = 'interim', 
                      when = eventNumber(endpoint = 'orr', n = 60), 
                      action = doNothing)
@@ -180,6 +186,7 @@ Next, we register the milestones with a listener and create a controller
 to monitor and execute the trial.
 
 ``` r
+
 ## register milestones to the listener
 listener <- listener()
 listener$add_milestones(interim, random, final)
@@ -221,6 +228,7 @@ should be done within custom action function, where decision is made
 based on data locked at the time of a milestone.
 
 ``` r
+
 interim_data <- trial$get_locked_data(milestone_name = 'interim')
 random_data <- trial$get_locked_data(milestone_name = 'random')
 final_data <- trial$get_locked_data(milestone_name = 'final')
@@ -249,6 +257,7 @@ properly and automatically handles endpoint availability at different
 milestones
 
 ``` r
+
 not_ready_at_interim <- 
   interim_data %>% 
   dplyr::filter(is.na(cfb) & 

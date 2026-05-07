@@ -56,6 +56,7 @@ an object of class \`Condition\`
 ## Examples
 
 ``` r
+
 ## ensure sufficient sample size of whole trial
 enrollment(n = 100)
 #> Number of randomized patients >=  100

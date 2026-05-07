@@ -171,6 +171,7 @@ In all cases, we need to implement functions to initialize an `regimen`
 object
 
 ``` r
+
 treatment_allocator <- function(patient_data){...}
 time_selector <- function(patient_data){...}
 data_modifier <- function(patient_data){...}
@@ -183,6 +184,7 @@ All three functions must have `patient_data` as argument otherwise
 a trial before any arm is added to it.
 
 ``` r
+
 trial <- trial(...)
 trial$add_regime(regimen)
 ```
@@ -192,6 +194,7 @@ Any codes like below will trigger an error message because
 need to make `regimen` ready before then.
 
 ``` r
+
 trial <- trial(...)
 trial$add_arms(sample_ratio, soc, low_dose, high_dose)
 trial$add_regime(regimen)
@@ -209,6 +212,7 @@ the patients are assigned to low dose while 40% of the patients are
 assigned to high dose, we can implement the `what()` function like
 
 ``` r
+
 treatment_allocator <- function(patient_data){
   ## add break point to develop and debug
   # browser()
@@ -233,6 +237,7 @@ The `when()` function simply returned the progression time, i.e.,
 switching does not relies on event after the switching time.
 
 ``` r
+
 time_selector <- function(patient_data){
   ## add break point to develop and debug
   # browser()
@@ -251,6 +256,7 @@ Another common way to specify the switching time is picking a time point
 between `pfs` and `os`, i.e.,
 
 ``` r
+
 time_selector <- function(patient_data){
   ## add break point to develop and debug
   # browser()
@@ -273,6 +279,7 @@ that we won’t use their values after switching when summarizing the
 simulation.
 
 ``` r
+
 data_modifier <- function(patient_data){
   ## add break point to develop and debug
   # browser()
@@ -293,6 +300,7 @@ Here we consider a trial of a placebo arm and two active treatment arms
 switched to a higher dose.
 
 ``` r
+
 treatment_allocator <- function(patient_data){
   ## add break point to develop and debug
   # browser()
@@ -312,6 +320,7 @@ When implementing time selector for the function `when()`, the switching
 time is set to the readout time
 
 ``` r
+
 time_selector <- function(patient_data){
   ## add break point to develop and debug
   # browser()
@@ -333,6 +342,7 @@ time is 1 month before a patient dies. If the overall survival is
 shorter than a month, the switching time is set to `0.9 * os`.
 
 ``` r
+
 treatment_allocator <- function(patient_data){
   ## add break point to develop and debug
   # browser()
@@ -349,6 +359,7 @@ treatment_allocator <- function(patient_data){
 ```
 
 ``` r
+
 time_selector <- function(patient_data){
   ## add break point to develop and debug
   # browser()
@@ -371,6 +382,7 @@ with a list of treatment allocators for `what`, a list of time selectors
 for `when`, and a list of data modifiers for `how`.
 
 ``` r
+
 what <- list(allocator1, allocator2, allocator3)
 when <- list(selector1, selector2, selector3)
 how <- list(modifier1, modifier2, modifier3)

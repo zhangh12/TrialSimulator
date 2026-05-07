@@ -48,6 +48,7 @@ trial has been running for at least 20 months and at least 450 events
 have occurred for the endpoint `PFS`.
 
 ``` r
+
 interim <- milestone(name = 'interim analysis', 
                      action = doNothing, 
                      when = calendarTime(time = 20) & 
@@ -67,7 +68,8 @@ Importantly, whenever a milestone is reached, `TrialSimulator`
 
 [TABLE]
 
-Automatically Saved Results At Triggered Milestones
+Automatically Saved Results At Triggered Milestones {.table
+style="width:99%;"}
 
 Note that these automatically saved columns can be eliminated from
 outputs by setting `tidy = TRUE` in `controller$get_output()`.
@@ -81,6 +83,7 @@ the final analysis might be triggered when both `PFS` and `OS` events
 reach their required numbers:
 
 ``` r
+
 final <- milestone(name = 'final analysis', 
                    action = doNothing, 
                    when = eventNumber('PFS', n = 800) & 
@@ -101,6 +104,7 @@ trial with a controller. You may have seen it in many of the documents
 of this package:
 
 ``` r
+
 listener <- listener()
 #' register milestones with listener
 listener$add_milestones(interim, final)
@@ -130,6 +134,7 @@ estimated from proportional hazard models, and p-values (or other
 statistics) can also be calculated if desired.
 
 ``` r
+
 action_at_interim <- function(trial){
   
   locked_data <- trial$get_locked_data('interim analysis')
@@ -146,6 +151,7 @@ Once the functions is defined, it can be passed to the `action` argument
 of a milestone:
 
 ``` r
+
 interim <- milestone(name = 'interim analysis', 
                      action = action_at_interim, 
                      when = calendarTime(time = 20) & 
@@ -183,6 +189,7 @@ patient-level data, fits separate Cox proportional hazards models, and
 then computes the hazard ratios.
 
 ``` r
+
 action_at_interim <- function(trial){
   
   locked_data <- trial$get_locked_data('interim analysis')
@@ -226,6 +233,7 @@ Here is a rewritten version of the interim action function using these
 helper functions:
 
 ``` r
+
 action_at_interim <- function(trial){
   
   locked_data <- trial$get_locked_data('interim analysis')
@@ -339,6 +347,7 @@ Below, the interim action function computes a hazard ratio `hr` and its
 p-value `pval`, then saves them as part of the trial output:
 
 ``` r
+
 action_at_interim <- function(trial){
   
   locked_data <- trial$get_locked_data('interim analysis')
@@ -366,6 +375,7 @@ lists of results, which cannot be stored in the single-row output. In
 this case, we use `save_custom_data()`.
 
 ``` r
+
 action_at_interim <- function(trial){
   
   locked_data <- trial$get_locked_data('interim analysis')
@@ -395,6 +405,7 @@ In the final analysis, we can then retrieve both the saved trial outputs
 and the auxiliary information:
 
 ``` r
+
 action_at_final <- function(trial){
   
   locked_data <- trial$get_locked_data('final analysis')
@@ -419,6 +430,7 @@ For example, we may want to define the level of family-wise error rate
 (FWER) once, and then use it later in interim and final analysis:
 
 ``` r
+
 trial <- trial(...) ## initialize a trial with necessary arguments in ...
 trial$add_arms(sample_ratio = c(1, 2, 1), pbo, low, high)
 
@@ -429,6 +441,7 @@ This auxiliary information can then be retrieved in later action
 functions to adjust boundaries or multiplicity procedures:
 
 ``` r
+
 action_at_interim <- function(trial){
   
   locked_data <- trial$get_locked_data('interim analysis')
@@ -493,14 +506,14 @@ influence the subsequent course of the trial simulation.
 
 Adaptations that are currently supported are summarized below:
 
-| Adaptation                    | Member Function                                        | Use Case                                                |
-|-------------------------------|--------------------------------------------------------|---------------------------------------------------------|
-| Remove an arm                 | `trial$remove_arms()`                                  | dose selection; seamless design                         |
-| Add an arm                    | `trial$add_arms()`                                     | adaptive platform trials                                |
-| Update sample ratio           | `trial$update_sample_ratio()`                          | response-adaptive design                                |
-| Extend trial duration         | `trial$set_duration()` or add a event-driven milestone | actual patient or event accrual is slower than expected |
-| Increase sample size[¹](#fn1) | `trial$resize()`                                       | sample size reassessment                                |
-| Eliminate sub-population      | `trial$update_generator()`                             | enrichment design; data model changes over time         |
+| Adaptation | Member Function | Use Case |
+|----|----|----|
+| Remove an arm | `trial$remove_arms()` | dose selection; seamless design |
+| Add an arm | `trial$add_arms()` | adaptive platform trials |
+| Update sample ratio | `trial$update_sample_ratio()` | response-adaptive design |
+| Extend trial duration | `trial$set_duration()` or add a event-driven milestone | actual patient or event accrual is slower than expected |
+| Increase sample size[^1] | `trial$resize()` | sample size reassessment |
+| Eliminate sub-population | `trial$update_generator()` | enrichment design; data model changes over time |
 
 Note that functions in the table above are member functions of `Trials`
 object. Users who are not familiar with the concept of classes may
@@ -513,6 +526,4 @@ accumulating evidence. At the time of writing, the vignette dedicated to
 trial adaptation is still under development. Detailed examples will be
 provided in that vignette.
 
-------------------------------------------------------------------------
-
-1.  experimental
+[^1]: experimental
