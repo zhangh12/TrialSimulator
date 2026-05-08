@@ -53,12 +53,12 @@ placebo$add_endpoints(pfs, orr)
 ## it is NOT a recommended way to use the package in simulation
 head(placebo$get_endpoints()[[1]]$get_generator()(n = 1e3))
 #>         pfs pfs_event
-#> 1  2.673053         1
-#> 2 12.836839         1
-#> 3 52.000000         0
-#> 4  2.721279         1
-#> 5 23.335245         1
-#> 6  1.244395         1
+#> 1 52.000000         0
+#> 2 14.733244         1
+#> 3  8.311156         1
+#> 4 52.000000         0
+#> 5 52.000000         0
+#> 6  6.027451         1
 
 ## get name of endpoints in the arm
 ## for illustration only, NOT recommended

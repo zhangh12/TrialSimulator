@@ -83,6 +83,6 @@ pfs_and_os # run it in console to see summary report
 dat <- pfs_and_os$test_generator(n = 1e4)
 cor(dat[, 1:2], method = 'kendall') ## close to 0.6
 #>           PFS        Os
-#> PFS 1.0000000 0.6012212
-#> Os  0.6012212 1.0000000
+#> PFS 1.0000000 0.6055828
+#> Os  0.6055828 1.0000000
 ```
