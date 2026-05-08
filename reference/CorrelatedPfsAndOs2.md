@@ -42,8 +42,8 @@ CorrelatedPfsAndOs2(
 - kendall:
 
   numeric. Kendall's tau between observed, uncensored PFS and OS. Must
-  be positive and usually away from zero. Note that this argument is not
-  the Kendall's tau between TTP and OS.
+  be non-negative and usually away from zero. Note that this argument is
+  not the Kendall's tau between TTP and OS.
 
 - pfs_name:
 
