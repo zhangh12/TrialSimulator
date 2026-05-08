@@ -21,7 +21,7 @@ CorrelatedPfsAndOs2(
 \item{median_os}{numeric. Median of OS.}
 
 \item{kendall}{numeric. Kendall's tau between observed, uncensored PFS and OS.
-Must be positive and usually away from zero. Note that
+Must be non-negative and usually away from zero. Note that
 this argument is not the Kendall's tau between TTP and OS.}
 
 \item{pfs_name}{column name of PFS in returned data frame. It must be
