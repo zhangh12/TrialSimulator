@@ -64,6 +64,25 @@ test_that("CorrelatedPfsAndOs2 empirical Kendall's tau matches target", {
   expect_lt(abs(cor(d$PFS, d$OS, method = "kendall") - 0.6), 0.04)
 })
 
+test_that("CorrelatedPfsAndOs2 marginals pass KS GoF against exponential", {
+  testthat::skip_on_cran()
+  set.seed(303)
+  d <- CorrelatedPfsAndOs2(2000, median_pfs = 5, median_os = 11,
+                           kendall = 0.6, pfs_name = "PFS", os_name = "OS")
+  # Both PFS and OS are claimed to be marginally exponential. Across 30
+  # random seeds at n = 2000, the minimum KS p-value was ~0.003; at this
+  # fixed seed the typical p-values are well above 0.1, so threshold
+  # 0.01 catches genuine misfits without flaking on sampling noise.
+  p_pfs <- suppressWarnings(
+    ks.test(d$PFS, "pexp", rate = log(2)/5)$p.value
+  )
+  p_os <- suppressWarnings(
+    ks.test(d$OS, "pexp", rate = log(2)/11)$p.value
+  )
+  expect_gt(p_pfs, 0.01)
+  expect_gt(p_os, 0.01)
+})
+
 
 ## doNothing ---------------------------------------------------------------
 
