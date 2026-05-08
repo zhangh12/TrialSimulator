@@ -87,16 +87,24 @@ CorrelatedPfsAndOs2 <- function(n, median_pfs, median_os, kendall, pfs_name = 'p
   tau <- fit$root
   theta <- 1 / (1 - tau)
 
-  dsgn <- copula::gumbelCopula(param = theta, dim = 2)
-  u <- copula::rCopula(n, dsgn)
+  ## Sample (TTP, OS) from a Gumbel-survival-copula structure via the
+  ## frailty / Marshall-Olkin construction:
+  ##   V is positive alpha-stable with alpha = 1/theta, drawn by the
+  ##   Chambers-Mallows-Stuck algorithm; given V, -log(U_i) = (E_i / V)^alpha
+  ##   for E_i ~ Exp(1), so we skip materialising U.
+  alpha <- 1 / theta
+  W <- runif(n, -pi/2, pi/2)
+  Estab <- rexp(n)
+  V <- (sin(alpha * (W + pi/2)) / cos(W)^(1/alpha)) *
+       (cos(W - alpha * (W + pi/2)) / Estab)^((1 - alpha)/alpha)
 
   rate_pfs <- log(2) / median_pfs
   rate_os <- log(2) / median_os
 
   rate_ttp <- (rate_pfs^theta - rate_os^theta)^(1/theta)
 
-  ttp <- -log(u[, 1]) / rate_ttp
-  os <- -log(u[, 2]) / rate_os
+  ttp <- (rexp(n) / V)^(1/theta) / rate_ttp
+  os <- (rexp(n) / V)^(1/theta) / rate_os
 
   pfs <- pmin(ttp, os)
 

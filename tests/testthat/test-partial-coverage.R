@@ -1,7 +1,7 @@
 # Targeted tests for files with partial coverage
 #
 # Covers:
-#   - CorrelatedPfsAndOs2: generator works when copula is installed, and
+#   - CorrelatedPfsAndOs2: generator returns a properly named data frame, and
 #     rejects negative Kendall / non-positive medians
 #   - doNothing: returns NULL, errors on extra args
 #   - solveMixtureExponentialDistribution: both branches and error paths
@@ -17,8 +17,6 @@
 ## CorrelatedPfsAndOs2 -----------------------------------------------------
 
 test_that("CorrelatedPfsAndOs2 returns a properly named data frame", {
-
-  skip_if_not_installed("copula")
 
   set.seed(9)
   d <- CorrelatedPfsAndOs2(500, median_pfs = 5, median_os = 11,
@@ -39,6 +37,31 @@ test_that("CorrelatedPfsAndOs2 rejects bad inputs", {
   # infeasible Kendall for these medians
   expect_error(CorrelatedPfsAndOs2(100, 5, 10, kendall = 0.0001),
                "too small")
+})
+
+# Empirical sanity checks for the CMS-frailty Gumbel sampler. These need
+# either a large n (medians) or are O(n^2) in cor() (Kendall), so they are
+# kept off CRAN.
+
+test_that("CorrelatedPfsAndOs2 marginal medians match targets", {
+  testthat::skip_on_cran()
+  set.seed(101)
+  d <- CorrelatedPfsAndOs2(1e5, median_pfs = 5, median_os = 11,
+                           kendall = 0.6, pfs_name = "PFS", os_name = "OS")
+  # SE of sample median for Exp is ~m / (log(2) * sqrt(n)); n=1e5 gives
+  # SE ~0.023 (PFS) and ~0.05 (OS). Tolerances are >5 sigma.
+  expect_lt(abs(median(d$PFS) - 5), 0.15)
+  expect_lt(abs(median(d$OS) - 11), 0.30)
+})
+
+test_that("CorrelatedPfsAndOs2 empirical Kendall's tau matches target", {
+  testthat::skip_on_cran()
+  set.seed(202)
+  d <- CorrelatedPfsAndOs2(5000, median_pfs = 5, median_os = 11,
+                           kendall = 0.6, pfs_name = "PFS", os_name = "OS")
+  # SE of sample tau is ~sqrt((4/9)(1-tau^2)/n) ~ 0.0075 at n=5000;
+  # tolerance is ~5 sigma.
+  expect_lt(abs(cor(d$PFS, d$OS, method = "kendall") - 0.6), 0.04)
 })
 
 

@@ -23,9 +23,6 @@ library(knitr)
 library(ggplot2)
 library(TrialSimulator)
 
-if (!requireNamespace('copula', quietly = TRUE)) {
-  knitr::opts_chunk$set(eval = FALSE)
-}
 ```
 
 Progression-free survival (PFS) and overall survival (OS) are common time-to-event endpoints in oncology trials. Because progression or death defines a PFS event, simulated trial data should always satisfy $\mbox{PFS} \leq \mbox{OS}$. At the same time, the two endpoints are often highly correlated, so independent marginal simulation is usually not appropriate.
