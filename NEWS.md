@@ -1,3 +1,9 @@
+# TrialSimulator 1.18.4
+
+## Bug Fix
+
+- Re-export `Surv()` and `strata()` from the `survival` package so that user-supplied formulas in action functions (e.g. `Surv(os, os_event) ~ arm`) work after `library(TrialSimulator)` alone, without requiring `library(survival)` or the `survival::` prefix. This fixes errors in parallel runs (`n_workers > 1`) where each worker only attaches `TrialSimulator` (reported in #14).
+
 # TrialSimulator 1.18.1
 
 ## Bug Fix
