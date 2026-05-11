@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.18.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.18.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,6 +49,13 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.18.4" id="trialsimulator-1184">TrialSimulator 1.18.4<a class="anchor" aria-label="anchor" href="#trialsimulator-1184"></a></h2>
+<div class="section level3">
+<h3 id="bug-fix-1-18-4">Bug Fix<a class="anchor" aria-label="anchor" href="#bug-fix-1-18-4"></a></h3>
+<ul><li>Re-export <code><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv()</a></code> and <code><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata()</a></code> from the <code>survival</code> package so that user-supplied formulas in action functions (e.g. <code>Surv(os, os_event) ~ arm</code>) work after <code><a href="https://zhangh12.github.io/TrialSimulator/">library(TrialSimulator)</a></code> alone, without requiring <code><a href="https://github.com/therneau/survival" class="external-link">library(survival)</a></code> or the <code>survival::</code> prefix. This fixes errors in parallel runs (<code>n_workers &gt; 1</code>) where each worker only attaches <code>TrialSimulator</code> (reported in <a href="https://github.com/zhangh12/TrialSimulator/issues/14" class="external-link">#14</a>).</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.18.1" id="trialsimulator-1181">TrialSimulator 1.18.1<a class="anchor" aria-label="anchor" href="#trialsimulator-1181"></a></h2>
 <div class="section level3">

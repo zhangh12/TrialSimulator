@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.18.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.18.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -301,7 +301,7 @@ in <code>milestone</code>.</p>
 <span>  </span>
 <span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'interim'</span><span class="op">)</span></span>
 <span></span>
-<span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fitLogrank.html">fitLogrank</a></span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">pfs</span>, <span class="va">pfs_event</span><span class="op">)</span> <span class="op">~</span> <span class="va">arm</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>, </span>
+<span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fitLogrank.html">fitLogrank</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">pfs</span>, <span class="va">pfs_event</span><span class="op">)</span> <span class="op">~</span> <span class="va">arm</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>, </span>
 <span>                    data <span class="op">=</span> <span class="va">locked_data</span>, alternative <span class="op">=</span> <span class="st">'less'</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="co">## futility analysis</span></span>
@@ -323,7 +323,7 @@ intersection hypotheses. The action function is as follows.</p>
 <span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'final'</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="co">## test PFS</span></span>
-<span>  <span class="va">dt_pfs</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">dunnettTest</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">pfs</span>, <span class="va">pfs_event</span><span class="op">)</span> <span class="op">~</span> <span class="va">arm</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>,</span>
+<span>  <span class="va">dt_pfs</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">dunnettTest</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">pfs</span>, <span class="va">pfs_event</span><span class="op">)</span> <span class="op">~</span> <span class="va">arm</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>,</span>
 <span>                              treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
 <span>                              milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'interim'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                              alternative <span class="op">=</span> <span class="st">'less'</span>,</span>
@@ -334,7 +334,7 @@ intersection hypotheses. The action function is as follows.</p>
 <span>                             alpha <span class="op">=</span> <span class="fl">.005</span>, alpha_spending <span class="op">=</span> <span class="st">'asOF'</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="co">## test OS</span></span>
-<span>  <span class="va">dt_os</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">dunnettTest</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">os</span>, <span class="va">os_event</span><span class="op">)</span> <span class="op">~</span> <span class="va">arm</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>,</span>
+<span>  <span class="va">dt_os</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">dunnettTest</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">os</span>, <span class="va">os_event</span><span class="op">)</span> <span class="op">~</span> <span class="va">arm</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>,</span>
 <span>                             treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
 <span>                             milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                             alternative <span class="op">=</span> <span class="st">'less'</span>, </span>
@@ -609,7 +609,7 @@ make use of locked data at multiple stages (through the
 <code>Trial$get_locked_data('final')</code> is unnecessary.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## test PFS</span></span>
-<span><span class="va">dt_pfs</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">dunnettTest</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">pfs</span>, <span class="va">pfs_event</span><span class="op">)</span> <span class="op">~</span> <span class="va">arm</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>,</span>
+<span><span class="va">dt_pfs</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">dunnettTest</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">pfs</span>, <span class="va">pfs_event</span><span class="op">)</span> <span class="op">~</span> <span class="va">arm</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>,</span>
 <span>                            treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
 <span>                            milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'interim'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                            alternative <span class="op">=</span> <span class="st">'less'</span>, </span>
@@ -619,7 +619,7 @@ make use of locked data at multiple stages (through the
 <span>                           alpha <span class="op">=</span> <span class="fl">.005</span>, alpha_spending <span class="op">=</span> <span class="st">'asOF'</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## test OS</span></span>
-<span><span class="va">dt_os</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">dunnettTest</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">os</span>, <span class="va">os_event</span><span class="op">)</span> <span class="op">~</span> <span class="va">arm</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>,</span>
+<span><span class="va">dt_os</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">dunnettTest</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">os</span>, <span class="va">os_event</span><span class="op">)</span> <span class="op">~</span> <span class="va">arm</span>, placebo <span class="op">=</span> <span class="st">'placebo'</span>,</span>
 <span>                           treatments <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'high dose'</span>, <span class="st">'low dose'</span><span class="op">)</span>,</span>
 <span>                           milestones <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'dose selection'</span>, <span class="st">'final'</span><span class="op">)</span>,</span>
 <span>                           alternative <span class="op">=</span> <span class="st">'less'</span>, </span>

@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.18.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.18.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -212,7 +212,7 @@ at week 2:</p>
 <span><span class="va">test_set</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">pfs_pbo</span><span class="op">$</span><span class="fu">test_generator</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1e4</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>arm <span class="op">=</span> <span class="st">'pbo'</span><span class="op">)</span>, </span>
 <span>                  <span class="va">pfs_trt</span><span class="op">$</span><span class="fu">test_generator</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1e4</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>arm <span class="op">=</span> <span class="st">'trt'</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">sfit</span> <span class="op">&lt;-</span> <span class="fu">survfit</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span>time <span class="op">=</span> <span class="va">PFS</span>, event <span class="op">=</span> <span class="va">PFS_event</span><span class="op">)</span> <span class="op">~</span> <span class="va">arm</span>, <span class="va">test_set</span><span class="op">)</span></span>
+<span><span class="va">sfit</span> <span class="op">&lt;-</span> <span class="fu">survfit</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">PFS</span>, event <span class="op">=</span> <span class="va">PFS_event</span><span class="op">)</span> <span class="op">~</span> <span class="va">arm</span>, <span class="va">test_set</span><span class="op">)</span></span>
 <span><span class="fu">ggsurvplot</span><span class="op">(</span><span class="va">sfit</span>, data <span class="op">=</span> <span class="va">test_set</span>, palette <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"blue"</span>, <span class="st">"red"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="defineTimeToEventEndpoints_files/figure-html/aldjfba-1.png" class="r-plt" alt="" width="100%"></p>
 <p>In this example, <code>PiecewiseConstantExponentialRNG</code> adds a
