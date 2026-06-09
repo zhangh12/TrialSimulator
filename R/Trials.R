@@ -23,7 +23,10 @@
 #' arms to a newly defined trial, or add arms under adaptive design, e.g.,
 #' dose-ranging, etc.
 #' \item \code{$add_regimen()} register a \code{regimen} object to a trial.
-#' Must be called before \code{$add_arms()}.
+#' Must be called before \code{$add_arms()}. Applied at enrollment.
+#' \item \code{$crossover()} apply a milestone-triggered crossover to patients
+#' still in the trial. Called inside a milestone action; only alters patients'
+#' post-switch endpoint values and leaves already-observed data intact.
 #' \item \code{$get_locked_data()} request for data snapshot at a milestone.
 #' Calling this function is recommended as the first action in any action
 #' function as long as trial data is needed in statistical analysis or decision
@@ -679,6 +682,10 @@ Trials <- R6::R6Class(
 
       stopifnot(inherits(regimen, 'Regimens'))
       private$regimen <- regimen
+      ## keep a pristine clone so reset() can restore it between replicates,
+      ## undoing any triplets appended in-run by crossover(). The init-time
+      ## make_snapshot() ran before any regimen existed, so it is captured here.
+      private$.snapshot[['regimen']] <- regimen$clone(deep = TRUE)
     },
 
     #' @description
@@ -691,6 +698,94 @@ Trials <- R6::R6Class(
     #' return whether a regimen is registered
     has_regimen = function(){
       !is.null(private$regimen)
+    },
+
+    #' @description
+    #' Apply a milestone-triggered crossover to patients still in the trial.
+    #'
+    #' Unlike a regimen registered via \code{add_regimen()} (applied at
+    #' enrollment), \code{crossover()} is meant to be called inside a milestone's
+    #' action function. At the earliest crossover (calendar) time
+    #' \code{T = get_current_time() + delay}, eligible patients may switch to a
+    #' new treatment, and only their \emph{post-switch} endpoint values are
+    #' altered. The triplet is stacked onto the trial's regimen (so it is also
+    #' re-applied to patients enrolled later), and applied immediately, in place,
+    #' to all currently-eligible patients.
+    #'
+    #' Eligibility (the pool passed to \code{what()}) = patients with at least
+    #' one endpoint still "open" (unobserved, dropout-/duration-aware) at
+    #' \code{T}; fully-observed patients are excluded. \code{when()} must return
+    #' a switch time with \code{enroll_time + switch_time >= T} (a crossover
+    #' cannot predate its opening), otherwise an error is raised. \code{how()}
+    #' may only change post-switch outcomes; returning a changed value for a
+    #' pre-switch/locked cell raises an error.
+    #'
+    #' Two helper columns are injected into \code{patient_data} for the triplet
+    #' functions: \code{earliest_crossover_calendar_time} (= \code{T}) and
+    #' \code{earliest_crossover_time_from_enrollment} (= \code{max(T - enroll_time, 0)}).
+    #'
+    #' @param what a function selecting which eligible patients crossover and to
+    #' what \code{new_treatment} (\code{NA} = no crossover). See \code{regimen()}.
+    #' @param how a function returning the modified post-switch endpoint values.
+    #' @param when (optional) a function returning \code{switch_time} from
+    #' enrollment. If \code{NULL} (default), patients switch at \code{T}
+    #' (\code{switch_time = earliest_crossover_time_from_enrollment}).
+    #' @param delay numeric. Time after the milestone before crossover opens;
+    #' \code{T = get_current_time() + delay}. Default \code{0}.
+    #' @param ... (optional) named arguments routed to \code{what}, \code{when},
+    #' and/or \code{how}.
+    crossover = function(what, how, when = NULL, delay = 0, ...){
+
+      stopifnot(is.function(what), is.function(how))
+      if(!is.null(when)) stopifnot(is.function(when))
+      stopifnot(is.numeric(delay), length(delay) == 1, delay >= 0)
+
+      ## get_current_time() guarantees tnow >= 0 and delay >= 0, so Tx >= 0; the
+      ## only invalid value is exactly 0, which happens iff called at setup
+      ## (tnow == 0, no milestone triggered yet) with delay == 0. Tx > 0 is the
+      ## flag for is_crossover = Tx > 0 in apply_regimens().
+      tnow <- self$get_current_time()
+      Tx   <- tnow + delay
+      if(Tx == 0){
+        stop('The earliest crossover time is 0. A crossover cannot open at ',
+             'calendar time 0; call crossover() within a milestone action ',
+             '(so the current trial time is > 0), or pass delay > 0. ')
+      }
+
+      ## default when(): switch at the earliest crossover time
+      if(is.null(when)){
+        when <- function(patient_data){
+          data.frame(patient_id  = patient_data$patient_id,
+                     switch_time = patient_data$earliest_crossover_time_from_enrollment)
+        }
+      }
+
+      ## stack the crossover triplet onto the trial's regimen
+      if(self$has_regimen()){
+        private$regimen$append_triplet(
+          what, when, how,
+          earliest_crossover_calendar_time = Tx, ...)
+      }else{
+        private$regimen <- Regimens$new(
+          what, when, how,
+          earliest_crossover_calendar_time = Tx, ...)
+      }
+
+      ## apply the newly-appended triplet in place to all current patients
+      new_index <- private$regimen$get_number_treatment_allocator()
+      td <- self$get_trial_data()
+      if(!is.null(td) && nrow(td) > 0){
+        td <- private$apply_regimens(td, new_index)
+        private$trial_data <- td
+        self$censor_trial_data()
+      }
+
+      if(!private$silent){
+        message('Crossover triplet registered with earliest crossover time = ',
+                Tx, ' (milestone ', tnow, ' + delay ', delay, '). ')
+      }
+
+      invisible(NULL)
     },
 
     #' @description
@@ -982,114 +1077,11 @@ Trials <- R6::R6Class(
       rownames(patient_data) <- NULL
 
       if(self$has_regimen()){
-        # message('Set regimen when there are ', self$get_number_enrolled_patients(), ' patients in the trial. ')
-        ## real-time monitor to apply potential regimen switching over newly enrolled patients
-
-        isValidOutput <- function(op, req_cols, func_name){
-          if(!is.data.frame(op)){
-            stop('The user-defined function ', func_name,
-                 ' must return a data frame. ',
-                 'Please set a breakpoint in ', func_name,
-                 ' to debug it. ')
-          }
-
-          miss_cols <- setdiff(req_cols, names(op))
-          if(length(miss_cols) > 0){
-            stop('Column(s) <', paste0(miss_cols, collapse = ', '),
-                 '> are missing in data frame returned from the user-defined function ',
-                 func_name, ' for regimen. ',
-                 'Please set a breakpoint in ', func_name,
-                 ' to debug it. ')
-          }
-        }
-
-        n_regimen <- self$get_regimen()$get_number_treatment_allocator()
-
-        no_touch_cols <- c('patient_id', 'arm', 'enroll_time', 'dropout_time', 'regimen_trajectory')
-
-        ## initialize trajectory; switches are appended inside the loop below
-        patient_data$regimen_trajectory <- paste0(as.character(patient_data$arm), "@0")
-
-        for(i in 1:n_regimen){
-
-          new_treatment <- do.call(self$get_regimen()$get_treatment_allocator(i),
-                                   c(list(patient_data),
-                                     self$get_regimen()$get_treatment_allocator_args(i)))
-
-          isValidOutput(new_treatment, c('patient_id', 'new_treatment'), 'what()')
-          if(any(duplicated(new_treatment$patient_id))){
-            stop('No duplicated patient ID is allowed in data frame returned from user-defined function what(). ',
-                 'Set a breakpoint using browser() in your what() function to debug step-by-step. ')
-          }
-          new_treatment <- new_treatment[!is.na(new_treatment$new_treatment),
-                                        c('patient_id', 'new_treatment'), drop = FALSE]
-
-          pd_for_when <- patient_data[match(new_treatment$patient_id, patient_data$patient_id), , drop = FALSE]
-
-          switch_time <- do.call(self$get_regimen()$get_time_selector(i),
-                                  c(list(pd_for_when),
-                                    self$get_regimen()$get_time_selector_args(i)))
-
-          isValidOutput(switch_time, c('patient_id', 'switch_time'), 'when()')
-          if(any(duplicated(switch_time$patient_id))){
-            stop('No duplicated patient ID is allowed in data frame returned from user-defined function when(). ',
-                 'Set a breakpoint using browser() in your when() function to debug step-by-step. ')
-          }
-          switch_time <- switch_time[!is.na(switch_time$switch_time),
-                                     c('patient_id', 'switch_time'), drop = FALSE]
-          if(nrow(switch_time) != nrow(new_treatment) ||
-             !setequal(switch_time$patient_id, new_treatment$patient_id) ||
-             any(is.na(switch_time$switch_time))){
-            stop('In the user-defined function when(), ',
-                 'switch_time must be specified to all patients who switch to new treatment regimen. ',
-                 'NA is not allowed, too. ',
-                 'Set a breakpoint using browser() in your when() function to debug step-by-step. ')
-          }
-
-          m <- match(new_treatment$patient_id, switch_time$patient_id)
-          nr_pid <- new_treatment$patient_id
-          nr_trt <- new_treatment$new_treatment
-          nr_time <- switch_time$switch_time[m]
-
-          ## append this round's switches to each patient's trajectory string
-          idx <- match(nr_pid, patient_data$patient_id)
-          patient_data$regimen_trajectory[idx] <- paste0(
-            patient_data$regimen_trajectory[idx], ";", nr_trt, "@", nr_time
-          )
-
-          merged_patient_data <- patient_data[idx, , drop = FALSE]
-          merged_patient_data$new_treatment <- nr_trt
-          merged_patient_data$switch_time <- nr_time
-
-          updated_data <- do.call(self$get_regimen()$get_data_modifier(i),
-                                   c(list(merged_patient_data),
-                                     self$get_regimen()$get_data_modifier_args(i)))
-          isValidOutput(updated_data, 'patient_id', 'how()')
-          if(any(duplicated(updated_data$patient_id))){
-            stop('No duplicated patient ID is allowed in data frame returned from user-defined function how(). ',
-                 'Set a breakpoint using browser() in your how() function to debug step-by-step. ')
-          }
-
-          touch_cols <- setdiff(names(updated_data), no_touch_cols)
-          if(!all(touch_cols %in% names(patient_data))){
-            stop('The columns below must not be returned from user-defined function < how() >: \n',
-                 paste0(setdiff(touch_cols, names(patient_data)), collapse = ', '))
-          }
-
-          if(any(names(updated_data) %in% setdiff(no_touch_cols, 'patient_id'))){
-            stop('The columns below must not be modified by user-defined function < how() >: \n',
-                 paste0(intersect(names(updated_data), setdiff(no_touch_cols, 'patient_id')), collapse = ', '))
-          }
-
-          upd_idx <- match(updated_data$patient_id, patient_data$patient_id)
-          for(col in touch_cols){
-            new_vals <- updated_data[[col]]
-            keep <- !is.na(new_vals)
-            if(any(keep)) patient_data[[col]][upd_idx[keep]] <- new_vals[keep]
-          }
-
-        }
-
+        ## apply all registered regimen triplets (enrollment-time T=0 triplets
+        ## and any milestone crossover triplets) to the freshly generated batch.
+        patient_data <- private$apply_regimens(
+          patient_data,
+          seq_len(self$get_regimen()$get_number_treatment_allocator()))
       }
 
       private$trial_data <- bind_rows(self$get_trial_data(), patient_data)
@@ -1127,6 +1119,7 @@ Trials <- R6::R6Class(
     #' @description
     #' return current time of a trial
     get_current_time = function(){
+      stopifnot(private$now >= 0)
       private$now
     },
 
@@ -2975,7 +2968,8 @@ Trials <- R6::R6Class(
       private$.snapshot <- list()
 
       for(field in names(private)){
-        if(field %in% c('.snapshot', 'permuted_block_randomization', 'validate_arguments')){
+        if(field %in% c('.snapshot', 'permuted_block_randomization',
+                        'validate_arguments', 'apply_regimens', 'reset_regimen')){
           next
         }
         private$.snapshot[[field]] <- private[[field]]
@@ -2998,6 +2992,10 @@ Trials <- R6::R6Class(
       }
       private$.snapshot$sample_ratio <- sample_ratio
 
+      ## start each run() from the pristine regimen (also clears any crossover
+      ## triplets left over from a previous run() on the same trial object).
+      private$reset_regimen()
+
     },
 
     #' @description
@@ -3019,6 +3017,10 @@ Trials <- R6::R6Class(
       for (field in names(private$.snapshot)){
         private[[field]] <- private$.snapshot[[field]]
       }
+
+      ## the loop above restored regimen by reference; re-clone so the snapshot
+      ## stays pristine and in-run crossover triplets do not leak across reps.
+      private$reset_regimen()
 
       private$milestone_time <- c()
       private$trial_data <- NULL
@@ -3170,6 +3172,226 @@ Trials <- R6::R6Class(
     ## This is useful for simulation to store some setting parameters
     ## that could be used in action functions.
     custom_data = list(),
+
+    ## Apply the regimen triplet(s) `indices` to `patient_data` and return the
+    ## modified data frame. Shared by enroll_patients() (whole fresh batch, all
+    ## triplets) and crossover() (current trial_data, the newly appended triplet).
+    ##
+    ## One contract for every triplet, keyed off its earliest_crossover_calendar_time
+    ## T (0 for an enrollment regimen, > 0 for a milestone crossover): only patients
+    ## with >=1 open endpoint at reference max(T, enroll_time) are passed to what();
+    ## the two helper columns are injected; when() must satisfy
+    ## enroll_time + switch_time >= T; and how() may change only post-switch cells
+    ## (a changed pre-switch/locked cell is an error).
+    apply_regimens = function(patient_data, indices){
+
+      reg <- self$get_regimen()
+
+      isValidOutput <- function(op, req_cols, func_name){
+        if(!is.data.frame(op)){
+          stop('The user-defined function ', func_name,
+               ' must return a data frame. ',
+               'Please set a breakpoint in ', func_name, ' to debug it. ')
+        }
+        miss_cols <- setdiff(req_cols, names(op))
+        if(length(miss_cols) > 0){
+          stop('Column(s) <', paste0(miss_cols, collapse = ', '),
+               '> are missing in data frame returned from the user-defined function ',
+               func_name, ' for regimen. ',
+               'Please set a breakpoint in ', func_name, ' to debug it. ')
+        }
+      }
+
+      no_touch_cols <- c('patient_id', 'arm', 'enroll_time', 'dropout_time', 'regimen_trajectory')
+      injected_cols <- c('earliest_crossover_calendar_time',
+                         'earliest_crossover_time_from_enrollment')
+
+      ## initialize trajectory if absent (fresh batch, or no enrollment regimen)
+      if(is.null(patient_data$regimen_trajectory)){
+        patient_data$regimen_trajectory <- paste0(as.character(patient_data$arm), '@0')
+      }
+
+      event_cols   <- grep('_event$',   names(patient_data), value = TRUE)
+      tte_cols     <- sub('_event$',   '', event_cols)
+      readout_cols <- grep('_readout$', names(patient_data), value = TRUE)
+      ep_cols      <- sub('_readout$', '', readout_cols)
+      duration     <- self$get_duration()
+      tol          <- 1e-8
+
+      for(i in indices){
+
+        Tx <- reg$get_earliest_crossover_calendar_time(i)
+
+        ## inject the helper columns and filter to eligible patients: those with
+        ## >=1 endpoint still open at the reference time max(Tx, enroll_time).
+        cand <- patient_data
+        cand$earliest_crossover_calendar_time        <- Tx
+        cand$earliest_crossover_time_from_enrollment <- pmax(Tx - cand$enroll_time, 0)
+
+        ref      <- pmax(Tx, cand$enroll_time)
+        open_any <- rep(FALSE, nrow(cand))
+        for(tcol in tte_cols){
+          open_any <- open_any |
+            ((cand$enroll_time + pmin(cand[[tcol]], cand$dropout_time)) > ref)
+        }
+        for(k in seq_along(ep_cols)){
+          rt <- cand[[readout_cols[k]]]
+          ## baseline endpoints (readout 0) are observed at enrollment, so they
+          ## are never open and cannot make a patient eligible. The _readout
+          ## column is constant across patients, so one element settles it (O(1)).
+          if(rt[1] == 0) next
+          open_any <- open_any |
+            ((cand$enroll_time + rt) > ref &
+               rt <= cand$dropout_time &
+               (cand$enroll_time + rt) <= duration)
+        }
+        cand <- cand[open_any, , drop = FALSE]
+        if(nrow(cand) == 0) next
+
+        new_treatment <- do.call(reg$get_treatment_allocator(i),
+                                 c(list(cand), reg$get_treatment_allocator_args(i)))
+        isValidOutput(new_treatment, c('patient_id', 'new_treatment'), 'what()')
+        if(any(duplicated(new_treatment$patient_id))){
+          stop('No duplicated patient ID is allowed in data frame returned from ',
+               'user-defined function what(). ',
+               'Set a breakpoint using browser() in your what() function to debug step-by-step. ')
+        }
+        new_treatment <- new_treatment[!is.na(new_treatment$new_treatment),
+                                       c('patient_id', 'new_treatment'), drop = FALSE]
+        illegal <- setdiff(new_treatment$patient_id, cand$patient_id)
+        if(length(illegal) > 0){
+          stop('what() selected patient(s) not in the eligible pool: <',
+               paste0(head(illegal, 10), collapse = ', '), '>. ',
+               'Only patients with an endpoint still open at the earliest crossover ',
+               'time may switch. ')
+        }
+        if(nrow(new_treatment) == 0) next
+
+        pd_for_when <- cand[match(new_treatment$patient_id, cand$patient_id), , drop = FALSE]
+        switch_time <- do.call(reg$get_time_selector(i),
+                               c(list(pd_for_when), reg$get_time_selector_args(i)))
+        isValidOutput(switch_time, c('patient_id', 'switch_time'), 'when()')
+        if(any(duplicated(switch_time$patient_id))){
+          stop('No duplicated patient ID is allowed in data frame returned from ',
+               'user-defined function when(). ',
+               'Set a breakpoint using browser() in your when() function to debug step-by-step. ')
+        }
+        switch_time <- switch_time[!is.na(switch_time$switch_time),
+                                   c('patient_id', 'switch_time'), drop = FALSE]
+        if(nrow(switch_time) != nrow(new_treatment) ||
+           !setequal(switch_time$patient_id, new_treatment$patient_id) ||
+           any(is.na(switch_time$switch_time))){
+          stop('In the user-defined function when(), ',
+               'switch_time must be specified to all patients who switch to new treatment regimen. ',
+               'NA is not allowed, too. ',
+               'Set a breakpoint using browser() in your when() function to debug step-by-step. ')
+        }
+
+        m       <- match(new_treatment$patient_id, switch_time$patient_id)
+        nr_pid  <- new_treatment$patient_id
+        nr_trt  <- new_treatment$new_treatment
+        nr_time <- switch_time$switch_time[m]
+
+        ## a switch cannot take effect before the earliest crossover time
+        enr <- patient_data$enroll_time[match(nr_pid, patient_data$patient_id)]
+        bad <- (enr + nr_time) < (Tx - tol)
+        if(any(bad)){
+          stop('In the user-defined function when(), the switch time of patient(s) <',
+               paste0(head(nr_pid[bad], 10), collapse = ', '),
+               '> predates the earliest crossover time (', Tx,
+               '). enroll_time + switch_time must be >= the earliest crossover time. ')
+        }
+
+        idx <- match(nr_pid, patient_data$patient_id)
+        patient_data$regimen_trajectory[idx] <- paste0(
+          patient_data$regimen_trajectory[idx], ';', nr_trt, '@', nr_time)
+
+        merged <- patient_data[idx, , drop = FALSE]
+        merged$new_treatment                           <- nr_trt
+        merged$switch_time                             <- nr_time
+        merged$earliest_crossover_calendar_time        <- Tx
+        merged$earliest_crossover_time_from_enrollment <- pmax(Tx - merged$enroll_time, 0)
+
+        updated_data <- do.call(reg$get_data_modifier(i),
+                                c(list(merged), reg$get_data_modifier_args(i)))
+        isValidOutput(updated_data, 'patient_id', 'how()')
+        if(any(duplicated(updated_data$patient_id))){
+          stop('No duplicated patient ID is allowed in data frame returned from ',
+               'user-defined function how(). ',
+               'Set a breakpoint using browser() in your how() function to debug step-by-step. ')
+        }
+        stray <- setdiff(updated_data$patient_id, nr_pid)
+        if(length(stray) > 0){
+          stop('how() returned patient_id(s) not among the switching patients: <',
+               paste0(head(stray, 10), collapse = ', '),
+               '>. how() may only modify patients selected by what(). ')
+        }
+
+        touch_cols <- setdiff(names(updated_data),
+                              c(no_touch_cols, injected_cols, 'new_treatment', 'switch_time'))
+        if(!all(touch_cols %in% names(patient_data))){
+          stop('The columns below must not be returned from user-defined function < how() >: \n',
+               paste0(setdiff(touch_cols, names(patient_data)), collapse = ', '))
+        }
+        if(any(names(updated_data) %in% setdiff(no_touch_cols, 'patient_id'))){
+          stop('The columns below must not be modified by user-defined function < how() >: \n',
+               paste0(intersect(names(updated_data), setdiff(no_touch_cols, 'patient_id')),
+                      collapse = ', '))
+        }
+
+        upd_idx    <- match(updated_data$patient_id, patient_data$patient_id)
+        sw_for_upd <- nr_time[match(updated_data$patient_id, nr_pid)]
+
+        for(col in touch_cols){
+          new_vals <- updated_data[[col]]
+
+          if(col %in% tte_cols || col %in% ep_cols){
+            orig_val <- patient_data[[col]][upd_idx]
+            if(col %in% tte_cols){
+              post_switch <- orig_val > sw_for_upd
+            }else{
+              rt <- patient_data[[readout_cols[match(col, ep_cols)]]][upd_idx]
+              post_switch <- (rt > sw_for_upd) &
+                rt <= patient_data$dropout_time[upd_idx] &
+                (patient_data$enroll_time[upd_idx] + rt) <= duration
+            }
+            post_switch[is.na(post_switch)] <- FALSE
+            if(is.numeric(new_vals) && is.numeric(orig_val)){
+              differs <- abs(new_vals - orig_val) > tol
+            }else{
+              differs <- new_vals != orig_val
+            }
+            changed <- !is.na(new_vals) & (is.na(orig_val) | differs)
+            illegal <- changed & !post_switch
+            if(any(illegal)){
+              stop('how() returned a changed value for a pre-switch/locked cell ',
+                   'on endpoint <', col, '> for patient(s) <',
+                   paste0(head(updated_data$patient_id[illegal], 10), collapse = ', '),
+                   '>. Only post-switch outcomes may be altered. ')
+            }
+            keep <- !is.na(new_vals) & post_switch
+          }else{
+            keep <- !is.na(new_vals)
+          }
+
+          if(any(keep)) patient_data[[col]][upd_idx[keep]] <- new_vals[keep]
+        }
+      }
+
+      patient_data
+    },
+
+    ## Restore the regimen to its pristine, pre-run state from the snapshot:
+    ## a fresh deep clone (so the snapshot stays pristine), or NULL when no
+    ## regimen was registered via add_regimen(). This undoes any crossover
+    ## triplets appended in-run, preventing cross-replicate accumulation.
+    reset_regimen = function(){
+      if(is.null(private$.snapshot[['regimen']])){
+        private$regimen <- NULL
+      }else{
+        private$regimen <- private$.snapshot[['regimen']]$clone(deep = TRUE)
+      }
+    },
 
     validate_arguments =
       function(name, n_patients, duration, description, seed,

@@ -593,7 +593,10 @@ test_that('regimen() ... args are passed to what/when/how at execution time', {
     received_accel <<- accel
     data.frame(
       patient_id = patient_data$patient_id,
-      os = patient_data$switch_time + accel * pmax(patient_data$os - patient_data$switch_time, 0)
+      ## only post-switch os may change; leave pre-switch (os <= switch_time) as is
+      os = ifelse(patient_data$os > patient_data$switch_time,
+                  patient_data$switch_time + accel * (patient_data$os - patient_data$switch_time),
+                  patient_data$os)
     )
   }
 

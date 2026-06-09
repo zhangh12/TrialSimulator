@@ -8,6 +8,12 @@
 
 test_that('package behaves the same under single- and multi-process modes with same seed', {
 
+  # covr cannot reliably collect coverage traces from the worker R processes
+  # spawned by n_workers > 1; under coverage that yields a truncated trace which
+  # breaks covr's merge step (readRDS: error reading from connection). The
+  # parallel path is still exercised in ordinary (non-coverage) test runs.
+  skip_if(Sys.getenv("R_COVR") == "true",
+          "n_workers > 1 spawns R processes that covr cannot trace")
 
   foo <- function(n, n_workers, seed = NULL){
     pfs <- endpoint(name = 'pfs', type = 'tte', generator = rexp, rate = log(2)/10)

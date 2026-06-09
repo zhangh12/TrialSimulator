@@ -22,6 +22,8 @@ endpoint data.
 \item \href{#method-Regimens-get_treatment_allocator_args}{\code{Regimens$get_treatment_allocator_args()}}
 \item \href{#method-Regimens-get_time_selector_args}{\code{Regimens$get_time_selector_args()}}
 \item \href{#method-Regimens-get_data_modifier_args}{\code{Regimens$get_data_modifier_args()}}
+\item \href{#method-Regimens-get_earliest_crossover_calendar_time}{\code{Regimens$get_earliest_crossover_calendar_time()}}
+\item \href{#method-Regimens-append_triplet}{\code{Regimens$append_triplet()}}
 \item \href{#method-Regimens-clone}{\code{Regimens$clone()}}
 }
 }
@@ -31,7 +33,7 @@ endpoint data.
 \subsection{Method \code{new()}}{
 initialize regimen
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Regimens$new(what, when, how, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Regimens$new(what, when, how, ..., earliest_crossover_calendar_time = 0)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -65,11 +67,22 @@ list of functions that will be executed sequentially. No default value.}
 Only modified columns and \code{patient_id} are returned. A cell will
 be omitted if \code{NA}, meaning no change to that patient for the endpoint
 or other variables. Equivalently, users can also fill the cell with
-its original value. This argument can also be a list of functions that
-will be executed sequentially. No default value.}
+its original value. Only \emph{post-switch} outcomes may be changed:
+returning a value that differs from the original for an endpoint whose
+readout/event is at or before \code{switch_time} raises an error. This
+argument can also be a list of functions that will be executed
+sequentially. No default value.}
 
 \item{\code{...}}{(optional) named arguments routed to one or more of
 \code{what}, \code{when}, and \code{how}.}
+
+\item{\code{earliest_crossover_calendar_time}}{numeric. The earliest calendar
+time at which the triplet(s) may take effect. \code{0} (default) is the
+classic enrollment-time regimen, applied from the first enrollment. A
+positive value marks the triplet(s) as a milestone-triggered crossover
+(eligibility filtering, switch-time validation and the post-switch data
+mask). This is set internally by \code{trial$crossover()}; it is not a
+user argument of \code{regimen()}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -202,6 +215,55 @@ return pre-bound arguments for the i-th data modifier
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{index}}{integer.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Regimens-get_earliest_crossover_calendar_time"></a>}}
+\if{latex}{\out{\hypertarget{method-Regimens-get_earliest_crossover_calendar_time}{}}}
+\subsection{Method \code{get_earliest_crossover_calendar_time()}}{
+return the earliest crossover calendar time of triplet(s)
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Regimens$get_earliest_crossover_calendar_time(index = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{index}}{integer. Index of triplet. Return all if \code{NULL}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Regimens-append_triplet"></a>}}
+\if{latex}{\out{\hypertarget{method-Regimens-append_triplet}{}}}
+\subsection{Method \code{append_triplet()}}{
+append one more triplet to the regimen. Used by milestone-triggered
+crossover to stack a new \code{what}/\code{when}/\code{how} (with its own
+\code{earliest_crossover_calendar_time}) onto an existing regimen without
+overwriting earlier triplets. Triplets are executed in append order.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Regimens$append_triplet(
+  what,
+  when,
+  how,
+  ...,
+  earliest_crossover_calendar_time = 0
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{what, when, how}}{see \code{regimen()}.}
+
+\item{\code{...}}{(optional) named arguments routed to \code{what}, \code{when},
+and/or \code{how}.}
+
+\item{\code{earliest_crossover_calendar_time}}{numeric. Earliest calendar time
+for the appended triplet. A positive value marks it as a crossover.}
 }
 \if{html}{\out{</div>}}
 }

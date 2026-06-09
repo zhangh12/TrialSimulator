@@ -28,7 +28,10 @@ function can be used in enrichment design.
 arms to a newly defined trial, or add arms under adaptive design, e.g.,
 dose-ranging, etc.
 \item \code{$add_regimen()} register a \code{regimen} object to a trial.
-Must be called before \code{$add_arms()}.
+Must be called before \code{$add_arms()}. Applied at enrollment.
+\item \code{$crossover()} apply a milestone-triggered crossover to patients
+still in the trial. Called inside a milestone action; only alters patients'
+post-switch endpoint values and leaves already-observed data intact.
 \item \code{$get_locked_data()} request for data snapshot at a milestone.
 Calling this function is recommended as the first action in any action
 function as long as trial data is needed in statistical analysis or decision
@@ -120,6 +123,7 @@ trial$closedTest(dt, treatments = c('high dose', 'low dose'),
 \item \href{#method-Trials-add_regimen}{\code{Trials$add_regimen()}}
 \item \href{#method-Trials-get_regimen}{\code{Trials$get_regimen()}}
 \item \href{#method-Trials-has_regimen}{\code{Trials$has_regimen()}}
+\item \href{#method-Trials-crossover}{\code{Trials$crossover()}}
 \item \href{#method-Trials-get_name}{\code{Trials$get_name()}}
 \item \href{#method-Trials-get_description}{\code{Trials$get_description()}}
 \item \href{#method-Trials-get_arms}{\code{Trials$get_arms()}}
@@ -543,6 +547,57 @@ return whether a regimen is registered
 \if{html}{\out{<div class="r">}}\preformatted{Trials$has_regimen()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-crossover"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-crossover}{}}}
+\subsection{Method \code{crossover()}}{
+Apply a milestone-triggered crossover to patients still in the trial.
+
+Unlike a regimen registered via \code{add_regimen()} (applied at
+enrollment), \code{crossover()} is meant to be called inside a milestone's
+action function. At the earliest crossover (calendar) time
+\code{T = get_current_time() + delay}, eligible patients may switch to a
+new treatment, and only their \emph{post-switch} endpoint values are
+altered. The triplet is stacked onto the trial's regimen (so it is also
+re-applied to patients enrolled later), and applied immediately, in place,
+to all currently-eligible patients.
+
+Eligibility (the pool passed to \code{what()}) = patients with at least
+one endpoint still "open" (unobserved, dropout-/duration-aware) at
+\code{T}; fully-observed patients are excluded. \code{when()} must return
+a switch time with \code{enroll_time + switch_time >= T} (a crossover
+cannot predate its opening), otherwise an error is raised. \code{how()}
+may only change post-switch outcomes; returning a changed value for a
+pre-switch/locked cell raises an error.
+
+Two helper columns are injected into \code{patient_data} for the triplet
+functions: \code{earliest_crossover_calendar_time} (= \code{T}) and
+\code{earliest_crossover_time_from_enrollment} (= \code{max(T - enroll_time, 0)}).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$crossover(what, how, when = NULL, delay = 0, ...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{what}}{a function selecting which eligible patients crossover and to
+what \code{new_treatment} (\code{NA} = no crossover). See \code{regimen()}.}
+
+\item{\code{how}}{a function returning the modified post-switch endpoint values.}
+
+\item{\code{when}}{(optional) a function returning \code{switch_time} from
+enrollment. If \code{NULL} (default), patients switch at \code{T}
+(\code{switch_time = earliest_crossover_time_from_enrollment}).}
+
+\item{\code{delay}}{numeric. Time after the milestone before crossover opens;
+\code{T = get_current_time() + delay}. Default \code{0}.}
+
+\item{\code{...}}{(optional) named arguments routed to \code{what}, \code{when},
+and/or \code{how}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Trials-get_name"></a>}}

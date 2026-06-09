@@ -11,3 +11,4 @@ vignettes/cache
 ^\.github$
 ^py$
 ^\.claude$
+^\.positai$

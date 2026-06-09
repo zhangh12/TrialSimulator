@@ -35,8 +35,12 @@
 #' Only modified columns and \code{patient_id} are returned. A cell will
 #' be omitted if \code{NA}, meaning no change to that patient for the endpoint
 #' or other variables. Equivalently, users can also fill the cell with
-#' its original value. This argument can also be a list of functions that
-#' will be executed sequentially. No default value.
+#' its original value. Only \emph{post-switch} outcomes may be changed: returning
+#' a value that differs from the original for an endpoint whose readout/event is
+#' at or before \code{switch_time} (a pre-switch or already-observed outcome)
+#' raises an error, so leave such cells as \code{NA} or their original value
+#' (e.g. \code{ifelse(os > switch_time, new_os, os)}). This argument can also be
+#' a list of functions that will be executed sequentially. No default value.
 #' @param ... (optional) named arguments to be passed to one or more of
 #' \code{what}, \code{when}, and \code{how}. Each argument is routed to every
 #' function whose formal parameter list contains that name. All arguments must
@@ -46,6 +50,11 @@
 #' @export
 #'
 regimen <- function(what, when, how, ...){
+
+  if('earliest_crossover_calendar_time' %in% names(list(...))){
+    stop('`earliest_crossover_calendar_time` is not a user argument of regimen(); ',
+         'it is set internally by trial$crossover(). ')
+  }
 
   Regimens$new(
     what = what,
