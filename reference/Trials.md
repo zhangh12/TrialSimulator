@@ -30,9 +30,10 @@ to end users.
 - `$add_regimen()` register a `regimen` object to a trial. Must be
   called before `$add_arms()`. Applied at enrollment.
 
-- `$crossover()` apply a milestone-triggered crossover to patients still
-  in the trial. Called inside a milestone action; only alters patients'
-  post-switch endpoint values and leaves already-observed data intact.
+- `$crossover()` apply a milestone-triggered crossover to eligible
+  patients in the trial. Called inside a milestone action; only alters
+  patients' post-switch endpoint values and leaves already-observed data
+  intact.
 
 - `$get_locked_data()` request for data snapshot at a milestone. Calling
   this function is recommended as the first action in any action
@@ -603,7 +604,7 @@ return whether a regimen is registered
 
 ### Method [`crossover()`](https://zhangh12.github.io/TrialSimulator/reference/crossover.md)
 
-Apply a milestone-triggered crossover to patients still in the trial.
+Apply a milestone-triggered crossover to eligible patients in the trial.
 
 Unlike a regimen registered via `add_regimen()` (applied at enrollment),
 [`crossover()`](https://zhangh12.github.io/TrialSimulator/reference/crossover.md)

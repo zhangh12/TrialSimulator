@@ -21,8 +21,8 @@ arms to a newly defined trial, or add arms under adaptive design, e.g.,
 dose-ranging, etc.
 $add_regimen() register a regimen object to a trial.
 Must be called before $add_arms(). Applied at enrollment.
-$crossover() apply a milestone-triggered crossover to patients
-still in the trial. Called inside a milestone action; only alters patients'
+$crossover() apply a milestone-triggered crossover to eligible
+patients in the trial. Called inside a milestone action; only alters patients'
 post-switch endpoint values and leaves already-observed data intact.
 $get_locked_data() request for data snapshot at a milestone.
 Calling this function is recommended as the first action in any action
@@ -69,8 +69,8 @@ arms to a newly defined trial, or add arms under adaptive design, e.g.,
 dose-ranging, etc.
 $add_regimen() register a regimen object to a trial.
 Must be called before $add_arms(). Applied at enrollment.
-$crossover() apply a milestone-triggered crossover to patients
-still in the trial. Called inside a milestone action; only alters patients'
+$crossover() apply a milestone-triggered crossover to eligible
+patients in the trial. Called inside a milestone action; only alters patients'
 post-switch endpoint values and leaves already-observed data intact.
 $get_locked_data() request for data snapshot at a milestone.
 Calling this function is recommended as the first action in any action
@@ -168,8 +168,8 @@ arms to a newly defined trial, or add arms under adaptive design, e.g.,
 dose-ranging, etc.</p></li>
 <li><p><code>$add_regimen()</code> register a <code>regimen</code> object to a trial.
 Must be called before <code>$add_arms()</code>. Applied at enrollment.</p></li>
-<li><p><code>$crossover()</code> apply a milestone-triggered crossover to patients
-still in the trial. Called inside a milestone action; only alters patients'
+<li><p><code>$crossover()</code> apply a milestone-triggered crossover to eligible
+patients in the trial. Called inside a milestone action; only alters patients'
 post-switch endpoint values and leaves already-observed data intact.</p></li>
 <li><p><code>$get_locked_data()</code> request for data snapshot at a milestone.
 Calling this function is recommended as the first action in any action
@@ -650,7 +650,7 @@ endpoint data accordingly.</p><div class="section">
 
 </div><p></p><hr><a id="method-Trials-crossover"></a><div class="section">
 <h3 id="method-crossover-">Method <code><a href="crossover.html">crossover()</a></code><a class="anchor" aria-label="anchor" href="#method-crossover-"></a></h3>
-<p>Apply a milestone-triggered crossover to patients still in the trial.</p>
+<p>Apply a milestone-triggered crossover to eligible patients in the trial.</p>
 <p>Unlike a regimen registered via <code>add_regimen()</code> (applied at
 enrollment), <code><a href="crossover.html">crossover()</a></code> is meant to be called inside a milestone's
 action function. At the earliest crossover (calendar) time
