@@ -29,8 +29,8 @@ arms to a newly defined trial, or add arms under adaptive design, e.g.,
 dose-ranging, etc.
 \item \code{$add_regimen()} register a \code{regimen} object to a trial.
 Must be called before \code{$add_arms()}. Applied at enrollment.
-\item \code{$crossover()} apply a milestone-triggered crossover to patients
-still in the trial. Called inside a milestone action; only alters patients'
+\item \code{$crossover()} apply a milestone-triggered crossover to eligible
+patients in the trial. Called inside a milestone action; only alters patients'
 post-switch endpoint values and leaves already-observed data intact.
 \item \code{$get_locked_data()} request for data snapshot at a milestone.
 Calling this function is recommended as the first action in any action
@@ -552,7 +552,7 @@ return whether a regimen is registered
 \if{html}{\out{<a id="method-Trials-crossover"></a>}}
 \if{latex}{\out{\hypertarget{method-Trials-crossover}{}}}
 \subsection{Method \code{crossover()}}{
-Apply a milestone-triggered crossover to patients still in the trial.
+Apply a milestone-triggered crossover to eligible patients in the trial.
 
 Unlike a regimen registered via \code{add_regimen()} (applied at
 enrollment), \code{crossover()} is meant to be called inside a milestone's
