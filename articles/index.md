@@ -8,8 +8,6 @@
   Design](https://zhangh12.github.io/TrialSimulator/articles/adaptiveDesign.md):
 - [Condition System for Triggering Milestones in a
   Trial](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.md):
-- [Crossover at a
-  Milestone](https://zhangh12.github.io/TrialSimulator/articles/crossoverAtMilestone.md):
 - [Crossover Design with Wash-out
   Periods](https://zhangh12.github.io/TrialSimulator/articles/crossoverWashout.md):
 - [Define and Summarize Arms in Clinical

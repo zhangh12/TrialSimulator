@@ -118,8 +118,7 @@ we recommend reading the following vignettes in order:
     periods](https://zhangh12.github.io/TrialSimulator/articles/crossoverWashout.html)
   - [Dynamic treatment
     switching](https://zhangh12.github.io/TrialSimulator/articles/dynamicTreatmentSwitching.html)
-  - [Crossover at
-    milestone](https://zhangh12.github.io/TrialSimulator/articles/crossoverAtMilestone.html)
+  - \[Crossover at specified time points\] vignette is coming!
 - Built-in methods supported in `TrialSimulator`
   - [Wrapper functions of common statistical methods for estimating
     treatment
@@ -256,8 +255,6 @@ we recommend reading the following vignettes in order:
   Design](https://zhangh12.github.io/TrialSimulator/articles/adaptiveDesign.md):
 - [Condition System for Triggering Milestones in a
   Trial](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.md):
-- [Crossover at a
-  Milestone](https://zhangh12.github.io/TrialSimulator/articles/crossoverAtMilestone.md):
 - [Crossover Design with Wash-out
   Periods](https://zhangh12.github.io/TrialSimulator/articles/crossoverWashout.md):
 - [Define and Summarize Arms in Clinical
