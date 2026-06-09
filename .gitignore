@@ -13,3 +13,10 @@ docs
 *.so
 *.dll
 .positai
+
+# coverage artifacts
+covr/
+*.gcda
+*.gcno
+*.gcov
+cobertura.xml
