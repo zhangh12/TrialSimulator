@@ -43,6 +43,8 @@
   : Triggering Condition by Calendar Time
 - [`controller()`](https://zhangh12.github.io/TrialSimulator/reference/controller.md)
   : Define a Controller
+- [`crossover()`](https://zhangh12.github.io/TrialSimulator/reference/crossover.md)
+  : Crossover at a Milestone
 - [`doNothing()`](https://zhangh12.github.io/TrialSimulator/reference/doNothing.md)
   : An Action Function that Does Nothing
 - [`endpoint()`](https://zhangh12.github.io/TrialSimulator/reference/endpoint.md)

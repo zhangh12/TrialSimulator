@@ -47,8 +47,13 @@ regimen(what, when, how, ...)
   modified columns and `patient_id` are returned. A cell will be omitted
   if `NA`, meaning no change to that patient for the endpoint or other
   variables. Equivalently, users can also fill the cell with its
-  original value. This argument can also be a list of functions that
-  will be executed sequentially. No default value.
+  original value. Only *post-switch* outcomes may be changed: returning
+  a value that differs from the original for an endpoint whose
+  readout/event is at or before `switch_time` (a pre-switch or
+  already-observed outcome) raises an error, so leave such cells as `NA`
+  or their original value (e.g. `ifelse(os > switch_time, new_os, os)`).
+  This argument can also be a list of functions that will be executed
+  sequentially. No default value.
 
 - ...:
 

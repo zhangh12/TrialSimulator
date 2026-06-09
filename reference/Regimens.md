@@ -28,6 +28,10 @@ to update patients' endpoint data.
 
 - [`Regimens$get_data_modifier_args()`](#method-Regimens-get_data_modifier_args)
 
+- [`Regimens$get_earliest_crossover_calendar_time()`](#method-Regimens-get_earliest_crossover_calendar_time)
+
+- [`Regimens$append_triplet()`](#method-Regimens-append_triplet)
+
 - [`Regimens$clone()`](#method-Regimens-clone)
 
 ------------------------------------------------------------------------
@@ -38,7 +42,7 @@ initialize regimen
 
 #### Usage
 
-    Regimens$new(what, when, how, ...)
+    Regimens$new(what, when, how, ..., earliest_crossover_calendar_time = 0)
 
 #### Arguments
 
@@ -74,13 +78,26 @@ initialize regimen
   modified columns and `patient_id` are returned. A cell will be omitted
   if `NA`, meaning no change to that patient for the endpoint or other
   variables. Equivalently, users can also fill the cell with its
-  original value. This argument can also be a list of functions that
-  will be executed sequentially. No default value.
+  original value. Only *post-switch* outcomes may be changed: returning
+  a value that differs from the original for an endpoint whose
+  readout/event is at or before `switch_time` raises an error. This
+  argument can also be a list of functions that will be executed
+  sequentially. No default value.
 
 - `...`:
 
   (optional) named arguments routed to one or more of `what`, `when`,
   and `how`.
+
+- `earliest_crossover_calendar_time`:
+
+  numeric. The earliest calendar time at which the triplet(s) may take
+  effect. `0` (default) is the classic enrollment-time regimen, applied
+  from the first enrollment. A positive value marks the triplet(s) as a
+  milestone-triggered crossover (eligibility filtering, switch-time
+  validation and the post-switch data mask). This is set internally by
+  `trial$crossover()`; it is not a user argument of
+  [`regimen()`](https://zhangh12.github.io/TrialSimulator/reference/regimen.md).
 
 ------------------------------------------------------------------------
 
@@ -207,6 +224,57 @@ return pre-bound arguments for the i-th data modifier
 - `index`:
 
   integer.
+
+------------------------------------------------------------------------
+
+### Method `get_earliest_crossover_calendar_time()`
+
+return the earliest crossover calendar time of triplet(s)
+
+#### Usage
+
+    Regimens$get_earliest_crossover_calendar_time(index = NULL)
+
+#### Arguments
+
+- `index`:
+
+  integer. Index of triplet. Return all if `NULL`.
+
+------------------------------------------------------------------------
+
+### Method `append_triplet()`
+
+append one more triplet to the regimen. Used by milestone-triggered
+crossover to stack a new `what`/`when`/`how` (with its own
+`earliest_crossover_calendar_time`) onto an existing regimen without
+overwriting earlier triplets. Triplets are executed in append order.
+
+#### Usage
+
+    Regimens$append_triplet(
+      what,
+      when,
+      how,
+      ...,
+      earliest_crossover_calendar_time = 0
+    )
+
+#### Arguments
+
+- `what, when, how`:
+
+  see
+  [`regimen()`](https://zhangh12.github.io/TrialSimulator/reference/regimen.md).
+
+- `...`:
+
+  (optional) named arguments routed to `what`, `when`, and/or `how`.
+
+- `earliest_crossover_calendar_time`:
+
+  numeric. Earliest calendar time for the appended triplet. A positive
+  value marks it as a crossover.
 
 ------------------------------------------------------------------------
 

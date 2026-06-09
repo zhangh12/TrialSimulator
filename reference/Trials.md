@@ -28,7 +28,11 @@ to end users.
   dose-ranging, etc.
 
 - `$add_regimen()` register a `regimen` object to a trial. Must be
-  called before `$add_arms()`.
+  called before `$add_arms()`. Applied at enrollment.
+
+- `$crossover()` apply a milestone-triggered crossover to patients still
+  in the trial. Called inside a milestone action; only alters patients'
+  post-switch endpoint values and leaves already-observed data intact.
 
 - `$get_locked_data()` request for data snapshot at a milestone. Calling
   this function is recommended as the first action in any action
@@ -98,6 +102,8 @@ to end users.
 - [`Trials$get_regimen()`](#method-Trials-get_regimen)
 
 - [`Trials$has_regimen()`](#method-Trials-has_regimen)
+
+- [`Trials$crossover()`](#method-Trials-crossover)
 
 - [`Trials$get_name()`](#method-Trials-get_name)
 
@@ -592,6 +598,65 @@ return whether a regimen is registered
 #### Usage
 
     Trials$has_regimen()
+
+------------------------------------------------------------------------
+
+### Method [`crossover()`](https://zhangh12.github.io/TrialSimulator/reference/crossover.md)
+
+Apply a milestone-triggered crossover to patients still in the trial.
+
+Unlike a regimen registered via `add_regimen()` (applied at enrollment),
+[`crossover()`](https://zhangh12.github.io/TrialSimulator/reference/crossover.md)
+is meant to be called inside a milestone's action function. At the
+earliest crossover (calendar) time `T = get_current_time() + delay`,
+eligible patients may switch to a new treatment, and only their
+*post-switch* endpoint values are altered. The triplet is stacked onto
+the trial's regimen (so it is also re-applied to patients enrolled
+later), and applied immediately, in place, to all currently-eligible
+patients.
+
+Eligibility (the pool passed to `what()`) = patients with at least one
+endpoint still "open" (unobserved, dropout-/duration-aware) at `T`;
+fully-observed patients are excluded. `when()` must return a switch time
+with `enroll_time + switch_time >= T` (a crossover cannot predate its
+opening), otherwise an error is raised. `how()` may only change
+post-switch outcomes; returning a changed value for a pre-switch/locked
+cell raises an error.
+
+Two helper columns are injected into `patient_data` for the triplet
+functions: `earliest_crossover_calendar_time` (= `T`) and
+`earliest_crossover_time_from_enrollment` (= `max(T - enroll_time, 0)`).
+
+#### Usage
+
+    Trials$crossover(what, how, when = NULL, delay = 0, ...)
+
+#### Arguments
+
+- `what`:
+
+  a function selecting which eligible patients crossover and to what
+  `new_treatment` (`NA` = no crossover). See
+  [`regimen()`](https://zhangh12.github.io/TrialSimulator/reference/regimen.md).
+
+- `how`:
+
+  a function returning the modified post-switch endpoint values.
+
+- `when`:
+
+  (optional) a function returning `switch_time` from enrollment. If
+  `NULL` (default), patients switch at `T`
+  (`switch_time = earliest_crossover_time_from_enrollment`).
+
+- `delay`:
+
+  numeric. Time after the milestone before crossover opens;
+  `T = get_current_time() + delay`. Default `0`.
+
+- `...`:
+
+  (optional) named arguments routed to `what`, `when`, and/or `how`.
 
 ------------------------------------------------------------------------
 

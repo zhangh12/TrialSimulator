@@ -1,6 +1,30 @@
 # Changelog
 
+## TrialSimulator 1.19.0
+
+### New Feature
+
+- Add
+  [`crossover()`](https://zhangh12.github.io/TrialSimulator/reference/crossover.md)
+  for milestone-triggered treatment crossover. Called inside a
+  milestone’s action function, it lets patients still in the trial
+  switch treatment at (or after) the milestone, altering only their
+  post-switch endpoint values. Regimens are unified under one contract
+  keyed off an earliest crossover time; the classic enrollment regimen
+  added via `add_regimen()` is the `T = 0` case.
+
+### Updates
+
+- A regimen’s `how()` may now only modify post-switch outcomes:
+  returning a value that differs from the original for an endpoint whose
+  readout/event is at or before `switch_time` (a pre-switch or
+  already-observed outcome) raises an error. Guard such `how()`
+  functions accordingly,
+  e.g. `os = ifelse(os > switch_time, new_os, os)`.
+
 ## TrialSimulator 1.18.4
+
+CRAN release: 2026-05-13
 
 ### Bug Fix
 
