@@ -9,8 +9,9 @@ crossover(trial, what, how, when = NULL, delay = 0, ...)
 \arguments{
 \item{trial}{a trial object returned by \code{trial()}.}
 
-\item{what}{a function selecting which eligible patients crossover and to
-what \code{new_treatment} (\code{NA} = no crossover). See \code{regimen()}.}
+\item{what}{a function selecting which eligible patients crossover, returning
+one row per crossing-over patient with their \code{new_treatment}. See
+\code{regimen()}.}
 
 \item{how}{a function returning the modified post-switch endpoint values for
 crossing-over patients. See \code{regimen()}.}

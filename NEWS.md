@@ -1,3 +1,10 @@
+# TrialSimulator 1.19.1
+
+## Documentation
+
+- Add the "Crossover at milestone" vignette demonstrating `crossover()`.
+- Update the `regimen()`/`crossover()` examples and help pages to use the natural `ifelse(condition, new_value, original)` idiom in `how()` and to return only the switching patients in `what()`, rather than relying on `NA` to mark unchanged cells or non-switchers. The engine still accepts `NA` for backward compatibility.
+
 # TrialSimulator 1.19.0
 
 ## New Feature
