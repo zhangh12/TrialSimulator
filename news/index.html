@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.19.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.19.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,6 +21,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/actionFunctions.html">Specify Actions to Execute at Trial Milestones</a></li>
     <li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
     <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
+    <li><a class="dropdown-item" href="../articles/crossoverAtMilestone.html">Crossover at a Milestone</a></li>
     <li><a class="dropdown-item" href="../articles/crossoverWashout.html">Crossover Design with Wash-out Periods</a></li>
     <li><a class="dropdown-item" href="../articles/defineArms.html">Define and Summarize Arms in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineLongitudinalEndpoints.html">Define Longitudinal Endpoints</a></li>
@@ -49,6 +50,14 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.19.1" id="trialsimulator-1191">TrialSimulator 1.19.1<a class="anchor" aria-label="anchor" href="#trialsimulator-1191"></a></h2>
+<div class="section level3">
+<h3 id="documentation-1-19-1">Documentation<a class="anchor" aria-label="anchor" href="#documentation-1-19-1"></a></h3>
+<ul><li>Add the “Crossover at milestone” vignette demonstrating <code><a href="../reference/crossover.html">crossover()</a></code>.</li>
+<li>Update the <code><a href="../reference/regimen.html">regimen()</a></code>/<code><a href="../reference/crossover.html">crossover()</a></code> examples and help pages to use the natural <code>ifelse(condition, new_value, original)</code> idiom in <code>how()</code> and to return only the switching patients in <code>what()</code>, rather than relying on <code>NA</code> to mark unchanged cells or non-switchers. The engine still accepts <code>NA</code> for backward compatibility.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.19.0" id="trialsimulator-1190">TrialSimulator 1.19.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1190"></a></h2>
 <div class="section level3">

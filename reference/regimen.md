@@ -20,40 +20,39 @@ regimen(what, when, how, ...)
   a function determining whether patients' data would be updated due to
   switching treatment. It takes `patient_data`, a data frame as
   argument, and returns a data frame of two columns `patient_id` and
-  `new_treatment`. Patients with `NA` in `new_treatment` will be
-  skipped. The number of rows in the returned data frame may be smaller
-  than the number of patients in the input data frame. This indicates
-  that some patients' data will not be modifier. Note that the returned
-  object will be passed into function \`how()\`, which is also provide
-  by users. This argument can also be a list of functions that will be
-  executed sequentially. No default value.
+  `new_treatment`, with one row per switching patient. The number of
+  rows in the returned data frame may be smaller than the number of
+  patients in the input data frame; patients that are left out are
+  simply not switched. Note that the returned object will be passed into
+  function \`how()\`, which is also provide by users. This argument can
+  also be a list of functions that will be executed sequentially. No
+  default value.
 
 - when:
 
   a function determining the time at which a patient switches to another
   treatment regimen, measured from the time of enrollment. It takes
   `patient_data`, a data frame as argument, and returns a data frame of
-  two columns `patient_id` and `switch_time` (from `enroll_time`). No
-  `NA` is allowed in `switch_time` and the number of rows in the
-  returned data frame must equal the number of rows in `patient_data`,
-  i.e., switching time must be specified to every patients. Note that
-  the returned object will be passed into function \`how()\`, which is
-  also provided by users. This argument can also be a list of functions
-  that will be executed sequentially. No default value.
+  two columns `patient_id` and `switch_time` (from `enroll_time`). The
+  number of rows in the returned data frame must equal the number of
+  rows in `patient_data`, i.e., a switching time must be specified for
+  every patient (missing values are not allowed). Note that the returned
+  object will be passed into function \`how()\`, which is also provided
+  by users. This argument can also be a list of functions that will be
+  executed sequentially. No default value.
 
 - how:
 
   a function updating patients' data after treatment switching. Only
-  modified columns and `patient_id` are returned. A cell will be omitted
-  if `NA`, meaning no change to that patient for the endpoint or other
-  variables. Equivalently, users can also fill the cell with its
-  original value. Only *post-switch* outcomes may be changed: returning
-  a value that differs from the original for an endpoint whose
-  readout/event is at or before `switch_time` (a pre-switch or
-  already-observed outcome) raises an error, so leave such cells as `NA`
-  or their original value (e.g. `ifelse(os > switch_time, new_os, os)`).
-  This argument can also be a list of functions that will be executed
-  sequentially. No default value.
+  modified columns and `patient_id` are returned. For a cell that should
+  not change, return its original value. Only *post-switch* outcomes may
+  be changed: returning a value that differs from the original for an
+  endpoint whose readout/event is at or before `switch_time` (a
+  pre-switch or already-observed outcome) raises an error, so leave such
+  cells at their original value (e.g.
+  `ifelse(os > switch_time, new_os, os)`). This argument can also be a
+  list of functions that will be executed sequentially. No default
+  value.
 
 - ...:
 

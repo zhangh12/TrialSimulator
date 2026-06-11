@@ -83,10 +83,8 @@ consider include:
 - switching destination depends on subgroup, biomarker, etc.
 
 The output of `what()` consists of two columns `patient_id` and
-`new_treatment`. Only switchers are returned. Any patients with `NA` as
-their `new_treatment` are omitted. Patients not selected for switching
-simply remain under their original treatment path and outcome
-trajectory.
+`new_treatment`, with one row per switcher. Patients not included simply
+remain under their original treatment path and outcome trajectory.
 
 ## The Role of `when()`
 
@@ -137,13 +135,12 @@ data update. Depending on the simulation goal, `how()` could:
 
 This function returns a data frame of `patient_id` and columns of
 endpoints that are altered. We do not have to return an endpoint if it
-is not updated for any patient. For an endpoint that is updated for a
-subset of switchers, simply set the unchanged cells to `NA` and the
-package will ignore them. We can also fill those cells with their
-original values when being passed to `how()`. Note that we should never
-apply dropout or censoring manually in `how()` because `TrialSimulator`
-will handle that automatically when triggering milestones and prepare
-locked data in action functions.
+is not updated for any patient. For an endpoint that is updated for only
+a subset of switchers, return the unchanged cells at their original
+value – the natural `ifelse(condition, new_value, original)` pattern.
+Note that we should never apply dropout or censoring manually in `how()`
+because `TrialSimulator` will handle that automatically when triggering
+milestones and prepare locked data in action functions.
 
 The three-functions design in `regimen` provides a useful balance
 between structure and flexibility. The interface mirrors the way
@@ -216,18 +213,16 @@ assigned to high dose, we can implement the `what()` function like
 treatment_allocator <- function(patient_data){
   ## add break point to develop and debug
   # browser()
-  switch_to <- sample(c('low', 'high', 'stay'), nrow(patient_data), 
+  switch_to <- sample(c('low', 'high', 'stay'), nrow(patient_data),
                         replace = TRUE, prob = c(.3, .4, .3))
+  ## placebo patients who progressed before death (pfs < os) and were
+  ## assigned a dose are the switchers; the rest are simply not returned
+  is_switcher <- patient_data$arm == 'placebo' &
+    patient_data$pfs < patient_data$os & switch_to != 'stay'
+  sw <- patient_data[is_switcher, ]
   data.frame(
-    patient_id = patient_data$patient_id,
-    new_treatment =
-      dplyr::case_when(
-        # patient die before progression cannot switch
-        patient_data$os == patient_data$pfs ~ NA_character_, 
-        patient_data$arm == 'placebo' & switch_to == 'low' ~ 'low dose',
-        patient_data$arm == 'placebo' & switch_to == 'high' ~ 'high dose',
-        TRUE ~ NA_character_
-      )
+    patient_id    = sw$patient_id,
+    new_treatment = ifelse(switch_to[is_switcher] == 'low', 'low dose', 'high dose')
   )
 
 }
@@ -304,13 +299,11 @@ switched to a higher dose.
 treatment_allocator <- function(patient_data){
   ## add break point to develop and debug
   # browser()
+  ## low-dose non-responders switch to high dose
+  sw <- patient_data[patient_data$arm == 'low dose' & patient_data$response == 0, ]
   data.frame(
-    patient_id = patient_data$patient_id,
-    new_treatment =
-      dplyr::case_when(
-        patient_data$arm == 'low dose' & patient_data$response == 0 ~ 'high dose',
-        TRUE ~ NA_character_
-      )
+    patient_id    = sw$patient_id,
+    new_treatment = 'high dose'
   )
 
 }
@@ -346,13 +339,11 @@ shorter than a month, the switching time is set to `0.9 * os`.
 treatment_allocator <- function(patient_data){
   ## add break point to develop and debug
   # browser()
+  ## all placebo patients switch
+  sw <- patient_data[patient_data$arm == 'placebo', ]
   data.frame(
-    patient_id = patient_data$patient_id,
-    new_treatment =
-      dplyr::case_when(
-        patient_data$arm == 'placebo' ~ 'new treatment',
-        TRUE ~ NA_character_
-      )
+    patient_id    = sw$patient_id,
+    new_treatment = 'new treatment'
   )
 
 }

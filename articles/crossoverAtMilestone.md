@@ -12,10 +12,11 @@ available only **at, or after, a milestone**, and is therefore a
 decision the trial makes once it reaches that milestone. Typical
 examples include:
 
-- at an interim analysis, control patients who are still in the trial
-  are offered the experimental treatment;
-- after a futile dose is dropped, patients on that dose are switched to
-  the retained dose;
+- a promising efficacy signal is seen at an interim analysis, so control
+  patients who are still on study are, on ethical grounds, offered the
+  experimental treatment;
+- after a futile dose is dropped at an interim, patients on that dose
+  are switched to the retained dose;
 - a protocol amendment opens crossover from a fixed calendar time
   onward.
 
@@ -57,15 +58,26 @@ interim <- milestone(name = 'interim',
                      action = action)
 ```
 
-By the time an action function runs, `TrialSimulator` has already locked
-the data at the milestone, so `trial$get_current_time()` returns the
-milestone (calendar) time.
+You do not compute the crossover time yourself.
 [`crossover()`](https://zhangh12.github.io/TrialSimulator/reference/crossover.md)
-uses this to decide who is still in the trial and to anchor the switch.
-Because of this, calling
+reads the trial’s current time internally and sets the earliest
+crossover time `T` for you (see the next section) – there is no need to
+call `trial$get_current_time()` or to pass any time.
+
+For context: when a milestone is triggered, `TrialSimulator` advances
+the trial’s current time to that milestone’s (calendar) trigger time and
+automatically stores a locked snapshot of the data as of that time. This
+storing happens *whether or not* the action calls `get_locked_data()`,
+which is why a later milestone’s action can still retrieve a snapshot
+taken at an earlier milestone. `get_locked_data()` does not edit the
+evolving trial data; it only returns a time-cut view of it. Inside an
+action, `trial$get_current_time()` therefore returns the current
+milestone’s time – the same value
 [`crossover()`](https://zhangh12.github.io/TrialSimulator/reference/crossover.md)
-outside an action function (when the current time is still `0`) is
-rejected with an informative error.
+uses as the basis for `T`. (Calling
+[`crossover()`](https://zhangh12.github.io/TrialSimulator/reference/crossover.md)
+before any milestone has fired, when the current time is still `0`, is
+rejected with an informative error.)
 
 The user-friendly wrapper `crossover(trial, ...)` is also available for
 those who prefer not to call member functions directly:
@@ -77,11 +89,14 @@ crossover(trial, what = what_fn, how = how_fn)
 
 ## The earliest crossover time: `delay` and the opening time
 
-The single milestone-specific argument is `delay`. The **earliest
-crossover time** (the calendar time from which switching may take
-effect) is
+The only milestone-specific argument is `delay`. From it,
+[`crossover()`](https://zhangh12.github.io/TrialSimulator/reference/crossover.md)
+computes the **earliest crossover time** – the calendar time from which
+switching may take effect:
 
-    T = trial$get_current_time() + delay
+    T = (current milestone time) + delay
+
+You set only `delay`; the milestone time is supplied automatically.
 
 - `delay = 0` (default): crossover opens *at* the milestone. This is the
   common “let eligible patients switch now” case.
@@ -90,9 +105,15 @@ effect) is
   wash-out window before switching becomes effective.
 
 `T` is the reference time for everything that follows: it determines who
-is eligible, it is the floor for the switching time, and it is the
+is eligible, it is the *floor* for the switching time, and it is the
 boundary that separates already-observed outcomes (which are protected)
 from future outcomes (which `how()` may modify).
+
+Note that `T` is the *earliest* time a switch may take effect, not
+necessarily when it does. Under the default timing every selected
+patient switches exactly at `T`, but a `when()` you supply may place
+each patient’s switch at any time at or after `T` – for instance at a
+progression that occurs after the opening.
 
 ## How the eligible population is determined
 
@@ -117,7 +138,9 @@ handled correctly too):
 A patient enters the pool passed to `what()` if **any** of their
 endpoints is open. Patients who have died, dropped out, or completed all
 of their readouts by `T` are excluded automatically – they have no
-post-`T` outcome that a crossover could alter. This mirrors the way
+post-`T` outcome that a crossover could alter. Eligibility does not
+depend on the treatment arm; restricting the switch to particular arms
+is the job of `what()`. This mirrors the way
 [`regimen()`](https://zhangh12.github.io/TrialSimulator/reference/regimen.md)
 “figures out patients who are eligible for the three functions”; the
 difference is only the reference time `T`.
@@ -130,6 +153,26 @@ which keeps the logic clean and avoids unnecessary computation:
   switching;
 - `how()` receives those same switchers, with their assigned
   `switch_time`.
+
+All three functions share the same signature: each takes the data frame
+`patient_data` and returns a data frame.
+
+``` r
+
+what(patient_data)   # -> patient_id, new_treatment
+when(patient_data)   # -> patient_id, switch_time
+how(patient_data)    # -> patient_id, <modified endpoints>
+```
+
+Importantly, the `patient_data` they receive is already the filtered
+subset shown below; there is no way to reach a non-eligible patient from
+inside the triplet, because the package controls the input. This both
+prevents accidental logic errors and avoids unnecessary computation.
+
+![Funnel: trial_data is filtered to eligible patients (passed to
+what()), then to switchers (passed to when()), then to switchers with
+their switch_time (passed to
+how()).](crossoverAtMilestone_files/figure-html/funnel-1.png)
 
 To make timing rules easy to express, the package injects two helper
 columns into `patient_data` for the triplet:
@@ -166,9 +209,9 @@ incrementally and catch mistakes early (a
 a convenient way to debug).
 
 **`what()`** must return a data frame with columns `patient_id` and
-`new_treatment`. `NA` in `new_treatment` means “do not switch”, so the
-returned set of switchers may be smaller than the input. The package
-checks that:
+`new_treatment`, with one row per switching patient. Patients you leave
+out simply do not switch, so the returned set may be smaller than the
+input. The package checks that:
 
 - the result is a data frame containing the required columns;
 - no `patient_id` is duplicated;
@@ -193,9 +236,11 @@ recorded only in the patient’s switching history (see below).
   rejected.
 
 **`how()`** must return a data frame with `patient_id` and the endpoint
-columns it modifies. You only return the endpoints you change, and
-within an endpoint you may leave cells unchanged by setting them to `NA`
-(or to their original value). The package checks that:
+columns it modifies. You return only the endpoints you change, and
+within an endpoint you change just the cells that should change and
+return the rest at their original value – the natural
+`ifelse(condition, new_value, original)` pattern used in the examples.
+The package checks that:
 
 - the result is a data frame with a `patient_id` column, no duplicated
   ids, and only columns that exist in the trial data;
@@ -233,44 +278,102 @@ never apply dropout or censoring manually in `how()`; `TrialSimulator`
 re-applies dropout and calendar censoring automatically after the
 crossover and when locking data at later milestones.
 
-## A complete action function
+## Developing the triplet
 
-Putting the pieces together, the following action lets control patients
-who are still in the trial at an interim cross over to the experimental
-treatment, extending only their post-switch survival:
+The most convenient way to develop the three functions is to put a
+[`browser()`](https://rdrr.io/r/base/browser.html) at the top of each,
+register them through
+[`crossover()`](https://zhangh12.github.io/TrialSimulator/reference/crossover.md)
+inside the milestone action, and run the trial. Execution then pauses
+*inside* your function, with the actual `patient_data` in scope – the
+eligible pool for `what()`, and the selected switchers for `when()` and
+`how()`. You can inspect the available columns (including the injected
+helper columns), try your selection, timing, and update logic on real
+data, and confirm the package handed you the subset you expected.
 
 ``` r
 
-crossover_action <- function(trial){
+what <- function(patient_data){
+  browser()                       # pause here with the eligible pool in scope
+  switchers <- patient_data[patient_data$arm == 'control', ]
+  data.frame(patient_id = switchers$patient_id, new_treatment = 'experimental')
+}
+```
 
-  ## decision making on the locked interim data can go here
-  locked_data <- trial$get_locked_data('interim')
+Comment out [`browser()`](https://rdrr.io/r/base/browser.html) before
+production runs; it is in any case a no-op in non-interactive sessions,
+so it never interferes with vignette building or parallel workers.
 
-  what <- function(patient_data){
-    data.frame(
-      patient_id    = patient_data$patient_id,
-      new_treatment = ifelse(patient_data$arm == 'control',
-                             'crossover', NA_character_)
-    )
-  }
+## A worked example
 
-  how <- function(patient_data){
-    data.frame(
-      patient_id = patient_data$patient_id,
-      os = ifelse(patient_data$os > patient_data$switch_time,
-                  patient_data$switch_time +
-                    1.2 * (patient_data$os - patient_data$switch_time),
-                  patient_data$os)
-    )
-  }
+The following runs a small two-arm trial end to end. Control patients
+who are still on study at an interim are offered the experimental
+treatment; each switches at progression, but no earlier than the moment
+crossover opens, and only their post-switch survival is extended. We
+first define the triplet and the action, using the full
+[`crossover()`](https://zhangh12.github.io/TrialSimulator/reference/crossover.md)
+signature:
 
-  ## when() is omitted, so switching takes effect at the interim time
-  trial$crossover(what = what, how = how)
+``` r
+
+what <- function(patient_data){
+  ## return only the patients who switch (here, everyone on control)
+  switchers <- patient_data[patient_data$arm == 'control', ]
+  data.frame(
+    patient_id    = switchers$patient_id,
+    new_treatment = 'experimental'
+  )
 }
 
-interim <- milestone(name = 'interim',
-                     when = eventNumber(endpoint = 'os', n = 300),
-                     action = crossover_action)
+when <- function(patient_data){
+  data.frame(
+    patient_id  = patient_data$patient_id,
+    switch_time = pmax(patient_data$pfs,
+                       patient_data$earliest_crossover_time_from_enrollment)
+  )
+}
+
+how <- function(patient_data){
+  data.frame(
+    patient_id = patient_data$patient_id,
+    os = ifelse(patient_data$os > patient_data$switch_time,
+                patient_data$switch_time +
+                  1.3 * (patient_data$os - patient_data$switch_time),
+                patient_data$os)
+  )
+}
+
+crossover_action <- function(trial){
+  trial$get_locked_data('interim')        # interim decision making can go here
+  ## delay = 0 opens crossover at the interim; use delay > 0 for a wash-out
+  trial$crossover(what = what, when = when, how = how, delay = 0)
+}
+```
+
+The remaining set-up (endpoints, arms, enrollment, the milestones, and
+the run) is ordinary `TrialSimulator` code and is hidden here for
+brevity.
+
+After the run, each control switcher carries a recorded switching
+history in the locked data. The recorded switch times show the timing
+rule at work: a patient whose progression falls after the opening
+switches at progression (a larger `@` time), while a patient who would
+have progressed earlier is held at the opening, so the recorded time
+equals `T - enroll_time` – the `earliest_crossover_time_from_enrollment`
+that `when()` used:
+
+``` r
+
+final <- trial$get_locked_data('final')
+head(final[final$arm == 'control',
+           c('patient_id', 'arm', 'regimen_trajectory', 'n_switches')])
+#>    patient_id     arm                      regimen_trajectory n_switches
+#> 1           1 control control@0;experimental@15.6081943558529          1
+#> 3           3 control control@0;experimental@11.8666666666667          1
+#> 5           5 control control@0;experimental@11.7333333333333          1
+#> 8           8 control control@0;experimental@15.1609034077507          1
+#> 9           9 control control@0;experimental@11.4666666666667          1
+#> 12         12 control control@0;experimental@11.2666666666667          1
 ```
 
 ## Scenarios
@@ -313,14 +416,20 @@ protection therefore behave consistently across both entry points.
 
 ## Inspecting the switches
 
-Every switch is recorded in the `regimen_trajectory` column of the
-locked data as a compact `"arm@0;new_treatment@switch_time"` string. Use
+Every switch is recorded in the `regimen_trajectory` column shown above,
+as a compact `"arm@0;new_treatment@switch_time"` string. Use
 [`expandRegimen()`](https://zhangh12.github.io/TrialSimulator/reference/expandRegimen.md)
 to expand it into one row per regimen segment per patient for summaries
-and checks:
+and checks (continuing the worked example above):
 
 ``` r
 
-locked <- trial$get_locked_data('final')
-expandRegimen(locked)
+head(expandRegimen(final))
+#>   patient_id      regimen switch_time_from_enrollment
+#> 1          1      control                     0.00000
+#> 2          1 experimental                    15.60819
+#> 3          2          trt                     0.00000
+#> 4          3      control                     0.00000
+#> 5          3 experimental                    11.86667
+#> 6          4          trt                     0.00000
 ```

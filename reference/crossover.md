@@ -49,8 +49,8 @@ crossover(trial, what, how, when = NULL, delay = 0, ...)
 
 - what:
 
-  a function selecting which eligible patients crossover and to what
-  `new_treatment` (`NA` = no crossover). See
+  a function selecting which eligible patients crossover, returning one
+  row per crossing-over patient with their `new_treatment`. See
   [`regimen()`](https://zhangh12.github.io/TrialSimulator/reference/regimen.md).
 
 - how:

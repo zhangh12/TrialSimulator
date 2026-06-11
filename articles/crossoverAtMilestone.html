@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.19.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.19.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -95,10 +95,11 @@ available only <strong>at, or after, a milestone</strong>, and is
 therefore a decision the trial makes once it reaches that milestone.
 Typical examples include:</p>
 <ul>
-<li>at an interim analysis, control patients who are still in the trial
-are offered the experimental treatment;</li>
-<li>after a futile dose is dropped, patients on that dose are switched
-to the retained dose;</li>
+<li>a promising efficacy signal is seen at an interim analysis, so
+control patients who are still on study are, on ethical grounds, offered
+the experimental treatment;</li>
+<li>after a futile dose is dropped at an interim, patients on that dose
+are switched to the retained dose;</li>
 <li>a protocol amendment opens crossover from a fixed calendar time
 onward.</li>
 </ul>
@@ -132,13 +133,24 @@ function of a milestone</strong>:</p>
 <span><span class="va">interim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'interim'</span>,</span>
 <span>                     when <span class="op">=</span> <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'pfs'</span>, n <span class="op">=</span> <span class="fl">300</span><span class="op">)</span>,</span>
 <span>                     action <span class="op">=</span> <span class="va">action</span><span class="op">)</span></span></code></pre></div>
-<p>By the time an action function runs, <code>TrialSimulator</code> has
-already locked the data at the milestone, so
-<code>trial$get_current_time()</code> returns the milestone (calendar)
-time. <code><a href="../reference/crossover.html">crossover()</a></code> uses this to decide who is still in the
-trial and to anchor the switch. Because of this, calling
-<code><a href="../reference/crossover.html">crossover()</a></code> outside an action function (when the current
-time is still <code>0</code>) is rejected with an informative error.</p>
+<p>You do not compute the crossover time yourself.
+<code><a href="../reference/crossover.html">crossover()</a></code> reads the trial’s current time internally and
+sets the earliest crossover time <code>T</code> for you (see the next
+section) – there is no need to call
+<code>trial$get_current_time()</code> or to pass any time.</p>
+<p>For context: when a milestone is triggered,
+<code>TrialSimulator</code> advances the trial’s current time to that
+milestone’s (calendar) trigger time and automatically stores a locked
+snapshot of the data as of that time. This storing happens <em>whether
+or not</em> the action calls <code>get_locked_data()</code>, which is
+why a later milestone’s action can still retrieve a snapshot taken at an
+earlier milestone. <code>get_locked_data()</code> does not edit the
+evolving trial data; it only returns a time-cut view of it. Inside an
+action, <code>trial$get_current_time()</code> therefore returns the
+current milestone’s time – the same value <code><a href="../reference/crossover.html">crossover()</a></code> uses
+as the basis for <code>T</code>. (Calling <code><a href="../reference/crossover.html">crossover()</a></code>
+before any milestone has fired, when the current time is still
+<code>0</code>, is rejected with an informative error.)</p>
 <p>The user-friendly wrapper <code>crossover(trial, ...)</code> is also
 available for those who prefer not to call member functions
 directly:</p>
@@ -149,10 +161,13 @@ directly:</p>
 <h2 id="the-earliest-crossover-time-delay-and-the-opening-time">The earliest crossover time: <code>delay</code> and the opening
 time<a class="anchor" aria-label="anchor" href="#the-earliest-crossover-time-delay-and-the-opening-time"></a>
 </h2>
-<p>The single milestone-specific argument is <code>delay</code>. The
-<strong>earliest crossover time</strong> (the calendar time from which
-switching may take effect) is</p>
-<pre><code><span><span class="cn">T</span> <span class="op">=</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_current_time</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="va">delay</span></span></code></pre>
+<p>The only milestone-specific argument is <code>delay</code>. From it,
+<code><a href="../reference/crossover.html">crossover()</a></code> computes the <strong>earliest crossover
+time</strong> – the calendar time from which switching may take
+effect:</p>
+<pre><code>T = (current milestone time) + delay</code></pre>
+<p>You set only <code>delay</code>; the milestone time is supplied
+automatically.</p>
 <ul>
 <li>
 <code>delay = 0</code> (default): crossover opens <em>at</em> the
@@ -164,10 +179,16 @@ case.</li>
 ramp-up or a wash-out window before switching becomes effective.</li>
 </ul>
 <p><code>T</code> is the reference time for everything that follows: it
-determines who is eligible, it is the floor for the switching time, and
-it is the boundary that separates already-observed outcomes (which are
-protected) from future outcomes (which <code>how()</code> may
+determines who is eligible, it is the <em>floor</em> for the switching
+time, and it is the boundary that separates already-observed outcomes
+(which are protected) from future outcomes (which <code>how()</code> may
 modify).</p>
+<p>Note that <code>T</code> is the <em>earliest</em> time a switch may
+take effect, not necessarily when it does. Under the default timing
+every selected patient switches exactly at <code>T</code>, but a
+<code>when()</code> you supply may place each patient’s switch at any
+time at or after <code>T</code> – for instance at a progression that
+occurs after the opening.</p>
 </div>
 <div class="section level2">
 <h2 id="how-the-eligible-population-is-determined">How the eligible population is determined<a class="anchor" aria-label="anchor" href="#how-the-eligible-population-is-determined"></a>
@@ -197,7 +218,9 @@ measured at enrollment and is therefore never open.</li>
 <strong>any</strong> of their endpoints is open. Patients who have died,
 dropped out, or completed all of their readouts by <code>T</code> are
 excluded automatically – they have no post-<code>T</code> outcome that a
-crossover could alter. This mirrors the way <code><a href="../reference/regimen.html">regimen()</a></code>
+crossover could alter. Eligibility does not depend on the treatment arm;
+restricting the switch to particular arms is the job of
+<code>what()</code>. This mirrors the way <code><a href="../reference/regimen.html">regimen()</a></code>
 “figures out patients who are eligible for the three functions”; the
 difference is only the reference time <code>T</code>.</p>
 <p>The three functions then receive progressively smaller data frames,
@@ -213,6 +236,18 @@ actually selected for switching;</li>
 <code>how()</code> receives those same switchers, with their
 assigned <code>switch_time</code>.</li>
 </ul>
+<p>All three functions share the same signature: each takes the data
+frame <code>patient_data</code> and returns a data frame.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">what</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span>   <span class="co"># -&gt; patient_id, new_treatment</span></span>
+<span><span class="fu">when</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span>   <span class="co"># -&gt; patient_id, switch_time</span></span>
+<span><span class="fu">how</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span>    <span class="co"># -&gt; patient_id, &lt;modified endpoints&gt;</span></span></code></pre></div>
+<p>Importantly, the <code>patient_data</code> they receive is already
+the filtered subset shown below; there is no way to reach a non-eligible
+patient from inside the triplet, because the package controls the input.
+This both prevents accidental logic errors and avoids unnecessary
+computation.</p>
+<p><img src="crossoverAtMilestone_files/figure-html/funnel-1.png" class="r-plt" alt="Funnel: trial_data is filtered to eligible patients (passed to what()), then to switchers (passed to when()), then to switchers with their switch_time (passed to how())." width="95%"></p>
 <p>To make timing rules easy to express, the package injects two helper
 columns into <code>patient_data</code> for the triplet:</p>
 <ul>
@@ -226,7 +261,7 @@ columns into <code>patient_data</code> for the triplet:</p>
 </ul>
 <p>These let <code>when()</code> express, for example, “switch at
 progression, but not before crossover opens”:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">time_selector</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    patient_id  <span class="op">=</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">patient_id</span>,</span>
@@ -248,10 +283,10 @@ three functions incrementally and catch mistakes early (a
 <code><a href="https://rdrr.io/r/base/browser.html" class="external-link">browser()</a></code> inside any of them is a convenient way to
 debug).</p>
 <p><strong><code>what()</code></strong> must return a data frame with
-columns <code>patient_id</code> and <code>new_treatment</code>.
-<code>NA</code> in <code>new_treatment</code> means “do not switch”, so
-the returned set of switchers may be smaller than the input. The package
-checks that:</p>
+columns <code>patient_id</code> and <code>new_treatment</code>, with one
+row per switching patient. Patients you leave out simply do not switch,
+so the returned set may be smaller than the input. The package checks
+that:</p>
 <ul>
 <li>the result is a data frame containing the required columns;</li>
 <li>no <code>patient_id</code> is duplicated;</li>
@@ -277,10 +312,11 @@ milestone crossover cannot take effect before it opens, so an earlier
 time is rejected.</li>
 </ul>
 <p><strong><code>how()</code></strong> must return a data frame with
-<code>patient_id</code> and the endpoint columns it modifies. You only
-return the endpoints you change, and within an endpoint you may leave
-cells unchanged by setting them to <code>NA</code> (or to their original
-value). The package checks that:</p>
+<code>patient_id</code> and the endpoint columns it modifies. You return
+only the endpoints you change, and within an endpoint you change just
+the cells that should change and return the rest at their original value
+– the natural <code>ifelse(condition, new_value, original)</code>
+pattern used in the examples. The package checks that:</p>
 <ul>
 <li>the result is a data frame with a <code>patient_id</code> column, no
 duplicated ids, and only columns that exist in the trial data;</li>
@@ -298,7 +334,7 @@ intact.</li>
 </ul>
 <p>In practice this means a <code>how()</code> for a milestone crossover
 guards the post-switch region explicitly, for example:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data_modifier</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    patient_id <span class="op">=</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">patient_id</span>,</span>
@@ -316,42 +352,92 @@ dropout and calendar censoring automatically after the crossover and
 when locking data at later milestones.</p>
 </div>
 <div class="section level2">
-<h2 id="a-complete-action-function">A complete action function<a class="anchor" aria-label="anchor" href="#a-complete-action-function"></a>
+<h2 id="developing-the-triplet">Developing the triplet<a class="anchor" aria-label="anchor" href="#developing-the-triplet"></a>
 </h2>
-<p>Putting the pieces together, the following action lets control
-patients who are still in the trial at an interim cross over to the
-experimental treatment, extending only their post-switch survival:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">crossover_action</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span><span class="op">{</span></span>
-<span></span>
-<span>  <span class="co">## decision making on the locked interim data can go here</span></span>
-<span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'interim'</span><span class="op">)</span></span>
-<span></span>
-<span>  <span class="va">what</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>      patient_id    <span class="op">=</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">patient_id</span>,</span>
-<span>      new_treatment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">patient_data</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'control'</span>,</span>
-<span>                             <span class="st">'crossover'</span>, <span class="cn">NA_character_</span><span class="op">)</span></span>
-<span>    <span class="op">)</span></span>
-<span>  <span class="op">}</span></span>
-<span></span>
-<span>  <span class="va">how</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>      patient_id <span class="op">=</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">patient_id</span>,</span>
-<span>      os <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">patient_data</span><span class="op">$</span><span class="va">os</span> <span class="op">&gt;</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">switch_time</span>,</span>
-<span>                  <span class="va">patient_data</span><span class="op">$</span><span class="va">switch_time</span> <span class="op">+</span></span>
-<span>                    <span class="fl">1.2</span> <span class="op">*</span> <span class="op">(</span><span class="va">patient_data</span><span class="op">$</span><span class="va">os</span> <span class="op">-</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">switch_time</span><span class="op">)</span>,</span>
-<span>                  <span class="va">patient_data</span><span class="op">$</span><span class="va">os</span><span class="op">)</span></span>
-<span>    <span class="op">)</span></span>
-<span>  <span class="op">}</span></span>
-<span></span>
-<span>  <span class="co">## when() is omitted, so switching takes effect at the interim time</span></span>
-<span>  <span class="va">trial</span><span class="op">$</span><span class="fu">crossover</span><span class="op">(</span>what <span class="op">=</span> <span class="va">what</span>, how <span class="op">=</span> <span class="va">how</span><span class="op">)</span></span>
+<p>The most convenient way to develop the three functions is to put a
+<code><a href="https://rdrr.io/r/base/browser.html" class="external-link">browser()</a></code> at the top of each, register them through
+<code><a href="../reference/crossover.html">crossover()</a></code> inside the milestone action, and run the trial.
+Execution then pauses <em>inside</em> your function, with the actual
+<code>patient_data</code> in scope – the eligible pool for
+<code>what()</code>, and the selected switchers for <code>when()</code>
+and <code>how()</code>. You can inspect the available columns (including
+the injected helper columns), try your selection, timing, and update
+logic on real data, and confirm the package handed you the subset you
+expected.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">what</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/browser.html" class="external-link">browser</a></span><span class="op">(</span><span class="op">)</span>                       <span class="co"># pause here with the eligible pool in scope</span></span>
+<span>  <span class="va">switchers</span> <span class="op">&lt;-</span> <span class="va">patient_data</span><span class="op">[</span><span class="va">patient_data</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'control'</span>, <span class="op">]</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>patient_id <span class="op">=</span> <span class="va">switchers</span><span class="op">$</span><span class="va">patient_id</span>, new_treatment <span class="op">=</span> <span class="st">'experimental'</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>Comment out <code><a href="https://rdrr.io/r/base/browser.html" class="external-link">browser()</a></code> before production runs; it is in
+any case a no-op in non-interactive sessions, so it never interferes
+with vignette building or parallel workers.</p>
+</div>
+<div class="section level2">
+<h2 id="a-worked-example">A worked example<a class="anchor" aria-label="anchor" href="#a-worked-example"></a>
+</h2>
+<p>The following runs a small two-arm trial end to end. Control patients
+who are still on study at an interim are offered the experimental
+treatment; each switches at progression, but no earlier than the moment
+crossover opens, and only their post-switch survival is extended. We
+first define the triplet and the action, using the full
+<code><a href="../reference/crossover.html">crossover()</a></code> signature:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">what</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="co">## return only the patients who switch (here, everyone on control)</span></span>
+<span>  <span class="va">switchers</span> <span class="op">&lt;-</span> <span class="va">patient_data</span><span class="op">[</span><span class="va">patient_data</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'control'</span>, <span class="op">]</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    patient_id    <span class="op">=</span> <span class="va">switchers</span><span class="op">$</span><span class="va">patient_id</span>,</span>
+<span>    new_treatment <span class="op">=</span> <span class="st">'experimental'</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">interim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'interim'</span>,</span>
-<span>                     when <span class="op">=</span> <span class="fu"><a href="../reference/eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'os'</span>, n <span class="op">=</span> <span class="fl">300</span><span class="op">)</span>,</span>
-<span>                     action <span class="op">=</span> <span class="va">crossover_action</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">when</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    patient_id  <span class="op">=</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">patient_id</span>,</span>
+<span>    switch_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="va">patient_data</span><span class="op">$</span><span class="va">pfs</span>,</span>
+<span>                       <span class="va">patient_data</span><span class="op">$</span><span class="va">earliest_crossover_time_from_enrollment</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">how</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    patient_id <span class="op">=</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">patient_id</span>,</span>
+<span>    os <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">patient_data</span><span class="op">$</span><span class="va">os</span> <span class="op">&gt;</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">switch_time</span>,</span>
+<span>                <span class="va">patient_data</span><span class="op">$</span><span class="va">switch_time</span> <span class="op">+</span></span>
+<span>                  <span class="fl">1.3</span> <span class="op">*</span> <span class="op">(</span><span class="va">patient_data</span><span class="op">$</span><span class="va">os</span> <span class="op">-</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">switch_time</span><span class="op">)</span>,</span>
+<span>                <span class="va">patient_data</span><span class="op">$</span><span class="va">os</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">crossover_action</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'interim'</span><span class="op">)</span>        <span class="co"># interim decision making can go here</span></span>
+<span>  <span class="co">## delay = 0 opens crossover at the interim; use delay &gt; 0 for a wash-out</span></span>
+<span>  <span class="va">trial</span><span class="op">$</span><span class="fu">crossover</span><span class="op">(</span>what <span class="op">=</span> <span class="va">what</span>, when <span class="op">=</span> <span class="va">when</span>, how <span class="op">=</span> <span class="va">how</span>, delay <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>The remaining set-up (endpoints, arms, enrollment, the milestones,
+and the run) is ordinary <code>TrialSimulator</code> code and is hidden
+here for brevity.</p>
+<p>After the run, each control switcher carries a recorded switching
+history in the locked data. The recorded switch times show the timing
+rule at work: a patient whose progression falls after the opening
+switches at progression (a larger <code>@</code> time), while a patient
+who would have progressed earlier is held at the opening, so the
+recorded time equals <code>T - enroll_time</code> – the
+<code>earliest_crossover_time_from_enrollment</code> that
+<code>when()</code> used:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">final</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'final'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">final</span><span class="op">[</span><span class="va">final</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'control'</span>,</span>
+<span>           <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'patient_id'</span>, <span class="st">'arm'</span>, <span class="st">'regimen_trajectory'</span>, <span class="st">'n_switches'</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    patient_id     arm                      regimen_trajectory n_switches</span></span>
+<span><span class="co">#&gt; 1           1 control control@0;experimental@15.6081943558529          1</span></span>
+<span><span class="co">#&gt; 3           3 control control@0;experimental@11.8666666666667          1</span></span>
+<span><span class="co">#&gt; 5           5 control control@0;experimental@11.7333333333333          1</span></span>
+<span><span class="co">#&gt; 8           8 control control@0;experimental@15.1609034077507          1</span></span>
+<span><span class="co">#&gt; 9           9 control control@0;experimental@11.4666666666667          1</span></span>
+<span><span class="co">#&gt; 12         12 control control@0;experimental@11.2666666666667          1</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="scenarios">Scenarios<a class="anchor" aria-label="anchor" href="#scenarios"></a>
@@ -359,7 +445,7 @@ experimental treatment, extending only their post-switch survival:</p>
 <p><strong>Delayed opening (wash-out).</strong> Supplying
 <code>delay</code> opens crossover after the milestone, which is useful
 when switching cannot be implemented immediately:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trial</span><span class="op">$</span><span class="fu">crossover</span><span class="op">(</span>what <span class="op">=</span> <span class="va">what</span>, how <span class="op">=</span> <span class="va">how</span>, delay <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="co"># opens 2 time units later</span></span></code></pre></div>
 <p><strong>Custom timing.</strong> Provide <code>when()</code> to switch
 at a clinically meaningful time rather than at the opening, using the
@@ -391,13 +477,20 @@ therefore behave consistently across both entry points.</p>
 <h2 id="inspecting-the-switches">Inspecting the switches<a class="anchor" aria-label="anchor" href="#inspecting-the-switches"></a>
 </h2>
 <p>Every switch is recorded in the <code>regimen_trajectory</code>
-column of the locked data as a compact
+column shown above, as a compact
 <code>"arm@0;new_treatment@switch_time"</code> string. Use
 <code><a href="../reference/expandRegimen.html">expandRegimen()</a></code> to expand it into one row per regimen
-segment per patient for summaries and checks:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">locked</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'final'</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/expandRegimen.html">expandRegimen</a></span><span class="op">(</span><span class="va">locked</span><span class="op">)</span></span></code></pre></div>
+segment per patient for summaries and checks (continuing the worked
+example above):</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/expandRegimen.html">expandRegimen</a></span><span class="op">(</span><span class="va">final</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   patient_id      regimen switch_time_from_enrollment</span></span>
+<span><span class="co">#&gt; 1          1      control                     0.00000</span></span>
+<span><span class="co">#&gt; 2          1 experimental                    15.60819</span></span>
+<span><span class="co">#&gt; 3          2          trt                     0.00000</span></span>
+<span><span class="co">#&gt; 4          3      control                     0.00000</span></span>
+<span><span class="co">#&gt; 5          3 experimental                    11.86667</span></span>
+<span><span class="co">#&gt; 6          4          trt                     0.00000</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

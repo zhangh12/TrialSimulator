@@ -17,7 +17,7 @@ endpoint data."><meta property="og:image" content="https://zhangh12.github.io/Tr
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.19.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.19.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,6 +31,7 @@ endpoint data."><meta property="og:image" content="https://zhangh12.github.io/Tr
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/actionFunctions.html">Specify Actions to Execute at Trial Milestones</a></li>
     <li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
     <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
+    <li><a class="dropdown-item" href="../articles/crossoverAtMilestone.html">Crossover at a Milestone</a></li>
     <li><a class="dropdown-item" href="../articles/crossoverWashout.html">Crossover Design with Wash-out Periods</a></li>
     <li><a class="dropdown-item" href="../articles/defineArms.html">Define and Summarize Arms in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineLongitudinalEndpoints.html">Define Longitudinal Endpoints</a></li>
@@ -82,11 +83,10 @@ endpoint data.</p>
 <dd><p>a function determining whether patients' data would be
 updated due to switching treatment. It takes <code>patient_data</code>,
 a data frame as argument, and returns a data frame of two columns
-<code>patient_id</code> and <code>new_treatment</code>. Patients with <code>NA</code> in
-<code>new_treatment</code> will be skipped.
-The number of rows in the returned data frame may be smaller than the
-number of patients in the input data frame. This indicates that some
-patients' data will not be modifier.
+<code>patient_id</code> and <code>new_treatment</code>, with one row per switching
+patient. The number of rows in the returned data frame may be smaller than
+the number of patients in the input data frame; patients that are left out
+are simply not switched.
 Note that the returned object will be passed into function `how()`, which
 is also provide by users. This argument can also be a
 list of functions that will be executed sequentially. No default value.</p></dd>
@@ -97,10 +97,10 @@ list of functions that will be executed sequentially. No default value.</p></dd>
 to another treatment regimen, measured from the time of enrollment.
 It takes <code>patient_data</code>, a data frame as
 argument, and returns a data frame of two columns <code>patient_id</code> and
-<code>switch_time</code> (from <code>enroll_time</code>). No <code>NA</code> is allowed
-in <code>switch_time</code> and the number of rows in the returned data frame
-must equal the number of rows in <code>patient_data</code>, i.e., switching
-time must be specified to every patients.
+<code>switch_time</code> (from <code>enroll_time</code>). The number of rows in the
+returned data frame must equal the number of rows in <code>patient_data</code>,
+i.e., a switching time must be specified for every patient (missing values
+are not allowed).
 Note that the returned object will be passed into function `how()`, which
 is also provided by users. This argument can also be a
 list of functions that will be executed sequentially. No default value.</p></dd>
@@ -108,15 +108,14 @@ list of functions that will be executed sequentially. No default value.</p></dd>
 
 <dt id="arg-how">how<a class="anchor" aria-label="anchor" href="#arg-how"></a></dt>
 <dd><p>a function updating patients' data after treatment switching.
-Only modified columns and <code>patient_id</code> are returned. A cell will
-be omitted if <code>NA</code>, meaning no change to that patient for the endpoint
-or other variables. Equivalently, users can also fill the cell with
-its original value. Only <em>post-switch</em> outcomes may be changed: returning
-a value that differs from the original for an endpoint whose readout/event is
-at or before <code>switch_time</code> (a pre-switch or already-observed outcome)
-raises an error, so leave such cells as <code>NA</code> or their original value
-(e.g. <code>ifelse(os &gt; switch_time, new_os, os)</code>). This argument can also be
-a list of functions that will be executed sequentially. No default value.</p></dd>
+Only modified columns and <code>patient_id</code> are returned. For a cell that
+should not change, return its original value. Only <em>post-switch</em>
+outcomes may be changed: returning a value that differs from the original
+for an endpoint whose readout/event is at or before <code>switch_time</code> (a
+pre-switch or already-observed outcome) raises an error, so leave such cells
+at their original value (e.g. <code>ifelse(os &gt; switch_time, new_os, os)</code>).
+This argument can also be a list of functions that will be executed
+sequentially. No default value.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

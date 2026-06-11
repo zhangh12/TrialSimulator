@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.19.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.19.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,6 +41,7 @@
 <li><a class="dropdown-item" href="../articles/actionFunctions.html">Specify Actions to Execute at Trial Milestones</a></li>
     <li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
     <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
+    <li><a class="dropdown-item" href="../articles/crossoverAtMilestone.html">Crossover at a Milestone</a></li>
     <li><a class="dropdown-item" href="../articles/crossoverWashout.html">Crossover Design with Wash-out Periods</a></li>
     <li><a class="dropdown-item" href="../articles/defineArms.html">Define and Summarize Arms in Clinical Trials</a></li>
     <li><a class="dropdown-item" href="../articles/defineLongitudinalEndpoints.html">Define Longitudinal Endpoints</a></li>
@@ -171,11 +172,9 @@ consider include:</p>
 <li>switching destination depends on subgroup, biomarker, etc.</li>
 </ul>
 <p>The output of <code>what()</code> consists of two columns
-<code>patient_id</code> and <code>new_treatment</code>. Only switchers
-are returned. Any patients with <code>NA</code> as their
-<code>new_treatment</code> are omitted. Patients not selected for
-switching simply remain under their original treatment path and outcome
-trajectory.</p>
+<code>patient_id</code> and <code>new_treatment</code>, with one row per
+switcher. Patients not included simply remain under their original
+treatment path and outcome trajectory.</p>
 </div>
 <div class="section level2">
 <h2 id="the-role-of-when">The Role of <code>when()</code><a class="anchor" aria-label="anchor" href="#the-role-of-when"></a>
@@ -231,13 +230,13 @@ testing or decision making, etc.</li>
 <p>This function returns a data frame of <code>patient_id</code> and
 columns of endpoints that are altered. We do not have to return an
 endpoint if it is not updated for any patient. For an endpoint that is
-updated for a subset of switchers, simply set the unchanged cells to
-<code>NA</code> and the package will ignore them. We can also fill those
-cells with their original values when being passed to
-<code>how()</code>. Note that we should never apply dropout or censoring
-manually in <code>how()</code> because <code>TrialSimulator</code> will
-handle that automatically when triggering milestones and prepare locked
-data in action functions.</p>
+updated for only a subset of switchers, return the unchanged cells at
+their original value – the natural
+<code>ifelse(condition, new_value, original)</code> pattern. Note that
+we should never apply dropout or censoring manually in
+<code>how()</code> because <code>TrialSimulator</code> will handle that
+automatically when triggering milestones and prepare locked data in
+action functions.</p>
 <p>The three-functions design in <code>regimen</code> provides a useful
 balance between structure and flexibility. The interface mirrors the way
 investigators naturally describe switching designs. It encourages
@@ -295,18 +294,16 @@ function like</p>
 <code class="sourceCode R"><span><span class="va">treatment_allocator</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="co">## add break point to develop and debug</span></span>
 <span>  <span class="co"># browser()</span></span>
-<span>  <span class="va">switch_to</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'low'</span>, <span class="st">'high'</span>, <span class="st">'stay'</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span>, </span>
+<span>  <span class="va">switch_to</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'low'</span>, <span class="st">'high'</span>, <span class="st">'stay'</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span>,</span>
 <span>                        replace <span class="op">=</span> <span class="cn">TRUE</span>, prob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.3</span>, <span class="fl">.4</span>, <span class="fl">.3</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="co">## placebo patients who progressed before death (pfs &lt; os) and were</span></span>
+<span>  <span class="co">## assigned a dose are the switchers; the rest are simply not returned</span></span>
+<span>  <span class="va">is_switcher</span> <span class="op">&lt;-</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'placebo'</span> <span class="op">&amp;</span></span>
+<span>    <span class="va">patient_data</span><span class="op">$</span><span class="va">pfs</span> <span class="op">&lt;</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">os</span> <span class="op">&amp;</span> <span class="va">switch_to</span> <span class="op">!=</span> <span class="st">'stay'</span></span>
+<span>  <span class="va">sw</span> <span class="op">&lt;-</span> <span class="va">patient_data</span><span class="op">[</span><span class="va">is_switcher</span>, <span class="op">]</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>    patient_id <span class="op">=</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">patient_id</span>,</span>
-<span>    new_treatment <span class="op">=</span></span>
-<span>      <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/case-and-replace-when.html" class="external-link">case_when</a></span><span class="op">(</span></span>
-<span>        <span class="co"># patient die before progression cannot switch</span></span>
-<span>        <span class="va">patient_data</span><span class="op">$</span><span class="va">os</span> <span class="op">==</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">pfs</span> <span class="op">~</span> <span class="cn">NA_character_</span>, </span>
-<span>        <span class="va">patient_data</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'placebo'</span> <span class="op">&amp;</span> <span class="va">switch_to</span> <span class="op">==</span> <span class="st">'low'</span> <span class="op">~</span> <span class="st">'low dose'</span>,</span>
-<span>        <span class="va">patient_data</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'placebo'</span> <span class="op">&amp;</span> <span class="va">switch_to</span> <span class="op">==</span> <span class="st">'high'</span> <span class="op">~</span> <span class="st">'high dose'</span>,</span>
-<span>        <span class="cn">TRUE</span> <span class="op">~</span> <span class="cn">NA_character_</span></span>
-<span>      <span class="op">)</span></span>
+<span>    patient_id    <span class="op">=</span> <span class="va">sw</span><span class="op">$</span><span class="va">patient_id</span>,</span>
+<span>    new_treatment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">switch_to</span><span class="op">[</span><span class="va">is_switcher</span><span class="op">]</span> <span class="op">==</span> <span class="st">'low'</span>, <span class="st">'low dose'</span>, <span class="st">'high dose'</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="op">}</span></span></code></pre></div>
@@ -370,13 +367,11 @@ respond are switched to a higher dose.</p>
 <code class="sourceCode R"><span><span class="va">treatment_allocator</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="co">## add break point to develop and debug</span></span>
 <span>  <span class="co"># browser()</span></span>
+<span>  <span class="co">## low-dose non-responders switch to high dose</span></span>
+<span>  <span class="va">sw</span> <span class="op">&lt;-</span> <span class="va">patient_data</span><span class="op">[</span><span class="va">patient_data</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'low dose'</span> <span class="op">&amp;</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">response</span> <span class="op">==</span> <span class="fl">0</span>, <span class="op">]</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>    patient_id <span class="op">=</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">patient_id</span>,</span>
-<span>    new_treatment <span class="op">=</span></span>
-<span>      <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/case-and-replace-when.html" class="external-link">case_when</a></span><span class="op">(</span></span>
-<span>        <span class="va">patient_data</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'low dose'</span> <span class="op">&amp;</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">response</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">~</span> <span class="st">'high dose'</span>,</span>
-<span>        <span class="cn">TRUE</span> <span class="op">~</span> <span class="cn">NA_character_</span></span>
-<span>      <span class="op">)</span></span>
+<span>    patient_id    <span class="op">=</span> <span class="va">sw</span><span class="op">$</span><span class="va">patient_id</span>,</span>
+<span>    new_treatment <span class="op">=</span> <span class="st">'high dose'</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="op">}</span></span></code></pre></div>
@@ -407,13 +402,11 @@ shorter than a month, the switching time is set to
 <code class="sourceCode R"><span><span class="va">treatment_allocator</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">patient_data</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="co">## add break point to develop and debug</span></span>
 <span>  <span class="co"># browser()</span></span>
+<span>  <span class="co">## all placebo patients switch</span></span>
+<span>  <span class="va">sw</span> <span class="op">&lt;-</span> <span class="va">patient_data</span><span class="op">[</span><span class="va">patient_data</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'placebo'</span>, <span class="op">]</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>    patient_id <span class="op">=</span> <span class="va">patient_data</span><span class="op">$</span><span class="va">patient_id</span>,</span>
-<span>    new_treatment <span class="op">=</span></span>
-<span>      <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/case-and-replace-when.html" class="external-link">case_when</a></span><span class="op">(</span></span>
-<span>        <span class="va">patient_data</span><span class="op">$</span><span class="va">arm</span> <span class="op">==</span> <span class="st">'placebo'</span> <span class="op">~</span> <span class="st">'new treatment'</span>,</span>
-<span>        <span class="cn">TRUE</span> <span class="op">~</span> <span class="cn">NA_character_</span></span>
-<span>      <span class="op">)</span></span>
+<span>    patient_id    <span class="op">=</span> <span class="va">sw</span><span class="op">$</span><span class="va">patient_id</span>,</span>
+<span>    new_treatment <span class="op">=</span> <span class="st">'new treatment'</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="op">}</span></span></code></pre></div>
