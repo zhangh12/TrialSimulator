@@ -14,7 +14,11 @@ supports \code{"tte"} for time-to-event endpoints, and \code{"non-tte"} for
 all other types of endpoints (e.g., continuous, binary, categorical,
 or repeated measurement. \code{TrialSimulator} will do some verification if
 an endpoint is of type \code{"tte"}. However, no special
-manipulation is done for non-tte endpoints.}
+manipulation is done for non-tte endpoints.
+\code{"baseline"} can be used for a non-tte endpoint that is observed at
+randomization (e.g., a baseline covariate, biomarker, or subgroup
+indicator). Its readout is \code{0} by definition and must \strong{not} be
+specified in \code{readout}; doing so triggers an error.}
 
 \item{readout}{numeric vector named by non-tte endpoint(s).
 \code{readout} should be specified for every non-tte endpoint. For
@@ -26,7 +30,9 @@ unit time, its \code{readout} can be set as
 \code{c(baseline = 0, ep1 = 2, ep2 = 4)}.  Error message will be prompted
 if \code{readout} is not named or is not specified for all non-tte endpoint,
 or it is specified for any tte endpoints. If all
-endpoints are tte, \code{readout} should be its default value \code{NULL}.}
+endpoints are tte, \code{readout} should be its default value \code{NULL}.
+Endpoints of type \code{"baseline"} must be omitted from \code{readout}, as
+their readout is \code{0}.}
 
 \item{generator}{a RNG function. Its first argument must be \code{n},
 number of patients. It must return a data frame of \code{n} rows.

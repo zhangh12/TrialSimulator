@@ -69,6 +69,27 @@ orr_trt <- endpoint(name = 'orr', type = 'non-tte',
 trt <- arm(name = 'treatment')
 trt$add_endpoints(tumor_cfb_trt, orr_trt)
 ```
+
+### Baseline endpoints
+
+Some variables are observed at randomization rather than after a delay, for example a baseline covariate, biomarker, or subgroup indicator. Such a variable is a non-TTE endpoint with a readout of `0`. Instead of writing `type = 'non-tte', readout = c(biomarker = 0)`, you can set `type = 'baseline'`, in which case the readout is `0` automatically and must be omitted from `readout`:
+
+```{r baseline-ep}
+## a baseline biomarker available at randomization
+biomarker <- endpoint(name = 'biomarker', type = 'baseline',
+                      generator = rbinom, size = 1, prob = .3)
+```
+
+`type = 'baseline'` is a convenience alias for a readout-`0` non-TTE endpoint; the two definitions below are equivalent. Specifying a `readout` for a `'baseline'` endpoint (even `0`) raises an error.
+
+```{r baseline-equiv, eval = FALSE}
+## these are equivalent
+endpoint(name = 'biomarker', type = 'baseline',
+         generator = rbinom, size = 1, prob = .3)
+endpoint(name = 'biomarker', type = 'non-tte', readout = c(biomarker = 0),
+         generator = rbinom, size = 1, prob = .3)
+```
+
 With the treatment arms defined, we can proceed to create a trial. Patients are recruited at a piecewise constant rate, with an accrual pattern as follows:
 
 - First 6 months: 10 patients per month.

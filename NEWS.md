@@ -1,3 +1,9 @@
+# TrialSimulator 1.20.0
+
+## New Feature
+
+- `endpoint()` now accepts `type = "baseline"` for a non-tte endpoint observed at randomization (e.g., a baseline covariate, biomarker, or subgroup indicator). Its readout is `0` by definition and must be omitted from `readout`. For forward compatibility, a non-tte endpoint observed at randomization can still be defined the existing way with `readout = 0`. `Endpoints$new()` continues to recognize only `"tte"` and `"non-tte"`; the conversion happens in `endpoint()`.
+
 # TrialSimulator 1.19.1
 
 ## Documentation

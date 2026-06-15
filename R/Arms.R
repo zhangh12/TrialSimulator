@@ -170,7 +170,7 @@ Arms <- R6::R6Class(
         if(nrow(dat) == 0){
           stop('No data meets inclusion criteria of arm <',
                self$get_name(), '>: \n',
-               filter_text
+               filter_str
           )
         }
 

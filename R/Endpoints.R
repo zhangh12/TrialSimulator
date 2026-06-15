@@ -33,6 +33,11 @@ Endpoints <- R6::R6Class(
     #' or repeated measurement. \code{TrialSimulator} will do some verification if
     #' an endpoint is of type \code{"tte"}. However, no special
     #' manipulation is done for non-tte endpoints.
+    #' Note: \code{Endpoints$new()} only recognizes \code{"tte"} and
+    #' \code{"non-tte"}. The \code{"baseline"} type accepted by \code{endpoint()}
+    #' is a non-tte endpoint observed at randomization; \code{endpoint()}
+    #' converts it to \code{"non-tte"} with readout \code{0} before constructing
+    #' the object, so it never reaches here.
     #' @param generator a random number generation (RNG) function.
     #' It supports all built-in random number generators in \code{stats}, e.g.,
     #' \code{stats::rnorm}, \code{stats::rexp}, etc. that with \code{n} as the
@@ -89,19 +94,12 @@ Endpoints <- R6::R6Class(
 
       private$readout <- readout
 
-      if(!is.null(generator)){
-        private$generator <- DynamicRNGFunction(
-          generator, rng = deparse(substitute(generator)),
-          var_name = self$get_name(),
-          type = self$get_type(),
-          readout = self$get_readout(), ...)
-        ## ignore all other arguments in ... if generator is provided
-        return()
-      }
-
-      stop('Fail to create an endpoint because of lack of RNG generator.')
-
-      ## do something else
+      private$generator <- DynamicRNGFunction(
+        generator, rng = deparse(substitute(generator)),
+        var_name = self$get_name(),
+        type = self$get_type(),
+        readout = self$get_readout(), ...)
+      ## ignore all other arguments in ... if generator is provided
     },
 
     #' @description
@@ -255,11 +253,13 @@ Endpoints <- R6::R6Class(
     ## @field name a character vector for name(s) of endpoint(s), e.g., \code{"pfs"}, \code{"ORR"}.
     ## @field type a character vector for type(s) of endpoint(s), e.g., \code{"tte"},
     ## \code{"non-tte"}.
-    ## @field generator a user-defined RNG function. Its first argument must be \code{n},
-    ## number of patients. It must return a data frame of \code{n} rows. When `generator`
-    ## is \code{NULL}, one can create one endpoint at a time, i.e., both \code{name} and \code{type}
-    ## are of length 1. Otherwise, one can create multiple endpoints at a time as
-    ## long as \code{generator} is capable to generate data for the endpoints.
+    ## @field generator an RNG function. Its first argument must be \code{n}, number of
+    ## patients. One can create a single endpoint at a time, where \code{name} and \code{type}
+    ## are of length 1; in that case \code{generator} can be a function like \code{rexp},
+    ## \code{rnorm}, etc. that returns a vector of length \code{n}. If \code{generator}
+    ## defines more than one endpoint, it should return a data frame of \code{n} rows whose
+    ## columns cover all the endpoints, plus a \code{<name>_event} column for each tte
+    ## endpoint, if any.
     uid = NULL,
     name = NULL,
     type = NULL,

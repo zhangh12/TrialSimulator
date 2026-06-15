@@ -78,7 +78,12 @@ initialize an endpoint.
 all other types of endpoints (e.g., continous, binary, categorical,
 or repeated measurement. \code{TrialSimulator} will do some verification if
 an endpoint is of type \code{"tte"}. However, no special
-manipulation is done for non-tte endpoints.}
+manipulation is done for non-tte endpoints.
+Note: \code{Endpoints$new()} only recognizes \code{"tte"} and
+\code{"non-tte"}. The \code{"baseline"} type accepted by \code{endpoint()}
+is a non-tte endpoint observed at randomization; \code{endpoint()}
+converts it to \code{"non-tte"} with readout \code{0} before constructing
+the object, so it never reaches here.}
 
 \item{\code{readout}}{a named numeric vector with name to be non-tte endpoint(s).
 \code{readout} must be specified for every non-tte endpoint. For
