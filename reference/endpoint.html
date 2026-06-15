@@ -15,7 +15,7 @@ readout of non-tte endpoints, dropout time, and trial duration are consistent.">
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.19.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.20.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -86,7 +86,11 @@ supports <code>"tte"</code> for time-to-event endpoints, and <code>"non-tte"</co
 all other types of endpoints (e.g., continuous, binary, categorical,
 or repeated measurement. <code>TrialSimulator</code> will do some verification if
 an endpoint is of type <code>"tte"</code>. However, no special
-manipulation is done for non-tte endpoints.</p></dd>
+manipulation is done for non-tte endpoints.
+<code>"baseline"</code> can be used for a non-tte endpoint that is observed at
+randomization (e.g., a baseline covariate, biomarker, or subgroup
+indicator). Its readout is <code>0</code> by definition and must <strong>not</strong> be
+specified in <code>readout</code>; doing so triggers an error.</p></dd>
 
 
 <dt id="arg-readout">readout<a class="anchor" aria-label="anchor" href="#arg-readout"></a></dt>
@@ -100,7 +104,9 @@ unit time, its <code>readout</code> can be set as
 <code>c(baseline = 0, ep1 = 2, ep2 = 4)</code>.  Error message will be prompted
 if <code>readout</code> is not named or is not specified for all non-tte endpoint,
 or it is specified for any tte endpoints. If all
-endpoints are tte, <code>readout</code> should be its default value <code>NULL</code>.</p></dd>
+endpoints are tte, <code>readout</code> should be its default value <code>NULL</code>.
+Endpoints of type <code>"baseline"</code> must be omitted from <code>readout</code>, as
+their readout is <code>0</code>.</p></dd>
 
 
 <dt id="arg-generator">generator<a class="anchor" aria-label="anchor" href="#arg-generator"></a></dt>

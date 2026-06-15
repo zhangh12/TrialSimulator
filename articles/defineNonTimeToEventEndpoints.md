@@ -72,6 +72,35 @@ trt <- arm(name = 'treatment')
 trt$add_endpoints(tumor_cfb_trt, orr_trt)
 ```
 
+### Baseline endpoints
+
+Some variables are observed at randomization rather than after a delay,
+for example a baseline covariate, biomarker, or subgroup indicator. Such
+a variable is a non-TTE endpoint with a readout of `0`. Instead of
+writing `type = 'non-tte', readout = c(biomarker = 0)`, you can set
+`type = 'baseline'`, in which case the readout is `0` automatically and
+must be omitted from `readout`:
+
+``` r
+
+## a baseline biomarker available at randomization
+biomarker <- endpoint(name = 'biomarker', type = 'baseline',
+                      generator = rbinom, size = 1, prob = .3)
+```
+
+`type = 'baseline'` is a convenience alias for a readout-`0` non-TTE
+endpoint; the two definitions below are equivalent. Specifying a
+`readout` for a `'baseline'` endpoint (even `0`) raises an error.
+
+``` r
+
+## these are equivalent
+endpoint(name = 'biomarker', type = 'baseline',
+         generator = rbinom, size = 1, prob = .3)
+endpoint(name = 'biomarker', type = 'non-tte', readout = c(biomarker = 0),
+         generator = rbinom, size = 1, prob = .3)
+```
+
 With the treatment arms defined, we can proceed to create a trial.
 Patients are recruited at a piecewise constant rate, with an accrual
 pattern as follows:
@@ -117,7 +146,7 @@ trial <- trial(
   enroller = StaggeredRecruiter, accrual_rate = accrual_rate, 
   dropout = rweibull, scale = 30.636, shape = 1.939
 )
-#> Seed is not specified. TrialSimulator sets it to 1012203595
+#> Seed is not specified. TrialSimulator sets it to 1680176743
 
 ## add arms to the trial
 trial$add_arms(sample_ratio = c(1, 1), trt, pbo)
@@ -133,7 +162,7 @@ trial
 #>  ⚕⚕ Number of Patients:  420  
 #>  ⚕⚕   Planned Duration:  30  
 #>  ⚕⚕            Regimen:  not set  
-#>  ⚕⚕        Random Seed:  1012203595
+#>  ⚕⚕        Random Seed:  1680176743
 ```
 
 Here `accrual_rate` is an argument of
@@ -198,25 +227,25 @@ listener$add_milestones(interim, random, final)
 controller <- controller(trial, listener)
 controller$run()
 #> Condition of milestone <interim> is being checked.
-#> Data is locked at time = 7.9 for milestone <interim>.
+#> Data is locked at time = 8 for milestone <interim>.
 #> Locked data can be accessed in Trial$get_locked_data('interim'). 
 #> Number of events at lock time:
 #>   cfb orr patient         arms
-#> 1  19  60      99 c("place....
+#> 1  21  60     101 c("place....
 #> 
 #> Condition of milestone <random> is being checked.
-#> Data is locked at time = 13.95 for milestone <random>.
+#> Data is locked at time = 14.05 for milestone <random>.
 #> Locked data can be accessed in Trial$get_locked_data('random'). 
 #> Number of events at lock time:
 #>   cfb orr patient         arms
-#> 1  96 180     220 c("place....
+#> 1  98 180     222 c("place....
 #> 
 #> Condition of milestone <final> is being checked.
 #> Data is locked at time = 30 for milestone <final>.
 #> Locked data can be accessed in Trial$get_locked_data('final'). 
 #> Number of events at lock time:
 #>   cfb orr patient         arms
-#> 1 401 417     420 c("place....
+#> 1 404 417     420 c("place....
 #> 
 ```
 
@@ -234,12 +263,12 @@ random_data <- trial$get_locked_data(milestone_name = 'random')
 final_data <- trial$get_locked_data(milestone_name = 'final')
 head(interim_data)
 #>   patient_id       arm enroll_time dropout_time        cfb cfb_readout orr
-#> 1          1 treatment         0.0     29.78530 -0.2980363           6   1
-#> 2          2   placebo         0.1     15.04569  8.1479693           6   0
-#> 3          3   placebo         0.2     15.91130  0.3772291           6   0
-#> 4          4 treatment         0.3     20.39311 -2.7864167           6   0
-#> 5          5 treatment         0.4     16.47514 -0.9595334           6   0
-#> 6          6   placebo         0.5     19.78626 -0.5136511           6   0
+#> 1          1 treatment         0.0     19.59798 -2.7401110           6   0
+#> 2          2   placebo         0.1     16.88565 -0.8997023           6   0
+#> 3          3 treatment         0.2     31.24747 -4.3991928           6   0
+#> 4          4   placebo         0.3     30.03645  2.6023650           6   0
+#> 5          5 treatment         0.4     26.19217 -2.5724330           6   1
+#> 6          6   placebo         0.5     18.65077  4.2112886           6   0
 #>   orr_readout
 #> 1           2
 #> 2           2
@@ -266,23 +295,23 @@ not_ready_at_interim <-
   head() %>% 
   print()
 #>   patient_id       arm enroll_time dropout_time cfb cfb_readout orr orr_readout
-#> 1         61 treatment        6.00     53.16813  NA           6  NA           2
-#> 2         62   placebo        6.05     15.06647  NA           6  NA           2
-#> 3         63 treatment        6.10     24.75709  NA           6  NA           2
-#> 4         65 treatment        6.20     27.24852  NA           6  NA           2
-#> 5         66   placebo        6.25     24.53303  NA           6  NA           2
-#> 6         67   placebo        6.30     19.54081  NA           6  NA           2
+#> 1         62   placebo        6.05     27.72383  NA           6  NA           2
+#> 2         64   placebo        6.15     37.47509  NA           6  NA           2
+#> 3         65   placebo        6.20     12.92272  NA           6  NA           2
+#> 4         66 treatment        6.25     46.40955  NA           6  NA           2
+#> 5         67   placebo        6.30     16.58936  NA           6  NA           2
+#> 6         68 treatment        6.35     16.07110  NA           6  NA           2
 
 random_data %>% 
   dplyr::filter(patient_id %in% not_ready_at_interim$patient_id) %>% 
   print()
-#>   patient_id       arm enroll_time dropout_time       cfb cfb_readout orr
-#> 1         61 treatment        6.00     53.16813 -4.923353           6   1
-#> 2         62   placebo        6.05     15.06647  1.153043           6   0
-#> 3         63 treatment        6.10     24.75709 -4.559905           6   0
-#> 4         65 treatment        6.20     27.24852 -4.448258           6   0
-#> 5         66   placebo        6.25     24.53303  4.342807           6   0
-#> 6         67   placebo        6.30     19.54081  1.623136           6   0
+#>   patient_id       arm enroll_time dropout_time        cfb cfb_readout orr
+#> 1         62   placebo        6.05     27.72383 -2.7806950           6   0
+#> 2         64   placebo        6.15     37.47509 -0.4524829           6   0
+#> 3         65   placebo        6.20     12.92272  0.9304418           6   0
+#> 4         66 treatment        6.25     46.40955 -5.2830610           6   1
+#> 5         67   placebo        6.30     16.58936 -4.3065756           6   0
+#> 6         68 treatment        6.35     16.07110 -3.7165411           6   1
 #>   orr_readout
 #> 1           2
 #> 2           2

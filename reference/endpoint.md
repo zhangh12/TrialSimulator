@@ -27,7 +27,11 @@ endpoint(name, type, readout = NULL, generator, ...)
   types of endpoints (e.g., continuous, binary, categorical, or repeated
   measurement. `TrialSimulator` will do some verification if an endpoint
   is of type `"tte"`. However, no special manipulation is done for
-  non-tte endpoints.
+  non-tte endpoints. `"baseline"` can be used for a non-tte endpoint
+  that is observed at randomization (e.g., a baseline covariate,
+  biomarker, or subgroup indicator). Its readout is `0` by definition
+  and must **not** be specified in `readout`; doing so triggers an
+  error.
 
 - readout:
 
@@ -41,6 +45,8 @@ endpoint(name, type, readout = NULL, generator, ...)
   message will be prompted if `readout` is not named or is not specified
   for all non-tte endpoint, or it is specified for any tte endpoints. If
   all endpoints are tte, `readout` should be its default value `NULL`.
+  Endpoints of type `"baseline"` must be omitted from `readout`, as
+  their readout is `0`.
 
 - generator:
 

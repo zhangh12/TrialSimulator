@@ -25,7 +25,7 @@ $print()
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.19.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.20.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -115,7 +115,12 @@ except for the one below.</p>
 all other types of endpoints (e.g., continous, binary, categorical,
 or repeated measurement. <code>TrialSimulator</code> will do some verification if
 an endpoint is of type <code>"tte"</code>. However, no special
-manipulation is done for non-tte endpoints.</p></dd>
+manipulation is done for non-tte endpoints.
+Note: <code>Endpoints$new()</code> only recognizes <code>"tte"</code> and
+<code>"non-tte"</code>. The <code>"baseline"</code> type accepted by <code><a href="endpoint.html">endpoint()</a></code>
+is a non-tte endpoint observed at randomization; <code><a href="endpoint.html">endpoint()</a></code>
+converts it to <code>"non-tte"</code> with readout <code>0</code> before constructing
+the object, so it never reaches here.</p></dd>
 
 
 <dt><code>readout</code></dt>

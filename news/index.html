@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.19.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.20.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,6 +50,14 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.20.0" id="trialsimulator-1200">TrialSimulator 1.20.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1200"></a></h2>
+<div class="section level3">
+<h3 id="new-feature-1-20-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-1-20-0"></a></h3>
+<ul><li>
+<code><a href="../reference/endpoint.html">endpoint()</a></code> now accepts <code>type = "baseline"</code> for a non-tte endpoint observed at randomization (e.g., a baseline covariate, biomarker, or subgroup indicator). Its readout is <code>0</code> by definition and must be omitted from <code>readout</code>. For forward compatibility, a non-tte endpoint observed at randomization can still be defined the existing way with <code>readout = 0</code>. <code>Endpoints$new()</code> continues to recognize only <code>"tte"</code> and <code>"non-tte"</code>; the conversion happens in <code><a href="../reference/endpoint.html">endpoint()</a></code>.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.19.1" id="trialsimulator-1191">TrialSimulator 1.19.1<a class="anchor" aria-label="anchor" href="#trialsimulator-1191"></a></h2>
 <div class="section level3">

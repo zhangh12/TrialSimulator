@@ -57,7 +57,13 @@ initialize an endpoint.
   endpoints (e.g., continous, binary, categorical, or repeated
   measurement. `TrialSimulator` will do some verification if an endpoint
   is of type `"tte"`. However, no special manipulation is done for
-  non-tte endpoints.
+  non-tte endpoints. Note: `Endpoints$new()` only recognizes `"tte"` and
+  `"non-tte"`. The `"baseline"` type accepted by
+  [`endpoint()`](https://zhangh12.github.io/TrialSimulator/reference/endpoint.md)
+  is a non-tte endpoint observed at randomization;
+  [`endpoint()`](https://zhangh12.github.io/TrialSimulator/reference/endpoint.md)
+  converts it to `"non-tte"` with readout `0` before constructing the
+  object, so it never reaches here.
 
 - `readout`:
 
