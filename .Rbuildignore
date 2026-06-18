@@ -10,3 +10,7 @@ vignettes/cache
 ^py$
 ^\.claude$
 ^\.positai$
+^src/.*\.gcda$
+^src/.*\.gcno$
+^src/.*\.o$
+^src/.*\.so$
