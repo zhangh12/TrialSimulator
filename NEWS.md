@@ -1,3 +1,9 @@
+# TrialSimulator 1.20.2
+
+## Testing
+
+- Add regression tests asserting that `GraphicalTesting` produces identical decisions whether `test()` is called once over all stages (batch), once per stage on a persisted graph (incremental), or on a freshly rebuilt graph that replays all stages so far. Covers alpha propagation, within-stage re-testing, and omitted-stage handling.
+
 # TrialSimulator 1.20.0
 
 ## New Feature
