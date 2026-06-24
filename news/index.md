@@ -1,5 +1,28 @@
 # Changelog
 
+## TrialSimulator 1.21.0
+
+### Bug Fix
+
+- `GraphicalTesting$test()` no longer errors with
+  `alpha_spent should be monotonically increasing` when a hypothesis is
+  first tested only at a later (or final) look. This happens when a
+  hypothesis holds zero or very small allocated alpha at early looks and
+  inherits alpha after another hypothesis is rejected: those looks yield
+  a degenerate (flat, near-zero) reconstructed cumulative alpha-spent
+  sequence. Such entries are now truncated and floored to a strictly
+  increasing sequence before being passed to the group sequential
+  boundary computation.
+
+### Unit Tests
+
+- Add regression tests for the above fix (alpha inherited only at the
+  final look; tiny-alpha early looks with degenerate spending
+  boundaries), plus tests that re-including an already-rejected
+  hypothesis at a later look is ignored safely and that
+  `computeCumulativeAlphaSpent` treats `Inf` boundaries as zero
+  increments.
+
 ## TrialSimulator 1.20.0
 
 ### New Feature

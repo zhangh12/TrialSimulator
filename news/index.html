@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.20.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.21.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,6 +50,18 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.21.0" id="trialsimulator-1210">TrialSimulator 1.21.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1210"></a></h2>
+<div class="section level3">
+<h3 id="bug-fix-1-21-0">Bug Fix<a class="anchor" aria-label="anchor" href="#bug-fix-1-21-0"></a></h3>
+<ul><li>
+<code>GraphicalTesting$test()</code> no longer errors with <code>alpha_spent should be monotonically increasing</code> when a hypothesis is first tested only at a later (or final) look. This happens when a hypothesis holds zero or very small allocated alpha at early looks and inherits alpha after another hypothesis is rejected: those looks yield a degenerate (flat, near-zero) reconstructed cumulative alpha-spent sequence. Such entries are now truncated and floored to a strictly increasing sequence before being passed to the group sequential boundary computation.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="unit-tests-1-21-0">Unit Tests<a class="anchor" aria-label="anchor" href="#unit-tests-1-21-0"></a></h3>
+<ul><li>Add regression tests for the above fix (alpha inherited only at the final look; tiny-alpha early looks with degenerate spending boundaries), plus tests that re-including an already-rejected hypothesis at a later look is ignored safely and that <code>computeCumulativeAlphaSpent</code> treats <code>Inf</code> boundaries as zero increments.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.20.0" id="trialsimulator-1200">TrialSimulator 1.20.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1200"></a></h2>
 <div class="section level3">
