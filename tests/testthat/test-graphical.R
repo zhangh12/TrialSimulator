@@ -207,3 +207,81 @@ test_that("print respects silent=TRUE at construction", {
   pdf(NULL); on.exit(dev.off())
   expect_no_error(gt$print(graph = FALSE, trajectory = FALSE))
 })
+
+
+# Group sequential reconstruction: a hypothesis that holds zero or very small
+# allocated alpha at early looks yields a degenerate (flat, near-zero)
+# reconstructed cumulative alpha-spent sequence. These regressions guard the
+# fix that floors such sequences to be strictly increasing before they reach
+# the group sequential boundary computation.
+
+# H1, H2 carry the alpha; H3, H4 start at 0. H4 inherits alpha from H2 only
+# after H2 is rejected at the final look, so H4 is first tested at its 3rd look.
+g4 <- function(alpha) {
+  GraphicalTesting$new(
+    alpha,
+    matrix(c(0,0,1,0,  0,0,0,1,  0,0,0,1,  0,0,0,0), nrow = 4, byrow = TRUE),
+    rep("asOF", 4), rep(300L, 4), c("H1","H2","H3","H4"), silent = TRUE)
+}
+
+test_that("hypothesis receiving alpha only at its final look does not error", {
+  gt <- g4(c(.0125, .0125, 0, 0))
+  stats <- data.frame(
+    order      = rep(1:3, each = 4),
+    hypotheses = rep(c("H1","H2","H3","H4"), 3),
+    p          = c(.5,.5,.5,.5,  .5,.5,.5,.5,  .5, 1e-6, .5, .5),
+    info       = rep(c(100, 200, 300), each = 4),
+    is_final   = rep(c(FALSE, FALSE, TRUE), each = 4),
+    max_info   = 300L)
+
+  expect_no_error(gt$test(stats))
+  dec <- gt$get_current_decision()
+  expect_equal(unname(dec["H2"]), "reject")   # H2 (p = 1e-6) rejected
+  expect_equal(unname(dec["H4"]), "accept")   # H4 inherits alpha but p = .5
+})
+
+test_that("tiny-alpha early looks with Inf stage boundaries do not error", {
+  # H2 carries a tiny alpha at a low information fraction; rpact returns an Inf
+  # stage boundary there, so the reconstructed cumulative spend is flat and
+  # near zero (equal, non-zero entries) rather than exactly zero.
+  gt <- g4(c(.0249, .0001, 0, 0))
+  stats <- data.frame(
+    order      = rep(1:3, each = 4),
+    hypotheses = rep(c("H1","H2","H3","H4"), 3),
+    p          = c(.5,.5,.5,.5,  .5, 1e-9, .5, .5,  .5,.5,.5,.5),
+    info       = rep(c(30, 60, 300), each = 4),
+    is_final   = rep(c(FALSE, FALSE, TRUE), each = 4),
+    max_info   = 300L)
+
+  expect_no_error(gt$test(stats))
+  dec <- gt$get_current_decision()
+  expect_equal(unname(dec["H1"]), "accept")
+  expect_equal(unname(dec["H2"]), "accept")
+})
+
+test_that("re-including a rejected hypothesis at a later look is ignored safely", {
+  gt <- GraphicalTesting$new(c(.0125, .0125), matrix(c(0, 1, 1, 0), 2, byrow = TRUE),
+                             rep("asOF", 2), c(300L, 300L), c("H1","H2"), silent = TRUE)
+  stats <- data.frame(
+    order      = c(1, 1, 2, 2),
+    hypotheses = c("H1","H2","H1","H2"),
+    p          = c(1e-6, .5, 1e-8, .5),   # H1 rejected at order 1; tiny p again at order 2
+    info       = c(100, 100, 200, 200),
+    is_final   = FALSE,
+    max_info   = 300L)
+
+  expect_no_error(gt$test(stats))
+  dec <- gt$get_current_decision()
+  expect_equal(unname(dec["H1"]), "reject")   # stays rejected, not re-tested
+  expect_equal(unname(dec["H2"]), "accept")
+  traj <- gt$get_trajectory()
+  expect_equal(sum(traj$hypothesis == "H1" & traj$decision == "reject"), 1L)
+})
+
+test_that("computeCumulativeAlphaSpent treats Inf boundaries as zero increments", {
+  f <- TrialSimulator:::computeCumulativeAlphaSpent
+  expect_equal(f(c(Inf, Inf), c(1/3, 2/3)), c(0, 0))   # all-Inf -> all zero
+  out <- f(c(4, Inf), c(1/3, 2/3))                     # finite-then-Inf -> flat
+  expect_gt(out[1], 0)
+  expect_equal(out[2], out[1])
+})

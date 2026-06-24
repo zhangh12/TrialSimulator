@@ -496,6 +496,20 @@ GraphicalTesting <- R6::R6Class(
 
           hid <- self$get_hid(h)
 
+          ## Skip hypotheses that have already been rejected.
+          ## They are no longer in the graph, and future p-values should not
+          ## update their GSD history.
+          ## It is safe for get_current_decision(), which still hold 'reject'
+          ## as status for the skipped hypothesis
+          if(!self$is_in_graph(hid)){
+            if(!private$silent){
+              message('<', self$get_hypothesis_name(hid),
+                      ', order = ', stats$order[1],
+                      '> has already been rejected and is ignored. ')
+            }
+            next
+          }
+
           stat <- stats %>% dplyr::filter(hypotheses == self$get_hypothesis_name(hid))
           stopifnot(private$gst[[hid]]$name == stat$hypotheses)
 
@@ -633,7 +647,22 @@ GraphicalTesting <- R6::R6Class(
 
               ##################################################################
 
-              alpha_spent_[alpha_spent_ < min(1e-5, gst$get_alpha())] <- min(1e-5, gst$get_alpha()/2)
+              alpha_spent_[alpha_spent_ < 1.05e-6] <- 0
+              if(any(alpha_spent_ == 0)){
+                zero_idx <- which(alpha_spent_ == 0)
+                if(zero_idx[1] != 1 ||
+                   (length(zero_idx) > 1 && !all(diff(zero_idx) == 1))){
+                  stop('Unexpected issue in GraphicalTesting. Debug it. ')
+                }
+                dummy_zero <- 1.05e-6
+                for(i in seq_along(zero_idx)){
+                  if(i == 1){
+                    alpha_spent_[zero_idx[i]] <- dummy_zero
+                  }else{
+                    alpha_spent_[zero_idx[i]] <- alpha_spent_[zero_idx[i - 1]] * 1.01
+                  }
+                }
+              }
 
               gst$test(observed_info = args$info,
                        is_final = args$is_final,

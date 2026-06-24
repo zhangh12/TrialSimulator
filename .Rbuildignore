@@ -1,7 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
-example
+^example/
 vignettes/cache
 ^_pkgdown\.yml$
 ^docs$

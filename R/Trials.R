@@ -2082,10 +2082,12 @@ Trials <- R6::R6Class(
           stop(name, ' has been used to name something in custom data ',
                'Pick another name and try again. ')
         }else{
-          warning(name, ' exists in custom_data and is overwritten. ',
-                  'Set overwrite = FALSE in save_custom_data() ',
-                  'if it is not intended. ',
-                  immediate. = TRUE)
+          if(!private$silent){
+            warning(name, ' exists in custom_data and is overwritten. ',
+                    'Set overwrite = FALSE in save_custom_data() ',
+                    'if it is not intended. ',
+                    immediate. = TRUE)
+          }
         }
       }
 
