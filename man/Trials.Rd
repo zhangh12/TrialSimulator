@@ -191,7 +191,7 @@ initialize a trial
   duration,
   description = name,
   seed = NULL,
-  enroller,
+  enroller = StaggeredRecruiter,
   dropout = NULL,
   stratification_factors = NULL,
   silent = FALSE,
@@ -219,10 +219,12 @@ trial automatically and saved in output. It can be retrieved in the
 \code{seed} column in \code{$get_output()}. Setting it to be \code{NULL}
 is recommended. For debugging, set it to a specific integer.}
 
-\item{\code{enroller}}{a function returning a vector enrollment time for
-patients. Its first argument \code{n} is the number of enrolled patients.
-Set it to \code{StaggeredRecruiter} can handle most of the use cases.
-See \code{?TrialSimulator::StaggeredRecruiter} for more information.}
+\item{\code{enroller}}{enrollment-time generator. Must be
+\code{StaggeredRecruiter} (the default); any other value is rejected.
+Supply its \code{accrual_rate} via \code{...}. See
+\code{?TrialSimulator::StaggeredRecruiter}. Kept (rather than dropped) for
+backward compatibility, so existing code that passes
+\code{enroller = StaggeredRecruiter} explicitly keeps working unchanged.}
 
 \item{\code{dropout}}{a function returning a vector of dropout time for patients.
 It can be any random number generator with first argument \code{n},
@@ -302,8 +304,8 @@ set recruitment curve when initialize a trial.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{func}}{function to generate enrollment time. It can be built-in
-function like `rexp` or customized functions like `StaggeredRecruiter`.}
+\item{\code{func}}{function to generate enrollment time. Must be
+\code{StaggeredRecruiter}; any other value is rejected.}
 
 \item{\code{...}}{(optional) arguments for \code{func}.}
 }

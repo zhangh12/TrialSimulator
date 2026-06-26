@@ -1,3 +1,13 @@
+# TrialSimulator 1.23.0
+
+## Updates
+
+- `trial()` now defaults `enroller` to `StaggeredRecruiter` and accepts no other enroller: any non-`StaggeredRecruiter` value is rejected with an informative error. The `enroller` argument is retained for backward compatibility, so existing code that passes `enroller = StaggeredRecruiter` explicitly is unaffected, and code that omits it now gets the default.
+
+## Unit Tests
+
+- Add `test-enroller.R` covering the default, explicit `StaggeredRecruiter`, rejection of other enrollers, and post-construction `set_enroller()` enforcement.
+
 # TrialSimulator 1.22.0
 
 ## New Feature

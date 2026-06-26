@@ -24,10 +24,13 @@
 #' trial automatically and saved in output. It can be retrieved in the
 #' \code{seed} column in \code{$get_output()}. Setting it to be \code{NULL}
 #' is recommended. For debugging, set it to a specific integer.
-#' @param enroller a function returning a vector enrollment time for
-#' patients. Its first argument \code{n} is the number of enrolled patients.
-#' Set it to \code{StaggeredRecruiter} can handle most of the use cases.
-#' See \code{?TrialSimulator::StaggeredRecruiter} for more information.
+#' @param enroller enrollment-time generator. Must be \code{StaggeredRecruiter}
+#' (the default); any other value is rejected. Supply its \code{accrual_rate}
+#' via \code{...}. See \code{?TrialSimulator::StaggeredRecruiter}. The argument
+#' is kept (rather than dropped) for backward compatibility: existing code that
+#' passes \code{enroller = StaggeredRecruiter} explicitly keeps working
+#' unchanged, and a named argument gives a clearer error than an "unused
+#' argument" failure if some other enroller is supplied.
 #' @param dropout a function returning a vector of dropout time for patients.
 #' It can be any random number generator with first argument \code{n},
 #' the number of enrolled patients. Usually \code{rexp} if dropout rate
@@ -83,11 +86,12 @@
 #' active$add_endpoints(pfs2, orr2)
 #'
 #' ## Plan a trial, Trial-3415, of up to 100 patients.
-#' ## Enrollment time follows an exponential distribution, with median 5
+#' ## Enrollment accrues at a constant 10 patients per time unit.
 #' trial <- trial(
 #'   name = 'Trial-3415', n_patients = 100,
 #'   seed = 31415926, duration = 100,
-#'   enroller = rexp, rate = log(2) / 5)
+#'   enroller = StaggeredRecruiter,
+#'   accrual_rate = data.frame(end_time = Inf, piecewise_rate = 10))
 #'
 #' trial
 #'
@@ -105,7 +109,7 @@ trial =
     duration,
     description = name,
     seed = NULL,
-    enroller,
+    enroller = StaggeredRecruiter,
     dropout = NULL,
     stratification_factors = NULL,
     silent = FALSE,
