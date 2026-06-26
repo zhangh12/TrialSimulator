@@ -103,7 +103,7 @@ $closedTest() perform combination test based on Dunnett's test.
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.21.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.23.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -284,7 +284,7 @@ function <code><a href="https://rdrr.io/r/base/save.html" class="external-link">
 <span>  <span class="va">duration</span>,</span>
 <span>  description <span class="op">=</span> <span class="va">name</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  <span class="va">enroller</span>,</span>
+<span>  enroller <span class="op">=</span> <span class="va">StaggeredRecruiter</span>,</span>
 <span>  dropout <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  stratification_factors <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  silent <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -322,10 +322,12 @@ is recommended. For debugging, set it to a specific integer.</p></dd>
 
 
 <dt><code>enroller</code></dt>
-<dd><p>a function returning a vector enrollment time for
-patients. Its first argument <code>n</code> is the number of enrolled patients.
-Set it to <code>StaggeredRecruiter</code> can handle most of the use cases.
-See <code><a href="StaggeredRecruiter.html">?TrialSimulator::StaggeredRecruiter</a></code> for more information.</p></dd>
+<dd><p>enrollment-time generator. Must be
+<code>StaggeredRecruiter</code> (the default); any other value is rejected.
+Supply its <code>accrual_rate</code> via <code>...</code>. See
+<code><a href="StaggeredRecruiter.html">?TrialSimulator::StaggeredRecruiter</a></code>. Kept (rather than dropped) for
+backward compatibility, so existing code that passes
+<code>enroller = StaggeredRecruiter</code> explicitly keeps working unchanged.</p></dd>
 
 
 <dt><code>dropout</code></dt>
@@ -407,8 +409,8 @@ current duration.</p></dd>
 <div class="section">
 <h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>func</code></dt>
-<dd><p>function to generate enrollment time. It can be built-in
-function like `rexp` or customized functions like `StaggeredRecruiter`.</p></dd>
+<dd><p>function to generate enrollment time. Must be
+<code>StaggeredRecruiter</code>; any other value is rejected.</p></dd>
 
 
 <dt><code>...</code></dt>

@@ -226,7 +226,7 @@ initialize a trial
       duration,
       description = name,
       seed = NULL,
-      enroller,
+      enroller = StaggeredRecruiter,
       dropout = NULL,
       stratification_factors = NULL,
       silent = FALSE,
@@ -262,11 +262,12 @@ initialize a trial
 
 - `enroller`:
 
-  a function returning a vector enrollment time for patients. Its first
-  argument `n` is the number of enrolled patients. Set it to
-  `StaggeredRecruiter` can handle most of the use cases. See
-  [`?TrialSimulator::StaggeredRecruiter`](https://zhangh12.github.io/TrialSimulator/reference/StaggeredRecruiter.md)
-  for more information.
+  enrollment-time generator. Must be `StaggeredRecruiter` (the default);
+  any other value is rejected. Supply its `accrual_rate` via `...`. See
+  [`?TrialSimulator::StaggeredRecruiter`](https://zhangh12.github.io/TrialSimulator/reference/StaggeredRecruiter.md).
+  Kept (rather than dropped) for backward compatibility, so existing
+  code that passes `enroller = StaggeredRecruiter` explicitly keeps
+  working unchanged.
 
 - `dropout`:
 
@@ -352,8 +353,8 @@ set recruitment curve when initialize a trial.
 
 - `func`:
 
-  function to generate enrollment time. It can be built-in function like
-  \`rexp\` or customized functions like \`StaggeredRecruiter\`.
+  function to generate enrollment time. Must be `StaggeredRecruiter`;
+  any other value is rejected.
 
 - `...`:
 

@@ -1,5 +1,58 @@
 # Changelog
 
+## TrialSimulator 1.23.0
+
+### Updates
+
+- [`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md)
+  now defaults `enroller` to `StaggeredRecruiter` and accepts no other
+  enroller: any non-`StaggeredRecruiter` value is rejected with an
+  informative error. The `enroller` argument is retained for backward
+  compatibility, so existing code that passes
+  `enroller = StaggeredRecruiter` explicitly is unaffected, and code
+  that omits it now gets the default.
+
+### Unit Tests
+
+- Add `test-enroller.R` covering the default, explicit
+  `StaggeredRecruiter`, rejection of other enrollers, and
+  post-construction `set_enroller()` enforcement.
+
+## TrialSimulator 1.22.0
+
+### New Feature
+
+- [`StaggeredRecruiter()`](https://zhangh12.github.io/TrialSimulator/reference/StaggeredRecruiter.md)
+  now supports recruitment pauses: a window with `piecewise_rate = 0`
+  enrolls no one while calendar time still advances, so accrual resumes
+  at the window’s `end_time`. Pauses may occur in the first window or
+  span several consecutive windows (e.g., a safety hold, a site not yet
+  activated, or a seasonal gap).
+
+### Updates
+
+- [`StaggeredRecruiter()`](https://zhangh12.github.io/TrialSimulator/reference/StaggeredRecruiter.md)
+  enrollment times are now the deterministic inverse of the cumulative
+  accrual intensity: the cumulative accrual capacity increases by window
+  length × `piecewise_rate` across each window (no per-window
+  truncation), so an integer-capacity window holds exactly that many
+  patients. Single open-ended schedules and integer-capacity windows are
+  unchanged; schedules with fractional per-window capacity now yield
+  slightly different (more accurate) times.
+- [`StaggeredRecruiter()`](https://zhangh12.github.io/TrialSimulator/reference/StaggeredRecruiter.md)
+  input validation is stricter: the last `end_time` must be `Inf` with a
+  positive rate (so the schedule can always supply the patients the
+  engine requests, including the inflated count used for adaptive
+  resizing); a positive rate too low to enroll even one patient (window
+  length × `piecewise_rate` \< 1) is now an error pointing to
+  `piecewise_rate = 0`; and `n` must be a positive integer.
+
+### Unit Tests
+
+- Add `test-StaggeredRecruiter.R` covering pauses (leading, middle, and
+  consecutive), the per-window count property, equidistant spacing, the
+  low-rate and schedule-shape validation errors, and `n` validation.
+
 ## TrialSimulator 1.21.0
 
 ### Bug Fix

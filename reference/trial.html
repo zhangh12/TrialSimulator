@@ -21,7 +21,7 @@ time, trial duration, and readout of non-tte endpoints are consistent."><meta pr
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.21.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.23.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -84,7 +84,7 @@ time, trial duration, and readout of non-tte endpoints are consistent.</p>
 <span>  <span class="va">duration</span>,</span>
 <span>  description <span class="op">=</span> <span class="va">name</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  <span class="va">enroller</span>,</span>
+<span>  enroller <span class="op">=</span> <span class="va">StaggeredRecruiter</span>,</span>
 <span>  dropout <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  stratification_factors <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  silent <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -124,10 +124,13 @@ is recommended. For debugging, set it to a specific integer.</p></dd>
 
 
 <dt id="arg-enroller">enroller<a class="anchor" aria-label="anchor" href="#arg-enroller"></a></dt>
-<dd><p>a function returning a vector enrollment time for
-patients. Its first argument <code>n</code> is the number of enrolled patients.
-Set it to <code>StaggeredRecruiter</code> can handle most of the use cases.
-See <code><a href="StaggeredRecruiter.html">?TrialSimulator::StaggeredRecruiter</a></code> for more information.</p></dd>
+<dd><p>enrollment-time generator. Must be <code>StaggeredRecruiter</code>
+(the default); any other value is rejected. Supply its <code>accrual_rate</code>
+via <code>...</code>. See <code><a href="StaggeredRecruiter.html">?TrialSimulator::StaggeredRecruiter</a></code>. The argument
+is kept (rather than dropped) for backward compatibility: existing code that
+passes <code>enroller = StaggeredRecruiter</code> explicitly keeps working
+unchanged, and a named argument gives a clearer error than an "unused
+argument" failure if some other enroller is supplied.</p></dd>
 
 
 <dt id="arg-dropout">dropout<a class="anchor" aria-label="anchor" href="#arg-dropout"></a></dt>
@@ -198,11 +201,12 @@ simulation. Default: <code>FALSE</code>.</p></dd>
 <span class="r-in"><span><span class="va">active</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">pfs2</span>, <span class="va">orr2</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Plan a trial, Trial-3415, of up to 100 patients.</span></span></span>
-<span class="r-in"><span><span class="co">## Enrollment time follows an exponential distribution, with median 5</span></span></span>
+<span class="r-in"><span><span class="co">## Enrollment accrues at a constant 10 patients per time unit.</span></span></span>
 <span class="r-in"><span><span class="va">trial</span> <span class="op">&lt;-</span> <span class="fu">trial</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  name <span class="op">=</span> <span class="st">'Trial-3415'</span>, n_patients <span class="op">=</span> <span class="fl">100</span>,</span></span>
 <span class="r-in"><span>  seed <span class="op">=</span> <span class="fl">31415926</span>, duration <span class="op">=</span> <span class="fl">100</span>,</span></span>
-<span class="r-in"><span>  enroller <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span> <span class="op">/</span> <span class="fl">5</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  enroller <span class="op">=</span> <span class="va">StaggeredRecruiter</span>,</span></span>
+<span class="r-in"><span>  accrual_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>end_time <span class="op">=</span> <span class="cn">Inf</span>, piecewise_rate <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">trial</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  ⚕⚕         Trial Name:  Trial-3415  </span>

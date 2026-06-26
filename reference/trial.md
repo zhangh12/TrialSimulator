@@ -21,7 +21,7 @@ trial(
   duration,
   description = name,
   seed = NULL,
-  enroller,
+  enroller = StaggeredRecruiter,
   dropout = NULL,
   stratification_factors = NULL,
   silent = FALSE,
@@ -58,11 +58,13 @@ trial(
 
 - enroller:
 
-  a function returning a vector enrollment time for patients. Its first
-  argument `n` is the number of enrolled patients. Set it to
-  `StaggeredRecruiter` can handle most of the use cases. See
-  [`?TrialSimulator::StaggeredRecruiter`](https://zhangh12.github.io/TrialSimulator/reference/StaggeredRecruiter.md)
-  for more information.
+  enrollment-time generator. Must be `StaggeredRecruiter` (the default);
+  any other value is rejected. Supply its `accrual_rate` via `...`. See
+  [`?TrialSimulator::StaggeredRecruiter`](https://zhangh12.github.io/TrialSimulator/reference/StaggeredRecruiter.md).
+  The argument is kept (rather than dropped) for backward compatibility:
+  existing code that passes `enroller = StaggeredRecruiter` explicitly
+  keeps working unchanged, and a named argument gives a clearer error
+  than an "unused argument" failure if some other enroller is supplied.
 
 - dropout:
 
@@ -133,11 +135,12 @@ active <- arm(name = 'ac')
 active$add_endpoints(pfs2, orr2)
 
 ## Plan a trial, Trial-3415, of up to 100 patients.
-## Enrollment time follows an exponential distribution, with median 5
+## Enrollment accrues at a constant 10 patients per time unit.
 trial <- trial(
   name = 'Trial-3415', n_patients = 100,
   seed = 31415926, duration = 100,
-  enroller = rexp, rate = log(2) / 5)
+  enroller = StaggeredRecruiter,
+  accrual_rate = data.frame(end_time = Inf, piecewise_rate = 10))
 
 trial
 #>  ⚕⚕         Trial Name:  Trial-3415  

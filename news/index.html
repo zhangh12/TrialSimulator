@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.21.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.23.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,6 +50,37 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.23.0" id="trialsimulator-1230">TrialSimulator 1.23.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1230"></a></h2>
+<div class="section level3">
+<h3 id="updates-1-23-0">Updates<a class="anchor" aria-label="anchor" href="#updates-1-23-0"></a></h3>
+<ul><li>
+<code><a href="../reference/trial.html">trial()</a></code> now defaults <code>enroller</code> to <code>StaggeredRecruiter</code> and accepts no other enroller: any non-<code>StaggeredRecruiter</code> value is rejected with an informative error. The <code>enroller</code> argument is retained for backward compatibility, so existing code that passes <code>enroller = StaggeredRecruiter</code> explicitly is unaffected, and code that omits it now gets the default.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="unit-tests-1-23-0">Unit Tests<a class="anchor" aria-label="anchor" href="#unit-tests-1-23-0"></a></h3>
+<ul><li>Add <code>test-enroller.R</code> covering the default, explicit <code>StaggeredRecruiter</code>, rejection of other enrollers, and post-construction <code>set_enroller()</code> enforcement.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.22.0" id="trialsimulator-1220">TrialSimulator 1.22.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1220"></a></h2>
+<div class="section level3">
+<h3 id="new-feature-1-22-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-1-22-0"></a></h3>
+<ul><li>
+<code><a href="../reference/StaggeredRecruiter.html">StaggeredRecruiter()</a></code> now supports recruitment pauses: a window with <code>piecewise_rate = 0</code> enrolls no one while calendar time still advances, so accrual resumes at the window’s <code>end_time</code>. Pauses may occur in the first window or span several consecutive windows (e.g., a safety hold, a site not yet activated, or a seasonal gap).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="updates-1-22-0">Updates<a class="anchor" aria-label="anchor" href="#updates-1-22-0"></a></h3>
+<ul><li>
+<code><a href="../reference/StaggeredRecruiter.html">StaggeredRecruiter()</a></code> enrollment times are now the deterministic inverse of the cumulative accrual intensity: the cumulative accrual capacity increases by window length × <code>piecewise_rate</code> across each window (no per-window truncation), so an integer-capacity window holds exactly that many patients. Single open-ended schedules and integer-capacity windows are unchanged; schedules with fractional per-window capacity now yield slightly different (more accurate) times.</li>
+<li>
+<code><a href="../reference/StaggeredRecruiter.html">StaggeredRecruiter()</a></code> input validation is stricter: the last <code>end_time</code> must be <code>Inf</code> with a positive rate (so the schedule can always supply the patients the engine requests, including the inflated count used for adaptive resizing); a positive rate too low to enroll even one patient (window length × <code>piecewise_rate</code> &lt; 1) is now an error pointing to <code>piecewise_rate = 0</code>; and <code>n</code> must be a positive integer.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="unit-tests-1-22-0">Unit Tests<a class="anchor" aria-label="anchor" href="#unit-tests-1-22-0"></a></h3>
+<ul><li>Add <code>test-StaggeredRecruiter.R</code> covering pauses (leading, middle, and consecutive), the per-window count property, equidistant spacing, the low-rate and schedule-shape validation errors, and <code>n</code> validation.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.21.0" id="trialsimulator-1210">TrialSimulator 1.21.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1210"></a></h2>
 <div class="section level3">
