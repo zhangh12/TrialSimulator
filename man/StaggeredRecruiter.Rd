@@ -7,23 +7,57 @@
 StaggeredRecruiter(n, accrual_rate)
 }
 \arguments{
-\item{n}{integer. Number of random numbers.}
+\item{n}{integer. Number of enrollment times to generate.}
 
 \item{accrual_rate}{a data frame of columns
 \describe{
       \item{\code{end_time}}{
           End time for a constant rate in a time window. The start time of
-          the first time window is 0.}
+          the first time window is 0. Values must be positive and strictly
+          increasing; the last one must be \code{Inf}.}
       \item{\code{piecewise_rate}}{
           A constant rate in a time window. So the number of patients
           being recruited in that window is window length x
-          \code{piecewise_rate}. }
+          \code{piecewise_rate}. A rate of 0 pauses enrollment for that
+          window. Rates must be non-negative and finite; the last must be
+          positive.}
 }}
 }
 \description{
 It assumes a uniform enrollment with constant rate in each of the time
 windows. This function can be used as the \code{enroller} when calling
 \code{trial()} to define a trial.
+}
+\details{
+Enrollment times are the deterministic inverse of the cumulative accrual
+intensity: patient \code{k} (counting from 0) enrolls when the expected
+cumulative enrollment reaches \code{k}. Consequently the cumulative accrual
+capacity increases by window length x \code{piecewise_rate} across a window
+(so a window whose capacity is an integer holds exactly that many patients),
+and within a window with a positive rate consecutive patients are spaced by
+\code{1 / piecewise_rate}. When the first window has a positive rate, the
+first patient enrolls at time 0.
+
+A window may have \code{piecewise_rate = 0} to model a recruitment pause (a
+hold for safety review, a site not yet activated, a seasonal gap, etc.). No
+patient is enrolled during a pause window, but calendar time still advances
+across it, so enrollment resumes at the window's \code{end_time}. Pauses may
+occur in the first window or span several consecutive windows. A leading
+pause therefore defers the first enrollment to the end of the pause rather
+than time 0.
+
+The last \code{end_time} must be \code{Inf} with a positive rate, so that the
+schedule can supply any number of patients. (\code{TrialSimulator} may
+internally request several times the planned sample size for adaptive
+resizing; an open-ended final window keeps that from failing.)
+
+A positive rate too low for its window -- one expecting fewer than a single
+patient (window length x \code{piecewise_rate} < 1) -- is almost always a
+misspecification (e.g. a tiny rate meant as a pause) and raises an error. A
+window expecting exactly one patient (product equal to 1) is allowed; the
+check uses a small floating-point tolerance so that \code{rate = 1 / width}
+is not rejected when the product rounds just below 1. Use
+\code{piecewise_rate = 0} for a true pause, or a rate of at least 1 / width.
 }
 \examples{
 accrual_rate <- data.frame(
@@ -33,9 +67,10 @@ accrual_rate <- data.frame(
 
 StaggeredRecruiter(30, accrual_rate)
 
+## recruitment pause: 30/mo for 12 months, paused for months 12-18, then 30/mo
 accrual_rate <- data.frame(
-  end_time = c(3, 4, 5, 8, Inf),
-  piecewise_rate = c(1, 2, 2, 3, 4)
+  end_time = c(12, 18, Inf),
+  piecewise_rate = c(30, 0, 30)
 )
 
 StaggeredRecruiter(30, accrual_rate)
