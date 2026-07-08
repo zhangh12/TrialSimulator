@@ -27,7 +27,7 @@ $reset()
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.23.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.24.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -246,7 +246,10 @@ the best performance.</p></dd>
 
 <dt><code>silent</code></dt>
 <dd><p>logical. <code>TRUE</code> if muting all messages during a
-trial. Note that warning messages are still displayed.</p></dd>
+trial. Note that warning messages are still displayed. When
+<code>silent = TRUE</code> and replicates are run sequentially
+(<code>n_workers = 1</code>), a progress bar is displayed automatically
+if the simulation is expected to take more than 1 minute.</p></dd>
 
 
 <dt><code>dry_run</code></dt>
@@ -304,7 +307,7 @@ before estimating the milestone time.</p></dd>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

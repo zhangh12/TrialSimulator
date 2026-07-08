@@ -194,7 +194,10 @@ run trial simulation.
 - `silent`:
 
   logical. `TRUE` if muting all messages during a trial. Note that
-  warning messages are still displayed.
+  warning messages are still displayed. When `silent = TRUE` and
+  replicates are run sequentially (`n_workers = 1`), a progress bar is
+  displayed automatically if the simulation is expected to take more
+  than 1 minute.
 
 - `dry_run`:
 

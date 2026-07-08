@@ -1,5 +1,13 @@
 # Changelog
 
+## TrialSimulator 1.24.0
+
+### New Feature
+
+- `controller$run()` now displays a progress bar when `silent = TRUE`
+  and `n_workers = 1` if the simulation is expected to take more than 1
+  minute. Package `cli` is added to `Imports` for this feature.
+
 ## TrialSimulator 1.23.0
 
 ### Updates
