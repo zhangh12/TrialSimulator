@@ -182,7 +182,10 @@ the best performance.}
 \code{FALSE} when \code{n > 1} or \code{n_workers > 1}.}
 
 \item{\code{silent}}{logical. \code{TRUE} if muting all messages during a
-trial. Note that warning messages are still displayed.}
+trial. Note that warning messages are still displayed. When
+\code{silent = TRUE} and replicates are run sequentially
+(\code{n_workers = 1}), a progress bar is displayed automatically
+if the simulation is expected to take more than 1 minute.}
 
 \item{\code{dry_run}}{logical. We are considering retire this argument.
 \code{TRUE} if action function provided by users is

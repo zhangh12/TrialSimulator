@@ -42,6 +42,19 @@ Controllers <- R6::R6Class(
 
     run_sequential_ = function(n, plot_event, silent, dry_run){
 
+      ## A progress bar is displayed only when silent = TRUE, otherwise
+      ## milestone messages would break its display. It is activated on
+      ## the fly only when projected remaining time exceeds 1 minute,
+      ## so that a quick simulation never launches a bar. Replicate 1 is
+      ## excluded from the projection once later replicates are available
+      ## because it can be slowed down by lazy loading and byte-compilation.
+      ## Once activated, the bar stays until the last replicate even if
+      ## projected remaining time drops below the threshold later on.
+      eta_threshold <- 60 ## seconds
+      bar_id <- NULL
+      t0 <- Sys.time()
+      t1 <- NULL ## completion time of replicate 1
+
       for(idx in 1:n){
         tryCatch(
           expr = {
@@ -57,9 +70,32 @@ Controllers <- R6::R6Class(
 
         private$output <- bind_rows(private$output, self$get_trial()$get_output())
 
+        if(silent && is.null(bar_id) && idx < n){
+          now <- Sys.time()
+          seconds_per_replicate <-
+            if(idx == 1){
+              as.numeric(difftime(now, t0, units = 'secs'))
+            }else{
+              as.numeric(difftime(now, t1, units = 'secs')) / (idx - 1)
+            }
+          if(seconds_per_replicate * (n - idx) > eta_threshold){
+            bar_id <- cli_progress_bar('Running simulation', total = n)
+            cli_progress_update(set = idx, id = bar_id)
+          }
+          if(idx == 1){
+            t1 <- now
+          }
+        }else if(!is.null(bar_id)){
+          cli_progress_update(set = idx, id = bar_id)
+        }
+
         if(idx < n){
           self$reset()
         }
+      }
+
+      if(!is.null(bar_id)){
+        cli_progress_done(id = bar_id)
       }
 
     },
@@ -284,7 +320,10 @@ Controllers <- R6::R6Class(
     #' @param plot_event logical. Create event plot if \code{TRUE}. Forced to
     #' \code{FALSE} when \code{n > 1} or \code{n_workers > 1}.
     #' @param silent logical. \code{TRUE} if muting all messages during a
-    #' trial. Note that warning messages are still displayed.
+    #' trial. Note that warning messages are still displayed. When
+    #' \code{silent = TRUE} and replicates are run sequentially
+    #' (\code{n_workers = 1}), a progress bar is displayed automatically
+    #' if the simulation is expected to take more than 1 minute.
     #' @param dry_run logical. We are considering retire this argument.
     #' \code{TRUE} if action function provided by users is
     #' ignored and an internal default action \code{.default_action} is called
