@@ -1,3 +1,13 @@
+# TrialSimulator 1.25.0
+
+## New Feature
+
+- New adaptation method `trial$stop_followup()` (wrapper `stop_followup()`): stop follow-up of a subset of enrolled patients at a milestone, optionally after extra follow-up time (`additional_followup`). Patients are selected by conditions compatible with `dplyr::filter`; affected time-to-event endpoints are censored and non-time-to-event readouts are set to missing. This adaptation supports, e.g., treatment discontinuation and enrichment design. Like other adaptations, it must be called within an action function, after a milestone has been triggered.
+
+## Updates
+
+- `censor_trial_data()` gains `...` to further restrict the patients to be censored by conditions compatible with `dplyr::filter`, in addition to `selected_arms` and `enrolled_before`. Internal callers are unchanged and benchmark at parity with 1.24.0; simulation outputs are identical.
+
 # TrialSimulator 1.24.0
 
 ## New Feature

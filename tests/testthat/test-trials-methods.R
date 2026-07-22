@@ -90,7 +90,9 @@ test_that("plot.three_state_model runs to completion", {
                               corr = c(.5, .6),
                               h12 = seq(.08, .2, length.out = 8))
   pdf(NULL); on.exit(dev.off())
-  expect_no_error(plot(ret))
+  ## plot.three_state_model also prints the calibration table; capture it
+  ## to keep test output clean
+  expect_no_error(capture.output(plot(ret)))
 })
 
 test_that("Endpoints print handles tte and non-tte with readout", {

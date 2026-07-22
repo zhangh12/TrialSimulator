@@ -45,6 +45,11 @@ test_that("slow replicates activate the bar and the run still completes", {
   }
 
   ctrl <- make_controller(action = slow_start)
+  ## the activated bar writes progress lines to stderr; divert them so the
+  ## suite log stays clean (the assertions below don't inspect the display)
+  msgs <- file(tempfile(), open = "wt")
+  sink(msgs, type = "message")
+  on.exit({ sink(type = "message"); close(msgs) }, add = TRUE)
   expect_error(ctrl$run(n = 400, silent = TRUE), NA)
   expect_equal(nrow(ctrl$get_output()), 400)
 })

@@ -11,17 +11,22 @@
 
 run_setup_form <- function(setup_file, n) {
   e <- new.env(parent = globalenv())
-  source(setup_file, local = e)
+  ## fixtures mirror vignette code (no silent = TRUE in trial()), so muffle
+  ## their messages here, both at setup and during run (per-replicate reset()
+  ## re-adds arms); sink() below only diverts stdout, not message()
+  suppressMessages(source(setup_file, local = e))
   sink(tempfile()); on.exit(sink())
-  e$controller$run(n = n, silent = TRUE, plot_event = FALSE)
+  suppressMessages(
+    e$controller$run(n = n, silent = TRUE, plot_event = FALSE)
+  )
   e$controller$get_output()
 }
 
 run_doc_form <- function(setup_file, fn_name, n, seed) {
   e <- new.env(parent = globalenv())
-  source(setup_file, local = e)
+  suppressMessages(source(setup_file, local = e))
   sink(tempfile()); on.exit(sink())
-  do.call(e[[fn_name]], list(n = n, seed = seed))
+  suppressMessages(do.call(e[[fn_name]], list(n = n, seed = seed)))
 }
 
 with_toggle <- function(value, expr) {

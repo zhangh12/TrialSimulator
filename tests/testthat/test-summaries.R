@@ -65,9 +65,12 @@ test_that("summarizeDataFrame produces HTML for mixed-type data", {
     type = sample(LETTERS[1:3], n, replace = TRUE)
   )
 
-  html <- summarizeDataFrame(data,
-                             tte_vars = "time_to_death",
-                             event_vars = "death")
+  ## capture the "Summary generated." console note emitted outside knitr/RStudio
+  capture.output(
+    html <- summarizeDataFrame(data,
+                               tte_vars = "time_to_death",
+                               event_vars = "death")
+  )
   expect_type(html, "character")
   expect_length(html, 1)
   expect_match(html, "<table")
@@ -94,9 +97,11 @@ test_that("summarizeDataFrame respects exclude_vars and categorical_vars", {
     secret = 1:20
   )
 
-  html <- summarizeDataFrame(data,
-                             exclude_vars = "secret",
-                             categorical_vars = "flag")
+  capture.output(
+    html <- summarizeDataFrame(data,
+                               exclude_vars = "secret",
+                               categorical_vars = "flag")
+  )
   expect_type(html, "character")
   expect_false(grepl("secret", html))
   expect_match(html, "flag")

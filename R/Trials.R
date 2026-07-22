@@ -27,6 +27,17 @@
 #' \item \code{$crossover()} apply a milestone-triggered crossover to eligible
 #' patients in the trial. Called inside a milestone action; only alters patients'
 #' post-switch endpoint values and leaves already-observed data intact.
+#' \item \code{$stop_followup()} stop follow-up of a subset of enrolled
+#' patients at or after a milestone. Their data are censored (time-to-event
+#' endpoints) or set to missing (non-time-to-event endpoints) accordingly.
+#' This function can be used in adaptive designs, e.g., to simulate
+#' treatment discontinuation, early termination of follow-up for a
+#' sub-population, or enrichment design where follow-up of a de-selected
+#' sub-population is stopped after an interim analysis. It can also stop
+#' follow-up of an earlier cohort at a pre-specified, event-driven milestone
+#' (e.g., the last patient of the first cohort), optionally with a fixed
+#' additional follow-up beyond it, making statistics of the cohorts
+#' independent to facilitate, e.g., combination tests.
 #' \item \code{$get_locked_data()} request for data snapshot at a milestone.
 #' Calling this function is recommended as the first action in any action
 #' function as long as trial data is needed in statistical analysis or decision
@@ -792,6 +803,93 @@ Trials <- R6::R6Class(
         message('Crossover triplet registered with earliest crossover time = ',
                 Tx, ' (milestone ', tnow, ' + delay ', delay, '). ')
       }
+
+      invisible(NULL)
+    },
+
+    #' @description
+    #' stop follow-up of a subset of patients at a specified time at or after
+    #' the current milestone. Data of affected patients are censored
+    #' (time-to-event endpoints) or set to missing (non-time-to-event endpoints
+    #' with readout after the stopping time), as if those patients were no
+    #' longer followed since then. This function can be used in adaptive
+    #' designs, e.g., to simulate treatment discontinuation, early
+    #' termination of follow-up for a sub-population, or enrichment design
+    #' where follow-up of a de-selected sub-population is stopped after an
+    #' interim analysis. It can also be called at a pre-specified milestone
+    #' that splits a trial into cohorts, e.g., a milestone marking the last
+    #' patient of the first cohort and the first patient of the second
+    #' cohort. Such a milestone is usually event driven, so its time is
+    #' unknown until the trial is simulated. Stopping follow-up of the
+    #' earlier cohort at that milestone, or after a pre-specified, fixed
+    #' \code{additional_followup} beyond it, makes statistics computed from
+    #' the two cohorts independent, which facilitates tests requiring
+    #' independence, e.g., combination tests.
+    #'
+    #' Only patients who are enrolled by the time this function is called and
+    #' satisfy the subset conditions in \code{...} (if any) are affected.
+    #' Patients enrolled afterwards are followed as usual.
+    #'
+    #' Note that this function should only be called within action functions.
+    #' It is users' responsibility to ensure it and \code{TrialSimulator} has
+    #' no way to track this. Calling it before any milestone has been
+    #' triggered is an error.
+    #' @param ... subset conditions compatible with \code{dplyr::filter}.
+    #' Follow-up is stopped for selected patients only. If no condition is
+    #' provided, follow-up is stopped for all patients enrolled by the time
+    #' this function is called.
+    #' @param additional_followup numeric. Extra follow-up time granted to the
+    #' selected patients after the current milestone. If 0 (default),
+    #' follow-up stops at the milestone itself.
+    stop_followup = function(..., additional_followup = 0){
+
+      ## context check first: outside an action function there is no cohort
+      ## to act on. lock_data() saves the milestone time right before an
+      ## action is executed, so within an action a triggered milestone always
+      ## exists, and the messages below can rely on its name.
+      milestone_time <- self$get_milestone_time()
+      if(length(milestone_time) == 0){
+        stop('stop_followup() can only be called within an action function ',
+             'of a milestone, i.e., after at least one milestone has been ',
+             'triggered. ')
+      }
+
+      if(!is.numeric(additional_followup) ||
+         length(additional_followup) != 1 ||
+         is.na(additional_followup)){
+        stop('additional_followup in stop_followup() must be a single ',
+             'numeric value. ')
+      }
+
+      if(additional_followup < 0){
+        stop('additional_followup in stop_followup() cannot be negative. <',
+             additional_followup, '> is invalid. Use the default 0 to stop ',
+             'follow-up at milestone <',
+             names(milestone_time)[which.max(milestone_time)],
+             '>, or a positive value to grant extra follow-up time beyond it. ')
+      }
+
+      current_time <- self$get_current_time()
+      stop_time <- current_time + additional_followup
+
+      ## the affected cohort is fixed at the time this function is called
+      ## (i.e., the current milestone): patients enrolled afterwards are not
+      ## part of the decision and are followed as usual. This also keeps
+      ## pre-generated rows of future patients untouched (no roll_back()
+      ## here). enrolled_before (base R) is used for this instead of a ...
+      ## condition, so a call without user conditions stays free of dplyr
+      ## overhead.
+      self$censor_trial_data(censor_at = stop_time, ...,
+                             enrolled_before = current_time)
+
+      if(!private$silent){
+        message('Follow-up of selected patients is stopped at time <',
+                stop_time, '>. ')
+      }
+
+      ## no roll_back()/enroll_patients(): no design parameter (arms, sample
+      ## ratio, generator, duration) changes, so unenrolled patients are
+      ## unaffected and the RNG stream must not advance.
 
       invisible(NULL)
     },
@@ -1849,7 +1947,24 @@ Trials <- R6::R6Class(
     },
 
     #' @description
-    #' censor trial data at calendar time
+    #' censor trial data at calendar time. Patients to be censored are
+    #' selected by \code{selected_arms}, \code{enrolled_before} and conditions
+    #' in \code{...}; all of them are combined with AND. Although
+    #' \code{selected_arms} and \code{enrolled_before} can be equally
+    #' expressed through \code{...} (i.e., \code{arm \%in\% selected_arms},
+    #' \code{enroll_time <= enrolled_before}), they are kept as dedicated
+    #' arguments on purpose: they are evaluated in base R, while conditions in
+    #' \code{...} go through \code{dplyr::filter}, which is measurably slower.
+    #' Internal calls on simulation hot paths (\code{enroll_patients},
+    #' \code{set_duration}, \code{remove_arms}, \code{crossover},
+    #' \code{stop_followup}) therefore use the two dedicated arguments only;
+    #' \code{...} is reserved for user-specified conditions, e.g., those
+    #' forwarded from \code{stop_followup}.
+    #'
+    #' Because \code{selected_arms} and \code{enrolled_before} follow
+    #' \code{...} in the argument list, they must always be passed by name.
+    #' This prevents unnamed filter conditions forwarded through \code{...}
+    #' from being positionally matched to them.
     #' @param censor_at time of censoring. It is set to trial duration if
     #' \code{NULL}.
     #' @param selected_arms censoring is applied to selected arms (e.g.,
@@ -1865,7 +1980,17 @@ Trials <- R6::R6Class(
     #' is called so we fix duration for patients enrolled before adaptation
     #' to maintain independent increment. This should work when trial duration
     #' is updated for multiple times.
-    censor_trial_data = function(censor_at = NULL, selected_arms = NULL, enrolled_before = Inf){
+    #' @param ... subset conditions compatible with \code{dplyr::filter},
+    #' further restricting the patients to be censored in addition to
+    #' \code{selected_arms} and \code{enrolled_before}. When
+    #' \code{selected_arms} and \code{enrolled_before} take their default
+    #' values, i.e., all arms and no enrollment cutoff, conditions in
+    #' \code{...} alone determine the patients to be censored. If, in
+    #' addition, no condition is provided in \code{...}, all patients in
+    #' trial data are censored. When \code{...} is empty, \code{dplyr} is
+    #' not invoked at all.
+    censor_trial_data = function(censor_at = NULL, ...,
+                                 selected_arms = NULL, enrolled_before = Inf){
 
       if(is.null(censor_at)){
         censor_at <- self$get_duration()
@@ -1882,6 +2007,24 @@ Trials <- R6::R6Class(
 
       ## base R: precompute the arm/enroll mask once (shared by all endpoint loops)
       sel <- (trial_data$arm %in% selected_arms) & (trial_data$enroll_time <= enrolled_before)
+
+      ## conditions in ... (if any) further restrict the selection. This is
+      ## the only branch that touches dplyr; internal callers pass only the
+      ## base-R arguments above, so simulation hot paths never enter it.
+      if(length(rlang::enquos(...)) > 0L){
+        sel <- sel & tryCatch({
+          indexed <- trial_data
+          indexed$.row_index_for_censoring <- seq_len(nrow(indexed))
+          kept <- indexed %>% dplyr::filter(...)
+          seq_len(nrow(trial_data)) %in% kept$.row_index_for_censoring
+        },
+        error = function(e){
+          self$save(e$message, 'error_message', overwrite = TRUE)
+          stop('Error in filtering data for censoring. ',
+               'Please check condition in ... (most likely of trial$stop_followup()), ',
+               'which should be compatible with dplyr::filter. ')
+        })
+      }
 
       for(event_col in event_cols){
         tte_col <- gsub('_event$', '', event_col)
