@@ -1094,7 +1094,12 @@ Trials <- R6::R6Class(
       stratums_in_trial <- sort(unique(next_enroll_stratums))
 
       make_stratum <- function(dat){
-        if(!self$has_stratification_factors()){
+        ## when fractional sample ratios bypass stratified randomization,
+        ## the stratum queue is a constant 'all'; the pool must be labeled
+        ## the same way or the oversampling loop below never reaches its
+        ## per-stratum targets and cannot terminate.
+        if(!self$has_stratification_factors() ||
+           identical(stratums_in_trial, 'all')){
           return(rep('all', nrow(dat)))
         }else{
           return(
@@ -3598,6 +3603,18 @@ Trials <- R6::R6Class(
 
 
       if(!all(is.wholenumber(private$sample_ratio))){
+
+        ## fractional ratios force simple randomization, which cannot honor
+        ## stratification; make this conflict loud rather than silent.
+        if(self$has_stratification_factors() && !private$silent){
+          warning('Stratified randomization is not supported when sample ',
+                  'ratios are not whole numbers. Stratification factor(s) <',
+                  paste0(self$get_stratification_factors(), collapse = ', '),
+                  '> are ignored and unenrolled patients are randomized by ',
+                  'sample() without stratification. ',
+                  immediate. = TRUE)
+        }
+
         if(!private$silent){
           message('Permuted block randomization is replaced with sample() ',
                   'as not all sample ratios are whole numbers. ',

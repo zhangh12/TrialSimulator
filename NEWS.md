@@ -1,3 +1,13 @@
+# TrialSimulator 1.25.1
+
+## Bug Fix
+
+- Fix an infinite loop in patient enrollment when fractional sample ratios are combined with stratification factors: the pool labels now match the unstratified randomization queue in that case.
+
+## Updates
+
+- Warn when fractional sample ratios are used in a trial with stratification factors: stratified randomization is not supported in that case and unenrolled patients are randomized by `sample()` without stratification. The warning is suppressed when `silent = TRUE`.
+
 # TrialSimulator 1.25.0
 
 ## New Feature
