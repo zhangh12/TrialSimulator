@@ -32,6 +32,17 @@ Must be called before \code{$add_arms()}. Applied at enrollment.
 \item \code{$crossover()} apply a milestone-triggered crossover to eligible
 patients in the trial. Called inside a milestone action; only alters patients'
 post-switch endpoint values and leaves already-observed data intact.
+\item \code{$stop_followup()} stop follow-up of a subset of enrolled
+patients at or after a milestone. Their data are censored (time-to-event
+endpoints) or set to missing (non-time-to-event endpoints) accordingly.
+This function can be used in adaptive designs, e.g., to simulate
+treatment discontinuation, early termination of follow-up for a
+sub-population, or enrichment design where follow-up of a de-selected
+sub-population is stopped after an interim analysis. It can also stop
+follow-up of an earlier cohort at a pre-specified, event-driven milestone
+(e.g., the last patient of the first cohort), optionally with a fixed
+additional follow-up beyond it, making statistics of the cohorts
+independent to facilitate, e.g., combination tests.
 \item \code{$get_locked_data()} request for data snapshot at a milestone.
 Calling this function is recommended as the first action in any action
 function as long as trial data is needed in statistical analysis or decision
@@ -124,6 +135,7 @@ trial$closedTest(dt, treatments = c('high dose', 'low dose'),
 \item \href{#method-Trials-get_regimen}{\code{Trials$get_regimen()}}
 \item \href{#method-Trials-has_regimen}{\code{Trials$has_regimen()}}
 \item \href{#method-Trials-crossover}{\code{Trials$crossover()}}
+\item \href{#method-Trials-stop_followup}{\code{Trials$stop_followup()}}
 \item \href{#method-Trials-get_name}{\code{Trials$get_name()}}
 \item \href{#method-Trials-get_description}{\code{Trials$get_description()}}
 \item \href{#method-Trials-get_arms}{\code{Trials$get_arms()}}
@@ -597,6 +609,55 @@ enrollment. If \code{NULL} (default), patients switch at \code{T}
 
 \item{\code{...}}{(optional) named arguments routed to \code{what}, \code{when},
 and/or \code{how}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-stop_followup"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-stop_followup}{}}}
+\subsection{Method \code{stop_followup()}}{
+stop follow-up of a subset of patients at a specified time at or after
+the current milestone. Data of affected patients are censored
+(time-to-event endpoints) or set to missing (non-time-to-event endpoints
+with readout after the stopping time), as if those patients were no
+longer followed since then. This function can be used in adaptive
+designs, e.g., to simulate treatment discontinuation, early
+termination of follow-up for a sub-population, or enrichment design
+where follow-up of a de-selected sub-population is stopped after an
+interim analysis. It can also be called at a pre-specified milestone
+that splits a trial into cohorts, e.g., a milestone marking the last
+patient of the first cohort and the first patient of the second
+cohort. Such a milestone is usually event driven, so its time is
+unknown until the trial is simulated. Stopping follow-up of the
+earlier cohort at that milestone, or after a pre-specified, fixed
+\code{additional_followup} beyond it, makes statistics computed from
+the two cohorts independent, which facilitates tests requiring
+independence, e.g., combination tests.
+
+Only patients who are enrolled by the time this function is called and
+satisfy the subset conditions in \code{...} (if any) are affected.
+Patients enrolled afterwards are followed as usual.
+
+Note that this function should only be called within action functions.
+It is users' responsibility to ensure it and \code{TrialSimulator} has
+no way to track this. Calling it before any milestone has been
+triggered is an error.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$stop_followup(..., additional_followup = 0)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{subset conditions compatible with \code{dplyr::filter}.
+Follow-up is stopped for selected patients only. If no condition is
+provided, follow-up is stopped for all patients enrolled by the time
+this function is called.}
+
+\item{\code{additional_followup}}{numeric. Extra follow-up time granted to the
+selected patients after the current milestone. If 0 (default),
+follow-up stops at the milestone itself.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1088,10 +1149,28 @@ plot of cumulative number of events/samples over calendar time.
 \if{html}{\out{<a id="method-Trials-censor_trial_data"></a>}}
 \if{latex}{\out{\hypertarget{method-Trials-censor_trial_data}{}}}
 \subsection{Method \code{censor_trial_data()}}{
-censor trial data at calendar time
+censor trial data at calendar time. Patients to be censored are
+selected by \code{selected_arms}, \code{enrolled_before} and conditions
+in \code{...}; all of them are combined with AND. Although
+\code{selected_arms} and \code{enrolled_before} can be equally
+expressed through \code{...} (i.e., \code{arm \%in\% selected_arms},
+\code{enroll_time <= enrolled_before}), they are kept as dedicated
+arguments on purpose: they are evaluated in base R, while conditions in
+\code{...} go through \code{dplyr::filter}, which is measurably slower.
+Internal calls on simulation hot paths (\code{enroll_patients},
+\code{set_duration}, \code{remove_arms}, \code{crossover},
+\code{stop_followup}) therefore use the two dedicated arguments only;
+\code{...} is reserved for user-specified conditions, e.g., those
+forwarded from \code{stop_followup}.
+
+Because \code{selected_arms} and \code{enrolled_before} follow
+\code{...} in the argument list, they must always be passed by name.
+This prevents unnamed filter conditions forwarded through \code{...}
+from being positionally matched to them.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$censor_trial_data(
   censor_at = NULL,
+  ...,
   selected_arms = NULL,
   enrolled_before = Inf
 )}\if{html}{\out{</div>}}
@@ -1102,6 +1181,16 @@ censor trial data at calendar time
 \describe{
 \item{\code{censor_at}}{time of censoring. It is set to trial duration if
 \code{NULL}.}
+
+\item{\code{...}}{subset conditions compatible with \code{dplyr::filter},
+further restricting the patients to be censored in addition to
+\code{selected_arms} and \code{enrolled_before}. When
+\code{selected_arms} and \code{enrolled_before} take their default
+values, i.e., all arms and no enrollment cutoff, conditions in
+\code{...} alone determine the patients to be censored. If, in
+addition, no condition is provided in \code{...}, all patients in
+trial data are censored. When \code{...} is empty, \code{dplyr} is
+not invoked at all.}
 
 \item{\code{selected_arms}}{censoring is applied to selected arms (e.g.,
 removed arms) only. If \code{NULL}, it will be set to all available arms
