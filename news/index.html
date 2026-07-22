@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.24.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.25.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,6 +50,18 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.25.0" id="trialsimulator-1250">TrialSimulator 1.25.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1250"></a></h2>
+<div class="section level3">
+<h3 id="new-feature-1-25-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-1-25-0"></a></h3>
+<ul><li>New adaptation method <code>trial$stop_followup()</code> (wrapper <code><a href="../reference/stop_followup.html">stop_followup()</a></code>): stop follow-up of a subset of enrolled patients at a milestone, optionally after extra follow-up time (<code>additional_followup</code>). Patients are selected by conditions compatible with <code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter</a></code>; affected time-to-event endpoints are censored and non-time-to-event readouts are set to missing. This adaptation supports, e.g., treatment discontinuation and enrichment design. Like other adaptations, it must be called within an action function, after a milestone has been triggered.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="updates-1-25-0">Updates<a class="anchor" aria-label="anchor" href="#updates-1-25-0"></a></h3>
+<ul><li>
+<code>censor_trial_data()</code> gains <code>...</code> to further restrict the patients to be censored by conditions compatible with <code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter</a></code>, in addition to <code>selected_arms</code> and <code>enrolled_before</code>. Internal callers are unchanged and benchmark at parity with 1.24.0; simulation outputs are identical.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.24.0" id="trialsimulator-1240">TrialSimulator 1.24.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1240"></a></h2>
 <div class="section level3">

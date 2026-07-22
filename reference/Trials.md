@@ -35,6 +35,19 @@ to end users.
   patients' post-switch endpoint values and leaves already-observed data
   intact.
 
+- `$stop_followup()` stop follow-up of a subset of enrolled patients at
+  or after a milestone. Their data are censored (time-to-event
+  endpoints) or set to missing (non-time-to-event endpoints)
+  accordingly. This function can be used in adaptive designs, e.g., to
+  simulate treatment discontinuation, early termination of follow-up for
+  a sub-population, or enrichment design where follow-up of a
+  de-selected sub-population is stopped after an interim analysis. It
+  can also stop follow-up of an earlier cohort at a pre-specified,
+  event-driven milestone (e.g., the last patient of the first cohort),
+  optionally with a fixed additional follow-up beyond it, making
+  statistics of the cohorts independent to facilitate, e.g., combination
+  tests.
+
 - `$get_locked_data()` request for data snapshot at a milestone. Calling
   this function is recommended as the first action in any action
   function as long as trial data is needed in statistical analysis or
@@ -105,6 +118,8 @@ to end users.
 - [`Trials$has_regimen()`](#method-Trials-has_regimen)
 
 - [`Trials$crossover()`](#method-Trials-crossover)
+
+- [`Trials$stop_followup()`](#method-Trials-stop_followup)
 
 - [`Trials$get_name()`](#method-Trials-get_name)
 
@@ -662,6 +677,56 @@ functions: `earliest_crossover_calendar_time` (= `T`) and
 
 ------------------------------------------------------------------------
 
+### Method [`stop_followup()`](https://zhangh12.github.io/TrialSimulator/reference/stop_followup.md)
+
+stop follow-up of a subset of patients at a specified time at or after
+the current milestone. Data of affected patients are censored
+(time-to-event endpoints) or set to missing (non-time-to-event endpoints
+with readout after the stopping time), as if those patients were no
+longer followed since then. This function can be used in adaptive
+designs, e.g., to simulate treatment discontinuation, early termination
+of follow-up for a sub-population, or enrichment design where follow-up
+of a de-selected sub-population is stopped after an interim analysis. It
+can also be called at a pre-specified milestone that splits a trial into
+cohorts, e.g., a milestone marking the last patient of the first cohort
+and the first patient of the second cohort. Such a milestone is usually
+event driven, so its time is unknown until the trial is simulated.
+Stopping follow-up of the earlier cohort at that milestone, or after a
+pre-specified, fixed `additional_followup` beyond it, makes statistics
+computed from the two cohorts independent, which facilitates tests
+requiring independence, e.g., combination tests.
+
+Only patients who are enrolled by the time this function is called and
+satisfy the subset conditions in `...` (if any) are affected. Patients
+enrolled afterwards are followed as usual.
+
+Note that this function should only be called within action functions.
+It is users' responsibility to ensure it and `TrialSimulator` has no way
+to track this. Calling it before any milestone has been triggered is an
+error.
+
+#### Usage
+
+    Trials$stop_followup(..., additional_followup = 0)
+
+#### Arguments
+
+- `...`:
+
+  subset conditions compatible with
+  [`dplyr::filter`](https://dplyr.tidyverse.org/reference/filter.html).
+  Follow-up is stopped for selected patients only. If no condition is
+  provided, follow-up is stopped for all patients enrolled by the time
+  this function is called.
+
+- `additional_followup`:
+
+  numeric. Extra follow-up time granted to the selected patients after
+  the current milestone. If 0 (default), follow-up stops at the
+  milestone itself.
+
+------------------------------------------------------------------------
+
 ### Method `get_name()`
 
 return name of trial
@@ -1151,12 +1216,30 @@ plot of cumulative number of events/samples over calendar time.
 
 ### Method `censor_trial_data()`
 
-censor trial data at calendar time
+censor trial data at calendar time. Patients to be censored are selected
+by `selected_arms`, `enrolled_before` and conditions in `...`; all of
+them are combined with AND. Although `selected_arms` and
+`enrolled_before` can be equally expressed through `...` (i.e.,
+`arm %in% selected_arms`, `enroll_time <= enrolled_before`), they are
+kept as dedicated arguments on purpose: they are evaluated in base R,
+while conditions in `...` go through
+[`dplyr::filter`](https://dplyr.tidyverse.org/reference/filter.html),
+which is measurably slower. Internal calls on simulation hot paths
+(`enroll_patients`, `set_duration`, `remove_arms`, `crossover`,
+`stop_followup`) therefore use the two dedicated arguments only; `...`
+is reserved for user-specified conditions, e.g., those forwarded from
+`stop_followup`.
+
+Because `selected_arms` and `enrolled_before` follow `...` in the
+argument list, they must always be passed by name. This prevents unnamed
+filter conditions forwarded through `...` from being positionally
+matched to them.
 
 #### Usage
 
     Trials$censor_trial_data(
       censor_at = NULL,
+      ...,
       selected_arms = NULL,
       enrolled_before = Inf
     )
@@ -1166,6 +1249,18 @@ censor trial data at calendar time
 - `censor_at`:
 
   time of censoring. It is set to trial duration if `NULL`.
+
+- `...`:
+
+  subset conditions compatible with
+  [`dplyr::filter`](https://dplyr.tidyverse.org/reference/filter.html),
+  further restricting the patients to be censored in addition to
+  `selected_arms` and `enrolled_before`. When `selected_arms` and
+  `enrolled_before` take their default values, i.e., all arms and no
+  enrollment cutoff, conditions in `...` alone determine the patients to
+  be censored. If, in addition, no condition is provided in `...`, all
+  patients in trial data are censored. When `...` is empty, `dplyr` is
+  not invoked at all.
 
 - `selected_arms`:
 

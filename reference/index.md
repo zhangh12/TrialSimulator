@@ -98,6 +98,8 @@
   : Compute Constant Rates of Piecewise Exponential Distribution
 - [`solveThreeStateModel()`](https://zhangh12.github.io/TrialSimulator/reference/solveThreeStateModel.md)
   : Solve Parameters in a Three-State Illness-death Model
+- [`stop_followup()`](https://zhangh12.github.io/TrialSimulator/reference/stop_followup.md)
+  : Stopping Follow-Up of Selected Patients in a Trial
 - [`summarizeDataFrame()`](https://zhangh12.github.io/TrialSimulator/reference/summarizeDataFrame.md)
   : Summarize A Data Frame
 - [`summarizeMilestoneTime()`](https://zhangh12.github.io/TrialSimulator/reference/summarizeMilestoneTime.md)

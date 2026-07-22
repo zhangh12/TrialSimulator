@@ -514,6 +514,7 @@ Adaptations that are currently supported are summarized below:
 | Extend trial duration | `trial$set_duration()` or add a event-driven milestone | actual patient or event accrual is slower than expected |
 | Increase sample size[^1] | `trial$resize()` | sample size reassessment |
 | Eliminate sub-population | `trial$update_generator()` | enrichment design; data model changes over time |
+| Stop follow-up | `trial$stop_followup()` | treatment discontinuation; enrichment design; stop following a sub-population after interim decision; independent cohorts for, e.g., combination test |
 
 Note that functions in the table above are member functions of `Trials`
 object. Users who are not familiar with the concept of classes may
