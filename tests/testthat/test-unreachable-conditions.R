@@ -111,7 +111,9 @@ test_that("silent = TRUE suppresses unreachable-target warnings cleanly", {
 
 test_that("silent = FALSE still emits the unreachable-target warning", {
 
-  tr <- make_simple_trial(silent = FALSE)
+  ## silent = FALSE is the test's subject (the run must warn), but the
+  ## construction-time messages are not; muffle them
+  tr <- suppressMessages(make_simple_trial(silent = FALSE))
 
   m <- milestone(name = 'm',
                  when = eventNumber(endpoint = 'pfs', n = 100000) |
