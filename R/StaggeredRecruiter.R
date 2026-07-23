@@ -128,7 +128,8 @@ StaggeredRecruiter <- function(n, accrual_rate) {
   }
 
   if (!is.infinite(end_time[k])) {
-    stop("The last entry of 'end_time' must be Inf so the schedule can supply ",
+    stop("The last entry of 'end_time' in accrual_rate must be Inf so the ",
+         "schedule can supply ",
          "any number of patients. TrialSimulator may internally request ",
          "several times the planned sample size (for adaptive resizing); an ",
          "open-ended final window prevents a confusing 'insufficient ",

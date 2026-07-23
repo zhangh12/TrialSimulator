@@ -1,3 +1,9 @@
+# TrialSimulator 1.26.0
+
+## New Feature
+
+- New adaptation method `trial$update_accrual_rate()` (wrapper `update_accrual_rate()`): update the accrual rate of the recruitment curve at a milestone, e.g., to revise recruitment after dose selection or enrichment, or to pause it for a period after an interim decision. `end_time` of the new `accrual_rate` is measured from the milestone; patients not yet enrolled (and the enrollment reserves used by `resize()`) are re-planned and re-randomized under the new schedule, while enrolled patients are left unchanged. Like other adaptations, it must be called within an action function, after a milestone has been triggered.
+
 # TrialSimulator 1.25.2
 
 ## Updates

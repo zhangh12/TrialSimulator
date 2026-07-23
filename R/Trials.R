@@ -38,6 +38,11 @@
 #' (e.g., the last patient of the first cohort), optionally with a fixed
 #' additional follow-up beyond it, making statistics of the cohorts
 #' independent to facilitate, e.g., combination tests.
+#' \item \code{$update_accrual_rate()} update the accrual rate of the
+#' recruitment curve at a milestone, e.g., to revise or pause recruitment
+#' after dose selection or enrichment. \code{end_time} of the new accrual
+#' rate is measured from the milestone; patients not yet enrolled are
+#' re-planned and re-randomized under the new schedule.
 #' \item \code{$get_locked_data()} request for data snapshot at a milestone.
 #' Calling this function is recommended as the first action in any action
 #' function as long as trial data is needed in statistical analysis or decision
@@ -890,6 +895,112 @@ Trials <- R6::R6Class(
       ## no roll_back()/enroll_patients(): no design parameter (arms, sample
       ## ratio, generator, duration) changes, so unenrolled patients are
       ## unaffected and the RNG stream must not advance.
+
+      invisible(NULL)
+    },
+
+    #' @description
+    #' update the accrual rate of the recruitment curve at a milestone. The
+    #' enroller of a trial is always \code{StaggeredRecruiter}; this function
+    #' replaces its \code{accrual_rate} for patients not yet enrolled, while
+    #' enrolled patients are left unchanged. It can be used in adaptive
+    #' designs, e.g., to revise recruitment after dose selection or
+    #' enrichment, or to pause recruitment for a period after an interim
+    #' decision.
+    #'
+    #' \code{end_time} in \code{accrual_rate} is measured from the time this
+    #' function is called (i.e., the current milestone), not from the start
+    #' of the trial. A milestone is usually event driven, so its calendar
+    #' time is unknown until the trial is simulated, and a schedule on the
+    #' calendar time scale could not be pre-specified. Measuring
+    #' \code{end_time} from the milestone also lets users state the new plan
+    #' simply as "from now on": e.g.,
+    #' \code{data.frame(end_time = c(3, Inf), piecewise_rate = c(20, 35))}
+    #' means 20 patients per month for the 3 months following the milestone
+    #' and 35 per month thereafter, whenever the milestone occurs. Following
+    #' the convention of \code{StaggeredRecruiter}, the first re-planned
+    #' patient is enrolled \code{1 / piecewise_rate} after the milestone; a
+    #' leading window with \code{piecewise_rate = 0} defers enrollment
+    #' further. As with other adaptations, patients not yet enrolled are
+    #' re-randomized and their data are regenerated under the new schedule.
+    #'
+    #' Note that this function should only be called within action functions.
+    #' Calling it before any milestone has been triggered is an error.
+    #' @param accrual_rate a data frame of columns \code{end_time} and
+    #' \code{piecewise_rate} as in \code{StaggeredRecruiter}, with
+    #' \code{end_time} measured from the current milestone. The last
+    #' \code{end_time} must be \code{Inf} with a positive rate.
+    update_accrual_rate = function(accrual_rate){
+
+      milestone_time <- self$get_milestone_time()
+      if(length(milestone_time) == 0){
+        stop('update_accrual_rate() can only be called within an action ',
+             'function of a milestone, i.e., after at least one milestone ',
+             'has been triggered. ')
+      }
+
+      current_time <- self$get_current_time()
+
+      ## n1: patients planned but not yet enrolled; n2: redundant enroll
+      ## times reserved for resize(). Both are re-planned under the new
+      ## accrual rate so that a later resize() continues the new curve and
+      ## roll_back()'s pool-ordering invariant keeps holding.
+      n1 <- sum(self$get_trial_data()$enroll_time > current_time)
+      n2 <- sum(private$enroll_time_with_redundant > current_time)
+
+      if(n1 + n2 == 0){
+        if(!private$silent){
+          message('All planned patients and resize reserves are enrolled ',
+                  'by time <', current_time,
+                  '>. Accrual rate update has no effect. ')
+        }
+        return(invisible(NULL))
+      }
+
+      ## StaggeredRecruiter validates the schedule; an error at this point
+      ## is assumed to be an invalid accrual_rate and is re-signaled with
+      ## update_accrual_rate() context. This happens before any trial state
+      ## is altered.
+      new_times <- tryCatch(
+        current_time +
+          StaggeredRecruiter(n = n1 + n2, accrual_rate = accrual_rate),
+        error = function(e){
+          stop('Invalid accrual_rate passed to update_accrual_rate() at ',
+               'milestone <',
+               names(milestone_time)[which.max(milestone_time)],
+               '>. Note that its end_time is measured from the current ',
+               'milestone, not from the start of the trial. ',
+               'The actual error is:\n', conditionMessage(e),
+               call. = FALSE)
+        }
+      )
+
+      if(!private$silent){
+        if(n1 == 0){
+          message('Accrual rate is updated at time <', current_time, '>. ',
+                  'All planned patients are already enrolled; only the ',
+                  'enrollment reserves for resize(), if any, are re-planned under ',
+                  'the new accrual rate. ')
+        }else{
+          message('Accrual rate is updated at time <', current_time, '>. ',
+                  'Enrollment of ', n1, ' unenrolled patient(s) is ',
+                  're-planned under the new accrual rate. ')
+        }
+      }
+
+      ## discard data of unenrolled patients; roll_back() re-derives the old
+      ## planned enroll times from trial data, which are overwritten right
+      ## after. Regeneration in enroll_patients() (rather than shifting
+      ## existing rows in place) is required for correctness: rows in trial
+      ## data are already censored at trial duration, so moving a patient to
+      ## an earlier enroll time could not restore follow-up truncated under
+      ## the old, later time.
+      self$roll_back()
+
+      private$enroll_time <- head(new_times, n1)
+      private$enroll_time_with_redundant <- tail(new_times, n2)
+
+      self$enroll_patients()
 
       invisible(NULL)
     },
