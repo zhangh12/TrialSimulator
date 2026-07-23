@@ -17,6 +17,8 @@
 #'
 #' listener <- listener()
 #'
+#' @return an object of R6 class \code{Listeners}, monitoring and triggering milestones of a trial.
+#'
 #' @export
 #'
 listener <- function(silent = FALSE){

@@ -4,6 +4,9 @@
 \name{Controllers}
 \alias{Controllers}
 \title{Class of Controller}
+\value{
+an \code{R6Class} generator object; use \code{controller()} to create a controller.
+}
 \description{
 Create a class of controller to run a trial.
 

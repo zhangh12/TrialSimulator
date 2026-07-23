@@ -19,6 +19,8 @@
 #' @param trial a trial object returned by \code{trial()}.
 #' @param arms_name character vector. Name of arms to be removed.
 #'
+#' @return no return value, called for its side effect of updating \code{trial}.
+#'
 #' @export
 #'
 remove_arms <- function(trial, arms_name){

@@ -24,6 +24,8 @@
 #' @param duration new duration of a trial. It must be greater than the current
 #' duration.
 #'
+#' @return no return value, called for its side effect of updating \code{trial}.
+#'
 #' @export
 #'
 set_duration <- function(trial, duration){

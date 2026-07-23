@@ -287,7 +287,7 @@ res %>%
 
 ```{r message=FALSE}
 ## Number of overall Go
-sum(res$interim_decision == 'add dose arms' & 'decision' == 'go')
+sum(res$interim_decision == 'add dose arms' & res$decision == 'go')
 
 ## Number of early trial termination
 sum(res$interim_decision == 'stop trial')

@@ -130,3 +130,60 @@ test_that('package behaves the same under single- and multi-process modes with s
   expect_equal(op1, op2)
 
 })
+
+
+test_that('stop_followup and update_accrual_rate reproduce across worker modes', {
+
+  skip_if(Sys.getenv("R_COVR") == "true",
+          "n_workers > 1 spawns R processes that covr cannot trace")
+
+  bar <- function(n, n_workers, seed = NULL){
+    pfs <- endpoint(name = 'pfs', type = 'tte', generator = rexp, rate = log(2)/10)
+    pbo <- arm(name = 'pbo'); pbo$add_endpoints(pfs)
+    pfs <- endpoint(name = 'pfs', type = 'tte', generator = rexp, rate = log(2)/12)
+    trt <- arm(name = 'trt'); trt$add_endpoints(pfs)
+
+    trial <- trial(
+      name = 'test', n_patients = 300, duration = 30,
+      enroller = StaggeredRecruiter,
+      accrual_rate = data.frame(end_time = Inf, piecewise_rate = 30),
+      dropout = rweibull, shape = 1.32, scale = 114.4,
+      seed = seed, silent = TRUE
+    )
+    trial$add_arms(sample_ratio = c(1, 1), pbo, trt)
+
+    adapt <- milestone(name = 'adapt',
+                       when = calendarTime(time = 8),
+                       action = function(trial){
+                         stop_followup(trial, arm == 'pbo')
+                         update_accrual_rate(
+                           trial,
+                           data.frame(end_time = Inf, piecewise_rate = 15))
+                       })
+    final <- milestone(name = 'final',
+                       when = calendarTime(time = 25),
+                       action = function(trial){
+                         d <- trial$get_locked_data('final')
+                         fit <- fitLogrank(Surv(pfs, pfs_event) ~ arm,
+                                           placebo = 'pbo', data = d,
+                                           alternative = 'less')
+                         trial$save(fit$p[1], 'FA_pval')
+                         trial$save(nrow(d), 'FA_n')
+                       })
+
+    listener <- listener(silent = TRUE)
+    listener$add_milestones(adapt, final)
+    controller <- controller(trial, listener)
+    controller$run(n = n, n_workers = n_workers, plot_event = FALSE, silent = TRUE)
+    controller$get_output(c('seed', 'FA_pval', 'FA_n'))
+  }
+
+  op2 <- bar(n = 6, n_workers = 2, seed = NULL)
+
+  op1 <- NULL
+  for(i in 1:6){
+    op1 <- rbind(op1, bar(n = 1, n_workers = 1, seed = op2$seed[i]))
+  }
+
+  expect_equal(op1, op2)
+})

@@ -21,6 +21,9 @@ a milestone, \code{action} can be its default value, a built-in function
 
 \item{...}{(optional) arguments of \code{action}.}
 }
+\value{
+an object of R6 class \code{Milestones}, representing a milestone of a trial.
+}
 \description{
 Define a milestone of a trial. This is a user-friendly wrapper for
 the class constructor \code{Milestones$new()}. Users who are not familiar with

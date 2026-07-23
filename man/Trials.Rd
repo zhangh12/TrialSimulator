@@ -4,6 +4,9 @@
 \name{Trials}
 \alias{Trials}
 \title{Class of Trial}
+\value{
+an \code{R6Class} generator object; use \code{trial()} to create a trial.
+}
 \description{
 Create a class of trial.
 

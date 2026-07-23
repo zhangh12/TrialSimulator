@@ -582,3 +582,43 @@ test_that('trial data can be replicated', {
   expect_identical(op10, ops)
 
 })
+
+
+test_that('no private field appears mid-run that make_snapshot() does not cover', {
+
+  # make_snapshot() copies every private data field at construction; a field
+  # first assigned mid-run would be missing from the snapshot and silently
+  # leak across replicates through reset(). Guard by reflection: after a run
+  # exercising the adaptation methods, the set of private names must not
+  # exceed snapshot names + private methods.
+  pfs <- endpoint(name = 'pfs', type = 'tte', generator = rexp, rate = log(2)/10)
+  pbo <- arm(name = 'pbo'); pbo$add_endpoints(pfs)
+  pfs <- endpoint(name = 'pfs', type = 'tte', generator = rexp, rate = log(2)/12)
+  trt <- arm(name = 'trt'); trt$add_endpoints(pfs)
+
+  tr <- trial(name = 't', n_patients = 200, duration = 30, seed = 7,
+              enroller = StaggeredRecruiter,
+              accrual_rate = data.frame(end_time = Inf, piecewise_rate = 30),
+              dropout = rweibull, shape = 1, scale = 1e6, silent = TRUE)
+  tr$add_arms(sample_ratio = c(1, 1), pbo, trt)
+
+  adapt <- milestone(name = 'adapt',
+                     when = calendarTime(time = 5),
+                     action = function(trial){
+                       resize(trial, 250)
+                       stop_followup(trial, arm == 'pbo')
+                       update_accrual_rate(
+                         trial,
+                         data.frame(end_time = Inf, piecewise_rate = 40))
+                     })
+  final <- milestone(name = 'final', when = calendarTime(time = 30))
+  lst <- listener(silent = TRUE)
+  lst$add_milestones(adapt, final)
+  controller(tr, lst)$run(n = 2, silent = TRUE, plot_event = FALSE)
+
+  pr <- tr$.__enclos_env__$private
+  private_methods <- c('.snapshot', 'permuted_block_randomization',
+                       'validate_arguments', 'apply_regimens', 'reset_regimen')
+  uncovered <- setdiff(names(pr), c(names(pr$.snapshot), private_methods))
+  expect_length(uncovered, 0)
+})

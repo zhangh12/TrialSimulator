@@ -46,6 +46,8 @@
 #' ## It is the recommended way to view an arm
 #' placebo
 #'
+#' @return an object of R6 class \code{Arms}, representing an arm of a trial.
+#'
 #' @export
 arm <- function(name, ...){
 

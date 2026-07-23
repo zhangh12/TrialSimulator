@@ -73,6 +73,8 @@
 #' # Instead of using Trials$new, please use trial(), a user-friendly
 #' # wrapper. See examples in ?trial.
 #'
+#' @return an \code{R6Class} generator object; use \code{trial()} to create a trial.
+#'
 #' @export
 Trials <- R6::R6Class(
   'Trials',
@@ -2807,7 +2809,7 @@ Trials <- R6::R6Class(
 
         if(ncol(planned_info) != length(treatments) + 1){
           stop('length(planned_info) should be equal to length(treatments) + 1, i.e., ',
-               length(treatment) + 1, '. ')
+               length(treatments) + 1, '. ')
         }
 
         if(!setequal(names(planned_info), c(placebo, treatments))){
@@ -3129,7 +3131,6 @@ Trials <- R6::R6Class(
           mutate(milestone_time = dunnett_test[[comb]]$milestone_time)
       }
 
-      # print(gst_res)
 
       tmp0 <-
         data.frame(
@@ -3170,7 +3171,6 @@ Trials <- R6::R6Class(
       }
 
 
-      # print(ret)
       ret_ <- NULL
       for(trt in names(ret)){
         if(all(ret[[trt]]$reject)){
@@ -3241,7 +3241,10 @@ Trials <- R6::R6Class(
                         'validate_arguments', 'apply_regimens', 'reset_regimen')){
           next
         }
-        private$.snapshot[[field]] <- private[[field]]
+        ## single-bracket list assignment keeps NULL-valued fields in the
+        ## snapshot; `[[<-` would silently drop them, leaving reset() to
+        ## depend on its explicit re-null list for every such field
+        private$.snapshot[field] <- list(private[[field]])
       }
 
     },

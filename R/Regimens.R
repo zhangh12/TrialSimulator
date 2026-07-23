@@ -6,6 +6,8 @@
 #'
 #' @docType class
 #'
+#' @return an \code{R6Class} generator object; use \code{regimen()} to create a regimen.
+#'
 #' @export
 Regimens <- R6::R6Class(
   'Regimens',

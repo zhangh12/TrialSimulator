@@ -24,3 +24,7 @@ binary fixture into the repo.
 The toggle itself was validated once (offline) against a fresh install
 of v1.17.1 (pre-C++) on every fixture in this directory, confirming that
 the R-fallback path is byte-identical to the original v1.17.1 R logic.
+
+`setup_stopFollowupAccrual.R` is not vignette-derived: it exists to cover the
+adaptation methods `stop_followup()` and `update_accrual_rate()` (v1.25/v1.26)
+under the C++/R identical-path check.

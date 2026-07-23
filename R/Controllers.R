@@ -16,6 +16,8 @@
 #' @docType class
 #' @examples
 #' ##
+#' @return an \code{R6Class} generator object; use \code{controller()} to create a controller.
+#'
 #' @export
 Controllers <- R6::R6Class(
   'Controllers',

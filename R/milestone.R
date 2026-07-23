@@ -33,6 +33,8 @@
 #' ## See vignette('conditionSystem')
 #'
 #'
+#' @return an object of R6 class \code{Milestones}, representing a milestone of a trial.
+#'
 #' @export
 #'
 milestone = function(name, when, action = doNothing, ...){

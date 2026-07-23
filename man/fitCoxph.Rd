@@ -44,7 +44,7 @@ each of the treatment arms.}
 Default: \code{TRUE}.}
 }
 \value{
-a data frame with three columns:
+a data frame with columns:
 \describe{
 \item{\code{arm}}{name of the treatment arm. }
 \item{\code{placebo}}{name of the placebo arm. }

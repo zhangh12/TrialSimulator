@@ -49,6 +49,8 @@
 #' @param ... (optional) named arguments routed to \code{what}, \code{when},
 #' and/or \code{how}.
 #'
+#' @return no return value, called for its side effect of updating \code{trial}.
+#'
 #' @export
 #'
 crossover <- function(trial, what, how, when = NULL, delay = 0, ...){

@@ -11,6 +11,9 @@ resize(trial, n_patients)
 
 \item{n_patients}{integer. Number of maximum sample size of a trial.}
 }
+\value{
+no return value, called for its side effect of updating \code{trial}.
+}
 \description{
 resize a trial with a greater sample size. This function is used to update
 the maximum sample size adaptively after sample size reassessment. Note that

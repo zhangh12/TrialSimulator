@@ -9,6 +9,9 @@ listener(silent = FALSE)
 \arguments{
 \item{silent}{logical. \code{TRUE} to mute messages.}
 }
+\value{
+an object of R6 class \code{Listeners}, monitoring and triggering milestones of a trial.
+}
 \description{
 Define a listener. This is a user-friendly wrapper for
 the class constructor \code{Listener$new()}. Users who are not familiar with

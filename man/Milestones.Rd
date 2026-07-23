@@ -4,6 +4,9 @@
 \name{Milestones}
 \alias{Milestones}
 \title{Class of Milestones}
+\value{
+an \code{R6Class} generator object; use \code{milestone()} to create a milestone.
+}
 \description{
 Create a class of milestone. A milestone means the time point to take an action,
 e.g., carrying out (futility, interim, final) analysis for

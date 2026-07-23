@@ -18,6 +18,9 @@ this function is called.}
 selected patients after the current milestone. If 0 (default), follow-up
 stops at the milestone itself.}
 }
+\value{
+no return value, called for its side effect of updating \code{trial}.
+}
 \description{
 stop follow-up of a subset of enrolled patients at a specified time at or
 after the current milestone. Data of affected patients are censored

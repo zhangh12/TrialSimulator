@@ -4,6 +4,9 @@
 \name{Arms}
 \alias{Arms}
 \title{Class of Arm}
+\value{
+an \code{R6Class} generator object; use \code{arm()} to create an arm.
+}
 \description{
 Create a class of arm.
 

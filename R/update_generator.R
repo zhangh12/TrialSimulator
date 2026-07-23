@@ -26,6 +26,8 @@
 #' See generator of \code{endpoint()}.
 #' @param ... optional arguments for generator.
 #'
+#' @return no return value, called for its side effect of updating \code{trial}.
+#'
 #' @export
 #'
 update_generator <- function(trial, arm_name, endpoint_name, generator, ...){

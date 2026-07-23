@@ -30,7 +30,7 @@
 #' @param delta the rate difference between a treatment arm and placebo under
 #' the null. 0 by default.
 #'
-#' @returns a data frame with three columns:
+#' @returns a data frame with columns:
 #' \describe{
 #' \item{\code{arm}}{name of the treatment arm. }
 #' \item{\code{placebo}}{name of the placebo arm. }

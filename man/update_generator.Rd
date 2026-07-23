@@ -19,6 +19,9 @@ See generator of \code{endpoint()}.}
 
 \item{...}{optional arguments for generator.}
 }
+\value{
+no return value, called for its side effect of updating \code{trial}.
+}
 \description{
 update endpoint generator in an arm. This function can be useful in, e.g.,
 enrichment design where generator is updated so that patients are enrolled

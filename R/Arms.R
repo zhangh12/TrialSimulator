@@ -18,6 +18,8 @@
 #' # Instead of using Arms$new(), please use arm(), a user-friendly
 #' # wrapper. See examples in ?arm
 #'
+#' @return an \code{R6Class} generator object; use \code{arm()} to create an arm.
+#'
 #' @export
 Arms <- R6::R6Class(
   'Arms',

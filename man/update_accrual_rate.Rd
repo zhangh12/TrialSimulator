@@ -14,6 +14,9 @@ update_accrual_rate(trial, accrual_rate)
 \code{end_time} measured from the current milestone. The last
 \code{end_time} must be \code{Inf} with a positive rate.}
 }
+\value{
+no return value, called for its side effect of updating \code{trial}.
+}
 \description{
 update the accrual rate of the recruitment curve at a milestone. The
 enroller of a trial is always \code{StaggeredRecruiter}; this function

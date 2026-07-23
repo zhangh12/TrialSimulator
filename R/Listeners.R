@@ -16,6 +16,8 @@
 #' @docType class
 #' @examples
 #' ##
+#' @return an \code{R6Class} generator object; use \code{listener()} to create a listener.
+#'
 #' @export
 Listeners <- R6::R6Class(
   'Listeners',

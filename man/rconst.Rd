@@ -11,6 +11,9 @@ rconst(n, value)
 
 \item{value}{scalar. Value of constant observations.}
 }
+\value{
+a numeric vector of length \code{n} with all entries equal to \code{value}.
+}
 \description{
 A random number generator returning only a constant. This can be used to
 set dropout time. Currently it is the default value of dropout time, with

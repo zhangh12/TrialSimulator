@@ -4,6 +4,9 @@
 \name{Endpoints}
 \alias{Endpoints}
 \title{Class of Endpoint}
+\value{
+an \code{R6Class} generator object; use \code{endpoint()} to create endpoints.
+}
 \description{
 Create a class of endpoint to specify its name, type, readout time
 (optional) and assign a random number generator.
