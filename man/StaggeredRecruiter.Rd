@@ -30,21 +30,28 @@ windows. This function can be used as the \code{enroller} when calling
 }
 \details{
 Enrollment times are the deterministic inverse of the cumulative accrual
-intensity: patient \code{k} (counting from 0) enrolls when the expected
-cumulative enrollment reaches \code{k}. Consequently the cumulative accrual
-capacity increases by window length x \code{piecewise_rate} across a window
-(so a window whose capacity is an integer holds exactly that many patients),
-and within a window with a positive rate consecutive patients are spaced by
+intensity: patient \code{k} enrolls when the expected cumulative enrollment
+reaches \code{k}. With a constant rate \code{r} the \code{n}-th patient
+therefore enrolls exactly at \code{n / r}: a milestone triggered by
+\code{enrollment(n = n)} occurs exactly at the time the planned cumulative
+accrual reaches \code{n}. Consequently the cumulative accrual capacity
+increases by window length x \code{piecewise_rate} across a window (so a
+window whose capacity is an integer holds exactly that many patients, the
+last of them enrolling exactly at the window's \code{end_time}), and within
+a window with a positive rate consecutive patients are spaced by
 \code{1 / piecewise_rate}. When the first window has a positive rate, the
-first patient enrolls at time 0.
+first patient enrolls at \code{1 / piecewise_rate}, not at time 0.
 
 A window may have \code{piecewise_rate = 0} to model a recruitment pause (a
 hold for safety review, a site not yet activated, a seasonal gap, etc.). No
 patient is enrolled during a pause window, but calendar time still advances
-across it, so enrollment resumes at the window's \code{end_time}. Pauses may
-occur in the first window or span several consecutive windows. A leading
-pause therefore defers the first enrollment to the end of the pause rather
-than time 0.
+across it, so enrollment resumes after the window's \code{end_time}. Pauses
+may occur in the first window or span several consecutive windows. A leading
+pause therefore defers the first enrollment to one inter-arrival time
+(\code{1 / piecewise_rate} of the window where enrollment resumes) after the
+end of the pause. A patient whose planned cumulative count is reached
+exactly at a window boundary followed by a pause enrolls when the pause
+ends.
 
 The last \code{end_time} must be \code{Inf} with a positive rate, so that the
 schedule can supply any number of patients. (\code{TrialSimulator} may

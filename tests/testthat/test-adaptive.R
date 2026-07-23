@@ -164,7 +164,10 @@ test_that('milestone can be triggerd when all patients have received treatment f
   controller <- controller(trial, listener)
   controller$run(n = 10, plot_event = FALSE, silen = TRUE)
 
-  expect_true(all(controller$get_output('milestone_time_<final>') - 19.98333 < .001))
+  ## patient 580 enrolls exactly when cumulative planned accrual reaches 580
+  ## (month 18: 120 + 180 + 160 + 2 * 60), so the milestone triggers at
+  ## exactly 18 + 2, matching the comment above
+  expect_true(all(abs(controller$get_output('milestone_time_<final>') - 20) < 1e-6))
 
 })
 

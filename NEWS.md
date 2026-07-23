@@ -1,3 +1,9 @@
+# TrialSimulator 1.25.2
+
+## Updates
+
+- `StaggeredRecruiter()` now enrolls patient `k` when the planned cumulative accrual reaches `k` (previously `k - 1`): under a constant rate `r` the `n`-th patient enrolls exactly at `n / r`, so a milestone triggered by `enrollment(n)` occurs exactly at the planned accrual time. The first patient enrolls at `1 / piecewise_rate` instead of time 0, and all enrollment times shift by one inter-arrival accordingly; simulation results under a fixed seed differ slightly from 1.25.1. The precomputed output of the `adaptiveDesign` vignette is regenerated under the new convention.
+
 # TrialSimulator 1.25.1
 
 ## Bug Fix
