@@ -48,6 +48,12 @@ to end users.
   statistics of the cohorts independent to facilitate, e.g., combination
   tests.
 
+- `$update_accrual_rate()` update the accrual rate of the recruitment
+  curve at a milestone, e.g., to revise or pause recruitment after dose
+  selection or enrichment. `end_time` of the new accrual rate is
+  measured from the milestone; patients not yet enrolled are re-planned
+  and re-randomized under the new schedule.
+
 - `$get_locked_data()` request for data snapshot at a milestone. Calling
   this function is recommended as the first action in any action
   function as long as trial data is needed in statistical analysis or
@@ -120,6 +126,8 @@ to end users.
 - [`Trials$crossover()`](#method-Trials-crossover)
 
 - [`Trials$stop_followup()`](#method-Trials-stop_followup)
+
+- [`Trials$update_accrual_rate()`](#method-Trials-update_accrual_rate)
 
 - [`Trials$get_name()`](#method-Trials-get_name)
 
@@ -724,6 +732,47 @@ error.
   numeric. Extra follow-up time granted to the selected patients after
   the current milestone. If 0 (default), follow-up stops at the
   milestone itself.
+
+------------------------------------------------------------------------
+
+### Method [`update_accrual_rate()`](https://zhangh12.github.io/TrialSimulator/reference/update_accrual_rate.md)
+
+update the accrual rate of the recruitment curve at a milestone. The
+enroller of a trial is always `StaggeredRecruiter`; this function
+replaces its `accrual_rate` for patients not yet enrolled, while
+enrolled patients are left unchanged. It can be used in adaptive
+designs, e.g., to revise recruitment after dose selection or enrichment,
+or to pause recruitment for a period after an interim decision.
+
+`end_time` in `accrual_rate` is measured from the time this function is
+called (i.e., the current milestone), not from the start of the trial. A
+milestone is usually event driven, so its calendar time is unknown until
+the trial is simulated, and a schedule on the calendar time scale could
+not be pre-specified. Measuring `end_time` from the milestone also lets
+users state the new plan simply as "from now on": e.g.,
+`data.frame(end_time = c(3, Inf), piecewise_rate = c(20, 35))` means 20
+patients per month for the 3 months following the milestone and 35 per
+month thereafter, whenever the milestone occurs. Following the
+convention of `StaggeredRecruiter`, the first re-planned patient is
+enrolled `1 / piecewise_rate` after the milestone; a leading window with
+`piecewise_rate = 0` defers enrollment further. As with other
+adaptations, patients not yet enrolled are re-randomized and their data
+are regenerated under the new schedule.
+
+Note that this function should only be called within action functions.
+Calling it before any milestone has been triggered is an error.
+
+#### Usage
+
+    Trials$update_accrual_rate(accrual_rate)
+
+#### Arguments
+
+- `accrual_rate`:
+
+  a data frame of columns `end_time` and `piecewise_rate` as in
+  `StaggeredRecruiter`, with `end_time` measured from the current
+  milestone. The last `end_time` must be `Inf` with a positive rate.
 
 ------------------------------------------------------------------------
 

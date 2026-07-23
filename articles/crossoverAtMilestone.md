@@ -369,11 +369,11 @@ head(final[final$arm == 'control',
            c('patient_id', 'arm', 'regimen_trajectory', 'n_switches')])
 #>    patient_id     arm                      regimen_trajectory n_switches
 #> 1           1 control control@0;experimental@15.6081943558529          1
-#> 3           3 control control@0;experimental@11.8666666666667          1
-#> 5           5 control control@0;experimental@11.7333333333333          1
+#> 3           3 control             control@0;experimental@11.8          1
+#> 5           5 control control@0;experimental@11.6666666666667          1
 #> 8           8 control control@0;experimental@15.1609034077507          1
-#> 9           9 control control@0;experimental@11.4666666666667          1
-#> 12         12 control control@0;experimental@11.2666666666667          1
+#> 9           9 control             control@0;experimental@11.4          1
+#> 12         12 control             control@0;experimental@11.2          1
 ```
 
 ## Scenarios
@@ -430,6 +430,6 @@ head(expandRegimen(final))
 #> 2          1 experimental                    15.60819
 #> 3          2          trt                     0.00000
 #> 4          3      control                     0.00000
-#> 5          3 experimental                    11.86667
+#> 5          3 experimental                    11.80000
 #> 6          4          trt                     0.00000
 ```

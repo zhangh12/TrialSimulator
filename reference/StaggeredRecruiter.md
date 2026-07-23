@@ -36,62 +36,93 @@ StaggeredRecruiter(n, accrual_rate)
 
 ## Details
 
-Enrollment times are the deterministic inverse of the cumulative accrual
-intensity: patient `k` (counting from 0) enrolls when the expected
-cumulative enrollment reaches `k`. Consequently the cumulative accrual
-capacity increases by window length x `piecewise_rate` across a window
-(so a window whose capacity is an integer holds exactly that many
-patients), and within a window with a positive rate consecutive patients
-are spaced by `1 / piecewise_rate`. When the first window has a positive
-rate, the first patient enrolls at time 0.
+`StaggeredRecruiter` is the only enroller accepted by
+[`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md):
+a piecewise constant accrual rate is flexible enough to approximate
+realistic recruitment in practice, e.g., site ramp-up, steady accrual,
+and temporary pauses.
 
-A window may have `piecewise_rate = 0` to model a recruitment pause (a
-hold for safety review, a site not yet activated, a seasonal gap, etc.).
-No patient is enrolled during a pause window, but calendar time still
-advances across it, so enrollment resumes at the window's `end_time`.
-Pauses may occur in the first window or span several consecutive
-windows. A leading pause therefore defers the first enrollment to the
-end of the pause rather than time 0.
+The returned enrollment times are deterministic, not random. Within a
+window of positive rate, patients enroll one by one with spacing
+`1/piecewise_rate`; under a constant rate `r`, the `k`-th patient
+enrolls exactly at `k / r`. In particular, the first patient enrolls at
+`1/piecewise_rate` rather than at time 0, and a milestone triggered by
+`enrollment(n = n)` occurs exactly at the time the planned cumulative
+accrual reaches `n`.
 
-The last `end_time` must be `Inf` with a positive rate, so that the
-schedule can supply any number of patients. (`TrialSimulator` may
-internally request several times the planned sample size for adaptive
-resizing; an open-ended final window keeps that from failing.)
+A window with `piecewise_rate = 0` models a recruitment pause (a hold
+for safety review, a site not yet activated, a seasonal gap, etc.): no
+patient is enrolled in that window, and enrollment resumes after its
+`end_time`. Pauses may occur in the first window or span several
+consecutive windows; a leading pause defers the first enrollment
+accordingly.
 
-A positive rate too low for its window – one expecting fewer than a
-single patient (window length x `piecewise_rate` \< 1) – is almost
-always a misspecification (e.g. a tiny rate meant as a pause) and raises
-an error. A window expecting exactly one patient (product equal to 1) is
-allowed; the check uses a small floating-point tolerance so that
-`rate = 1 / width` is not rejected when the product rounds just below 1.
-Use `piecewise_rate = 0` for a true pause, or a rate of at least 1 /
-width.
+A valid `accrual_rate` must satisfy all of the following:
+
+- it is a data frame with columns `end_time` and `piecewise_rate`;
+
+- `end_time` is positive and strictly increasing, and the last entry is
+  `Inf` with a positive rate, so that the schedule can supply any number
+  of patients (`TrialSimulator` may internally request more than the
+  planned sample size, e.g., for adaptive resizing via
+  [`resize()`](https://zhangh12.github.io/TrialSimulator/reference/resize.md));
+
+- rates are non-negative and finite;
+
+- a finite window with a positive rate must expect at least one patient,
+  i.e., window length x `piecewise_rate` \>= 1. A tiny positive rate
+  meant as a pause is rejected with an error; use `piecewise_rate = 0`
+  for a true pause.
 
 ## Examples
 
 ``` r
-accrual_rate <- data.frame(
-  end_time = c(12, 13:17, Inf),
-  piecewise_rate = c(15, 15 + 6 * (1:5), 45)
-)
+## constant accrual of 25 patients/month: patient k enrolls at k / 25
+accrual_rate <- data.frame(end_time = Inf, piecewise_rate = 25)
 
 StaggeredRecruiter(30, accrual_rate)
-#>  [1] 0.00000000 0.06666667 0.13333333 0.20000000 0.26666667 0.33333333
-#>  [7] 0.40000000 0.46666667 0.53333333 0.60000000 0.66666667 0.73333333
-#> [13] 0.80000000 0.86666667 0.93333333 1.00000000 1.06666667 1.13333333
-#> [19] 1.20000000 1.26666667 1.33333333 1.40000000 1.46666667 1.53333333
-#> [25] 1.60000000 1.66666667 1.73333333 1.80000000 1.86666667 1.93333333
+#>  [1] 0.04 0.08 0.12 0.16 0.20 0.24 0.28 0.32 0.36 0.40 0.44 0.48 0.52 0.56 0.60
+#> [16] 0.64 0.68 0.72 0.76 0.80 0.84 0.88 0.92 0.96 1.00 1.04 1.08 1.12 1.16 1.20
 
-## recruitment pause: 30/mo for 12 months, paused for months 12-18, then 30/mo
+## recruitment pause: 30/mo through month 12, paused during months 12-18,
+## then 30/mo again. Monthly counts show months 13-17 are empty and
+## enrollment resumes at the end of the pause (month 18).
 accrual_rate <- data.frame(
   end_time = c(12, 18, Inf),
   piecewise_rate = c(30, 0, 30)
 )
 
+enroll_time <- StaggeredRecruiter(400, accrual_rate)
+table(ceiling(enroll_time))
+#> 
+#>  1  2  3  4  5  6  7  8  9 10 11 12 18 19 20 
+#> 30 30 30 30 30 30 30 30 30 30 30 29  1 30 10 
+
+## leading pause (first rate is 0): enrollment opens 3 months after study
+## start, e.g., the first site is activated with a delay, then 30/mo
+accrual_rate <- data.frame(
+  end_time = c(3, Inf),
+  piecewise_rate = c(0, 30)
+)
+
 StaggeredRecruiter(30, accrual_rate)
-#>  [1] 0.00000000 0.03333333 0.06666667 0.10000000 0.13333333 0.16666667
-#>  [7] 0.20000000 0.23333333 0.26666667 0.30000000 0.33333333 0.36666667
-#> [13] 0.40000000 0.43333333 0.46666667 0.50000000 0.53333333 0.56666667
-#> [19] 0.60000000 0.63333333 0.66666667 0.70000000 0.73333333 0.76666667
-#> [25] 0.80000000 0.83333333 0.86666667 0.90000000 0.93333333 0.96666667
+#>  [1] 3.033333 3.066667 3.100000 3.133333 3.166667 3.200000 3.233333 3.266667
+#>  [9] 3.300000 3.333333 3.366667 3.400000 3.433333 3.466667 3.500000 3.533333
+#> [17] 3.566667 3.600000 3.633333 3.666667 3.700000 3.733333 3.766667 3.800000
+#> [25] 3.833333 3.866667 3.900000 3.933333 3.966667 4.000000
+
+## approximate a linear ramp-up by monthly steps: accrual grows by 5/mo
+## each month, from 5/mo up to 30/mo, then stays steady at 30/mo
+accrual_rate <- data.frame(
+  end_time = c(1:6, Inf),
+  piecewise_rate = c(seq(5, 30, by = 5), 30)
+)
+
+enroll_time <- StaggeredRecruiter(200, accrual_rate)
+
+## monthly enrolled counts show the ramp (5, 10, ..., 30) and the plateau (30)
+table(ceiling(enroll_time))
+#> 
+#>  1  2  3  4  5  6  7  8  9 10 
+#>  5 10 15 20 25 30 30 30 30  5 
 ```

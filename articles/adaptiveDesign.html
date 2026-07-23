@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.25.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.26.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -400,21 +400,21 @@ replicates is run to save time.</p>
 <code class="sourceCode R"><span><span class="va">controller</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/controller.html">controller</a></span><span class="op">(</span><span class="va">trial</span>, <span class="va">listener</span><span class="op">)</span></span>
 <span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>plot_event <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;dose selection&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 11.1205128205128 for milestone &lt;dose selection&gt;.</span></span>
+<span><span class="co">#&gt; Data is locked at time = 11.1538461538462 for milestone &lt;dose selection&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('dose selection'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   pfs os surrogate patient         arms</span></span>
 <span><span class="co">#&gt; 1 137 72       300     357 c("high ....</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;interim&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 16.2618127953581 for milestone &lt;interim&gt;.</span></span>
+<span><span class="co">#&gt; Data is locked at time = 16.2818127953581 for milestone &lt;interim&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('interim'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   pfs  os surrogate patient         arms</span></span>
 <span><span class="co">#&gt; 1 300 154       556     614 c("high ....</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;final&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 23.98 for milestone &lt;final&gt;.</span></span>
+<span><span class="co">#&gt; Data is locked at time = 24 for milestone &lt;final&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('final'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   pfs  os surrogate patient         arms</span></span>
@@ -524,7 +524,7 @@ Trial-3415
 1727811904
 </td>
 <td style="text-align:right;">
-11.12051
+11.15385
 </td>
 <td style="text-align:right;">
 137
@@ -545,7 +545,7 @@ c(“high ….
 both
 </td>
 <td style="text-align:right;">
-16.26181
+16.28181
 </td>
 <td style="text-align:right;">
 300
@@ -566,7 +566,7 @@ c(“high ….
 negative
 </td>
 <td style="text-align:right;">
-23.98
+24
 </td>
 <td style="text-align:right;">
 594
@@ -631,8 +631,8 @@ make use of locked data at multiple stages (through the
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ct_pfs</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         arm decision milestone_at_reject reject_time</span></span>
-<span><span class="co">#&gt; 1 high dose   reject               final       23.98</span></span>
-<span><span class="co">#&gt; 2  low dose   reject               final       23.98</span></span>
+<span><span class="co">#&gt; 1 high dose   reject               final          24</span></span>
+<span><span class="co">#&gt; 2  low dose   reject               final          24</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ct_os</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         arm decision milestone_at_reject reject_time</span></span>
 <span><span class="co">#&gt; 1 high dose   accept                  NA         Inf</span></span>
@@ -685,9 +685,6 @@ seed
 milestone_time_&lt;dose selection&gt;
 </th>
 <th style="text-align:right;">
-n_events_&lt;dose selection&gt;_&lt;patient_id&gt;
-</th>
-<th style="text-align:right;">
 n_events_&lt;dose selection&gt;_&lt;pfs&gt;
 </th>
 <th style="text-align:right;">
@@ -695,6 +692,9 @@ n_events_&lt;dose selection&gt;_&lt;os&gt;
 </th>
 <th style="text-align:right;">
 n_events_&lt;dose selection&gt;_&lt;surrogate&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;dose selection&gt;_&lt;patient_id&gt;
 </th>
 <th style="text-align:left;">
 n_events_&lt;dose selection&gt;_&lt;arms&gt;
@@ -706,9 +706,6 @@ kept_arm
 milestone_time_&lt;interim&gt;
 </th>
 <th style="text-align:right;">
-n_events_&lt;interim&gt;_&lt;patient_id&gt;
-</th>
-<th style="text-align:right;">
 n_events_&lt;interim&gt;_&lt;pfs&gt;
 </th>
 <th style="text-align:right;">
@@ -716,6 +713,9 @@ n_events_&lt;interim&gt;_&lt;os&gt;
 </th>
 <th style="text-align:right;">
 n_events_&lt;interim&gt;_&lt;surrogate&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;interim&gt;_&lt;patient_id&gt;
 </th>
 <th style="text-align:left;">
 n_events_&lt;interim&gt;_&lt;arms&gt;
@@ -727,9 +727,6 @@ futility
 milestone_time_&lt;final&gt;
 </th>
 <th style="text-align:right;">
-n_events_&lt;final&gt;_&lt;patient_id&gt;
-</th>
-<th style="text-align:right;">
 n_events_&lt;final&gt;_&lt;pfs&gt;
 </th>
 <th style="text-align:right;">
@@ -737,6 +734,9 @@ n_events_&lt;final&gt;_&lt;os&gt;
 </th>
 <th style="text-align:right;">
 n_events_&lt;final&gt;_&lt;surrogate&gt;
+</th>
+<th style="text-align:right;">
+n_events_&lt;final&gt;_&lt;patient_id&gt;
 </th>
 <th style="text-align:left;">
 n_events_&lt;final&gt;_&lt;arms&gt;
@@ -766,310 +766,146 @@ Trial-3415
 1727811904
 </td>
 <td style="text-align:right;">
-11.31385
+11.15385
 </td>
 <td style="text-align:right;">
-366
+137
 </td>
 <td style="text-align:right;">
-142
-</td>
-<td style="text-align:right;">
-65
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:left;">
-c(122, 4….
-</td>
-<td style="text-align:left;">
-low
-</td>
-<td style="text-align:right;">
-19.16584
-</td>
-<td style="text-align:right;">
-637
+72
 </td>
 <td style="text-align:right;">
 300
 </td>
 <td style="text-align:right;">
-146
-</td>
-<td style="text-align:right;">
-534
+357
 </td>
 <td style="text-align:left;">
-c(319, 1….
+c(“high ….
 </td>
 <td style="text-align:left;">
-negative
+both
 </td>
 <td style="text-align:right;">
-29.44763
-</td>
-<td style="text-align:right;">
-878
-</td>
-<td style="text-align:right;">
-542
+16.28181
 </td>
 <td style="text-align:right;">
 300
-</td>
-<td style="text-align:right;">
-744
-</td>
-<td style="text-align:left;">
-c(439, 2….
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Trial-3415
-</td>
-<td style="text-align:right;">
-776792356
-</td>
-<td style="text-align:right;">
-11.33385
-</td>
-<td style="text-align:right;">
-367
-</td>
-<td style="text-align:right;">
-139
-</td>
-<td style="text-align:right;">
-68
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:left;">
-c(123, 4….
-</td>
-<td style="text-align:left;">
-high
-</td>
-<td style="text-align:right;">
-19.52434
-</td>
-<td style="text-align:right;">
-654
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-145
-</td>
-<td style="text-align:right;">
-544
-</td>
-<td style="text-align:left;">
-c(327, 1….
-</td>
-<td style="text-align:left;">
-negative
-</td>
-<td style="text-align:right;">
-29.56296
-</td>
-<td style="text-align:right;">
-877
-</td>
-<td style="text-align:right;">
-520
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-748
-</td>
-<td style="text-align:left;">
-c(439, 2….
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Trial-3415
-</td>
-<td style="text-align:right;">
-1430198130
-</td>
-<td style="text-align:right;">
-11.41385
-</td>
-<td style="text-align:right;">
-371
-</td>
-<td style="text-align:right;">
-138
-</td>
-<td style="text-align:right;">
-64
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:left;">
-c(124, 4….
-</td>
-<td style="text-align:left;">
-low
-</td>
-<td style="text-align:right;">
-19.99458
-</td>
-<td style="text-align:right;">
-677
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-158
-</td>
-<td style="text-align:right;">
-554
-</td>
-<td style="text-align:left;">
-c(339, 1….
-</td>
-<td style="text-align:left;">
-negative
-</td>
-<td style="text-align:right;">
-30.26166
-</td>
-<td style="text-align:right;">
-877
-</td>
-<td style="text-align:right;">
-546
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-740
-</td>
-<td style="text-align:left;">
-c(439, 2….
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-accept
-</td>
-<td style="text-align:left;">
-reject
-</td>
-<td style="text-align:left;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Trial-3415
-</td>
-<td style="text-align:right;">
-1400866922
-</td>
-<td style="text-align:right;">
-11.29385
-</td>
-<td style="text-align:right;">
-365
 </td>
 <td style="text-align:right;">
 154
 </td>
 <td style="text-align:right;">
-65
+556
 </td>
 <td style="text-align:right;">
-300
+614
 </td>
 <td style="text-align:left;">
-c(122, 4….
-</td>
-<td style="text-align:left;">
-high
-</td>
-<td style="text-align:right;">
-19.48899
-</td>
-<td style="text-align:right;">
-653
-</td>
-<td style="text-align:right;">
-300
-</td>
-<td style="text-align:right;">
-140
-</td>
-<td style="text-align:right;">
-547
-</td>
-<td style="text-align:left;">
-c(326, 1….
+c(“high ….
 </td>
 <td style="text-align:left;">
 negative
 </td>
 <td style="text-align:right;">
-28.74682
+24.00000
 </td>
 <td style="text-align:right;">
-878
+594
 </td>
 <td style="text-align:right;">
-541
+333
+</td>
+<td style="text-align:right;">
+941
+</td>
+<td style="text-align:right;">
+1000
+</td>
+<td style="text-align:left;">
+c(“high ….
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Trial-3415
+</td>
+<td style="text-align:right;">
+975290675
+</td>
+<td style="text-align:right;">
+11.15385
+</td>
+<td style="text-align:right;">
+130
+</td>
+<td style="text-align:right;">
+67
 </td>
 <td style="text-align:right;">
 300
 </td>
 <td style="text-align:right;">
-755
+357
 </td>
 <td style="text-align:left;">
-c(439, 2….
+c(“high ….
+</td>
+<td style="text-align:left;">
+high
+</td>
+<td style="text-align:right;">
+19.04193
+</td>
+<td style="text-align:right;">
+338
+</td>
+<td style="text-align:right;">
+169
+</td>
+<td style="text-align:right;">
+675
+</td>
+<td style="text-align:right;">
+752
+</td>
+<td style="text-align:left;">
+c(“high ….
+</td>
+<td style="text-align:left;">
+negative
+</td>
+<td style="text-align:right;">
+25.33072
+</td>
+<td style="text-align:right;">
+593
+</td>
+<td style="text-align:right;">
+321
+</td>
+<td style="text-align:right;">
+980
+</td>
+<td style="text-align:right;">
+1000
+</td>
+<td style="text-align:left;">
+c(“high ….
 </td>
 <td style="text-align:left;">
 reject
@@ -1091,16 +927,95 @@ accept
 Trial-3415
 </td>
 <td style="text-align:right;">
-1898009641
+1691172068
 </td>
 <td style="text-align:right;">
-11.19385
+11.15385
 </td>
 <td style="text-align:right;">
-360
+151
 </td>
 <td style="text-align:right;">
-131
+55
+</td>
+<td style="text-align:right;">
+300
+</td>
+<td style="text-align:right;">
+357
+</td>
+<td style="text-align:left;">
+c(“high ….
+</td>
+<td style="text-align:left;">
+low
+</td>
+<td style="text-align:right;">
+18.01442
+</td>
+<td style="text-align:right;">
+350
+</td>
+<td style="text-align:right;">
+144
+</td>
+<td style="text-align:right;">
+624
+</td>
+<td style="text-align:right;">
+700
+</td>
+<td style="text-align:left;">
+c(“high ….
+</td>
+<td style="text-align:left;">
+negative
+</td>
+<td style="text-align:right;">
+25.42314
+</td>
+<td style="text-align:right;">
+619
+</td>
+<td style="text-align:right;">
+318
+</td>
+<td style="text-align:right;">
+981
+</td>
+<td style="text-align:right;">
+1000
+</td>
+<td style="text-align:left;">
+c(“high ….
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Trial-3415
+</td>
+<td style="text-align:right;">
+259627071
+</td>
+<td style="text-align:right;">
+11.15385
+</td>
+<td style="text-align:right;">
+142
 </td>
 <td style="text-align:right;">
 60
@@ -1108,50 +1023,135 @@ Trial-3415
 <td style="text-align:right;">
 300
 </td>
+<td style="text-align:right;">
+357
+</td>
 <td style="text-align:left;">
-c(120, 4….
+c(“high ….
 </td>
 <td style="text-align:left;">
 low
 </td>
 <td style="text-align:right;">
-19.73958
+18.63943
 </td>
 <td style="text-align:right;">
-667
+342
 </td>
 <td style="text-align:right;">
-300
+180
 </td>
 <td style="text-align:right;">
-151
+655
 </td>
 <td style="text-align:right;">
-550
+731
 </td>
 <td style="text-align:left;">
-c(334, 1….
+c(“high ….
 </td>
 <td style="text-align:left;">
 negative
 </td>
 <td style="text-align:right;">
-28.64718
+24.49219
 </td>
 <td style="text-align:right;">
-880
+562
 </td>
 <td style="text-align:right;">
-534
+316
+</td>
+<td style="text-align:right;">
+946
+</td>
+<td style="text-align:right;">
+1000
+</td>
+<td style="text-align:left;">
+c(“high ….
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+reject
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+accept
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Trial-3415
+</td>
+<td style="text-align:right;">
+2026101856
+</td>
+<td style="text-align:right;">
+11.17385
+</td>
+<td style="text-align:right;">
+139
+</td>
+<td style="text-align:right;">
+70
 </td>
 <td style="text-align:right;">
 300
 </td>
 <td style="text-align:right;">
-743
+358
 </td>
 <td style="text-align:left;">
-c(440, 2….
+c(“high ….
+</td>
+<td style="text-align:left;">
+low
+</td>
+<td style="text-align:right;">
+17.85614
+</td>
+<td style="text-align:right;">
+346
+</td>
+<td style="text-align:right;">
+150
+</td>
+<td style="text-align:right;">
+614
+</td>
+<td style="text-align:right;">
+692
+</td>
+<td style="text-align:left;">
+c(“high ….
+</td>
+<td style="text-align:left;">
+negative
+</td>
+<td style="text-align:right;">
+24.37907
+</td>
+<td style="text-align:right;">
+573
+</td>
+<td style="text-align:right;">
+312
+</td>
+<td style="text-align:right;">
+940
+</td>
+<td style="text-align:right;">
+1000
+</td>
+<td style="text-align:left;">
+c(“high ….
 </td>
 <td style="text-align:left;">
 accept
@@ -1282,31 +1282,31 @@ Both
 </thead>
 <tbody><tr>
 <td style="text-align:right;">
-11.3
+11.2
 </td>
 <td style="text-align:right;">
-19.1
+18.2
 </td>
 <td style="text-align:right;">
-28
+24.9
 </td>
 <td style="text-align:right;">
-365
+357.2
 </td>
 <td style="text-align:right;">
-647.6
+711.1
 </td>
 <td style="text-align:right;">
-893.2
+1000
 </td>
 <td style="text-align:right;">
-70.5
+67.8
 </td>
 <td style="text-align:right;">
-17.3
+18.3
 </td>
 <td style="text-align:right;">
-12.2
+13.9
 </td>
 </tr></tbody>
 </table>
@@ -1391,22 +1391,22 @@ Final
 </thead>
 <tbody><tr>
 <td style="text-align:right;">
-144.4
+143.2
 </td>
 <td style="text-align:right;">
-300
+337.8
 </td>
 <td style="text-align:right;">
-532.8
+596.5
 </td>
 <td style="text-align:right;">
-67.9
+67.5
 </td>
 <td style="text-align:right;">
-152.2
+168.8
 </td>
 <td style="text-align:right;">
-301.9
+321.6
 </td>
 </tr></tbody>
 </table>
@@ -1507,28 +1507,28 @@ Low and High
 </thead>
 <tbody><tr>
 <td style="text-align:right;">
-57.6
+60.7
 </td>
 <td style="text-align:right;">
-24.6
+26.5
 </td>
 <td style="text-align:right;">
-75.4
+79.6
 </td>
 <td style="text-align:right;">
-6.8
+7.6
 </td>
 <td style="text-align:right;">
-72.1
+30.9
 </td>
 <td style="text-align:right;">
-27.4
+15
 </td>
 <td style="text-align:right;">
-90.6
+42.9
 </td>
 <td style="text-align:right;">
-8.9
+3
 </td>
 </tr></tbody>
 </table>
@@ -1589,16 +1589,16 @@ Reject PFS or OS
 </thead>
 <tbody><tr>
 <td style="text-align:right;">
-0
+44
 </td>
 <td style="text-align:right;">
-15.2
+7.3
 </td>
 <td style="text-align:right;">
-75.4
+35.6
 </td>
 <td style="text-align:right;">
-90.6
+86.9
 </td>
 </tr></tbody>
 </table>

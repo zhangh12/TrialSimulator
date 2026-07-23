@@ -11,7 +11,7 @@ trial() to define a trial."><meta property="og:image" content="https://zhangh12.
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.25.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.26.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -93,60 +93,87 @@ windows. This function can be used as the <code>enroller</code> when calling
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Enrollment times are the deterministic inverse of the cumulative accrual
-intensity: patient <code>k</code> (counting from 0) enrolls when the expected
-cumulative enrollment reaches <code>k</code>. Consequently the cumulative accrual
-capacity increases by window length x <code>piecewise_rate</code> across a window
-(so a window whose capacity is an integer holds exactly that many patients),
-and within a window with a positive rate consecutive patients are spaced by
-<code>1 / piecewise_rate</code>. When the first window has a positive rate, the
-first patient enrolls at time 0.</p>
-<p>A window may have <code>piecewise_rate = 0</code> to model a recruitment pause (a
-hold for safety review, a site not yet activated, a seasonal gap, etc.). No
-patient is enrolled during a pause window, but calendar time still advances
-across it, so enrollment resumes at the window's <code>end_time</code>. Pauses may
-occur in the first window or span several consecutive windows. A leading
-pause therefore defers the first enrollment to the end of the pause rather
-than time 0.</p>
-<p>The last <code>end_time</code> must be <code>Inf</code> with a positive rate, so that the
-schedule can supply any number of patients. (<code>TrialSimulator</code> may
-internally request several times the planned sample size for adaptive
-resizing; an open-ended final window keeps that from failing.)</p>
-<p>A positive rate too low for its window – one expecting fewer than a single
-patient (window length x <code>piecewise_rate</code> &lt; 1) – is almost always a
-misspecification (e.g. a tiny rate meant as a pause) and raises an error. A
-window expecting exactly one patient (product equal to 1) is allowed; the
-check uses a small floating-point tolerance so that <code>rate = 1 / width</code>
-is not rejected when the product rounds just below 1. Use
-<code>piecewise_rate = 0</code> for a true pause, or a rate of at least 1 / width.</p>
-    </div>
+    <p><code>StaggeredRecruiter</code> is the only enroller accepted by <code><a href="trial.html">trial()</a></code>:
+a piecewise constant accrual rate is flexible enough to approximate
+realistic recruitment in practice, e.g., site ramp-up, steady accrual,
+and temporary pauses.</p>
+<p>The returned enrollment times are deterministic, not random. Within a
+window of positive rate, patients enroll one by one with spacing
+<code>1/piecewise_rate</code>; under a constant rate <code>r</code>, the <code>k</code>-th
+patient enrolls exactly at <code>k / r</code>. In particular, the first patient
+enrolls at <code>1/piecewise_rate</code> rather than at time 0, and a
+milestone triggered by <code>enrollment(n = n)</code> occurs exactly at the time
+the planned cumulative accrual reaches <code>n</code>.</p>
+<p>A window with <code>piecewise_rate = 0</code> models a recruitment pause (a hold
+for safety review, a site not yet activated, a seasonal gap, etc.): no
+patient is enrolled in that window, and enrollment resumes after its
+<code>end_time</code>. Pauses may occur in the first window or span several
+consecutive windows; a leading pause defers the first enrollment
+accordingly.</p>
+<p>A valid <code>accrual_rate</code> must satisfy all of the following:</p><ul><li><p>it is a data frame with columns <code>end_time</code> and
+<code>piecewise_rate</code>;</p></li>
+<li><p><code>end_time</code> is positive and strictly increasing, and the last
+entry is <code>Inf</code> with a positive rate, so that the schedule can supply
+any number of patients (<code>TrialSimulator</code> may internally request more
+than the planned sample size, e.g., for adaptive resizing via
+<code><a href="resize.html">resize()</a></code>);</p></li>
+<li><p>rates are non-negative and finite;</p></li>
+<li><p>a finite window with a positive rate must expect at least one
+patient, i.e., window length x <code>piecewise_rate</code> &gt;= 1. A tiny positive
+rate meant as a pause is rejected with an error; use
+<code>piecewise_rate = 0</code> for a true pause.</p></li>
+</ul></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">accrual_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  end_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">13</span><span class="op">:</span><span class="fl">17</span>, <span class="cn">Inf</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  piecewise_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">15</span> <span class="op">+</span> <span class="fl">6</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span>, <span class="fl">45</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">## constant accrual of 25 patients/month: patient k enrolls at k / 25</span></span></span>
+<span class="r-in"><span><span class="va">accrual_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>end_time <span class="op">=</span> <span class="cn">Inf</span>, piecewise_rate <span class="op">=</span> <span class="fl">25</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">StaggeredRecruiter</span><span class="op">(</span><span class="fl">30</span>, <span class="va">accrual_rate</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0.00000000 0.06666667 0.13333333 0.20000000 0.26666667 0.33333333</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] 0.40000000 0.46666667 0.53333333 0.60000000 0.66666667 0.73333333</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [13] 0.80000000 0.86666667 0.93333333 1.00000000 1.06666667 1.13333333</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [19] 1.20000000 1.26666667 1.33333333 1.40000000 1.46666667 1.53333333</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [25] 1.60000000 1.66666667 1.73333333 1.80000000 1.86666667 1.93333333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0.04 0.08 0.12 0.16 0.20 0.24 0.28 0.32 0.36 0.40 0.44 0.48 0.52 0.56 0.60</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [16] 0.64 0.68 0.72 0.76 0.80 0.84 0.88 0.92 0.96 1.00 1.04 1.08 1.12 1.16 1.20</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">## recruitment pause: 30/mo for 12 months, paused for months 12-18, then 30/mo</span></span></span>
+<span class="r-in"><span><span class="co">## recruitment pause: 30/mo through month 12, paused during months 12-18,</span></span></span>
+<span class="r-in"><span><span class="co">## then 30/mo again. Monthly counts show months 13-17 are empty and</span></span></span>
+<span class="r-in"><span><span class="co">## enrollment resumes at the end of the pause (month 18).</span></span></span>
 <span class="r-in"><span><span class="va">accrual_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  end_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">18</span>, <span class="cn">Inf</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  piecewise_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">30</span>, <span class="fl">0</span>, <span class="fl">30</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">enroll_time</span> <span class="op">&lt;-</span> <span class="fu">StaggeredRecruiter</span><span class="op">(</span><span class="fl">400</span>, <span class="va">accrual_rate</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">ceiling</a></span><span class="op">(</span><span class="va">enroll_time</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1  2  3  4  5  6  7  8  9 10 11 12 18 19 20 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30 30 30 30 30 30 30 30 30 30 30 29  1 30 10 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## leading pause (first rate is 0): enrollment opens 3 months after study</span></span></span>
+<span class="r-in"><span><span class="co">## start, e.g., the first site is activated with a delay, then 30/mo</span></span></span>
+<span class="r-in"><span><span class="va">accrual_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  end_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="cn">Inf</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  piecewise_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">30</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">StaggeredRecruiter</span><span class="op">(</span><span class="fl">30</span>, <span class="va">accrual_rate</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0.00000000 0.03333333 0.06666667 0.10000000 0.13333333 0.16666667</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] 0.20000000 0.23333333 0.26666667 0.30000000 0.33333333 0.36666667</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [13] 0.40000000 0.43333333 0.46666667 0.50000000 0.53333333 0.56666667</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [19] 0.60000000 0.63333333 0.66666667 0.70000000 0.73333333 0.76666667</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [25] 0.80000000 0.83333333 0.86666667 0.90000000 0.93333333 0.96666667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 3.033333 3.066667 3.100000 3.133333 3.166667 3.200000 3.233333 3.266667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] 3.300000 3.333333 3.366667 3.400000 3.433333 3.466667 3.500000 3.533333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [17] 3.566667 3.600000 3.633333 3.666667 3.700000 3.733333 3.766667 3.800000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [25] 3.833333 3.866667 3.900000 3.933333 3.966667 4.000000</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## approximate a linear ramp-up by monthly steps: accrual grows by 5/mo</span></span></span>
+<span class="r-in"><span><span class="co">## each month, from 5/mo up to 30/mo, then stays steady at 30/mo</span></span></span>
+<span class="r-in"><span><span class="va">accrual_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  end_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="cn">Inf</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  piecewise_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">30</span>, by <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>, <span class="fl">30</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">enroll_time</span> <span class="op">&lt;-</span> <span class="fu">StaggeredRecruiter</span><span class="op">(</span><span class="fl">200</span>, <span class="va">accrual_rate</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## monthly enrolled counts show the ramp (5, 10, ..., 30) and the plateau (30)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">ceiling</a></span><span class="op">(</span><span class="va">enroll_time</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1  2  3  4  5  6  7  8  9 10 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  5 10 15 20 25 30 30 30 30  5 </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

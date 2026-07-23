@@ -312,21 +312,21 @@ simulation replicates is run to save time.
 controller <- controller(trial, listener)
 controller$run(plot_event = TRUE)
 #> Condition of milestone <dose selection> is being checked.
-#> Data is locked at time = 11.1205128205128 for milestone <dose selection>.
+#> Data is locked at time = 11.1538461538462 for milestone <dose selection>.
 #> Locked data can be accessed in Trial$get_locked_data('dose selection'). 
 #> Number of events at lock time:
 #>   pfs os surrogate patient         arms
 #> 1 137 72       300     357 c("high ....
 #> 
 #> Condition of milestone <interim> is being checked.
-#> Data is locked at time = 16.2618127953581 for milestone <interim>.
+#> Data is locked at time = 16.2818127953581 for milestone <interim>.
 #> Locked data can be accessed in Trial$get_locked_data('interim'). 
 #> Number of events at lock time:
 #>   pfs  os surrogate patient         arms
 #> 1 300 154       556     614 c("high ....
 #> 
 #> Condition of milestone <final> is being checked.
-#> Data is locked at time = 23.98 for milestone <final>.
+#> Data is locked at time = 24 for milestone <final>.
 #> Locked data can be accessed in Trial$get_locked_data('final'). 
 #> Number of events at lock time:
 #>   pfs  os surrogate patient         arms
@@ -352,7 +352,7 @@ controller$get_output() %>%
 
 | trial | seed | milestone_time\_\<dose selection\> | n_events\_\<dose selection\>\_\<pfs\> | n_events\_\<dose selection\>\_\<os\> | n_events\_\<dose selection\>\_\<surrogate\> | n_events\_\<dose selection\>\_\<patient_id\> | n_events\_\<dose selection\>\_\<arms\> | kept_arm | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<pfs\> | n_events\_\<interim\>\_\<os\> | n_events\_\<interim\>\_\<surrogate\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<arms\> | futility | milestone_time\_\<final\> | n_events\_\<final\>\_\<pfs\> | n_events\_\<final\>\_\<os\> | n_events\_\<final\>\_\<surrogate\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | pfs_high_dose_decision | pfs_low_dose_decision | os_high_dose_decision | os_low_dose_decision | error_message |
 |:---|---:|---:|---:|---:|---:|---:|:---|:---|---:|---:|---:|---:|---:|:---|:---|---:|---:|---:|---:|---:|:---|:---|:---|:---|:---|:---|
-| Trial-3415 | 1727811904 | 11.12051 | 137 | 72 | 300 | 357 | c(“high …. | both | 16.26181 | 300 | 154 | 556 | 614 | c(“high …. | negative | 23.98 | 594 | 333 | 941 | 1000 | c(“high …. | reject | reject | accept | accept |  |
+| Trial-3415 | 1727811904 | 11.15385 | 137 | 72 | 300 | 357 | c(“high …. | both | 16.28181 | 300 | 154 | 556 | 614 | c(“high …. | negative | 24 | 594 | 333 | 941 | 1000 | c(“high …. | reject | reject | accept | accept |  |
 
 Here we dive into the action function (`action3`) for the final
 analysis. We can literally execute the function line by line with locked
@@ -386,8 +386,8 @@ ct_os <- trial$closedTest(dt_os, treatments = c('high dose', 'low dose'),
 
 print(ct_pfs)
 #>         arm decision milestone_at_reject reject_time
-#> 1 high dose   reject               final       23.98
-#> 2  low dose   reject               final       23.98
+#> 1 high dose   reject               final          24
+#> 2  low dose   reject               final          24
 print(ct_os)
 #>         arm decision milestone_at_reject reject_time
 #> 1 high dose   accept                  NA         Inf
@@ -432,13 +432,13 @@ output %>%
   scroll_box(width = "100%")
 ```
 
-| trial | seed | milestone_time\_\<dose selection\> | n_events\_\<dose selection\>\_\<patient_id\> | n_events\_\<dose selection\>\_\<pfs\> | n_events\_\<dose selection\>\_\<os\> | n_events\_\<dose selection\>\_\<surrogate\> | n_events\_\<dose selection\>\_\<arms\> | kept_arm | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<pfs\> | n_events\_\<interim\>\_\<os\> | n_events\_\<interim\>\_\<surrogate\> | n_events\_\<interim\>\_\<arms\> | futility | milestone_time\_\<final\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<pfs\> | n_events\_\<final\>\_\<os\> | n_events\_\<final\>\_\<surrogate\> | n_events\_\<final\>\_\<arms\> | pfs_high_dose_decision | pfs_low_dose_decision | os_high_dose_decision | os_low_dose_decision | error_message |
+| trial | seed | milestone_time\_\<dose selection\> | n_events\_\<dose selection\>\_\<pfs\> | n_events\_\<dose selection\>\_\<os\> | n_events\_\<dose selection\>\_\<surrogate\> | n_events\_\<dose selection\>\_\<patient_id\> | n_events\_\<dose selection\>\_\<arms\> | kept_arm | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<pfs\> | n_events\_\<interim\>\_\<os\> | n_events\_\<interim\>\_\<surrogate\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<arms\> | futility | milestone_time\_\<final\> | n_events\_\<final\>\_\<pfs\> | n_events\_\<final\>\_\<os\> | n_events\_\<final\>\_\<surrogate\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | pfs_high_dose_decision | pfs_low_dose_decision | os_high_dose_decision | os_low_dose_decision | error_message |
 |:---|---:|---:|---:|---:|---:|---:|:---|:---|---:|---:|---:|---:|---:|:---|:---|---:|---:|---:|---:|---:|:---|:---|:---|:---|:---|:---|
-| Trial-3415 | 1727811904 | 11.31385 | 366 | 142 | 65 | 300 | c(122, 4…. | low | 19.16584 | 637 | 300 | 146 | 534 | c(319, 1…. | negative | 29.44763 | 878 | 542 | 300 | 744 | c(439, 2…. | accept | reject | accept | reject |  |
-| Trial-3415 | 776792356 | 11.33385 | 367 | 139 | 68 | 300 | c(123, 4…. | high | 19.52434 | 654 | 300 | 145 | 544 | c(327, 1…. | negative | 29.56296 | 877 | 520 | 300 | 748 | c(439, 2…. | reject | accept | reject | accept |  |
-| Trial-3415 | 1430198130 | 11.41385 | 371 | 138 | 64 | 300 | c(124, 4…. | low | 19.99458 | 677 | 300 | 158 | 554 | c(339, 1…. | negative | 30.26166 | 877 | 546 | 300 | 740 | c(439, 2…. | accept | reject | accept | reject |  |
-| Trial-3415 | 1400866922 | 11.29385 | 365 | 154 | 65 | 300 | c(122, 4…. | high | 19.48899 | 653 | 300 | 140 | 547 | c(326, 1…. | negative | 28.74682 | 878 | 541 | 300 | 755 | c(439, 2…. | reject | accept | reject | accept |  |
-| Trial-3415 | 1898009641 | 11.19385 | 360 | 131 | 60 | 300 | c(120, 4…. | low | 19.73958 | 667 | 300 | 151 | 550 | c(334, 1…. | negative | 28.64718 | 880 | 534 | 300 | 743 | c(440, 2…. | accept | reject | accept | reject |  |
+| Trial-3415 | 1727811904 | 11.15385 | 137 | 72 | 300 | 357 | c(“high …. | both | 16.28181 | 300 | 154 | 556 | 614 | c(“high …. | negative | 24.00000 | 594 | 333 | 941 | 1000 | c(“high …. | reject | reject | accept | accept |  |
+| Trial-3415 | 975290675 | 11.15385 | 130 | 67 | 300 | 357 | c(“high …. | high | 19.04193 | 338 | 169 | 675 | 752 | c(“high …. | negative | 25.33072 | 593 | 321 | 980 | 1000 | c(“high …. | reject | accept | reject | accept |  |
+| Trial-3415 | 1691172068 | 11.15385 | 151 | 55 | 300 | 357 | c(“high …. | low | 18.01442 | 350 | 144 | 624 | 700 | c(“high …. | negative | 25.42314 | 619 | 318 | 981 | 1000 | c(“high …. | accept | reject | accept | accept |  |
+| Trial-3415 | 259627071 | 11.15385 | 142 | 60 | 300 | 357 | c(“high …. | low | 18.63943 | 342 | 180 | 655 | 731 | c(“high …. | negative | 24.49219 | 562 | 316 | 946 | 1000 | c(“high …. | accept | reject | accept | accept |  |
+| Trial-3415 | 2026101856 | 11.17385 | 139 | 70 | 300 | 358 | c(“high …. | low | 17.85614 | 346 | 150 | 614 | 692 | c(“high …. | negative | 24.37907 | 573 | 312 | 940 | 1000 | c(“high …. | accept | reject | accept | reject |  |
 
 ``` r
 

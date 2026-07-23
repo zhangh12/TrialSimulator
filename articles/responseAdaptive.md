@@ -270,7 +270,7 @@ output %>%
 
 | trial | seed | milestone_time\_\<stage 1\> | n_events\_\<stage 1\>\_\<fev1\> | n_events\_\<stage 1\>\_\<patient_id\> | n_events\_\<stage 1\>\_\<arms\> | milestone_time\_\<stage 2\> | n_events\_\<stage 2\>\_\<fev1\> | n_events\_\<stage 2\>\_\<patient_id\> | n_events\_\<stage 2\>\_\<arms\> | milestone_time\_\<final\> | n_events\_\<final\>\_\<fev1\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | MC_test | error_message |
 |:---|---:|---:|---:|---:|:---|---:|---:|---:|:---|---:|---:|---:|:---|:---|:---|
-| Trial-3415 | 1727811904 | 15.76 | 50 | 66 | c(“0.0”,…. | 30.28 | 120 | 153 | c(“0.0”,…. | 39.88 | 200 | 200 | c(“0.0”,…. | TRUE |  |
+| Trial-3415 | 1727811904 | 16 | 50 | 66 | c(“0.0”,…. | 30.4 | 120 | 153 | c(“0.0”,…. | 40 | 200 | 200 | c(“0.0”,…. | TRUE |  |
 
 In the output, the columns `n_event_<milestone>_<arms>` contain detailed
 information on observed events or sample sizes per arm at each

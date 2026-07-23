@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.25.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.26.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,6 +50,32 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.26.0" id="trialsimulator-1260">TrialSimulator 1.26.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1260"></a></h2>
+<div class="section level3">
+<h3 id="new-feature-1-26-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-1-26-0"></a></h3>
+<ul><li>New adaptation method <code>trial$update_accrual_rate()</code> (wrapper <code><a href="../reference/update_accrual_rate.html">update_accrual_rate()</a></code>): update the accrual rate of the recruitment curve at a milestone, e.g., to revise recruitment after dose selection or enrichment, or to pause it for a period after an interim decision. <code>end_time</code> of the new <code>accrual_rate</code> is measured from the milestone; patients not yet enrolled (and the enrollment reserves used by <code><a href="../reference/resize.html">resize()</a></code>) are re-planned and re-randomized under the new schedule, while enrolled patients are left unchanged. Like other adaptations, it must be called within an action function, after a milestone has been triggered.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.25.2" id="trialsimulator-1252">TrialSimulator 1.25.2<a class="anchor" aria-label="anchor" href="#trialsimulator-1252"></a></h2>
+<div class="section level3">
+<h3 id="updates-1-25-2">Updates<a class="anchor" aria-label="anchor" href="#updates-1-25-2"></a></h3>
+<ul><li>
+<code><a href="../reference/StaggeredRecruiter.html">StaggeredRecruiter()</a></code> now enrolls patient <code>k</code> when the planned cumulative accrual reaches <code>k</code> (previously <code>k - 1</code>): under a constant rate <code>r</code> the <code>n</code>-th patient enrolls exactly at <code>n / r</code>, so a milestone triggered by <code>enrollment(n)</code> occurs exactly at the planned accrual time. The first patient enrolls at <code>1 / piecewise_rate</code> instead of time 0, and all enrollment times shift by one inter-arrival accordingly; simulation results under a fixed seed differ slightly from 1.25.1. The precomputed output of the <code>adaptiveDesign</code> vignette is regenerated under the new convention.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.25.1" id="trialsimulator-1251">TrialSimulator 1.25.1<a class="anchor" aria-label="anchor" href="#trialsimulator-1251"></a></h2>
+<div class="section level3">
+<h3 id="bug-fix-1-25-1">Bug Fix<a class="anchor" aria-label="anchor" href="#bug-fix-1-25-1"></a></h3>
+<ul><li>Fix an infinite loop in patient enrollment when fractional sample ratios are combined with stratification factors: the pool labels now match the unstratified randomization queue in that case.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="updates-1-25-1">Updates<a class="anchor" aria-label="anchor" href="#updates-1-25-1"></a></h3>
+<ul><li>Warn when fractional sample ratios are used in a trial with stratification factors: stratified randomization is not supported in that case and unenrolled patients are randomized by <code><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample()</a></code> without stratification. The warning is suppressed when <code>silent = TRUE</code>.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.25.0" id="trialsimulator-1250">TrialSimulator 1.25.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1250"></a></h2>
 <div class="section level3">

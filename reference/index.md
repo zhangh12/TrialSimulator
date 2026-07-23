@@ -106,6 +106,8 @@
   : Summary of Milestone Time from Simulated Trials
 - [`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md)
   : Define a Trial
+- [`update_accrual_rate()`](https://zhangh12.github.io/TrialSimulator/reference/update_accrual_rate.md)
+  : Updating the Accrual Rate of a Trial at a Milestone
 - [`update_generator()`](https://zhangh12.github.io/TrialSimulator/reference/update_generator.md)
   : Updating Data Generators of One or More Endpoints in an Arm
 - [`update_sample_ratio()`](https://zhangh12.github.io/TrialSimulator/reference/update_sample_ratio.md)

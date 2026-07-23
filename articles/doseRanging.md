@@ -220,7 +220,7 @@ output %>%
 
 | trial | seed | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<ep\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<arms\> | z_value | interim_decision | milestone_time\_\<final\> | n_events\_\<final\>\_\<ep\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | decision | error_message |
 |:---|---:|---:|---:|---:|:---|---:|:---|---:|---:|---:|:---|:---|:---|
-| 123 | 1960520344 | 6.8 | 30 | 35 | c(“dose …. | 0.9258209 | stop trial | 13.7 | 150 | 150 | c(“dose …. | no-go |  |
+| 123 | 1960520344 | 7 | 30 | 35 | c(“dose …. | 0.9258209 | stop trial | 13.75 | 150 | 150 | c(“dose …. | no-go |  |
 
 We can call `controller$run(n = 10)` to simulate additional trials. in
 the function `action_at_final()`, the go/no-go decision (`decision` in

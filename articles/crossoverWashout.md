@@ -249,7 +249,7 @@ listener$add_milestones(final)
 controller <- controller(trial, listener)
 controller$run(n = 1, plot_event = TRUE)
 #> Condition of milestone <final> is being checked.
-#> Data is locked at time = 25.4 for milestone <final>.
+#> Data is locked at time = 25.5 for milestone <final>.
 #> Locked data can be accessed in Trial$get_locked_data('final'). 
 #> Number of events at lock time:
 #>   baseline1 ep1 baseline2 ep2 baseline3 ep3 baseline4 ep4 patient         arms
@@ -283,4 +283,4 @@ output %>%
 
 | trial | seed | milestone_time\_\<final\> | n_events\_\<final\>\_\<baseline1\> | n_events\_\<final\>\_\<ep1\> | n_events\_\<final\>\_\<baseline2\> | n_events\_\<final\>\_\<ep2\> | n_events\_\<final\>\_\<baseline3\> | n_events\_\<final\>\_\<ep3\> | n_events\_\<final\>\_\<baseline4\> | n_events\_\<final\>\_\<ep4\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | result | error_message |
 |:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---|:---|:---|
-| crossover-trial | 973100785 | 25.4 | 60 | 60 | 60 | 60 | 60 | 60 | 60 | 60 | 60 | c(“ABCD”…. | anything |  |
+| crossover-trial | 973100785 | 25.5 | 60 | 60 | 60 | 60 | 60 | 60 | 60 | 60 | 60 | c(“ABCD”…. | anything |  |
