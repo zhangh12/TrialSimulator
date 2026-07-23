@@ -23,6 +23,9 @@ StaggeredRecruiter(n, accrual_rate)
           positive.}
 }}
 }
+\value{
+a sorted numeric vector of \code{n} enrollment times.
+}
 \description{
 It assumes a uniform enrollment with constant rate in each of the time
 windows. This function can be used as the \code{enroller} when calling

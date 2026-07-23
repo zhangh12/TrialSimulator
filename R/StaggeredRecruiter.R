@@ -92,6 +92,8 @@
 #'
 #' ## monthly enrolled counts show the ramp (5, 10, ..., 30) and the plateau (30)
 #' table(ceiling(enroll_time))
+#' @return a sorted numeric vector of \code{n} enrollment times.
+#'
 #' @export
 StaggeredRecruiter <- function(n, accrual_rate) {
 

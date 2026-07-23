@@ -12,6 +12,9 @@ set_duration(trial, duration)
 \item{duration}{new duration of a trial. It must be greater than the current
 duration.}
 }
+\value{
+no return value, called for its side effect of updating \code{trial}.
+}
 \description{
 set trial duration in an adaptive designed trial. New duration must be
 longer than the old one. All patients enrolled

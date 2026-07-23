@@ -28,6 +28,8 @@
 #' once in the second approach. But statistically, they are equivalent and
 #' of the same distribution.
 #'
+#' @return no return value, called for its side effect of updating \code{trial}.
+#'
 #' @export
 #'
 add_arms <- function(trial, sample_ratio, ...){

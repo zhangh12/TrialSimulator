@@ -11,6 +11,10 @@
 
 \item{...}{currently not supported.}
 }
+\value{
+no return value, called to display a boxplot of milestone
+triggering times.
+}
 \description{
 Plot Triggering Time of Milestones in Simulated Trials
 }

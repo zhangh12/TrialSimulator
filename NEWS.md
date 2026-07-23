@@ -1,3 +1,18 @@
+# TrialSimulator 1.26.1
+
+## Bug Fix
+
+- `make_snapshot()` silently dropped `NULL`-valued private fields from the snapshot (assigning `NULL` with `[[<-` deletes a list entry); `reset()`'s explicit re-null list masked this for existing fields. The snapshot now preserves `NULL` fields, so any future field is restored across simulation replicates by construction.
+- Fix an error message in `dunnettTest()` that referenced an undefined variable.
+- Fix a summary line in the `doseRanging` vignette that compared a string literal instead of the `decision` column.
+
+## Updates
+
+- Regenerate the precomputed outputs of the `doseRanging` and `fixedDesign` vignettes under the 1.25.2 enrollment convention; the `fixedDesign` output now contains the 1,000 replicates its code states (previously 100).
+- Add an `R CMD check` GitHub Actions workflow (macOS/Windows/Ubuntu; R release/devel/oldrel).
+- Add `\value` sections to exported help topics, a grouped reference index for the pkgdown site, and mention the newest adaptations in the `actionFunctions` vignette introduction.
+- Remove the unused `graphicalMCP` entry from `Suggests`.
+
 # TrialSimulator 1.26.0
 
 ## New Feature

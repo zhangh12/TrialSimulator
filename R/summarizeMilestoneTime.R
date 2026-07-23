@@ -101,6 +101,9 @@ summarizeMilestoneTime <- function(output){
 #' @param x an object returned by \code{summarizeMilestoneTime()}.
 #' @param ... currently not supported.
 #'
+#' @return no return value, called to display a boxplot of milestone
+#' triggering times.
+#'
 #' @export
 #'
 plot.milestone_time_summary <- function(x, ...){

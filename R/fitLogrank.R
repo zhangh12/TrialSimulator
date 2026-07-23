@@ -31,7 +31,7 @@
 #' applying filter in \code{...}, models are fitted for placebo verse
 #' each of the treatment arms.
 #'
-#' @returns a data frame with three columns:
+#' @returns a data frame with columns:
 #' \describe{
 #' \item{\code{arm}}{name of the treatment arm. }
 #' \item{\code{placebo}}{name of the placebo arm. }

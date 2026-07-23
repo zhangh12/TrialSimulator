@@ -41,6 +41,8 @@
 #' \code{end_time} measured from the current milestone. The last
 #' \code{end_time} must be \code{Inf} with a positive rate.
 #'
+#' @return no return value, called for its side effect of updating \code{trial}.
+#'
 #' @export
 #'
 update_accrual_rate <- function(trial, accrual_rate){

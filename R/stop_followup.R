@@ -42,6 +42,8 @@
 #' selected patients after the current milestone. If 0 (default), follow-up
 #' stops at the milestone itself.
 #'
+#' @return no return value, called for its side effect of updating \code{trial}.
+#'
 #' @export
 #'
 stop_followup <- function(trial, ..., additional_followup = 0){

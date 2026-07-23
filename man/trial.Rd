@@ -65,6 +65,9 @@ simulation. Default: \code{FALSE}.}
 
 \item{...}{(optional) arguments of \code{enroller} and \code{dropout}.}
 }
+\value{
+an object of R6 class \code{Trials}, representing a trial.
+}
 \description{
 Define a trial. This is a user-friendly wrapper for
 the class constructor \code{Trial$new()}. Users who are not familiar with

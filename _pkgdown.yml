@@ -2,3 +2,80 @@ url: https://zhangh12.github.io/TrialSimulator/
 template:
   bootstrap: 5
 
+reference:
+- title: Define a trial
+  desc: Building blocks of a simulated trial.
+  contents:
+  - trial
+  - arm
+  - endpoint
+  - regimen
+  - StaggeredRecruiter
+- title: Milestones and triggering conditions
+  desc: Register milestones and the conditions that trigger them.
+  contents:
+  - milestone
+  - listener
+  - controller
+  - calendarTime
+  - enrollment
+  - eventNumber
+  - doNothing
+- title: Adaptations
+  desc: Methods called within action functions to adapt an ongoing trial.
+  contents:
+  - add_arms
+  - remove_arms
+  - resize
+  - set_duration
+  - update_sample_ratio
+  - update_generator
+  - crossover
+  - stop_followup
+  - update_accrual_rate
+- title: Statistical analysis
+  desc: Model fitting and multiplicity-controlled testing.
+  contents:
+  - fitCoxph
+  - fitLogrank
+  - fitLinear
+  - fitLogistic
+  - fitFarringtonManning
+  - GraphicalTesting
+  - GroupSequentialTest
+- title: Data generators and distribution helpers
+  contents:
+  - DynamicRNGFunction
+  - PiecewiseConstantExponentialRNG
+  - CorrelatedPfsAndOs2
+  - CorrelatedPfsAndOs3
+  - CorrelatedPfsAndOs4
+  - rconst
+  - qPiecewiseExponential
+  - solveMixtureExponentialDistribution
+  - solvePiecewiseConstantExponentialDistribution
+  - solveThreeStateModel
+  - weibullDropout
+- title: Summaries and utilities
+  contents:
+  - summarizeDataFrame
+  - summarizeMilestoneTime
+  - plot.milestone_time_summary
+  - plot.three_state_model
+  - expandRegimen
+- title: R6 classes
+  desc: Underlying classes; most users interact through the wrappers above.
+  contents:
+  - Trials
+  - Arms
+  - Endpoints
+  - Milestones
+  - Listeners
+  - Controllers
+  - Regimens
+- title: internal
+  contents:
+  - reexports
+  - getAdaptiveDesignOutput
+  - getDoseRangingOutput
+  - getFixedDesignOutput

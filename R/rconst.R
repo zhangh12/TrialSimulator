@@ -10,6 +10,8 @@
 #' @param n integer. Number of observations.
 #' @param value scalar. Value of constant observations.
 #'
+#' @return a numeric vector of length \code{n} with all entries equal to \code{value}.
+#'
 #' @export
 rconst <- function(n, value){
   rep(value, n)

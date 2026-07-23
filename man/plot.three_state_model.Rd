@@ -11,6 +11,10 @@
 
 \item{...}{currently not supported.}
 }
+\value{
+no return value, called to print the calibration table and
+display the corresponding plot.
+}
 \description{
 Plot result of three-state illness-death model
 }

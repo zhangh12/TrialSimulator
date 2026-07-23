@@ -18,6 +18,8 @@
 #'
 #' @docType class
 #'
+#' @return an \code{R6Class} generator object; use \code{milestone()} to create a milestone.
+#'
 #' @export
 Milestones <- R6::R6Class(
   'Milestones',
@@ -155,7 +157,6 @@ Milestones <- R6::R6Class(
 
       if(!private$silent && !is.null(action)){
         message('Action for milestone <', self$get_name(), '> is executed. ')
-        # print(action)
       }
 
     },

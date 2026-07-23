@@ -24,6 +24,9 @@ randomization queue are generated twice in the first approach but only
 once in the second approach. But statistically, they are equivalent and
 of the same distribution.}
 }
+\value{
+no return value, called for its side effect of updating \code{trial}.
+}
 \description{
 add one or more arms to a trial. This function can be used in two
 scenarios: (1) adding arms right after a trial is created

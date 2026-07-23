@@ -157,6 +157,8 @@
 #' ## Example 4: generate correlated pfs and os
 #' ## See vignette('simulatePfsAndOsIdm') and vignette('simulatePfsAndOsGumbel')
 #'
+#' @return an object of R6 class \code{Endpoints}, representing one or more endpoints.
+#'
 #' @export
 endpoint = function(
     name,

@@ -4,6 +4,9 @@
 \name{Listeners}
 \alias{Listeners}
 \title{Class of Listener}
+\value{
+an \code{R6Class} generator object; use \code{listener()} to create a listener.
+}
 \description{
 Create a class of listener. A listener monitors the trial while checking
 condition of pre-defined milestones. Actions are triggered and executed

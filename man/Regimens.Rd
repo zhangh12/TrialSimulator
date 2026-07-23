@@ -4,6 +4,9 @@
 \name{Regimens}
 \alias{Regimens}
 \title{Class of Regimens}
+\value{
+an \code{R6Class} generator object; use \code{regimen()} to create a regimen.
+}
 \description{
 Create a class of regimen. A regimen defines the rules to select treatments for
 patients switch, to determine the time of switching, and to update patients'

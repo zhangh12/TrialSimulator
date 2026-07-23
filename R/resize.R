@@ -16,6 +16,8 @@
 #' @param trial a trial object returned by \code{trial()}.
 #' @param n_patients integer. Number of maximum sample size of a trial.
 #'
+#' @return no return value, called for its side effect of updating \code{trial}.
+#'
 #' @export
 #'
 resize <- function(trial, n_patients){

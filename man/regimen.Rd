@@ -46,6 +46,9 @@ function whose formal parameter list contains that name. All arguments must
 be named, and every name must match at least one parameter of at least one
 function in \code{what}, \code{when}, or \code{how}.}
 }
+\value{
+an object of R6 class \code{Regimens}, representing a treatment regimen.
+}
 \description{
 Define a regimen of a trial. This is a user-friendly wrapper for
 the class constructor \code{Regimens$new()}. Users who are not familiar with

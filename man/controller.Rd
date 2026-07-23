@@ -11,6 +11,9 @@ controller(trial, listener)
 
 \item{listener}{an object returned from \code{listener()}.}
 }
+\value{
+an object of R6 class \code{Controllers}, executing simulation of a trial.
+}
 \description{
 Define a controller of a trial. This is a user-friendly wrapper for
 the class constructor \code{Controller$new()}. Users who are not familiar with

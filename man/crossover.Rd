@@ -27,6 +27,9 @@ milestone).}
 \item{...}{(optional) named arguments routed to \code{what}, \code{when},
 and/or \code{how}.}
 }
+\value{
+no return value, called for its side effect of updating \code{trial}.
+}
 \description{
 Apply a milestone-triggered crossover to patients who are still in the trial.
 

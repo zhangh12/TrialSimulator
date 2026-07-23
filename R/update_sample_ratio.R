@@ -18,6 +18,8 @@
 #' otherwise, \code{sample()} will be used instead, which can cause imbalance
 #' between arms by chance. However, this is usually fine for simulation.
 #'
+#' @return no return value, called for its side effect of updating \code{trial}.
+#'
 #' @export
 #'
 update_sample_ratio <- function(trial, arm_names, sample_ratios){

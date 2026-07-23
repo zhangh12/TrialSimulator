@@ -68,6 +68,8 @@
 #'   alpha_spent = c(.005, .0125, .025))
 #' gst
 #'
+#' @return an \code{R6Class} generator object; create a test with \code{GroupSequentialTest$new()}.
+#'
 #' @export
 #'
 GroupSequentialTest <- R6::R6Class(

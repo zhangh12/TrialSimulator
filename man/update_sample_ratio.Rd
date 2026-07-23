@@ -16,6 +16,9 @@ ratio is a whole number, the permuted block randomization is adopted;
 otherwise, \code{sample()} will be used instead, which can cause imbalance
 between arms by chance. However, this is usually fine for simulation.}
 }
+\value{
+no return value, called for its side effect of updating \code{trial}.
+}
 \description{
 update sample ratios of arms. This could be called after an arm is added or
 removed. Sample ratios can be updated for any existing arms.

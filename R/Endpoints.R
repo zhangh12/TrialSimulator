@@ -18,6 +18,8 @@
 #' # Instead of using Endpoints$new(), please use endpoint(), a user-friendly
 #' # wrapper to define endpoints. See examples in ?endpoint.
 #'
+#' @return an \code{R6Class} generator object; use \code{endpoint()} to create endpoints.
+#'
 #' @export
 Endpoints <- R6::R6Class(
   'Endpoints',

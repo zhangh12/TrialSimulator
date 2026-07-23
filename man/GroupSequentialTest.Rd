@@ -4,6 +4,9 @@
 \name{GroupSequentialTest}
 \alias{GroupSequentialTest}
 \title{Class of GroupSequentialTest}
+\value{
+an \code{R6Class} generator object; create a test with \code{GroupSequentialTest$new()}.
+}
 \description{
 Perform group sequential test for a single endpoint based on sequential
 one-sided p-values at each stages. Selected alpha spending functions,

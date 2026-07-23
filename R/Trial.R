@@ -100,6 +100,8 @@
 #' ## updated information after arms are registered
 #' trial
 #'
+#' @return an object of R6 class \code{Trials}, representing a trial.
+#'
 #' @export
 #'
 trial =

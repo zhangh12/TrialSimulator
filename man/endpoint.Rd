@@ -64,6 +64,9 @@ endpoints as well.}
 
 \item{...}{(optional) arguments of \code{generator}.}
 }
+\value{
+an object of R6 class \code{Endpoints}, representing one or more endpoints.
+}
 \description{
 Define one or multiple endpoints. This is a user-friendly wrapper for
 the class constructor \code{Endpoints$new}. Users who are not familiar with

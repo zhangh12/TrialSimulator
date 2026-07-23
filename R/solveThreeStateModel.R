@@ -131,6 +131,9 @@ solveThreeStateModel <- function(median_pfs, median_os, corr,
 #' @param x an object returned by \code{solveThreeStateModel()}.
 #' @param ... currently not supported.
 #'
+#' @return no return value, called to print the calibration table and
+#' display the corresponding plot.
+#'
 #' @export
 plot.three_state_model <- function(x, ...){
 

@@ -11,11 +11,15 @@
 
 run_setup_form <- function(setup_file, n) {
   e <- new.env(parent = globalenv())
-  ## fixtures mirror vignette code (no silent = TRUE in trial()), so muffle
-  ## their messages here, both at setup and during run (per-replicate reset()
-  ## re-adds arms); sink() below only diverts stdout, not message()
+  ## fixtures mirror vignette code: some plot at source time (e.g.,
+  ## DoseFinding::plotMods in setup_doseRanging.R), which with no active
+  ## device would write Rplots.pdf into the package tree -- send it to a
+  ## null device; and muffle their messages, both at setup and during run
+  ## (per-replicate reset() re-adds arms); sink() only diverts stdout,
+  ## not message() or graphics
+  pdf(NULL); on.exit(dev.off(), add = TRUE)
   suppressMessages(source(setup_file, local = e))
-  sink(tempfile()); on.exit(sink())
+  sink(tempfile()); on.exit(sink(), add = TRUE)
   suppressMessages(
     e$controller$run(n = n, silent = TRUE, plot_event = FALSE)
   )
@@ -72,6 +76,12 @@ test_that('responseAdaptive: R-fallback and C++ produce identical output', {
   skip_on_cran()
   check_identical_paths('responseAdaptive', run_setup_form,
     list(setup_file = test_path('fixtures', 'setup_responseAdaptive.R'), n = 10))
+})
+
+test_that('stopFollowupAccrual: R-fallback and C++ produce identical output', {
+  skip_on_cran()
+  check_identical_paths('stopFollowupAccrual', run_setup_form,
+    list(setup_file = test_path('fixtures', 'setup_stopFollowupAccrual.R'), n = 10))
 })
 
 ## ---- TrialSimulatorDocuments examples (function-form) -----------------

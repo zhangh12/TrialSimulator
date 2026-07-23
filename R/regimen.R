@@ -45,6 +45,8 @@
 #' be named, and every name must match at least one parameter of at least one
 #' function in \code{what}, \code{when}, or \code{how}.
 #'
+#' @return an object of R6 class \code{Regimens}, representing a treatment regimen.
+#'
 #' @export
 #'
 regimen <- function(what, when, how, ...){

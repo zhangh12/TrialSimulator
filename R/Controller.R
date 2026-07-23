@@ -58,6 +58,8 @@
 #' controller <- controller(trial, listener)
 #' controller$run(n = 1)
 #'
+#' @return an object of R6 class \code{Controllers}, executing simulation of a trial.
+#'
 #' @export
 #'
 controller = function(trial, listener){

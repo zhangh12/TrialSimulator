@@ -480,3 +480,139 @@ test_that("stop_followup validates additional_followup and filter conditions", {
   expect_error(tr$stop_followup(no_such_column > 1),
                "compatible with dplyr::filter")
 })
+
+
+test_that("stop_followup sets pending non-TTE readouts to NA", {
+
+  # non-TTE endpoint with readout 3 months after enrollment
+  make_resp_arm <- function(name, prob) {
+    ep <- endpoint(name = 'resp', type = 'non-tte',
+                   readout = c(resp = 3),
+                   generator = rbinom, size = 1, prob = prob)
+    a <- arm(name = name)
+    a$add_endpoints(ep)
+    a
+  }
+
+  pbo <- make_resp_arm("pbo", 0.3)
+  trt <- make_resp_arm("trt", 0.5)
+  tr <- make_trial()
+  add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+  stop <- milestone(name = "stop",
+                    when = calendarTime(time = 10),
+                    action = function(trial) { stop_followup(trial, arm == "pbo") })
+  final <- milestone(name = "final", when = calendarTime(time = 30))
+  lstn <- listener(silent = TRUE)
+  lstn$add_milestones(stop, final)
+  controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+
+  d <- tr$get_locked_data("final")
+
+  # pbo patients whose readout completed by the stopping time keep their value
+  pbo_done <- d[d$arm == "pbo" & d$enroll_time <= 7, ]
+  expect_true(nrow(pbo_done) > 0)
+  expect_true(all(!is.na(pbo_done$resp)))
+
+  # pbo patients enrolled by 10 with readout pending at 10 lose the value
+  pbo_pending <- d[d$arm == "pbo" & d$enroll_time > 7 & d$enroll_time <= 10, ]
+  expect_true(nrow(pbo_pending) > 0)
+  expect_true(all(is.na(pbo_pending$resp)))
+
+  # pbo patients enrolled after the call and all trt patients are unaffected
+  pbo_after <- d[d$arm == "pbo" & d$enroll_time > 10, ]
+  expect_true(nrow(pbo_after) > 0)
+  expect_true(all(!is.na(pbo_after$resp)))
+  expect_true(all(!is.na(d$resp[d$arm == "trt"])))
+})
+
+
+test_that("stop_followup and update_accrual_rate combine in one action", {
+
+  pbo <- make_arm("pbo", 10)
+  trt <- make_arm("trt", 12)
+  tr <- make_trial()
+  add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+  adapt <- milestone(name = "adapt",
+                     when = calendarTime(time = 10),
+                     action = function(trial) {
+                       stop_followup(trial, arm == "pbo")
+                       update_accrual_rate(
+                         trial,
+                         data.frame(end_time = Inf, piecewise_rate = 10))
+                     })
+  final <- milestone(name = "final", when = calendarTime(time = 30))
+  lstn <- listener(silent = TRUE)
+  lstn$add_milestones(adapt, final)
+  controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+
+  d <- tr$get_locked_data("final")
+
+  # the stopped cohort is exactly the pbo patients enrolled by the milestone
+  pbo_cohort <- d[d$arm == "pbo" & d$enroll_time <= 10, ]
+  expect_true(all(pbo_cohort$enroll_time + pbo_cohort$pfs <= 10 + 1e-9))
+
+  # re-planned patients start one inter-arrival after the milestone: no
+  # patient lands exactly at the milestone, so none is swept into the cohort
+  late <- sort(d$enroll_time[d$enroll_time > 10])
+  expect_equal(late[1], 10 + 1 / 10, tolerance = 1e-9)
+  expect_true(all(abs(diff(late) - 1 / 10) < 1e-9))
+
+  # pbo patients enrolled after the action are followed as usual
+  pbo_late <- d[d$arm == "pbo" & d$enroll_time > 10, ]
+  expect_true(nrow(pbo_late) > 0)
+  expect_true(any(pbo_late$enroll_time + pbo_late$pfs > 10 + 1 / 10))
+})
+
+
+test_that("crossover registered before update_accrual_rate reaches re-planned patients", {
+
+  os_e <- endpoint(name = 'os', type = 'tte', generator = rexp, rate = log(2)/10)
+  ctrl <- arm(name = 'control'); ctrl$add_endpoints(os_e)
+  trt  <- arm(name = 'trt');     trt$add_endpoints(os_e)
+
+  tr <- trial(name = 'x', n_patients = 300, seed = 42, duration = 60,
+              enroller = StaggeredRecruiter,
+              accrual_rate = data.frame(end_time = Inf, piecewise_rate = 10),
+              silent = TRUE)
+  tr$add_arms(sample_ratio = c(1, 1), ctrl, trt)
+
+  action <- function(trial){
+    what <- function(patient_data)
+      data.frame(patient_id    = patient_data$patient_id,
+                 new_treatment = ifelse(patient_data$arm == 'control',
+                                        'trt', NA_character_))
+    how <- function(patient_data)
+      data.frame(patient_id = patient_data$patient_id,
+                 os = ifelse(patient_data$os > patient_data$switch_time,
+                             patient_data$switch_time +
+                               5 * (patient_data$os - patient_data$switch_time),
+                             patient_data$os))
+    crossover(trial, what = what, how = how)
+    update_accrual_rate(trial,
+                        data.frame(end_time = Inf, piecewise_rate = 5))
+  }
+
+  adapt <- milestone(name = 'adapt', when = calendarTime(time = 20),
+                     action = action)
+  final <- milestone(name = 'final', when = calendarTime(time = 60))
+  lst <- listener(silent = TRUE)
+  lst$add_milestones(adapt, final)
+
+  expect_no_error(
+    controller(tr, lst)$run(n = 1, silent = TRUE, plot_event = FALSE)
+  )
+
+  d <- tr$get_locked_data('final')
+
+  # re-planned patients follow the new 5/month curve from the milestone
+  late <- sort(d$enroll_time[d$enroll_time > 20])
+  expect_true(length(late) > 0)
+  expect_equal(late[1], 20 + 1 / 5, tolerance = 1e-9)
+
+  # the crossover regimen is re-applied to the regenerated batch: control
+  # patients enrolled after the milestone still switch treatment
+  expect_true('n_switches' %in% names(d))
+  expect_true(any(d$n_switches[d$arm == 'control' & d$enroll_time > 20] >= 1))
+})

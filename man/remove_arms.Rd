@@ -11,6 +11,9 @@ remove_arms(trial, arms_name)
 
 \item{arms_name}{character vector. Name of arms to be removed.}
 }
+\value{
+no return value, called for its side effect of updating \code{trial}.
+}
 \description{
 remove arms from a trial. The application of this function includes, but is
 not limited to, dose selection, enrichment analysis
