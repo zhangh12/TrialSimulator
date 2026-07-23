@@ -45,3 +45,7 @@ update_generator(trial, arm_name, endpoint_name, generator, ...)
 - ...:
 
   optional arguments for generator.
+
+## Value
+
+no return value, called for its side effect of updating `trial`.

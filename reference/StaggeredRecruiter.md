@@ -34,6 +34,10 @@ StaggeredRecruiter(n, accrual_rate)
       rate of 0 pauses enrollment for that window. Rates must be
       non-negative and finite; the last must be positive.
 
+## Value
+
+a sorted numeric vector of `n` enrollment times.
+
 ## Details
 
 `StaggeredRecruiter` is the only enroller accepted by

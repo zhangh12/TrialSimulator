@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.26.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.26.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,6 +50,23 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.26.1" id="trialsimulator-1261">TrialSimulator 1.26.1<a class="anchor" aria-label="anchor" href="#trialsimulator-1261"></a></h2>
+<div class="section level3">
+<h3 id="bug-fix-1-26-1">Bug Fix<a class="anchor" aria-label="anchor" href="#bug-fix-1-26-1"></a></h3>
+<ul><li>
+<code>make_snapshot()</code> silently dropped <code>NULL</code>-valued private fields from the snapshot (assigning <code>NULL</code> with <code>[[&lt;-</code> deletes a list entry); <code>reset()</code>’s explicit re-null list masked this for existing fields. The snapshot now preserves <code>NULL</code> fields, so any future field is restored across simulation replicates by construction.</li>
+<li>Fix an error message in <code>dunnettTest()</code> that referenced an undefined variable.</li>
+<li>Fix a summary line in the <code>doseRanging</code> vignette that compared a string literal instead of the <code>decision</code> column.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="updates-1-26-1">Updates<a class="anchor" aria-label="anchor" href="#updates-1-26-1"></a></h3>
+<ul><li>Regenerate the precomputed outputs of the <code>doseRanging</code> and <code>fixedDesign</code> vignettes under the 1.25.2 enrollment convention; the <code>fixedDesign</code> output now contains the 1,000 replicates its code states (previously 100).</li>
+<li>Add an <code>R CMD check</code> GitHub Actions workflow (macOS/Windows/Ubuntu; R release/devel/oldrel).</li>
+<li>Add <code>\value</code> sections to exported help topics, a grouped reference index for the pkgdown site, and mention the newest adaptations in the <code>actionFunctions</code> vignette introduction.</li>
+<li>Remove the unused <code>graphicalMCP</code> entry from <code>Suggests</code>.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.26.0" id="trialsimulator-1260">TrialSimulator 1.26.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1260"></a></h2>
 <div class="section level3">

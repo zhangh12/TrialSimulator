@@ -28,6 +28,10 @@ controller(trial, listener)
   an object returned from
   [`listener()`](https://zhangh12.github.io/TrialSimulator/reference/listener.md).
 
+## Value
+
+an object of R6 class `Controllers`, executing simulation of a trial.
+
 ## Examples
 
 ``` r

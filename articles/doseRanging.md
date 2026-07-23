@@ -252,22 +252,22 @@ res %>%
 
 | trial | seed | milestone_time\_\<interim\> | n_events\_\<interim\>\_\<ep\> | n_events\_\<interim\>\_\<patient_id\> | n_events\_\<interim\>\_\<arms\> | z_value | interim_decision | milestone_time\_\<final\> | n_events\_\<final\>\_\<ep\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | decision | error_message |
 |:---|---:|---:|---:|---:|:---|---:|:---|---:|---:|---:|:---|:---|:---|
-| 123 | 1915467752 | 6.8 | 30 | 35 | c(“dose …. | 0.6123731 | stop trial | 13.7 | 150 | 150 | c(“dose …. | go |  |
-| 123 | 1678009487 | 6.8 | 30 | 35 | c(“dose …. | 0.9258209 | stop trial | 13.7 | 150 | 150 | c(“dose …. | no-go |  |
-| 123 | 1177293210 | 6.8 | 30 | 35 | c(“dose …. | 0.4918697 | stop trial | 13.7 | 150 | 150 | c(“dose …. | no-go |  |
-| 123 | 155620919 | 6.8 | 30 | 35 | c(“dose …. | 1.3327856 | stop trial | 13.7 | 150 | 150 | c(“dose …. | go |  |
-| 123 | 1745672662 | 6.8 | 30 | 35 | c(“dose …. | 1.2247450 | stop trial | 13.7 | 150 | 150 | c(“dose …. | go |  |
-| 123 | 484372378 | 6.8 | 30 | 35 | c(“dose …. | 1.9364930 | add dose arms | 13.7 | 150 | 150 | c(“dose …. | go |  |
-| 123 | 2788507 | 6.8 | 30 | 35 | c(“dose …. | 0.4330129 | stop trial | 13.7 | 150 | 150 | c(“dose …. | no-go |  |
-| 123 | 1945408685 | 6.8 | 30 | 35 | c(“dose …. | 0.4918697 | stop trial | 13.7 | 150 | 150 | c(“dose …. | no-go |  |
-| 123 | 737764402 | 6.8 | 30 | 35 | c(“dose …. | 0.9258209 | stop trial | 13.7 | 150 | 150 | c(“dose …. | go |  |
-| 123 | 787086561 | 6.8 | 30 | 35 | c(“dose …. | 1.0954461 | stop trial | 13.7 | 150 | 150 | c(“dose …. | go |  |
+| 123 | 1915467752 | 7 | 30 | 35 | c(“dose …. | 0.6123731 | stop trial | 13.75 | 150 | 150 | c(“dose …. | go |  |
+| 123 | 1678009487 | 7 | 30 | 35 | c(“dose …. | 0.9258209 | stop trial | 13.75 | 150 | 150 | c(“dose …. | no-go |  |
+| 123 | 1177293210 | 7 | 30 | 35 | c(“dose …. | 0.4918697 | stop trial | 13.75 | 150 | 150 | c(“dose …. | no-go |  |
+| 123 | 155620919 | 7 | 30 | 35 | c(“dose …. | 1.3327856 | stop trial | 13.75 | 150 | 150 | c(“dose …. | go |  |
+| 123 | 1745672662 | 7 | 30 | 35 | c(“dose …. | 1.2247450 | stop trial | 13.75 | 150 | 150 | c(“dose …. | go |  |
+| 123 | 484372378 | 7 | 30 | 35 | c(“dose …. | 1.9364930 | add dose arms | 13.75 | 150 | 150 | c(“dose …. | go |  |
+| 123 | 2788507 | 7 | 30 | 35 | c(“dose …. | 0.4330129 | stop trial | 13.75 | 150 | 150 | c(“dose …. | no-go |  |
+| 123 | 1945408685 | 7 | 30 | 35 | c(“dose …. | 0.4918697 | stop trial | 13.75 | 150 | 150 | c(“dose …. | no-go |  |
+| 123 | 737764402 | 7 | 30 | 35 | c(“dose …. | 0.9258209 | stop trial | 13.75 | 150 | 150 | c(“dose …. | go |  |
+| 123 | 787086561 | 7 | 30 | 35 | c(“dose …. | 1.0954461 | stop trial | 13.75 | 150 | 150 | c(“dose …. | go |  |
 
 ``` r
 
 ## Number of overall Go
-sum(res$interim_decision == 'add dose arms' & 'decision' == 'go')
-#> [1] 0
+sum(res$interim_decision == 'add dose arms' & res$decision == 'go')
+#> [1] 1
 
 ## Number of early trial termination
 sum(res$interim_decision == 'stop trial')

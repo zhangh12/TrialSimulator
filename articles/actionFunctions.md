@@ -11,11 +11,13 @@ behaviors, such as:
 
 - Dropping, adding or selecting treatment arms
 
+- Stopping follow-up of a sub-population or an earlier cohort
+
 - Resizing based on sample size reassessment
 
 - extending trial duration
 
-- Adjusting enrollment rules
+- Updating the accrual rate
 
 - Logging or tracking intermediate results
 

@@ -13,6 +13,12 @@ to end users.
 
 - `$reset()`
 
+## Value
+
+an `R6Class` generator object; use
+[`controller()`](https://zhangh12.github.io/TrialSimulator/reference/controller.md)
+to create a controller.
+
 ## Methods
 
 ### Public methods

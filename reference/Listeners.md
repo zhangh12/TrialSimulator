@@ -11,6 +11,12 @@ to end users.
 
 - `$add_milestones()`
 
+## Value
+
+an `R6Class` generator object; use
+[`listener()`](https://zhangh12.github.io/TrialSimulator/reference/listener.md)
+to create a listener.
+
 ## Methods
 
 ### Public methods

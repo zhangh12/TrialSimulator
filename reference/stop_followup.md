@@ -58,3 +58,7 @@ stop_followup(trial, ..., additional_followup = 0)
   numeric. Extra follow-up time granted to the selected patients after
   the current milestone. If 0 (default), follow-up stops at the
   milestone itself.
+
+## Value
+
+no return value, called for its side effect of updating `trial`.

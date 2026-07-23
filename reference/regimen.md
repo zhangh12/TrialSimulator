@@ -61,3 +61,7 @@ regimen(what, when, how, ...)
   formal parameter list contains that name. All arguments must be named,
   and every name must match at least one parameter of at least one
   function in `what`, `when`, or `how`.
+
+## Value
+
+an object of R6 class `Regimens`, representing a treatment regimen.

@@ -16,6 +16,12 @@ end users. Instead, refer to the
 to learn how to define milestones when performing simulation using
 `TrialSimulator`.
 
+## Value
+
+an `R6Class` generator object; use
+[`milestone()`](https://zhangh12.github.io/TrialSimulator/reference/milestone.md)
+to create a milestone.
+
 ## Methods
 
 ### Public methods

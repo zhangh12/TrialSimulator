@@ -30,3 +30,7 @@ remove_arms(trial, arms_name)
 - arms_name:
 
   character vector. Name of arms to be removed.
+
+## Value
+
+no return value, called for its side effect of updating `trial`.

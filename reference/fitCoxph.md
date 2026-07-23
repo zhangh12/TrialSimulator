@@ -66,7 +66,7 @@ fitCoxph(formula, placebo, data, alternative, scale, ..., tidy = TRUE)
 
 ## Value
 
-a data frame with three columns:
+a data frame with columns:
 
 - `arm`:
 

@@ -97,6 +97,10 @@ trial(
 
   (optional) arguments of `enroller` and `dropout`.
 
+## Value
+
+an object of R6 class `Trials`, representing a trial.
+
 ## Examples
 
 ``` r

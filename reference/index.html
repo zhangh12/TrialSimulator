@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.26.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.26.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,9 +50,9 @@
     </div>
 
     <div class="section level2">
-      <h2 id="all-functions">All functions<a class="anchor" aria-label="anchor" href="#all-functions"></a></h2>
+      <h2 id="define-a-trial">Define a trial<a class="anchor" aria-label="anchor" href="#define-a-trial"></a></h2>
 
-
+      <div class="section-desc"><p>Building blocks of a simulated trial.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -61,115 +61,10 @@
 
       <dl><dt>
 
-          <code><a href="Arms.html">Arms</a></code>
+          <code><a href="trial.html">trial()</a></code>
 
         </dt>
-        <dd>Class of Arm</dd>
-
-        <dt>
-
-          <code><a href="Controllers.html">Controllers</a></code>
-
-        </dt>
-        <dd>Class of Controller</dd>
-
-        <dt>
-
-          <code><a href="CorrelatedPfsAndOs2.html">CorrelatedPfsAndOs2()</a></code>
-
-        </dt>
-        <dd>Generate Correlated PFS and OS Using Gumbel Copula</dd>
-
-        <dt>
-
-          <code><a href="CorrelatedPfsAndOs3.html">CorrelatedPfsAndOs3()</a></code>
-
-        </dt>
-        <dd>Generate Correlated PFS and OS Using the Three-States Illness-Death Model</dd>
-
-        <dt>
-
-          <code><a href="CorrelatedPfsAndOs4.html">CorrelatedPfsAndOs4()</a></code>
-
-        </dt>
-        <dd>Generate Correlated PFS, OS and Objective Response</dd>
-
-        <dt>
-
-          <code><a href="DynamicRNGFunction.html">DynamicRNGFunction()</a></code>
-
-        </dt>
-        <dd>A wrapper of random number generator.</dd>
-
-        <dt>
-
-          <code><a href="Endpoints.html">Endpoints</a></code>
-
-        </dt>
-        <dd>Class of Endpoint</dd>
-
-        <dt>
-
-          <code><a href="GraphicalTesting.html">GraphicalTesting</a></code>
-
-        </dt>
-        <dd>Class of GraphicalTesting</dd>
-
-        <dt>
-
-          <code><a href="GroupSequentialTest.html">GroupSequentialTest</a></code>
-
-        </dt>
-        <dd>Class of GroupSequentialTest</dd>
-
-        <dt>
-
-          <code><a href="Listeners.html">Listeners</a></code>
-
-        </dt>
-        <dd>Class of Listener</dd>
-
-        <dt>
-
-          <code><a href="Milestones.html">Milestones</a></code>
-
-        </dt>
-        <dd>Class of Milestones</dd>
-
-        <dt>
-
-          <code><a href="PiecewiseConstantExponentialRNG.html">PiecewiseConstantExponentialRNG()</a></code>
-
-        </dt>
-        <dd>Generate Time-to-Event Endpoint from Piecewise Constant Exponential Distribution</dd>
-
-        <dt>
-
-          <code><a href="Regimens.html">Regimens</a></code>
-
-        </dt>
-        <dd>Class of Regimens</dd>
-
-        <dt>
-
-          <code><a href="StaggeredRecruiter.html">StaggeredRecruiter()</a></code>
-
-        </dt>
-        <dd>Generate Enrollment Time from Piecewise Constant Uniform Distribution</dd>
-
-        <dt>
-
-          <code><a href="Trials.html">Trials</a></code>
-
-        </dt>
-        <dd>Class of Trial</dd>
-
-        <dt>
-
-          <code><a href="add_arms.html">add_arms()</a></code>
-
-        </dt>
-        <dd>Adding One or More Arms to a Trial</dd>
+        <dd>Define a Trial</dd>
 
         <dt>
 
@@ -180,10 +75,47 @@
 
         <dt>
 
-          <code><a href="calendarTime.html">calendarTime()</a></code>
+          <code><a href="endpoint.html">endpoint()</a></code>
 
         </dt>
-        <dd>Triggering Condition by Calendar Time</dd>
+        <dd>Define Endpoints</dd>
+
+        <dt>
+
+          <code><a href="regimen.html">regimen()</a></code>
+
+        </dt>
+        <dd>Define a Regimen</dd>
+
+        <dt>
+
+          <code><a href="StaggeredRecruiter.html">StaggeredRecruiter()</a></code>
+
+        </dt>
+        <dd>Generate Enrollment Time from Piecewise Constant Uniform Distribution</dd>
+      </dl></div><div class="section level2">
+      <h2 id="milestones-and-triggering-conditions">Milestones and triggering conditions<a class="anchor" aria-label="anchor" href="#milestones-and-triggering-conditions"></a></h2>
+
+      <div class="section-desc"><p>Register milestones and the conditions that trigger them.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="milestone.html">milestone()</a></code>
+
+        </dt>
+        <dd>Define a Milestone</dd>
+
+        <dt>
+
+          <code><a href="listener.html">listener()</a></code>
+
+        </dt>
+        <dd>Define a Listener</dd>
 
         <dt>
 
@@ -194,24 +126,10 @@
 
         <dt>
 
-          <code><a href="crossover.html">crossover()</a></code>
+          <code><a href="calendarTime.html">calendarTime()</a></code>
 
         </dt>
-        <dd>Crossover at a Milestone</dd>
-
-        <dt>
-
-          <code><a href="doNothing.html">doNothing()</a></code>
-
-        </dt>
-        <dd>An Action Function that Does Nothing</dd>
-
-        <dt>
-
-          <code><a href="endpoint.html">endpoint()</a></code>
-
-        </dt>
-        <dd>Define Endpoints</dd>
+        <dd>Triggering Condition by Calendar Time</dd>
 
         <dt>
 
@@ -229,115 +147,26 @@
 
         <dt>
 
-          <code><a href="expandRegimen.html">expandRegimen()</a></code>
+          <code><a href="doNothing.html">doNothing()</a></code>
 
         </dt>
-        <dd>Expand regimen trajectory into long format</dd>
+        <dd>An Action Function that Does Nothing</dd>
+      </dl></div><div class="section level2">
+      <h2 id="adaptations">Adaptations<a class="anchor" aria-label="anchor" href="#adaptations"></a></h2>
 
-        <dt>
+      <div class="section-desc"><p>Methods called within action functions to adapt an ongoing trial.</p></div>
 
-          <code><a href="fitCoxph.html">fitCoxph()</a></code>
+      <dl></dl></div><div class="section level2">
 
-        </dt>
-        <dd>Fit Cox Proportional Hazard Ratio model</dd>
 
-        <dt>
 
-          <code><a href="fitFarringtonManning.html">fitFarringtonManning()</a></code>
 
-        </dt>
-        <dd>Farrington-Manning test for rate difference</dd>
+      <dl><dt>
 
-        <dt>
-
-          <code><a href="fitLinear.html">fitLinear()</a></code>
+          <code><a href="add_arms.html">add_arms()</a></code>
 
         </dt>
-        <dd>Fit linear regression model</dd>
-
-        <dt>
-
-          <code><a href="fitLogistic.html">fitLogistic()</a></code>
-
-        </dt>
-        <dd>Fit logistic regression model</dd>
-
-        <dt>
-
-          <code><a href="fitLogrank.html">fitLogrank()</a></code>
-
-        </dt>
-        <dd>Carry out log rank test</dd>
-
-        <dt>
-
-          <code><a href="getAdaptiveDesignOutput.html">getAdaptiveDesignOutput()</a></code>
-
-        </dt>
-        <dd>Get simulation output in the vignette adaptiveDesign.Rmd</dd>
-
-        <dt>
-
-          <code><a href="getDoseRangingOutput.html">getDoseRangingOutput()</a></code>
-
-        </dt>
-        <dd>Get simulation output in the vignette doseRanging.Rmd</dd>
-
-        <dt>
-
-          <code><a href="getFixedDesignOutput.html">getFixedDesignOutput()</a></code>
-
-        </dt>
-        <dd>Get simulation output in the vignette fixedDesign.Rmd</dd>
-
-        <dt>
-
-          <code><a href="listener.html">listener()</a></code>
-
-        </dt>
-        <dd>Define a Listener</dd>
-
-        <dt>
-
-          <code><a href="milestone.html">milestone()</a></code>
-
-        </dt>
-        <dd>Define a Milestone</dd>
-
-        <dt>
-
-          <code><a href="plot.milestone_time_summary.html">plot(<i>&lt;milestone_time_summary&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Plot Triggering Time of Milestones in Simulated Trials</dd>
-
-        <dt>
-
-          <code><a href="plot.three_state_model.html">plot(<i>&lt;three_state_model&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Plot result of three-state illness-death model</dd>
-
-        <dt>
-
-          <code><a href="qPiecewiseExponential.html">qPiecewiseExponential()</a></code>
-
-        </dt>
-        <dd>Quantile Function of Piecewise Exponential Distribution</dd>
-
-        <dt>
-
-          <code><a href="rconst.html">rconst()</a></code>
-
-        </dt>
-        <dd>Generate Constant Variable</dd>
-
-        <dt>
-
-          <code><a href="regimen.html">regimen()</a></code>
-
-        </dt>
-        <dd>Define a Regimen</dd>
+        <dd>Adding One or More Arms to a Trial</dd>
 
         <dt>
 
@@ -362,6 +191,157 @@
 
         <dt>
 
+          <code><a href="update_sample_ratio.html">update_sample_ratio()</a></code>
+
+        </dt>
+        <dd>Updating Sampling Ratios of Existing Arms in a Trial</dd>
+
+        <dt>
+
+          <code><a href="update_generator.html">update_generator()</a></code>
+
+        </dt>
+        <dd>Updating Data Generators of One or More Endpoints in an Arm</dd>
+
+        <dt>
+
+          <code><a href="crossover.html">crossover()</a></code>
+
+        </dt>
+        <dd>Crossover at a Milestone</dd>
+
+        <dt>
+
+          <code><a href="stop_followup.html">stop_followup()</a></code>
+
+        </dt>
+        <dd>Stopping Follow-Up of Selected Patients in a Trial</dd>
+
+        <dt>
+
+          <code><a href="update_accrual_rate.html">update_accrual_rate()</a></code>
+
+        </dt>
+        <dd>Updating the Accrual Rate of a Trial at a Milestone</dd>
+      </dl></div><div class="section level2">
+      <h2 id="statistical-analysis">Statistical analysis<a class="anchor" aria-label="anchor" href="#statistical-analysis"></a></h2>
+
+      <div class="section-desc"><p>Model fitting and multiplicity-controlled testing.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="fitCoxph.html">fitCoxph()</a></code>
+
+        </dt>
+        <dd>Fit Cox Proportional Hazard Ratio model</dd>
+
+        <dt>
+
+          <code><a href="fitLogrank.html">fitLogrank()</a></code>
+
+        </dt>
+        <dd>Carry out log rank test</dd>
+
+        <dt>
+
+          <code><a href="fitLinear.html">fitLinear()</a></code>
+
+        </dt>
+        <dd>Fit linear regression model</dd>
+
+        <dt>
+
+          <code><a href="fitLogistic.html">fitLogistic()</a></code>
+
+        </dt>
+        <dd>Fit logistic regression model</dd>
+
+        <dt>
+
+          <code><a href="fitFarringtonManning.html">fitFarringtonManning()</a></code>
+
+        </dt>
+        <dd>Farrington-Manning test for rate difference</dd>
+
+        <dt>
+
+          <code><a href="GraphicalTesting.html">GraphicalTesting</a></code>
+
+        </dt>
+        <dd>Class of GraphicalTesting</dd>
+
+        <dt>
+
+          <code><a href="GroupSequentialTest.html">GroupSequentialTest</a></code>
+
+        </dt>
+        <dd>Class of GroupSequentialTest</dd>
+      </dl></div><div class="section level2">
+      <h2 id="data-generators-and-distribution-helpers">Data generators and distribution helpers<a class="anchor" aria-label="anchor" href="#data-generators-and-distribution-helpers"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="DynamicRNGFunction.html">DynamicRNGFunction()</a></code>
+
+        </dt>
+        <dd>A wrapper of random number generator.</dd>
+
+        <dt>
+
+          <code><a href="PiecewiseConstantExponentialRNG.html">PiecewiseConstantExponentialRNG()</a></code>
+
+        </dt>
+        <dd>Generate Time-to-Event Endpoint from Piecewise Constant Exponential Distribution</dd>
+
+        <dt>
+
+          <code><a href="CorrelatedPfsAndOs2.html">CorrelatedPfsAndOs2()</a></code>
+
+        </dt>
+        <dd>Generate Correlated PFS and OS Using Gumbel Copula</dd>
+
+        <dt>
+
+          <code><a href="CorrelatedPfsAndOs3.html">CorrelatedPfsAndOs3()</a></code>
+
+        </dt>
+        <dd>Generate Correlated PFS and OS Using the Three-States Illness-Death Model</dd>
+
+        <dt>
+
+          <code><a href="CorrelatedPfsAndOs4.html">CorrelatedPfsAndOs4()</a></code>
+
+        </dt>
+        <dd>Generate Correlated PFS, OS and Objective Response</dd>
+
+        <dt>
+
+          <code><a href="rconst.html">rconst()</a></code>
+
+        </dt>
+        <dd>Generate Constant Variable</dd>
+
+        <dt>
+
+          <code><a href="qPiecewiseExponential.html">qPiecewiseExponential()</a></code>
+
+        </dt>
+        <dd>Quantile Function of Piecewise Exponential Distribution</dd>
+
+        <dt>
+
           <code><a href="solveMixtureExponentialDistribution.html">solveMixtureExponentialDistribution()</a></code>
 
         </dt>
@@ -383,12 +363,21 @@
 
         <dt>
 
-          <code><a href="stop_followup.html">stop_followup()</a></code>
+          <code><a href="weibullDropout.html">weibullDropout()</a></code>
 
         </dt>
-        <dd>Stopping Follow-Up of Selected Patients in a Trial</dd>
+        <dd>Calculate Parameters of Weibull Distribution as a Dropout Method</dd>
+      </dl></div><div class="section level2">
+      <h2 id="summaries-and-utilities">Summaries and utilities<a class="anchor" aria-label="anchor" href="#summaries-and-utilities"></a></h2>
 
-        <dt>
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
 
           <code><a href="summarizeDataFrame.html">summarizeDataFrame()</a></code>
 
@@ -404,40 +393,85 @@
 
         <dt>
 
-          <code><a href="trial.html">trial()</a></code>
+          <code><a href="plot.milestone_time_summary.html">plot(<i>&lt;milestone_time_summary&gt;</i>)</a></code>
 
         </dt>
-        <dd>Define a Trial</dd>
+        <dd>Plot Triggering Time of Milestones in Simulated Trials</dd>
 
         <dt>
 
-          <code><a href="update_accrual_rate.html">update_accrual_rate()</a></code>
+          <code><a href="plot.three_state_model.html">plot(<i>&lt;three_state_model&gt;</i>)</a></code>
 
         </dt>
-        <dd>Updating the Accrual Rate of a Trial at a Milestone</dd>
+        <dd>Plot result of three-state illness-death model</dd>
 
         <dt>
 
-          <code><a href="update_generator.html">update_generator()</a></code>
+          <code><a href="expandRegimen.html">expandRegimen()</a></code>
 
         </dt>
-        <dd>Updating Data Generators of One or More Endpoints in an Arm</dd>
+        <dd>Expand regimen trajectory into long format</dd>
+      </dl></div><div class="section level2">
+      <h2 id="r-classes">R6 classes<a class="anchor" aria-label="anchor" href="#r-classes"></a></h2>
+
+      <div class="section-desc"><p>Underlying classes; most users interact through the wrappers above.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="Trials.html">Trials</a></code>
+
+        </dt>
+        <dd>Class of Trial</dd>
 
         <dt>
 
-          <code><a href="update_sample_ratio.html">update_sample_ratio()</a></code>
+          <code><a href="Arms.html">Arms</a></code>
 
         </dt>
-        <dd>Updating Sampling Ratios of Existing Arms in a Trial</dd>
+        <dd>Class of Arm</dd>
 
         <dt>
 
-          <code><a href="weibullDropout.html">weibullDropout()</a></code>
+          <code><a href="Endpoints.html">Endpoints</a></code>
 
         </dt>
-        <dd>Calculate Parameters of Weibull Distribution as a Dropout Method</dd>
+        <dd>Class of Endpoint</dd>
+
+        <dt>
+
+          <code><a href="Milestones.html">Milestones</a></code>
+
+        </dt>
+        <dd>Class of Milestones</dd>
+
+        <dt>
+
+          <code><a href="Listeners.html">Listeners</a></code>
+
+        </dt>
+        <dd>Class of Listener</dd>
+
+        <dt>
+
+          <code><a href="Controllers.html">Controllers</a></code>
+
+        </dt>
+        <dd>Class of Controller</dd>
+
+        <dt>
+
+          <code><a href="Regimens.html">Regimens</a></code>
+
+        </dt>
+        <dd>Class of Regimens</dd>
       </dl></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

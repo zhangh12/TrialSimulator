@@ -85,6 +85,12 @@ to end users.
 
 - `$closedTest()` perform combination test based on Dunnett's test.
 
+## Value
+
+an `R6Class` generator object; use
+[`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md)
+to create a trial.
+
 ## Methods
 
 ### Public methods

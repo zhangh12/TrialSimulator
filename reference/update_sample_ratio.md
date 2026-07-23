@@ -32,3 +32,7 @@ update_sample_ratio(trial, arm_names, sample_ratios)
   [`sample()`](https://rdrr.io/r/base/sample.html) will be used instead,
   which can cause imbalance between arms by chance. However, this is
   usually fine for simulation.
+
+## Value
+
+no return value, called for its side effect of updating `trial`.

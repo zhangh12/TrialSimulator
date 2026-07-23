@@ -10,6 +10,12 @@ except for the one below.
 
 - `$print()`
 
+## Value
+
+an `R6Class` generator object; use
+[`endpoint()`](https://zhangh12.github.io/TrialSimulator/reference/endpoint.md)
+to create endpoints.
+
 ## Methods
 
 ### Public methods

@@ -60,7 +60,7 @@ fitLogrank(formula, placebo, data, alternative, ..., tidy = TRUE)
 
 ## Value
 
-a data frame with three columns:
+a data frame with columns:
 
 - `arm`:
 

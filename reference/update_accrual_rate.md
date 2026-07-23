@@ -51,3 +51,7 @@ update_accrual_rate(trial, accrual_rate)
   a data frame of columns `end_time` and `piecewise_rate` as in
   `StaggeredRecruiter`, with `end_time` measured from the current
   milestone. The last `end_time` must be `Inf` with a positive rate.
+
+## Value
+
+no return value, called for its side effect of updating `trial`.

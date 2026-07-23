@@ -19,3 +19,8 @@ plot(x, ...)
 - ...:
 
   currently not supported.
+
+## Value
+
+no return value, called to print the calibration table and display the
+corresponding plot.

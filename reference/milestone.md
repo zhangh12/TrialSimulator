@@ -48,6 +48,10 @@ milestone(name, when, action = doNothing, ...)
 
   (optional) arguments of `action`.
 
+## Value
+
+an object of R6 class `Milestones`, representing a milestone of a trial.
+
 ## Examples
 
 ``` r

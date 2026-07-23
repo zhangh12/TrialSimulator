@@ -27,3 +27,7 @@ resize(trial, n_patients)
 - n_patients:
 
   integer. Number of maximum sample size of a trial.
+
+## Value
+
+no return value, called for its side effect of updating `trial`.

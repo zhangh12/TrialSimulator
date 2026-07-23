@@ -11,6 +11,12 @@ to end users.
 
 - `$print()`
 
+## Value
+
+an `R6Class` generator object; use
+[`arm()`](https://zhangh12.github.io/TrialSimulator/reference/arm.md) to
+create an arm.
+
 ## Methods
 
 ### Public methods

@@ -57,7 +57,7 @@ fitFarringtonManning(endpoint, placebo, data, alternative, ..., delta = 0)
 
 ## Value
 
-a data frame with three columns:
+a data frame with columns:
 
 - `arm`:
 

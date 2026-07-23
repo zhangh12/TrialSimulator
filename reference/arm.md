@@ -27,6 +27,10 @@ arm(name, ...)
   used as trial data. More than one conditions can be specified in
   `...`.
 
+## Value
+
+an object of R6 class `Arms`, representing an arm of a trial.
+
 ## Examples
 
 ``` r

@@ -74,3 +74,7 @@ crossover(trial, what, how, when = NULL, delay = 0, ...)
 - ...:
 
   (optional) named arguments routed to `what`, `when`, and/or `how`.
+
+## Value
+
+no return value, called for its side effect of updating `trial`.

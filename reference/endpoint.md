@@ -84,6 +84,10 @@ endpoint(name, type, readout = NULL, generator, ...)
 
   (optional) arguments of `generator`.
 
+## Value
+
+an object of R6 class `Endpoints`, representing one or more endpoints.
+
 ## Examples
 
 ``` r

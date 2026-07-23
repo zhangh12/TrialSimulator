@@ -23,3 +23,7 @@ rconst(n, value)
 - value:
 
   scalar. Value of constant observations.
+
+## Value
+
+a numeric vector of length `n` with all entries equal to `value`.

@@ -22,6 +22,11 @@ listener(silent = FALSE)
 
   logical. `TRUE` to mute messages.
 
+## Value
+
+an object of R6 class `Listeners`, monitoring and triggering milestones
+of a trial.
+
 ## Examples
 
 ``` r

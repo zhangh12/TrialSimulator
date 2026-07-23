@@ -4,6 +4,12 @@ Create a class of regimen. A regimen defines the rules to select
 treatments for patients switch, to determine the time of switching, and
 to update patients' endpoint data.
 
+## Value
+
+an `R6Class` generator object; use
+[`regimen()`](https://zhangh12.github.io/TrialSimulator/reference/regimen.md)
+to create a regimen.
+
 ## Methods
 
 ### Public methods

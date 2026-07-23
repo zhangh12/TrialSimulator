@@ -19,3 +19,8 @@ plot(x, ...)
 - ...:
 
   currently not supported.
+
+## Value
+
+no return value, called to display a boxplot of milestone triggering
+times.

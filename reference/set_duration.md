@@ -34,3 +34,7 @@ set_duration(trial, duration)
 - duration:
 
   new duration of a trial. It must be greater than the current duration.
+
+## Value
+
+no return value, called for its side effect of updating `trial`.

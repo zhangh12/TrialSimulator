@@ -12,6 +12,11 @@ hypothesis in current implementation. In addition, only one-sided test
 is supported which should be sufficient for common use in clinical
 design.
 
+## Value
+
+an `R6Class` generator object; create a test with
+`GroupSequentialTest$new()`.
+
 ## Methods
 
 ### Public methods

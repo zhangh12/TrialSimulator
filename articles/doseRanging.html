@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.26.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.26.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -471,7 +471,7 @@ error_message
 1915467752
 </td>
 <td style="text-align:right;">
-6.8
+7
 </td>
 <td style="text-align:right;">
 30
@@ -489,7 +489,7 @@ c(“dose ….
 stop trial
 </td>
 <td style="text-align:right;">
-13.7
+13.75
 </td>
 <td style="text-align:right;">
 150
@@ -514,7 +514,7 @@ go
 1678009487
 </td>
 <td style="text-align:right;">
-6.8
+7
 </td>
 <td style="text-align:right;">
 30
@@ -532,7 +532,7 @@ c(“dose ….
 stop trial
 </td>
 <td style="text-align:right;">
-13.7
+13.75
 </td>
 <td style="text-align:right;">
 150
@@ -557,7 +557,7 @@ no-go
 1177293210
 </td>
 <td style="text-align:right;">
-6.8
+7
 </td>
 <td style="text-align:right;">
 30
@@ -575,7 +575,7 @@ c(“dose ….
 stop trial
 </td>
 <td style="text-align:right;">
-13.7
+13.75
 </td>
 <td style="text-align:right;">
 150
@@ -600,7 +600,7 @@ no-go
 155620919
 </td>
 <td style="text-align:right;">
-6.8
+7
 </td>
 <td style="text-align:right;">
 30
@@ -618,7 +618,7 @@ c(“dose ….
 stop trial
 </td>
 <td style="text-align:right;">
-13.7
+13.75
 </td>
 <td style="text-align:right;">
 150
@@ -643,7 +643,7 @@ go
 1745672662
 </td>
 <td style="text-align:right;">
-6.8
+7
 </td>
 <td style="text-align:right;">
 30
@@ -661,7 +661,7 @@ c(“dose ….
 stop trial
 </td>
 <td style="text-align:right;">
-13.7
+13.75
 </td>
 <td style="text-align:right;">
 150
@@ -686,7 +686,7 @@ go
 484372378
 </td>
 <td style="text-align:right;">
-6.8
+7
 </td>
 <td style="text-align:right;">
 30
@@ -704,7 +704,7 @@ c(“dose ….
 add dose arms
 </td>
 <td style="text-align:right;">
-13.7
+13.75
 </td>
 <td style="text-align:right;">
 150
@@ -729,7 +729,7 @@ go
 2788507
 </td>
 <td style="text-align:right;">
-6.8
+7
 </td>
 <td style="text-align:right;">
 30
@@ -747,7 +747,7 @@ c(“dose ….
 stop trial
 </td>
 <td style="text-align:right;">
-13.7
+13.75
 </td>
 <td style="text-align:right;">
 150
@@ -772,7 +772,7 @@ no-go
 1945408685
 </td>
 <td style="text-align:right;">
-6.8
+7
 </td>
 <td style="text-align:right;">
 30
@@ -790,7 +790,7 @@ c(“dose ….
 stop trial
 </td>
 <td style="text-align:right;">
-13.7
+13.75
 </td>
 <td style="text-align:right;">
 150
@@ -815,7 +815,7 @@ no-go
 737764402
 </td>
 <td style="text-align:right;">
-6.8
+7
 </td>
 <td style="text-align:right;">
 30
@@ -833,7 +833,7 @@ c(“dose ….
 stop trial
 </td>
 <td style="text-align:right;">
-13.7
+13.75
 </td>
 <td style="text-align:right;">
 150
@@ -858,7 +858,7 @@ go
 787086561
 </td>
 <td style="text-align:right;">
-6.8
+7
 </td>
 <td style="text-align:right;">
 30
@@ -876,7 +876,7 @@ c(“dose ….
 stop trial
 </td>
 <td style="text-align:right;">
-13.7
+13.75
 </td>
 <td style="text-align:right;">
 150
@@ -898,8 +898,8 @@ go
 </div>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Number of overall Go</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">interim_decision</span> <span class="op">==</span> <span class="st">'add dose arms'</span> <span class="op">&amp;</span> <span class="st">'decision'</span> <span class="op">==</span> <span class="st">'go'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">interim_decision</span> <span class="op">==</span> <span class="st">'add dose arms'</span> <span class="op">&amp;</span> <span class="va">res</span><span class="op">$</span><span class="va">decision</span> <span class="op">==</span> <span class="st">'go'</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 1</span></span>
 <span></span>
 <span><span class="co">## Number of early trial termination</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">interim_decision</span> <span class="op">==</span> <span class="st">'stop trial'</span><span class="op">)</span></span>

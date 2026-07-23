@@ -275,13 +275,13 @@ output %>%
   scroll_box(width = "100%")
 ```
 
-| trial | seed | milestone_time\_\<final\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<pfs\> | n_events\_\<final\>\_\<os\> | n_events\_\<final\>\_\<arms\> | pfs_low\_\<estimate\> | pfs_low\_\<decision\> | pfs_low\_\<info\> | pfs_high\_\<estimate\> | pfs_high\_\<decision\> | pfs_high\_\<info\> | os_low\_\<decision\> | os_low\_\<info\> | os_high\_\<decision\> | os_high\_\<info\> | error_message |
+| trial | seed | milestone_time\_\<final\> | n_events\_\<final\>\_\<pfs\> | n_events\_\<final\>\_\<os\> | n_events\_\<final\>\_\<patient_id\> | n_events\_\<final\>\_\<arms\> | pfs_low\_\<estimate\> | pfs_low\_\<decision\> | pfs_low\_\<info\> | pfs_high\_\<estimate\> | pfs_high\_\<decision\> | pfs_high\_\<info\> | os_low\_\<decision\> | os_low\_\<info\> | os_high\_\<decision\> | os_high\_\<info\> | error_message |
 |:---|---:|---:|---:|---:|---:|:---|---:|:---|---:|---:|:---|---:|:---|---:|:---|---:|:---|
-| Trial-3415 | 1727811904 | 39.79807 | 1000 | 726 | 550 | c(334, 2…. | 0.8373861 | accept | 490 | 0.8470156 | accept | 485 | reject | 372 | accept | 378 |  |
-| Trial-3415 | 1580839845 | 36.97289 | 1000 | 731 | 550 | c(334, 2…. | 0.8293869 | accept | 504 | 0.7566906 | reject | 491 | reject | 383 | accept | 372 |  |
-| Trial-3415 | 1644140445 | 35.81142 | 1000 | 738 | 550 | c(334, 2…. | 0.7382446 | reject | 498 | 0.7208539 | reject | 504 | accept | 368 | accept | 372 |  |
-| Trial-3415 | 157892763 | 36.98769 | 1000 | 732 | 550 | c(334, 2…. | 0.6802710 | reject | 502 | 0.6518396 | reject | 490 | reject | 389 | reject | 380 |  |
-| Trial-3415 | 1672612707 | 37.67231 | 1000 | 745 | 550 | c(334, 2…. | 0.8062252 | reject | 513 | 0.6809993 | reject | 493 | reject | 381 | reject | 374 |  |
+| Trial-3415 | 1727811904 | 36.30115 | 769 | 550 | 1000 | c(“high”…. | 0.9455634 | accept | 524 | 0.7186429 | reject | 511 | accept | 381 | reject | 373 |  |
+| Trial-3415 | 1324384826 | 36.01193 | 768 | 550 | 1000 | c(“high”…. | 0.8100537 | reject | 517 | 0.7885803 | reject | 519 | accept | 380 | reject | 373 |  |
+| Trial-3415 | 1767496878 | 34.88384 | 775 | 550 | 1000 | c(“high”…. | 0.7731265 | reject | 522 | 0.8023016 | reject | 528 | reject | 381 | reject | 380 |  |
+| Trial-3415 | 295939270 | 35.21148 | 747 | 550 | 1000 | c(“high”…. | 0.8732924 | accept | 514 | 0.7772976 | reject | 496 | accept | 388 | reject | 369 |  |
+| Trial-3415 | 2110257267 | 34.37072 | 763 | 550 | 1000 | c(“high”…. | 0.8071533 | reject | 524 | 0.7257276 | reject | 511 | reject | 383 | reject | 372 |  |
 
 For example, we can compute the powers and summarize the estimates of
 hazard ratio for `PFS`.

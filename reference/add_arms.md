@@ -42,3 +42,7 @@ add_arms(trial, sample_ratio, ...)
   randomization queue are generated twice in the first approach but only
   once in the second approach. But statistically, they are equivalent
   and of the same distribution.
+
+## Value
+
+no return value, called for its side effect of updating `trial`.
