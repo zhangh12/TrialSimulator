@@ -114,8 +114,6 @@ plot(pars)
 #> 1 0.55 0.0997785 0.03885093 0.08877551 0.001158721
 #> 2 0.60 0.1080742 0.03055522 0.10102041 0.003826014
 #> 3 0.65 0.1214222 0.01720720 0.11938776 0.004866790
-#> Warning: Removed 3 rows containing missing values or values outside the scale range
-#> (`geom_segment()`).
 ```
 
 ![](simulatePfsAndOsIdm_files/figure-html/laiela-1.png)

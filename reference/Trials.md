@@ -403,8 +403,10 @@ get function of recruitment curve
 
 ### Method `set_dropout()`
 
-set distribution of drop out time. This can be done when initialize a
-trial, or when updating a trial in adaptive design.
+set distribution of drop out time when initializing a trial. This is not
+an adaptation method: dropout times of patients are generated when they
+are enrolled, so calling this function within an action function would
+not apply to patients already enrolled.
 
 #### Usage
 

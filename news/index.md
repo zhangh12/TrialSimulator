@@ -1,5 +1,42 @@
 # Changelog
 
+## TrialSimulator 1.26.2
+
+### Updates
+
+- Replace deprecated `.data$` in tidyselect contexts
+  ([`rename()`](https://dplyr.tidyverse.org/reference/rename.html)/[`select()`](https://dplyr.tidyverse.org/reference/select.html)
+  in the correlated PFS/OS generators,
+  [`PiecewiseConstantExponentialRNG()`](https://zhangh12.github.io/TrialSimulator/reference/PiecewiseConstantExponentialRNG.md),
+  and endpoint naming) with string literals, eliminating the tidyselect
+  deprecation warnings that flooded test output. `.data$` remains in
+  data-masking contexts
+  ([`filter()`](https://dplyr.tidyverse.org/reference/filter.html),
+  [`mutate()`](https://dplyr.tidyverse.org/reference/mutate.html),
+  `aes()`), where it is still the recommended idiom; `R CMD check` stays
+  clean.
+- `set_dropout()` documentation no longer claims adaptive use: dropout
+  times are generated at enrollment, so updating the generator within an
+  action function would not apply to enrolled patients.
+- Ignore the knitr vignette cache in `.gitignore` and exclude
+  `.DS_Store` from the build via `.Rbuildignore`.
+- Fix the remaining test-time warnings: `event_plot()` now selects the
+  endpoint column via
+  [`all_of()`](https://tidyselect.r-lib.org/reference/all_of.html)
+  (tidyselect external-vector deprecation), and
+  [`plot.three_state_model()`](https://zhangh12.github.io/TrialSimulator/reference/plot.three_state_model.md)
+  zooms with `coord_cartesian()` instead of `xlim()`, so the dashed
+  guide segments anchored at the axes are clipped and rendered rather
+  than dropped with a ggplot2 warning.
+- Fix the root cause of a stray `Rplots.pdf` appearing after test runs:
+  [`summarizeDataFrame()`](https://zhangh12.github.io/TrialSimulator/reference/summarizeDataFrame.md)
+  restored [`par()`](https://rdrr.io/r/graphics/par.html) settings via
+  [`on.exit()`](https://rdrr.io/r/base/on.exit.html) after its
+  [`png()`](https://rdrr.io/r/grDevices/png.html) device was already
+  closed, which implicitly opened the default device.
+  [`par()`](https://rdrr.io/r/graphics/par.html) settings are local to
+  the device and need no restore.
+
 ## TrialSimulator 1.26.1
 
 ### Bug Fix

@@ -135,7 +135,7 @@ $closedTest() perform combination test based on Dunnett's test.
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.26.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.26.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -484,8 +484,10 @@ current duration.</p></dd>
 
 </div><p></p><hr><a id="method-Trials-set_dropout"></a><div class="section">
 <h3 id="method-set-dropout-">Method <code>set_dropout()</code><a class="anchor" aria-label="anchor" href="#method-set-dropout-"></a></h3>
-<p>set distribution of drop out time. This can be done when initialize a
-trial, or when updating a trial in adaptive design.</p><div class="section">
+<p>set distribution of drop out time when initializing a trial. This is
+not an adaptation method: dropout times of patients are generated
+when they are enrolled, so calling this function within an action
+function would not apply to patients already enrolled.</p><div class="section">
 <h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">set_dropout</span><span class="op">(</span><span class="va">func</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.26.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.26.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,6 +50,18 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.26.2" id="trialsimulator-1262">TrialSimulator 1.26.2<a class="anchor" aria-label="anchor" href="#trialsimulator-1262"></a></h2>
+<div class="section level3">
+<h3 id="updates-1-26-2">Updates<a class="anchor" aria-label="anchor" href="#updates-1-26-2"></a></h3>
+<ul><li>Replace deprecated <code>.data$</code> in tidyselect contexts (<code><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename()</a></code>/<code><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select()</a></code> in the correlated PFS/OS generators, <code><a href="../reference/PiecewiseConstantExponentialRNG.html">PiecewiseConstantExponentialRNG()</a></code>, and endpoint naming) with string literals, eliminating the tidyselect deprecation warnings that flooded test output. <code>.data$</code> remains in data-masking contexts (<code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter()</a></code>, <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate()</a></code>, <code>aes()</code>), where it is still the recommended idiom; <code>R CMD check</code> stays clean.</li>
+<li>
+<code>set_dropout()</code> documentation no longer claims adaptive use: dropout times are generated at enrollment, so updating the generator within an action function would not apply to enrolled patients.</li>
+<li>Ignore the knitr vignette cache in <code>.gitignore</code> and exclude <code>.DS_Store</code> from the build via <code>.Rbuildignore</code>.</li>
+<li>Fix the remaining test-time warnings: <code>event_plot()</code> now selects the endpoint column via <code><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of()</a></code> (tidyselect external-vector deprecation), and <code><a href="../reference/plot.three_state_model.html">plot.three_state_model()</a></code> zooms with <code>coord_cartesian()</code> instead of <code>xlim()</code>, so the dashed guide segments anchored at the axes are clipped and rendered rather than dropped with a ggplot2 warning.</li>
+<li>Fix the root cause of a stray <code>Rplots.pdf</code> appearing after test runs: <code><a href="../reference/summarizeDataFrame.html">summarizeDataFrame()</a></code> restored <code><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par()</a></code> settings via <code><a href="https://rdrr.io/r/base/on.exit.html" class="external-link">on.exit()</a></code> after its <code><a href="https://rdrr.io/r/grDevices/png.html" class="external-link">png()</a></code> device was already closed, which implicitly opened the default device. <code><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par()</a></code> settings are local to the device and need no restore.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.26.1" id="trialsimulator-1261">TrialSimulator 1.26.1<a class="anchor" aria-label="anchor" href="#trialsimulator-1261"></a></h2>
 <div class="section level3">
