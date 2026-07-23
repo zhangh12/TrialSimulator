@@ -20,3 +20,6 @@ covr/
 *.gcno
 *.gcov
 cobertura.xml
+
+# knitr vignette cache
+vignettes/cache/

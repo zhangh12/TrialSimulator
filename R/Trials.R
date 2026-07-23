@@ -286,8 +286,10 @@ Trials <- R6::R6Class(
     },
 
     #' @description
-    #' set distribution of drop out time. This can be done when initialize a
-    #' trial, or when updating a trial in adaptive design.
+    #' set distribution of drop out time when initializing a trial. This is
+    #' not an adaptation method: dropout times of patients are generated
+    #' when they are enrolled, so calling this function within an action
+    #' function would not apply to patients already enrolled.
     #' @param func function to generate dropout time. It can be built-in
     #' function like `rexp` or customized functions.
     #' @param ... (optional) arguments for \code{func}.
@@ -2005,7 +2007,7 @@ Trials <- R6::R6Class(
           ##   filter(y %in% x)
           dat <- all_data %>%
             dplyr::filter(endpoint %in% .env$ep & arm %in% .env$arm_) %>%
-            dplyr::select(c('arm', col, 'calendar_time', 'endpoint')) %>%
+            dplyr::select(c('arm', all_of(col), 'calendar_time', 'endpoint')) %>%
             rename(has_event = !!sym(col))
 
           if(!is_tte){

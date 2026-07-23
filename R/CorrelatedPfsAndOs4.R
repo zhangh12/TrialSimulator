@@ -163,12 +163,12 @@ CorrelatedPfsAndOs4 <- function(n, transition_probability, duration,
   dat <- cbind(dat, event)
 
   dat <- dat %>%
-    rename(!!paste0(response_name, '_event') := .data$response_event) %>%
-    rename(!!response_name := .data$response) %>%
-    rename(!!paste0(progression_name, '_event') := .data$progression_event) %>%
-    rename(!!progression_name := .data$progression) %>%
-    rename(!!paste0(death_name, '_event') := .data$death_event) %>%
-    rename(!!death_name := .data$death)
+    rename(!!paste0(response_name, '_event') := 'response_event') %>%
+    rename(!!response_name := 'response') %>%
+    rename(!!paste0(progression_name, '_event') := 'progression_event') %>%
+    rename(!!progression_name := 'progression') %>%
+    rename(!!paste0(death_name, '_event') := 'death_event') %>%
+    rename(!!death_name := 'death')
 
   dat
 

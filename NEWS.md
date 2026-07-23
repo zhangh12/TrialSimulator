@@ -1,3 +1,13 @@
+# TrialSimulator 1.26.2
+
+## Updates
+
+- Replace deprecated `.data$` in tidyselect contexts (`rename()`/`select()` in the correlated PFS/OS generators, `PiecewiseConstantExponentialRNG()`, and endpoint naming) with string literals, eliminating the tidyselect deprecation warnings that flooded test output. `.data$` remains in data-masking contexts (`filter()`, `mutate()`, `aes()`), where it is still the recommended idiom; `R CMD check` stays clean.
+- `set_dropout()` documentation no longer claims adaptive use: dropout times are generated at enrollment, so updating the generator within an action function would not apply to enrolled patients.
+- Ignore the knitr vignette cache in `.gitignore` and exclude `.DS_Store` from the build via `.Rbuildignore`.
+- Fix the remaining test-time warnings: `event_plot()` now selects the endpoint column via `all_of()` (tidyselect external-vector deprecation), and `plot.three_state_model()` zooms with `coord_cartesian()` instead of `xlim()`, so the dashed guide segments anchored at the axes are clipped and rendered rather than dropped with a ggplot2 warning.
+- Fix the root cause of a stray `Rplots.pdf` appearing after test runs: `summarizeDataFrame()` restored `par()` settings via `on.exit()` after its `png()` device was already closed, which implicitly opened the default device. `par()` settings are local to the device and need no restore.
+
 # TrialSimulator 1.26.1
 
 ## Bug Fix
