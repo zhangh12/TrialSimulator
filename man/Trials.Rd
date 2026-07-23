@@ -43,6 +43,11 @@ follow-up of an earlier cohort at a pre-specified, event-driven milestone
 (e.g., the last patient of the first cohort), optionally with a fixed
 additional follow-up beyond it, making statistics of the cohorts
 independent to facilitate, e.g., combination tests.
+\item \code{$update_accrual_rate()} update the accrual rate of the
+recruitment curve at a milestone, e.g., to revise or pause recruitment
+after dose selection or enrichment. \code{end_time} of the new accrual
+rate is measured from the milestone; patients not yet enrolled are
+re-planned and re-randomized under the new schedule.
 \item \code{$get_locked_data()} request for data snapshot at a milestone.
 Calling this function is recommended as the first action in any action
 function as long as trial data is needed in statistical analysis or decision
@@ -136,6 +141,7 @@ trial$closedTest(dt, treatments = c('high dose', 'low dose'),
 \item \href{#method-Trials-has_regimen}{\code{Trials$has_regimen()}}
 \item \href{#method-Trials-crossover}{\code{Trials$crossover()}}
 \item \href{#method-Trials-stop_followup}{\code{Trials$stop_followup()}}
+\item \href{#method-Trials-update_accrual_rate}{\code{Trials$update_accrual_rate()}}
 \item \href{#method-Trials-get_name}{\code{Trials$get_name()}}
 \item \href{#method-Trials-get_description}{\code{Trials$get_description()}}
 \item \href{#method-Trials-get_arms}{\code{Trials$get_arms()}}
@@ -658,6 +664,51 @@ this function is called.}
 \item{\code{additional_followup}}{numeric. Extra follow-up time granted to the
 selected patients after the current milestone. If 0 (default),
 follow-up stops at the milestone itself.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-update_accrual_rate"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-update_accrual_rate}{}}}
+\subsection{Method \code{update_accrual_rate()}}{
+update the accrual rate of the recruitment curve at a milestone. The
+enroller of a trial is always \code{StaggeredRecruiter}; this function
+replaces its \code{accrual_rate} for patients not yet enrolled, while
+enrolled patients are left unchanged. It can be used in adaptive
+designs, e.g., to revise recruitment after dose selection or
+enrichment, or to pause recruitment for a period after an interim
+decision.
+
+\code{end_time} in \code{accrual_rate} is measured from the time this
+function is called (i.e., the current milestone), not from the start
+of the trial. A milestone is usually event driven, so its calendar
+time is unknown until the trial is simulated, and a schedule on the
+calendar time scale could not be pre-specified. Measuring
+\code{end_time} from the milestone also lets users state the new plan
+simply as "from now on": e.g.,
+\code{data.frame(end_time = c(3, Inf), piecewise_rate = c(20, 35))}
+means 20 patients per month for the 3 months following the milestone
+and 35 per month thereafter, whenever the milestone occurs. Following
+the convention of \code{StaggeredRecruiter}, the first re-planned
+patient is enrolled \code{1 / piecewise_rate} after the milestone; a
+leading window with \code{piecewise_rate = 0} defers enrollment
+further. As with other adaptations, patients not yet enrolled are
+re-randomized and their data are regenerated under the new schedule.
+
+Note that this function should only be called within action functions.
+Calling it before any milestone has been triggered is an error.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$update_accrual_rate(accrual_rate)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{accrual_rate}}{a data frame of columns \code{end_time} and
+\code{piecewise_rate} as in \code{StaggeredRecruiter}, with
+\code{end_time} measured from the current milestone. The last
+\code{end_time} must be \code{Inf} with a positive rate.}
 }
 \if{html}{\out{</div>}}
 }

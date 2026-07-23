@@ -431,6 +431,9 @@ Adaptations that are currently supported are summarized below:
 |                          |                                                        | stop following a sub-population after interim decision; |
 |                          |                                                        | independent cohorts for, e.g., combination test         |
 +--------------------------+--------------------------------------------------------+---------------------------------------------------------+
+| Update accrual rate      | `trial$update_accrual_rate()`                          | revise accrual after dose selection or enrichment;      |
+|                          |                                                        | pause and resume enrollment at a milestone              |
++--------------------------+--------------------------------------------------------+---------------------------------------------------------+
 
 [^1]: experimental
 

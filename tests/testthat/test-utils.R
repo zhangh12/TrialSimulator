@@ -192,6 +192,50 @@ test_that("stratified randomization produces balanced strata", {
 
 })
 
+## ── stratification + fractional sample ratio: loud conflict ───────────────────
+test_that("fractional sample ratio with stratification factors warns", {
+
+  set.seed(6)
+  rng <- function(n) data.frame(sex = sample(c("M", "F"), n, replace = TRUE))
+  strat_ep <- endpoint(name = "sex", type = "non-tte",
+                       readout = c(sex = 0), generator = rng)
+  pfs_ep <- endpoint(name = "pfs", type = "tte",
+                     generator = rexp, rate = log(2) / 8)
+
+  make_stratified_trial <- function(silent){
+    pbo <- arm(name = "placebo")
+    trt <- arm(name = "trt")
+    pbo$add_endpoints(strat_ep, pfs_ep)
+    trt$add_endpoints(strat_ep, pfs_ep)
+    tr <- trial(name = "t", n_patients = 100, seed = 11,
+                duration = 100,
+                enroller = StaggeredRecruiter,
+                accrual_rate = data.frame(end_time = Inf, piecewise_rate = 30),
+                dropout = rweibull, shape = 1, scale = 1e6,
+                stratification_factors = "sex",
+                silent = silent)
+    list(tr = tr, pbo = pbo, trt = trt)
+  }
+
+  ## fractional ratio bypasses stratification -> warning (silent = FALSE)
+  s <- make_stratified_trial(silent = FALSE)
+  expect_warning(
+    suppressMessages(s$tr$add_arms(sample_ratio = c(1, 1.5), s$pbo, s$trt)),
+    "Stratified randomization is not supported"
+  )
+
+  ## silent = TRUE suppresses the warning, per package convention
+  s <- make_stratified_trial(silent = TRUE)
+  expect_no_warning(s$tr$add_arms(sample_ratio = c(1, 1.5), s$pbo, s$trt))
+
+  ## whole-number ratios with stratification stay warning-free
+  s <- make_stratified_trial(silent = FALSE)
+  expect_no_warning(
+    suppressMessages(s$tr$add_arms(sample_ratio = c(1, 2), s$pbo, s$trt))
+  )
+
+})
+
 ## ── enrollment(arms=...): counts only specified arms ──────────────────────────
 test_that("enrollment(arms=...) milestone triggers on specified arms only", {
 

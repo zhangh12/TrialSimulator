@@ -1,8 +1,9 @@
 # User-facing wrappers for adaptive trial mutations
 #
 # Covers: add_arms, remove_arms, resize, set_duration, update_generator,
-# update_sample_ratio, stop_followup — each invoked inside an action function
-# to verify they forward to the corresponding Trials$... method.
+# update_sample_ratio, stop_followup, update_accrual_rate — each invoked
+# inside an action function to verify they forward to the corresponding
+# Trials$... method.
 
 make_arm <- function(name, rate) {
   ep <- endpoint(name = 'pfs', type = 'tte', generator = rexp,
@@ -260,6 +261,198 @@ test_that("stop_followup with empty dots stops all enrolled patients", {
   # patients enrolled after the milestone are followed as usual
   late <- d[d$enroll_time > 10, ]
   expect_true(any(late$enroll_time + late$pfs > 10))
+})
+
+
+test_that("update_accrual_rate slows enrollment after the milestone", {
+
+  pbo <- make_arm("pbo", 10)
+  trt <- make_arm("trt", 12)
+  tr <- make_trial()
+  add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+  slow <- milestone(name = "slow",
+                    when = calendarTime(time = 10),
+                    action = function(trial) {
+                      update_accrual_rate(
+                        trial,
+                        data.frame(end_time = Inf, piecewise_rate = 5))
+                    })
+  final <- milestone(name = "final", when = calendarTime(time = 30))
+  lstn <- listener(silent = TRUE)
+  lstn$add_milestones(slow, final)
+  controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+
+  d <- tr$get_locked_data("final")
+
+  # before the milestone: original 30/month, i.e., 300 patients by time 10
+  expect_equal(sum(d$enroll_time <= 10), 300)
+
+  # after: deterministic 5/month starting one inter-arrival past the
+  # milestone, so the first re-planned patient enrolls exactly at 10 + 1/5
+  expect_equal(min(d$enroll_time[d$enroll_time > 10]), 10 + 1 / 5,
+               tolerance = 1e-9)
+  expect_equal(sum(d$enroll_time > 10 & d$enroll_time <= 20), 50)
+
+  # regeneration keeps the duration-censoring invariant for re-planned rows
+  expect_true(all(d$enroll_time + d$pfs <= 30 + 1e-9))
+})
+
+
+test_that("update_accrual_rate with a leading pause halts then resumes", {
+
+  pbo <- make_arm("pbo", 10)
+  trt <- make_arm("trt", 12)
+  tr <- make_trial()
+  add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+  pause <- milestone(name = "pause",
+                     when = calendarTime(time = 10),
+                     action = function(trial) {
+                       update_accrual_rate(
+                         trial,
+                         data.frame(end_time = c(5, Inf),
+                                    piecewise_rate = c(0, 30)))
+                     })
+  final <- milestone(name = "final", when = calendarTime(time = 30))
+  lstn <- listener(silent = TRUE)
+  lstn$add_milestones(pause, final)
+  controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+
+  d <- tr$get_locked_data("final")
+
+  # no one enrolls during the 5-month pause after the milestone
+  expect_equal(sum(d$enroll_time > 10 & d$enroll_time <= 15), 0)
+  # enrollment resumes one inter-arrival after the pause ends
+  expect_equal(min(d$enroll_time[d$enroll_time > 10]), 15 + 1 / 30,
+               tolerance = 1e-9)
+})
+
+
+test_that("update_accrual_rate speeding up accrual keeps censoring correct", {
+
+  pbo <- make_arm("pbo", 10)
+  trt <- make_arm("trt", 12)
+  tr <- make_trial(n_patients = 600, duration = 25)
+  add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+  fast <- milestone(name = "fast",
+                    when = calendarTime(time = 10),
+                    action = function(trial) {
+                      update_accrual_rate(
+                        trial,
+                        data.frame(end_time = Inf, piecewise_rate = 60))
+                    })
+  final <- milestone(name = "final", when = calendarTime(time = 25))
+  lstn <- listener(silent = TRUE)
+  lstn$add_milestones(fast, final)
+  controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+
+  d <- tr$get_locked_data("final")
+
+  # patients re-planned to earlier times must be regenerated, not shifted:
+  # every row still satisfies the duration-censoring invariant
+  expect_true(all(d$enroll_time + d$pfs <= 25 + 1e-9))
+  # the faster rate really pulls enrollment earlier: 300 patients remain at
+  # the milestone, so the last enrolls exactly at 10 + 300/60 = 15
+  expect_equal(nrow(d), 600)
+  expect_equal(max(d$enroll_time), 15, tolerance = 1e-9)
+})
+
+
+test_that("resize after update_accrual_rate continues the new curve", {
+
+  pbo <- make_arm("pbo", 10)
+  trt <- make_arm("trt", 12)
+  tr <- make_trial()
+  add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+  faster <- milestone(name = "faster",
+                      when = calendarTime(time = 5),
+                      action = function(trial) {
+                        update_accrual_rate(
+                          trial,
+                          data.frame(end_time = Inf, piecewise_rate = 60))
+                      })
+  grow <- milestone(name = "grow",
+                    when = calendarTime(time = 10),
+                    action = function(trial) { resize(trial, 500) })
+  final <- milestone(name = "final", when = calendarTime(time = 30))
+  lstn <- listener(silent = TRUE)
+  lstn$add_milestones(faster, grow, final)
+
+  # resize() draws the extra patients from the re-planned redundant pool;
+  # a stale old-curve pool would trip roll_back()'s ordering invariant
+  expect_no_error(
+    controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+  )
+  expect_gt(nrow(tr$get_locked_data("final")), 400)
+})
+
+
+test_that("update_accrual_rate after enrollment completes re-plans resize reserves", {
+
+  # n1 = 0 edge: the milestone fires after all 400 patients are enrolled
+  # (30/month completes at 13.33), so only the redundant pool is re-planned;
+  # a later resize() must draw added patients from the new curve
+  pbo <- make_arm("pbo", 10)
+  trt <- make_arm("trt", 12)
+  tr <- make_trial()
+  add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+  upd <- milestone(name = "upd",
+                   when = calendarTime(time = 20),
+                   action = function(trial) {
+                     update_accrual_rate(
+                       trial,
+                       data.frame(end_time = Inf, piecewise_rate = 10))
+                   })
+  grow <- milestone(name = "grow",
+                    when = calendarTime(time = 22),
+                    action = function(trial) { resize(trial, 450) })
+  final <- milestone(name = "final", when = calendarTime(time = 30))
+  lstn <- listener(silent = TRUE)
+  lstn$add_milestones(upd, grow, final)
+  controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+
+  d <- tr$get_locked_data("final")
+  added <- d[d$enroll_time > 20, ]
+
+  expect_equal(nrow(d), 450)
+  expect_equal(nrow(added), 50)
+  # added patients follow the new 10/month curve from the update milestone
+  expect_equal(min(added$enroll_time), 20 + 1 / 10, tolerance = 1e-9)
+  expect_true(all(abs(diff(sort(added$enroll_time)) - 1 / 10) < 1e-9))
+})
+
+
+test_that("update_accrual_rate validates context and accrual_rate", {
+
+  pbo <- make_arm("pbo", 10)
+  trt <- make_arm("trt", 12)
+  tr <- make_trial()
+  add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+  # cannot be called before any milestone has been triggered
+  expect_error(
+    tr$update_accrual_rate(data.frame(end_time = Inf, piecewise_rate = 5)),
+    "within an action function")
+
+  # emulate a triggered milestone to reach accrual_rate validation; errors
+  # from StaggeredRecruiter are re-signaled with update_accrual_rate context
+  # followed by the actual message
+  tr$set_current_time(5)
+  tr$save_milestone_time(5, "checkpoint")
+
+  expect_error(
+    tr$update_accrual_rate(data.frame(end_time = 10, piecewise_rate = 5)),
+    "Invalid accrual_rate passed to update_accrual_rate")
+  expect_error(
+    tr$update_accrual_rate(data.frame(end_time = 10, piecewise_rate = 5)),
+    "must be Inf")
+  expect_error(
+    tr$update_accrual_rate(list(end_time = Inf, piecewise_rate = 5)),
+    "data.frame")
 })
 
 

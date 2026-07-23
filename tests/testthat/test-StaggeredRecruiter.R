@@ -43,10 +43,14 @@ test_that("schedule sanity is validated", {
     "must be positive")
 })
 
-test_that("first patient enrolls at time 0 when the first window is active", {
+test_that("first patient enrolls at 1/rate when the first window is active", {
+  ## patient k enrolls when cumulative planned accrual reaches k, so the
+  ## n-th patient under constant rate r enrolls exactly at n / r and an
+  ## enrollment(n) milestone triggers exactly at that planned time.
   r <- StaggeredRecruiter(50, data.frame(end_time = c(6, Inf),
                                          piecewise_rate = c(20, 20)))
-  expect_equal(r[1], 0)
+  expect_equal(r[1], 1 / 20)
+  expect_equal(r[40], 40 / 20)
 })
 
 test_that("returns exactly n strictly increasing times", {
@@ -69,27 +73,31 @@ test_that("enrollment is equidistant within each window (spacing = 1/rate)", {
 test_that("an integer-capacity window holds exactly length * rate patients", {
   ## cumulative capacity increases by (window length * rate) across a window;
   ## when that product is an integer the window holds exactly that many (no
-  ## per-window truncation). For a non-integer product the count is rounded by
+  ## per-window truncation), the last of them enrolling exactly at the
+  ## window's end time. For a non-integer product the count is rounded by
   ## phase, so this exact equality only holds for integer capacity.
   ar <- data.frame(end_time = c(10, Inf), piecewise_rate = c(3, 5))
   r <- StaggeredRecruiter(100, ar)
-  expect_equal(sum(r < 10), 10 * 3)   # window length 10 x rate 3 = 30
+  expect_equal(sum(r <= 10), 10 * 3)  # window length 10 x rate 3 = 30
+  expect_equal(r[30], 10)             # the 30th patient exactly at end_time
 })
 
 test_that("a zero-rate window pauses enrollment and advances calendar time", {
   ar <- data.frame(end_time = c(12, 18, Inf), piecewise_rate = c(30, 0, 30))
   r <- StaggeredRecruiter(600, ar)
-  expect_equal(r[1], 0)
+  expect_equal(r[1], 1 / 30)
   expect_equal(sum(r > 12 & r < 18), 0)      # nobody enrolls during the pause
-  expect_equal(min(r[r >= 12]), 18)          # enrollment resumes at the pause end
+  ## patient 360's cumulative count is reached exactly at the boundary (12)
+  ## followed by a pause; per the tie convention it enrolls at the pause end
+  expect_equal(min(r[r >= 12]), 18)
   expect_true(all(diff(r) > 0))
 })
 
-test_that("a leading pause defers first enrollment to the pause end", {
+test_that("a leading pause defers first enrollment past the pause end", {
   ar <- data.frame(end_time = c(6, Inf), piecewise_rate = c(0, 30))
   r <- StaggeredRecruiter(100, ar)
   expect_false(any(r < 6))
-  expect_equal(r[1], 6)
+  expect_equal(r[1], 6 + 1 / 30)   # one inter-arrival after the pause ends
 })
 
 test_that("consecutive pause windows are supported", {
@@ -106,7 +114,7 @@ test_that("more than two consecutive leading pauses defer the first enrollment",
                    piecewise_rate = c(0, 0, 0, 30))
   r <- StaggeredRecruiter(100, ar)
   expect_false(any(r < 9))               # nobody before the three pauses end
-  expect_equal(r[1], 9)                  # enrollment resumes at the last pause end
+  expect_equal(r[1], 9 + 1 / 30)         # one inter-arrival after the pauses
   expect_length(r, 100)
   expect_true(all(diff(r) > 0))
 })

@@ -1,3 +1,25 @@
+# TrialSimulator 1.26.0
+
+## New Feature
+
+- New adaptation method `trial$update_accrual_rate()` (wrapper `update_accrual_rate()`): update the accrual rate of the recruitment curve at a milestone, e.g., to revise recruitment after dose selection or enrichment, or to pause it for a period after an interim decision. `end_time` of the new `accrual_rate` is measured from the milestone; patients not yet enrolled (and the enrollment reserves used by `resize()`) are re-planned and re-randomized under the new schedule, while enrolled patients are left unchanged. Like other adaptations, it must be called within an action function, after a milestone has been triggered.
+
+# TrialSimulator 1.25.2
+
+## Updates
+
+- `StaggeredRecruiter()` now enrolls patient `k` when the planned cumulative accrual reaches `k` (previously `k - 1`): under a constant rate `r` the `n`-th patient enrolls exactly at `n / r`, so a milestone triggered by `enrollment(n)` occurs exactly at the planned accrual time. The first patient enrolls at `1 / piecewise_rate` instead of time 0, and all enrollment times shift by one inter-arrival accordingly; simulation results under a fixed seed differ slightly from 1.25.1. The precomputed output of the `adaptiveDesign` vignette is regenerated under the new convention.
+
+# TrialSimulator 1.25.1
+
+## Bug Fix
+
+- Fix an infinite loop in patient enrollment when fractional sample ratios are combined with stratification factors: the pool labels now match the unstratified randomization queue in that case.
+
+## Updates
+
+- Warn when fractional sample ratios are used in a trial with stratification factors: stratified randomization is not supported in that case and unenrolled patients are randomized by `sample()` without stratification. The warning is suppressed when `silent = TRUE`.
+
 # TrialSimulator 1.25.0
 
 ## New Feature
