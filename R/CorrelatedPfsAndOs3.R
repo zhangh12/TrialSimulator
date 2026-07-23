@@ -62,9 +62,9 @@ CorrelatedPfsAndOs3 <- function(n, h01, h02, h12,
   data.frame(pfs, os) %>%
     mutate(pfs_event = 1) %>%
     mutate(os_event = 1) %>%
-    rename(!!paste0(pfs_name, '_event') := .data$pfs_event) %>%
-    rename(!!pfs_name := .data$pfs) %>%
-    rename(!!paste0(os_name, '_event') := .data$os_event) %>%
-    rename(!!os_name := .data$os)
+    rename(!!paste0(pfs_name, '_event') := 'pfs_event') %>%
+    rename(!!pfs_name := 'pfs') %>%
+    rename(!!paste0(os_name, '_event') := 'os_event') %>%
+    rename(!!os_name := 'os')
 
 }

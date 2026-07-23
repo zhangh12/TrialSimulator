@@ -14,3 +14,4 @@ vignettes/cache
 ^src/.*\.gcno$
 ^src/.*\.o$
 ^src/.*\.so$
+\.DS_Store$

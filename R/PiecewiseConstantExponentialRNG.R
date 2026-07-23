@@ -54,7 +54,7 @@ PiecewiseConstantExponentialRNG <- function(n, risk, endpoint_name){
   if('hazard_ratio' %in% names(risk)){
     risk <- risk %>%
       mutate(piecewise_risk = .data$piecewise_risk * .data$hazard_ratio) %>%
-      dplyr::select(-.data$hazard_ratio)
+      dplyr::select(-'hazard_ratio')
   }
 
   n_windows <- nrow(risk)
@@ -81,7 +81,7 @@ PiecewiseConstantExponentialRNG <- function(n, risk, endpoint_name){
   data.frame(tte = tte) %>%
     mutate(event = ifelse(is.na(tte), 0, 1)) %>%
     mutate(tte = ifelse(is.na(tte), tau[length(tau)], tte)) %>%
-    rename(!!paste0(endpoint_name, '_event') := .data$event) %>%
+    rename(!!paste0(endpoint_name, '_event') := 'event') %>%
     rename(!!endpoint_name := tte)
 }
 

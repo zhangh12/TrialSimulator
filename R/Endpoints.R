@@ -335,7 +335,7 @@ Endpoints <- R6::R6Class(
 
       if(is.vector(example_data)){
         example_data <- data.frame(v1 = example_data) %>%
-          rename(!!name := .data$v1)
+          rename(!!name := 'v1')
       }
 
       if(!all(name %in% colnames(example_data))){

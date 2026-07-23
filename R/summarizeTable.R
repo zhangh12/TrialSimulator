@@ -75,20 +75,25 @@ summarizeDataFrame <- function(data,
 
       temp_file <- tempfile(fileext = ".png")
       png(temp_file, width = 120, height = 80, res = 96, bg = "white")
-      opar <- par(mar = c(1.5, 1.5, 0.5, 0.5), cex = 0.5)
-      on.exit(par(opar))
-      plot(km_fit,
-           conf.int = FALSE,
-           col = "black",
-           lwd = 1,
-           xlab = "",
-           ylab = "",
-           main = "",
-           axes = FALSE,
-           ylim = c(0, 1))
-      axis(1, cex.axis = 0.4, tck = -0.03)
-      axis(2, cex.axis = 0.4, tck = -0.03)
-      dev.off()
+      ## finally = dev.off() guarantees the private png device is closed even
+      ## if plotting errors, so it cannot leak into later graphics. par()
+      ## settings are local to this device and die with it; restoring them
+      ## afterwards would implicitly open the default device (creating
+      ## Rplots.pdf in non-interactive sessions), so no restore is wanted.
+      tryCatch({
+        par(mar = c(1.5, 1.5, 0.5, 0.5), cex = 0.5)
+        plot(km_fit,
+             conf.int = FALSE,
+             col = "black",
+             lwd = 1,
+             xlab = "",
+             ylab = "",
+             main = "",
+             axes = FALSE,
+             ylim = c(0, 1))
+        axis(1, cex.axis = 0.4, tck = -0.03)
+        axis(2, cex.axis = 0.4, tck = -0.03)
+      }, finally = dev.off())
 
       img_raw <- readBin(temp_file, "raw", file.info(temp_file)$size)
       img_base64 <- base64encode(img_raw)
@@ -123,17 +128,14 @@ summarizeDataFrame <- function(data,
 
       temp_file <- tempfile(fileext = ".png")
       png(temp_file, width = 120, height = total_height, res = 96, bg = "white")
-
-      opar <- par(mar = c(0, 0, 0, 0), oma = c(0, 0, 0, 0))
-      on.exit(par(opar))
-
-      barplot(cnt, horiz = TRUE,
-              main = "", xlab = "", ylab = "",
-              axes = FALSE, names.arg = rep("", length(cnt)),
-              col = "lightgray", border = "gray60", lwd = 0.5,
-              space = 0.2)
-
-      dev.off()
+      tryCatch({
+        par(mar = c(0, 0, 0, 0), oma = c(0, 0, 0, 0))
+        barplot(cnt, horiz = TRUE,
+                main = "", xlab = "", ylab = "",
+                axes = FALSE, names.arg = rep("", length(cnt)),
+                col = "lightgray", border = "gray60", lwd = 0.5,
+                space = 0.2)
+      }, finally = dev.off())
 
       img_raw <- readBin(temp_file, "raw", file.info(temp_file)$size)
       img_base64 <- base64encode(img_raw)
@@ -170,11 +172,11 @@ summarizeDataFrame <- function(data,
 
       temp_file <- tempfile(fileext = ".png")
       png(temp_file, width = 120, height = 80, res = 96, bg = "white")
-      opar <- par(mar = c(0, 0, 0, 0), cex = 0.5)
-      on.exit(par(opar))
-      hist(var_data, main = "", xlab = "", ylab = "", axes = FALSE,
-           col = "lightgray", border = "gray60", breaks = 10, lwd = 0.5)
-      dev.off()
+      tryCatch({
+        par(mar = c(0, 0, 0, 0), cex = 0.5)
+        hist(var_data, main = "", xlab = "", ylab = "", axes = FALSE,
+             col = "lightgray", border = "gray60", breaks = 10, lwd = 0.5)
+      }, finally = dev.off())
 
       img_raw <- readBin(temp_file, "raw", file.info(temp_file)$size)
       img_base64 <- base64encode(img_raw)
