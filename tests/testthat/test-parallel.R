@@ -187,3 +187,70 @@ test_that('stop_followup and update_accrual_rate reproduce across worker modes',
 
   expect_equal(op1, op2)
 })
+
+
+test_that('update_milestone reproduces across worker modes', {
+
+  skip_if(Sys.getenv("R_COVR") == "true",
+          "n_workers > 1 spawns R processes that covr cannot trace")
+
+  baz <- function(n, n_workers, seed = NULL){
+    pfs <- endpoint(name = 'pfs', type = 'tte', generator = rexp, rate = log(2)/10)
+    pbo <- arm(name = 'pbo'); pbo$add_endpoints(pfs)
+    pfs <- endpoint(name = 'pfs', type = 'tte', generator = rexp, rate = log(2)/12)
+    trt <- arm(name = 'trt'); trt$add_endpoints(pfs)
+
+    trial <- trial(
+      name = 'test', n_patients = 300, duration = 40,
+      enroller = StaggeredRecruiter,
+      accrual_rate = data.frame(end_time = Inf, piecewise_rate = 30),
+      dropout = rweibull, shape = 1.32, scale = 114.4,
+      seed = seed, silent = TRUE
+    )
+    trial$add_arms(sample_ratio = c(1, 1), pbo, trt)
+
+    interim <- milestone(name = 'interim',
+                         when = eventNumber(endpoint = 'pfs', n = 60),
+                         action = function(trial){
+                           d <- trial$get_locked_data('interim')
+                           fit <- fitLogrank(Surv(pfs, pfs_event) ~ arm,
+                                             placebo = 'pbo', data = d,
+                                             alternative = 'less')
+                           ## data-dependent update: raise the final target
+                           ## when the interim z is unimpressive
+                           if(fit$z[1] > -1.5){
+                             update_milestone(trial, 'final',
+                                              when = eventNumber(endpoint = 'pfs',
+                                                                 n = 160))
+                             trial$save('raised', 'im_decision')
+                           }else{
+                             trial$save('kept', 'im_decision')
+                           }
+                         })
+    final <- milestone(name = 'final',
+                       when = eventNumber(endpoint = 'pfs', n = 120),
+                       action = function(trial){
+                         d <- trial$get_locked_data('final')
+                         fit <- fitLogrank(Surv(pfs, pfs_event) ~ arm,
+                                           placebo = 'pbo', data = d,
+                                           alternative = 'less')
+                         trial$save(fit$p[1], 'FA_pval')
+                         trial$save(sum(d$pfs_event), 'FA_events')
+                       })
+
+    listener <- listener(silent = TRUE)
+    listener$add_milestones(interim, final)
+    controller <- controller(trial, listener)
+    controller$run(n = n, n_workers = n_workers, plot_event = FALSE, silent = TRUE)
+    controller$get_output(c('seed', 'im_decision', 'FA_pval', 'FA_events'))
+  }
+
+  op2 <- baz(n = 6, n_workers = 2, seed = NULL)
+
+  op1 <- NULL
+  for(i in 1:6){
+    op1 <- rbind(op1, baz(n = 1, n_workers = 1, seed = op2$seed[i]))
+  }
+
+  expect_equal(op1, op2)
+})

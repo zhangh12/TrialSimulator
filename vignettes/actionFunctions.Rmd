@@ -423,7 +423,7 @@ Adaptations that are currently supported are summarized below:
 +--------------------------+--------------------------------------------------------+---------------------------------------------------------+
 | Update sample ratio      | `trial$update_sample_ratio()`                          | response-adaptive design                                |
 +--------------------------+--------------------------------------------------------+---------------------------------------------------------+
-| Extend trial duration    | `trial$set_duration()` or add a event-driven milestone | actual patient or event accrual is slower than expected |
+| Extend trial duration    | `trial$set_duration()` or `trial$update_milestone()`   | actual patient or event accrual is slower than expected |
 +--------------------------+--------------------------------------------------------+---------------------------------------------------------+
 | Increase sample size[^1] | `trial$resize()`                                       | sample size reassessment                                |
 +--------------------------+--------------------------------------------------------+---------------------------------------------------------+
@@ -435,6 +435,10 @@ Adaptations that are currently supported are summarized below:
 +--------------------------+--------------------------------------------------------+---------------------------------------------------------+
 | Update accrual rate      | `trial$update_accrual_rate()`                          | revise accrual after dose selection or enrichment;      |
 |                          |                                                        | pause and resume enrollment at a milestone              |
++--------------------------+--------------------------------------------------------+---------------------------------------------------------+
+| Update a milestone       | `trial$update_milestone()`                             | postpone the final analysis by raising its target       |
+|                          |                                                        | event number, or switch its triggering condition,       |
+|                          |                                                        | when conditional power at an interim is low             |
 +--------------------------+--------------------------------------------------------+---------------------------------------------------------+
 
 [^1]: experimental

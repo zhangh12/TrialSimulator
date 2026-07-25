@@ -1,3 +1,13 @@
+# TrialSimulator 1.28.0
+
+## New Feature
+
+- New adaptation method `trial$update_milestone()` (wrapper `update_milestone()`): update the triggering condition and/or the action of a not-yet-triggered milestone from within an action function. The update takes effect right after the current action function returns, and the as-designed milestone is restored between simulation replicates.
+
+## Updates
+
+- The `action` of a milestone must be a function; `NULL` is no longer accepted. Use `doNothing` if no action is intended.
+
 # TrialSimulator 1.27.0
 
 ## Updates
