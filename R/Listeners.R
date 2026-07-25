@@ -10,8 +10,15 @@
 #' useful to end users.
 #'
 #' \itemize{
-#' \item \code{$add_milestones()}
+#' \item \code{$add_milestones()} register milestone(s) with the listener.
+#' \item \code{$get_milestone_names()} return names of registered milestones.
 #' }
+#'
+#' \strong{Internal machinery.} The remaining public methods
+#' (\code{$monitor()}, \code{$mute()} and \code{$reset()}) are public only
+#' because they are invoked on a listener object by other components of the
+#' package (controllers), which R6 cannot grant through private members.
+#' Users should not call them directly.
 #'
 #' @docType class
 #' @examples
@@ -24,7 +31,21 @@ Listeners <- R6::R6Class(
 
   private = list(
     milestones = list(),
-    silent = FALSE
+    silent = FALSE,
+
+    ## return registered milestones. If milestone_name is NULL, all
+    ## registered milestones are returned.
+    get_milestones = function(milestone_name = NULL){
+      if(is.null(milestone_name)){
+        return(private$milestones)
+      }
+
+      if(!(milestone_name %in% names(private$milestones))){
+        stop('Milestone <', milestone_name, '> is not registered. ')
+      }
+
+      return(private$milestones[[milestone_name]])
+    }
   ),
 
   public = list(
@@ -73,22 +94,6 @@ Listeners <- R6::R6Class(
     },
 
     #' @description
-    #' return registered milestones
-    #' @param milestone_name return \code{Milestone} object with given name(s).
-    #' If \code{NULL}, all registered milestones are returned.
-    get_milestones = function(milestone_name = NULL){
-      if(is.null(milestone_name)){
-        return(private$milestones)
-      }
-
-      if(!(milestone_name %in% names(private$milestones))){
-        stop('Milestone <', milestone_name, '> is not registered. ')
-      }
-
-      return(private$milestones[[milestone_name]])
-    },
-
-    #' @description
     #' return names of registered milestones
     get_milestone_names = function(){
 
@@ -100,7 +105,11 @@ Listeners <- R6::R6Class(
 
     },
 
+    ## ---- internal machinery (called by other components; not for users) -----
+
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' scan, check, and trigger registered milestones.
     #' Milestones are triggered in the order when calling
     #' \code{Listener$add_milestones}.
@@ -112,7 +121,7 @@ Listeners <- R6::R6Class(
         stop('No arm is found in the trial. ',
              'Make sure that Trial$add_arms() has been executed before running the trial. ')
       }
-      for(milestone in self$get_milestones()){
+      for(milestone in private$get_milestones()){
         milestone$set_dry_run(dry_run)
         tryCatch(
           {
@@ -167,20 +176,24 @@ Listeners <- R6::R6Class(
     },
 
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' mute all messages (not including warnings)
     #' @param silent logical.
     mute = function(silent){
       private$silent <- silent
-      for(milestone in self$get_milestones()){
+      for(milestone in private$get_milestones()){
         milestone$mute(private$silent)
       }
     },
 
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' reset all milestones registered to the listener. Usually, this is called
     #' before a controller can run additional replicates of simulation.
     reset = function(){
-      milestones <- self$get_milestones()
+      milestones <- private$get_milestones()
       for(milestone in milestones){
         milestone$reset()
       }
