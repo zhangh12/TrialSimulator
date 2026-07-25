@@ -22,15 +22,15 @@ test_that("Trials accessors and print reflect the constructed trial", {
               silent = TRUE)
   tr$add_arms(sample_ratio = c(1, 1), pbo, trt)
 
-  expect_equal(tr$get_seed(), 42L)
+  expect_equal(tr$.__enclos_env__$private$get_seed(), 42L)
   expect_equal(sort(tr$get_arms_name()), sort(c("pbo", "trt")))
-  expect_equal(tr$get_number_arms(), 2)
+  expect_equal(tr$.__enclos_env__$private$get_number_arms(), 2)
   expect_true(tr$has_arm())
 
   ratio <- tr$get_sample_ratio()
   expect_true(is.numeric(ratio) || is.list(ratio))
 
-  desc <- tr$get_description()
+  desc <- tr$.__enclos_env__$private$get_description()
   expect_true(is.character(desc) || is.null(desc))
 
   out <- capture.output(print(tr))

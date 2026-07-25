@@ -4,9 +4,15 @@
 #'
 #' Public methods in this R6 class are used in developing
 #' this package. Thus, we have to export the whole R6 class which exposures all
-#' public methods. However, only the public methods in the list below are
-#' useful to end users.
+#' public methods. However, only the public methods in the sections below are
+#' useful to end users, and users are encouraged to restrict themselves to
+#' them. The remaining public methods are internal machinery of the package
+#' and should not be called directly (see the last section).
 #'
+#' \strong{Adaptation methods.} The following methods adapt an ongoing trial
+#' and should be called within action functions of milestones. Each of them
+#' has a user-friendly wrapper of the same name, e.g., \code{set_duration(trial, ...)}
+#' for \code{trial$set_duration(...)}.
 #' \itemize{
 #' \item \code{$set_duration()} set duration of a trial. This function can be
 #' used to extend duration under adaptive designs.
@@ -22,8 +28,6 @@
 #' \item \code{$add_arms()} add arms to a trial. This function is used to add
 #' arms to a newly defined trial, or add arms under adaptive design, e.g.,
 #' dose-ranging, etc.
-#' \item \code{$add_regimen()} register a \code{regimen} object to a trial.
-#' Must be called before \code{$add_arms()}. Applied at enrollment.
 #' \item \code{$crossover()} apply a milestone-triggered crossover to eligible
 #' patients in the trial. Called inside a milestone action; only alters patients'
 #' post-switch endpoint values and leaves already-observed data intact.
@@ -43,6 +47,15 @@
 #' after dose selection or enrichment. \code{end_time} of the new accrual
 #' rate is measured from the milestone; patients not yet enrolled are
 #' re-planned and re-randomized under the new schedule.
+#' }
+#'
+#' \strong{Methods callable within action functions.} In addition to the
+#' adaptation methods above, users can call the following methods within
+#' action functions to access and manipulate data, to query the current
+#' status of a trial, and to carry out statistical testing.
+#'
+#' Data access and manipulation:
+#' \itemize{
 #' \item \code{$get_locked_data()} request for data snapshot at a milestone.
 #' Calling this function is recommended as the first action in any action
 #' function as long as trial data is needed in statistical analysis or decision
@@ -63,9 +76,47 @@
 #' \code{save_custom_data()} or \code{bind()}.
 #' \item \code{$get_output()} retrieve intermediate results saved by calling
 #' function \code{save()}.
+#' }
+#'
+#' Trial status queries:
+#' \itemize{
+#' \item \code{$get_current_time()} return the triggering time of the
+#' milestone that the calling action function is attached to.
+#' \item \code{$get_milestone_time()} return milestone time when triggering a
+#' given milestone.
+#' \item \code{$get_sample_ratio()} return current sample ratios of arms.
+#' \item \code{$get_arms_name()} return names of the arms in the trial at
+#' the time of calling, i.e., arms that have been added and not yet removed
+#' by \code{$remove_arms()}. Note that this can differ from the arms present
+#' in locked data, where data of removed arms remain available (censored at
+#' the time of removal).
+#' }
+#'
+#' Statistical testing:
+#' \itemize{
 #' \item \code{$dunnettTest()} perform Dunnett's test.
 #' \item \code{$closedTest()} perform combination test based on Dunnett's test.
 #' }
+#'
+#' \strong{Trial setup.}
+#' \itemize{
+#' \item \code{$add_regimen()} register a \code{regimen} object to a trial.
+#' Must be called before \code{$add_arms()}. Applied at enrollment. Unlike
+#' the adaptation methods above, it belongs to the setup stage of a trial
+#' and must not be called within action functions.
+#' }
+#'
+#' \strong{Internal machinery.} The remaining public methods
+#' (\code{$lock_data()}, \code{$get_data_lock_time_by_calendar_time()},
+#' \code{$get_data_lock_time_by_event_number()},
+#' \code{$get_data_lock_time_by_enrollment()}, \code{$has_arm()},
+#' \code{$event_plot()}, \code{$mute()}, \code{$reset()} and
+#' \code{$make_arms_snapshot()}) are public only because they are invoked on
+#' a trial object by other components of the package (milestones, listeners,
+#' controllers and triggering conditions), which R6 cannot grant through
+#' private members. Users should not call them directly. Note that
+#' \code{$save()} and \code{$get_output()} are invoked by those components
+#' too, but they are part of the user-facing API above at the same time.
 #'
 #' @docType class
 #'
@@ -154,7 +205,7 @@ Trials <- R6::R6Class(
         private$now <- 0
         private$trial_data <- NULL
         private$locked_data <- list()
-        private$output <- data.frame(trial = self$get_name())
+        private$output <- data.frame(trial = private$get_name())
         private$custom_data <- list()
 
         private$seed <- seed
@@ -162,16 +213,16 @@ Trials <- R6::R6Class(
         self$save('', 'error_message')
 
         if(is.null(dropout)){
-          self$set_dropout(rconst, value = Inf)
+          private$set_dropout(rconst, value = Inf)
         }else{
-          self$set_dropout(dropout, ...)
+          private$set_dropout(dropout, ...)
         }
 
-        self$set_enroller(enroller, ...)
+        private$set_enroller(enroller, ...)
 
         private$stratification_factors <- stratification_factors
 
-        self$make_snapshot()
+        private$make_snapshot()
 
         set.seed(private$seed)
         ## Why we need enroll_time_with_redundant?
@@ -184,24 +235,13 @@ Trials <- R6::R6Class(
         ##
         ## Sort enrollment time
         private$enroll_time_with_redundant <-
-          sort(self$get_enroller()(n = n_patients * 10), decreasing = FALSE)
+          sort(private$get_enroller()(n = n_patients * 10), decreasing = FALSE)
         private$enroll_time <- head(private$enroll_time_with_redundant, n_patients)
         private$enroll_time_with_redundant <- private$enroll_time_with_redundant[-c(1:n_patients)]
 
       },
 
-    #' @description
-    #' return trial data of enrolled patients at the time of this
-    #' function is called
-    get_trial_data = function(){
-      private$trial_data
-    },
-
-    #' @description
-    #' return maximum duration of a trial
-    get_duration = function(){
-      private$duration
-    },
+    ## ---- adaptation methods (call within action functions) ------------------
 
     #' @description
     #' set trial duration in an adaptive designed trial. All patients enrolled
@@ -212,167 +252,55 @@ Trials <- R6::R6Class(
     #' current duration.
     set_duration = function(duration){
 
-      if(duration <= self$get_duration()){
+      if(duration <= private$get_duration()){
         stop('Trial duration can only be set to be longer. <', duration,
-             '> is shorter than <', self$get_duration(), '>. ')
+             '> is shorter than <', private$get_duration(), '>. ')
       }
 
-      old_duration <- self$get_duration()
+      old_duration <- private$get_duration()
 
       ## update the duration
       private$duration <- duration
 
       if(!private$silent){
         message('Trial duration is updated <', old_duration,
-                '> -> <', self$get_duration(), '>. ')
+                '> -> <', private$get_duration(), '>. ')
       }
 
       ## all patients enrolled before current milestone should be censored
       ## or truncated at old duration
-      self$censor_trial_data(censor_at = old_duration,
+      private$censor_trial_data(censor_at = old_duration,
                              enrolled_before = self$get_current_time())
 
       ## with trial duration is extended, unenrolled patient at current time
       ## should be randomized again.
-      self$roll_back()
+      private$roll_back()
 
       ## update data for unrolled patients based on new trial duration
-      self$enroll_patients()
+      private$enroll_patients()
 
     },
 
     #' @description
-    #' set recruitment curve when initialize a trial.
-    #' @param func function to generate enrollment time. Must be
-    #' \code{StaggeredRecruiter}; any other value is rejected.
-    #' @param ... (optional) arguments for \code{func}.
-    set_enroller = function(func, ...){
-
-      # StaggeredRecruiter is the only supported enroller.
-      if (!identical(func, StaggeredRecruiter)) {
-        stop("enroller must be StaggeredRecruiter. Supply its accrual_rate via ",
-             "... ; see ?StaggeredRecruiter.", call. = FALSE)
+    #' resize a trial with a greater sample size. This function is used to
+    #' update the maximum sample size adaptively after sample size reassessment.
+    #' Note that this function should be called within action functions.
+    #' It is users' responsibility to ensure it and \code{TrialSimulator} has
+    #' no way to track this.
+    #'
+    #' @param n_patients integer. Number of maximum sample size of a trial.
+    resize = function(n_patients){
+      if(n_patients <= private$get_number_patients()){
+        stop('TrialSimulator can only increase sample size of a trial. ',
+             'When calling Trials$resize(n_patients), use n_patients > ',
+             private$get_number_patients(), '. ')
       }
 
-      # Check that the first argument of enroller is "n"
-      arg_names <- names(formals(func))
-      if (length(arg_names) == 0 || arg_names[1] != "n") {
-        stop("The first argument of enroller must be 'n'.")
-      }
+      private$n_patients <- n_patients
 
-      n_ <- 2
+      private$roll_back()
 
-      suppressWarnings(
-        enroller_ <- DynamicRNGFunction(
-          func, rng = deparse(substitute(func)), simplify = TRUE, ...)
-      )
-
-      example_data <- enroller_(n = n_)
-      if(!is.vector(example_data)){
-        stop('enroller must return a vector.')
-      }
-
-      if(length(example_data) != n_){
-        stop('\'n\' in enroller does not work correctly.')
-      }
-
-      private$enroller <- enroller_
-    },
-
-    #' @description
-    #' get function of recruitment curve
-    get_enroller = function(){
-      private$enroller
-    },
-
-    #' @description
-    #' set distribution of drop out time when initializing a trial. This is
-    #' not an adaptation method: dropout times of patients are generated
-    #' when they are enrolled, so calling this function within an action
-    #' function would not apply to patients already enrolled.
-    #' @param func function to generate dropout time. It can be built-in
-    #' function like `rexp` or customized functions.
-    #' @param ... (optional) arguments for \code{func}.
-    set_dropout = function(func, ...){
-
-      arg_names <- names(formals(func))
-      if (length(arg_names) == 0 || arg_names[1] != "n") {
-        stop("The first argument of random number generator for dropout time must be 'n'.")
-      }
-
-      suppressWarnings(
-        dropout_ <- DynamicRNGFunction(func, rng = deparse(substitute(func)),
-                                       simplify = TRUE, ...)
-      )
-
-      n_ <- 2
-      example_data <- dropout_(n = n_)
-      if(!is.vector(example_data)){
-        stop('dropout must return a vector.')
-      }
-
-      if(length(example_data) != n_){
-        stop('\'n\' in dropout does not work correctly.')
-      }
-
-      private$dropout <- dropout_
-
-    },
-
-    #' @description
-    #' get generator of dropout time
-    get_dropout = function(){
-      private$dropout
-    },
-
-    #' @description
-    #' roll back data to current time of trial. By doing so,
-    #' \code{Trial$trial_data} will be cut at current time, and data after then
-    #' are deleted. However, \code{Trial$enroll_time} after current time are
-    #' kept unchanged because that is planned enrollment curve.
-    roll_back = function(){
-
-      current_time <- self$get_current_time()
-
-      td <- self$get_trial_data()
-      future_mask <- td$enroll_time > current_time
-      private$enroll_time <- sort(td$enroll_time[future_mask])
-
-      ## self$get_number_patients(), i.e. private$n_patients may have been
-      ## updated by calling Trials$resize() to resize the trial, in this case
-      ## we need to add more enroll time into private$enroll_time from
-      ## private$enroll_time_with_redundant.
-      ##
-      if(nrow(self$get_trial_data()) != self$get_number_patients()){
-
-        number_new_patients <- self$get_number_patients() - nrow(self$get_trial_data())
-        if(length(private$enroll_time_with_redundant) < number_new_patients){
-          stop('Debug roll_back(). ',
-               'No sufficient redundant enroll time can be used when resizing the trial. ')
-        }
-
-        if(length(private$enroll_time) > 0 &&
-           min(private$enroll_time_with_redundant) < max(private$enroll_time)){
-          stop('Debug roll_back() if Trials$resize() is called. ',
-               'Unlikely to trigger this error. ')
-        }
-
-        private$enroll_time <-
-          c(private$enroll_time,
-            head(private$enroll_time_with_redundant, number_new_patients))
-
-        private$enroll_time_with_redundant <-
-          private$enroll_time_with_redundant[-c(1:number_new_patients)]
-      }
-
-      past_mask <- td$enroll_time <= current_time
-      past_td   <- td[past_mask, , drop = FALSE]
-      private$trial_data <- past_td[order(past_td$enroll_time), , drop = FALSE]
-
-      if(!private$silent){
-        message('Trial data is rolling back to time = ', current_time, '. \n',
-                'Randomization will be carried out again for unenrolled patients. \n')
-      }
+      private$enroll_patients()
 
     },
 
@@ -411,7 +339,7 @@ Trials <- R6::R6Class(
         }else{
           latest_milestone_time <- max(existing_milestone_time)
         }
-        self$set_arm_removal_time(arm = arm_name,
+        private$set_arm_removal_time(arm = arm_name,
                                   time = latest_milestone_time)
       }
 
@@ -430,15 +358,15 @@ Trials <- R6::R6Class(
       ## calculation of triggering condition based on event numbers.
       ## Ideally, number of events in removed arms should be flatten afterward,
       ## and can be seen through Trial$event_plot().
-      self$censor_trial_data(censor_at = self$get_current_time(),
+      private$censor_trial_data(censor_at = self$get_current_time(),
                              selected_arms = arms_name)
       ## with an arm is removed, unenrolled patient at current time should be
       ## randomized again.
-      self$roll_back()
+      private$roll_back()
 
       ## update data for unrolled patients based on new arms and possibly
       ## new sample ratio.
-      self$enroll_patients()
+      private$enroll_patients()
 
 
     },
@@ -486,13 +414,13 @@ Trials <- R6::R6Class(
 
       ## with sample ratio of an arm is updated, unenrolled patient at current
       ## time should be randomized again.
-      self$roll_back()
+      private$roll_back()
 
       ## update data for unrolled patients based on new sample ratios.
       ## Note that if sample ratio is not whole number,
       ## the permuted block algorithm will be switched to sample() because
       ## it is not easy to specify a block with proper size automatically.
-      self$enroll_patients()
+      private$enroll_patients()
     },
 
     #' @description
@@ -518,7 +446,7 @@ Trials <- R6::R6Class(
              '> is not in the trial or has been dropped from the trial. ')
       }
 
-      selected_arm <- self$get_an_arm(arm_name)
+      selected_arm <- private$get_an_arm(arm_name)
 
       stopifnot(is.character(endpoint_name))
 
@@ -548,33 +476,10 @@ Trials <- R6::R6Class(
 
       ## with generator of an arm is updated, unenrolled patient at current
       ## time should be randomized again.
-      self$roll_back()
+      private$roll_back()
 
       ## update data for unrolled patients based on new generator in arm.
-      self$enroll_patients()
-
-    },
-
-    #' @description
-    #' resize a trial with a greater sample size. This function is used to
-    #' update the maximum sample size adaptively after sample size reassessment.
-    #' Note that this function should be called within action functions.
-    #' It is users' responsibility to ensure it and \code{TrialSimulator} has
-    #' no way to track this.
-    #'
-    #' @param n_patients integer. Number of maximum sample size of a trial.
-    resize = function(n_patients){
-      if(n_patients <= self$get_number_patients()){
-        stop('TrialSimulator can only increase sample size of a trial. ',
-             'When calling Trials$resize(n_patients), use n_patients > ',
-             self$get_number_patients(), '. ')
-      }
-
-      private$n_patients <- n_patients
-
-      self$roll_back()
-
-      self$enroll_patients()
+      private$enroll_patients()
 
     },
 
@@ -658,13 +563,13 @@ Trials <- R6::R6Class(
         }else{
           latest_milestone_time <- max(existing_milestone_time)
         }
-        self$set_arm_added_time(arm = arm$get_name(),
+        private$set_arm_added_time(arm = arm$get_name(),
                                 time = latest_milestone_time)
 
       }
 
       endpoint_names <- NULL
-      for(arm in self$get_arms()){
+      for(arm in private$get_arms()){
         if(is.null(endpoint_names)){
           endpoint_names <- arm$get_endpoints_name()
         }else{
@@ -689,43 +594,11 @@ Trials <- R6::R6Class(
       rm(sample_ratio)
 
       if(enforce){
-        self$roll_back()
+        private$roll_back()
       }
 
-      self$enroll_patients()
+      private$enroll_patients()
 
-    },
-
-    #' @description
-    #' register regimen to a trial. The regimen consists of three functions
-    #' to determine the patients who may switch to other treatment during a
-    #' a trial, to determine the switching time and how to update patients'
-    #' endpoint data accordingly.
-    #' @param regimen an object created by \code{regimen()}.
-    add_regimen = function(regimen){
-      if(self$has_arm()){
-        stop('Member function trial$add_regimen() must be called before trial$add_arms(). ',
-             'A good practice is to call trial$add_regimen() immediately after trial() is executed. ')
-      }
-
-      stopifnot(inherits(regimen, 'Regimens'))
-      private$regimen <- regimen
-      ## keep a pristine clone so reset() can restore it between replicates,
-      ## undoing any triplets appended in-run by crossover(). The init-time
-      ## make_snapshot() ran before any regimen existed, so it is captured here.
-      private$.snapshot[['regimen']] <- regimen$clone(deep = TRUE)
-    },
-
-    #' @description
-    #' return registered regimen.
-    get_regimen = function(){
-      private$regimen
-    },
-
-    #' @description
-    #' return whether a regimen is registered
-    has_regimen = function(){
-      !is.null(private$regimen)
     },
 
     #' @description
@@ -789,7 +662,7 @@ Trials <- R6::R6Class(
       }
 
       ## stack the crossover triplet onto the trial's regimen
-      if(self$has_regimen()){
+      if(private$has_regimen()){
         private$regimen$append_triplet(
           what, when, how,
           earliest_crossover_calendar_time = Tx, ...)
@@ -801,11 +674,11 @@ Trials <- R6::R6Class(
 
       ## apply the newly-appended triplet in place to all current patients
       new_index <- private$regimen$get_number_treatment_allocator()
-      td <- self$get_trial_data()
+      td <- private$get_trial_data()
       if(!is.null(td) && nrow(td) > 0){
         td <- private$apply_regimens(td, new_index)
         private$trial_data <- td
-        self$censor_trial_data()
+        private$censor_trial_data()
       }
 
       if(!private$silent){
@@ -888,7 +761,7 @@ Trials <- R6::R6Class(
       ## here). enrolled_before (base R) is used for this instead of a ...
       ## condition, so a call without user conditions stays free of dplyr
       ## overhead.
-      self$censor_trial_data(censor_at = stop_time, ...,
+      private$censor_trial_data(censor_at = stop_time, ...,
                              enrolled_before = current_time)
 
       if(!private$silent){
@@ -949,7 +822,7 @@ Trials <- R6::R6Class(
       ## times reserved for resize(). Both are re-planned under the new
       ## accrual rate so that a later resize() continues the new curve and
       ## roll_back()'s pool-ordering invariant keeps holding.
-      n1 <- sum(self$get_trial_data()$enroll_time > current_time)
+      n1 <- sum(private$get_trial_data()$enroll_time > current_time)
       n2 <- sum(private$enroll_time_with_redundant > current_time)
 
       if(n1 + n2 == 0){
@@ -999,632 +872,17 @@ Trials <- R6::R6Class(
       ## data are already censored at trial duration, so moving a patient to
       ## an earlier enroll time could not restore follow-up truncated under
       ## the old, later time.
-      self$roll_back()
+      private$roll_back()
 
       private$enroll_time <- head(new_times, n1)
       private$enroll_time_with_redundant <- tail(new_times, n2)
 
-      self$enroll_patients()
+      private$enroll_patients()
 
       invisible(NULL)
     },
 
-    #' @description
-    #' return name of trial
-    get_name = function(){
-      private$name
-    },
-
-    #' @description
-    #' return description of trial
-    get_description = function(){
-      private$description
-    },
-
-    #' @description
-    #' return a list of arms in the trial
-    get_arms = function(){
-      private$arms
-    },
-
-    #' @description
-    #' return arms' name of trial
-    get_arms_name = function(){
-      lapply(private$arms, function(arm){arm$get_name()}) %>% unlist() %>% unname()
-    },
-
-    #' @description
-    #' get number of arms in the trial
-    get_number_arms = function(){
-      length(private$arms)
-    },
-
-    #' @description
-    #' check if the trial has any arm. Return \code{TRUE} or \code{FALSE}.
-    has_arm = function(){
-      self$get_number_arms() > 0
-    },
-
-    #' @description
-    #' return an arm
-    #' @param arm_name character, name of arm to be extracted
-    get_an_arm = function(arm_name){
-      if(!(arm_name %in% self$get_arms_name())){
-        stop(arm_name, ' is not in the trial \'', self$get_name(), '\'')
-      }
-
-      self$get_arms()[[arm_name]]
-    },
-
-    #' @description
-    #' return current sample ratio of the trial. The ratio can probably change
-    #' during the trial (e.g., arm is removed or added)
-    #' @param arm_names character vector of arms.
-    get_sample_ratio = function(arm_names = NULL){
-      if(is.null(arm_names)){
-        arm_names <- names(private$sample_ratio)
-      }
-      stopifnot(all(arm_names %in% names(private$sample_ratio)))
-      private$sample_ratio[arm_names]
-    },
-
-    #' @description
-    #' return number of patients when planning the trial
-    get_number_patients = function(){
-      private$n_patients
-    },
-
-    #' @description
-    #' return number of enrolled (randomized) patients
-    get_number_enrolled_patients = function(){
-      if(is.null(self$get_trial_data())){
-        return(0)
-      }
-      nrow(self$get_trial_data())
-    },
-
-    #' @description
-    #' return number of unenrolled patients
-    get_number_unenrolled_patients = function(){
-      self$get_number_patients() - self$get_number_enrolled_patients()
-    },
-
-    #' @description
-    #' return stratum queue of planned but not yet enrolled patients.
-    #' This function does not update stratum_queue, just return its value
-    #' for debugging purpose.
-    #' @param index index to be extracted. Return all queue if \code{NULL}.
-    get_stratum_queue = function(index = NULL){
-      if(length(private$stratum_queue) == 0){
-        private$stratum_queue <- NULL
-      }
-
-      if(!is.null(index) && is.null(private$stratum_queue)){
-        stop('Cannot randomize patients from empty list. ')
-      }
-
-      if(is.null(index)){ # return all
-        return(private$stratum_queue)
-      }
-      stopifnot(max(abs(index)) <= length(private$stratum_queue))
-
-      private$stratum_queue[index]
-
-    },
-
-    #' @description
-    #' return randomization queue of planned but not yet enrolled patients.
-    #' This function does not update randomization_queue, just return its value
-    #' for debugging purpose.
-    #' @param index index to be extracted. Return all queue if \code{NULL}.
-    get_randomization_queue = function(index = NULL){
-      if(length(private$randomization_queue) == 0){
-        private$randomization_queue <- NULL
-      }
-
-      if(!is.null(index) && is.null(private$randomization_queue)){
-        stop('Cannot randomize patients from empty list. ')
-      }
-
-      if(is.null(index)){ # return all
-        return(private$randomization_queue)
-      }
-      stopifnot(max(abs(index)) <= length(private$randomization_queue))
-
-      private$randomization_queue[index]
-
-    },
-
-    #' @description
-    #' return enrollment time of planned but not yet enrolled patients.
-    #' This function does not update enroll_time, just return its value
-    #' for debugging purpose.
-    #' @param index index to extract. Return all enroll time if \code{NULL}.
-    get_enroll_time = function(index = NULL){
-
-      if(length(private$enroll_time) == 0){
-        private$enroll_time <- NULL
-      }
-
-      if(!is.null(index) && is.null(private$enroll_time)){
-        stop('Cannot enroll patients from empty list. ')
-      }
-
-      if(is.null(index)){ # return all
-        return(private$enroll_time)
-      }
-      stopifnot(max(abs(index)) <= length(private$enroll_time))
-
-      private$enroll_time[index]
-    },
-
-    #' @description
-    #' assign new patients to pre-planned randomization queue at pre-specified
-    #' enrollment time.
-    #' @param n_patients number of new patients to be enrolled. If \code{NULL},
-    #' all remaining patients in plan are enrolled. Error may be triggered if
-    #' n_patients is greater than remaining patients as planned.
-    enroll_patients = function(n_patients = NULL){
-
-      if(!self$has_arm()){
-        stop('No arm is added in the trial yet. Patient cannot be enrolled. ')
-      }
-
-      if(self$get_number_unenrolled_patients() == 0){
-        if(!private$silent){
-          message('Maximum planned sample size has been reached. No more patient to be enrolled. ')
-        }
-        return(invisible(NULL))
-      }
-
-      if(is.null(n_patients)){
-        n_patients <- self$get_number_unenrolled_patients()
-      }
-
-      if(n_patients > self$get_number_unenrolled_patients()){
-        stop('Cannot enroll ', n_patients, ' patients for the trial. ',
-             'Only ', self$get_number_unenrolled_patients(), ' left. ')
-      }
-
-      ## update randomization plan for unenrolled patients
-      private$permuted_block_randomization()
-
-      next_enroll_arms <- self$get_randomization_queue(1:n_patients)
-      next_enroll_stratums <- self$get_stratum_queue(1:n_patients)
-
-      ## update randomization_queue and stratum_queue after enrolling new patients.
-      ## randomization_queue only keeps randomization queue for future patients
-      ## stratum_queue only keeps stratum queue for future patients under
-      ## stratified randomization. If simple randomization is used,
-      ## stratum_queue is a constant vector of "all"
-      private$randomization_queue <- self$get_randomization_queue(-c(1:n_patients))
-      private$stratum_queue <- self$get_stratum_queue(-c(1:n_patients))
-
-      next_enroll_time <- self$get_enroll_time(1:n_patients)
-      private$enroll_time <- self$get_enroll_time(-c(1:n_patients))
-
-      ## create patient pool
-      arms_stratums_data <- list()
-      arms_in_trial <- sort(unique(next_enroll_arms))
-      stratums_in_trial <- sort(unique(next_enroll_stratums))
-
-      make_stratum <- function(dat){
-        ## when fractional sample ratios bypass stratified randomization,
-        ## the stratum queue is a constant 'all'; the pool must be labeled
-        ## the same way or the oversampling loop below never reaches its
-        ## per-stratum targets and cannot terminate.
-        if(!self$has_stratification_factors() ||
-           identical(stratums_in_trial, 'all')){
-          return(rep('all', nrow(dat)))
-        }else{
-          return(
-            do.call(paste,
-                    c(dat[, self$get_stratification_factors(),
-                                   drop = FALSE],
-                      sep = '|'))
-          )
-        }
-      }
-
-      for(i in seq_along(arms_in_trial)){
-        arm <- arms_in_trial[i]
-        n_patients_in_arm <- sum(next_enroll_arms %in% arm)
-        tbl <- table(next_enroll_stratums[next_enroll_arms %in% arm])
-        target_size_per_stratum <- data.frame(
-          stratum     = names(tbl),
-          target_size = as.integer(tbl),
-          stringsAsFactors = FALSE
-        )
-
-        patient_pool <- NULL
-        prop <- 1.1
-        min_sample_size <- 20
-        while(TRUE){
-          new_sets <- self$get_an_arm(arm)$generate_data(max(ceiling(n_patients_in_arm * prop), min_sample_size))
-          new_sets$stratum <- make_stratum(new_sets)
-          patient_pool <- rbind(patient_pool, new_sets)
-
-          tbl1 <- table(patient_pool$stratum)
-          size_per_stratum <- data.frame(
-            stratum      = names(tbl1),
-            current_size = as.integer(tbl1),
-            stringsAsFactors = FALSE
-          )
-
-          tmp <- merge(size_per_stratum, target_size_per_stratum, by = 'stratum', all.y = TRUE)
-          tmp$current_size[is.na(tmp$current_size)] <- 0
-          if(with(tmp, all(current_size >= target_size))){
-            break
-          }
-          prop <- ifelse(any(tmp$current_size <= 10), 1, .2)
-          min_sample_size <- with(tmp, max((target_size - current_size) * 3, 10))
-        }
-
-        col_idx <- which(names(patient_pool) == 'stratum')
-        patient_pool <- split(
-          patient_pool[, -col_idx, drop = FALSE],
-          patient_pool$stratum
-        )
-
-        arms_stratums_data[[arm]] <- list()
-        for(j in seq_along(stratums_in_trial)){
-          stratum <- stratums_in_trial[j]
-          patients_index <- which(next_enroll_arms %in% arm &
-                                    next_enroll_stratums %in% stratum)
-
-          n_patients_in_arm_stratum <- length(patients_index)
-          if(n_patients_in_arm_stratum == 0){
-            next
-          }
-
-          stopifnot(target_size_per_stratum$target_size[target_size_per_stratum$stratum == stratum] == n_patients_in_arm_stratum)
-
-          arms_stratums_data[[arm]][[stratum]] <-
-            data.frame(
-              patient_id = self$get_number_enrolled_patients() + patients_index,
-              arm = arm,
-              enroll_time = next_enroll_time[patients_index],
-              dropout_time = self$get_dropout()(n = n_patients_in_arm_stratum)
-            )
-
-          arms_stratums_data[[arm]][[stratum]] <-
-            cbind(
-              arms_stratums_data[[arm]][[stratum]],
-              patient_pool[[stratum]][1:n_patients_in_arm_stratum, ]
-            )
-
-        }
-
-        arms_stratums_data[[arm]] <- bind_rows(arms_stratums_data[[arm]])
-      }
-
-      patient_data <- do.call(rbind, arms_stratums_data)
-      patient_data <- patient_data[order(patient_data$enroll_time), , drop = FALSE]
-      rownames(patient_data) <- NULL
-
-      if(self$has_regimen()){
-        ## apply all registered regimen triplets (enrollment-time T=0 triplets
-        ## and any milestone crossover triplets) to the freshly generated batch.
-        patient_data <- private$apply_regimens(
-          patient_data,
-          seq_len(self$get_regimen()$get_number_treatment_allocator()))
-      }
-
-      private$trial_data <- bind_rows(self$get_trial_data(), patient_data)
-      ## newly updated trial data should be always censored at trial duration
-      ## also, non-tte endpoints would be NA if readout time is after dropout time,
-      ## and tte endpoints should be censored at dropout time.
-      self$censor_trial_data()
-
-      if(!private$silent){
-        message('Data of ', n_patients,
-                ' potential patients are generated for the trial with ',
-                self$get_number_arms(), ' arm(s) <',
-                paste0(self$get_arms_name(), collapse = ", "), '>. \n')#,
-                # 'Depending on the scenarios, ',
-                # 'some of those patients may be eventually enrolled \n',
-                # 'and used in data lock, \n',
-                # 'while some will be abandoned and re-generated ',
-                # '(e.g. arm is removed or added). \n')
-      }
-
-    },
-
-    #' @description
-    #' set current time of a trial. Any data collected before could not be
-    #' changed. private$now should be set after a milestone is triggered
-    #' (through Milestones class, futility, interim, etc), an arm is added or
-    #' removed at a milestone
-    #' @param time current calendar time of a trial.
-    set_current_time = function(time){
-      stopifnot(time >= 0)
-      attributes(time) <- NULL
-      private$now <- time
-    },
-
-    #' @description
-    #' return current time of a trial
-    get_current_time = function(){
-      stopifnot(private$now >= 0)
-      private$now
-    },
-
-    #' @description
-    #' count accumulative number of events (for TTE) or non-missing samples (otherwise) over
-    #' calendar time (enroll time + tte for TTE, or enroll time + readout otherwise)
-    #'
-    #' @param arms a vector of arms' name on which the event tables are created.
-    #' if \code{NULL}, all arms in the trial will be used.
-    #' @param ... subset conditions compatible with \code{dplyr::filter}.
-    #' Event tables will be counted on subset of trial data only.
-    get_event_tables = function(arms = NULL, ...){
-
-      if(is.null(arms)){
-        arms <- self$get_arms_name()
-      }
-
-      if(!all(arms %in% c(self$get_arms_name(), names(private$.snapshot[['arms']])))){
-        stop('Arm(s) <',
-             paste0(setdiff(arms, self$get_arms_name()), collapse = ', '),
-             '> cannot be found in the trial, debug Trial$get_event_tables. ')
-      }
-
-      trial_data <- self$get_trial_data()
-      trial_data <- trial_data[trial_data$arm %in% arms, , drop = FALSE]
-
-      ## Note: ...length() can report >0 when callers splice an empty list of
-      ## quosures with !!!. Use enquos() to test for real filter expressions.
-      if(length(rlang::enquos(...)) > 0L){
-        trial_data <- tryCatch({
-          trial_data %>% dplyr::filter(...)
-        },
-        error = function(e){
-          self$save(e$message, 'error_message', overwrite = TRUE)
-          stop('Error in filtering data for table of event count. ',
-               'Please check condition in ..., ',
-               'which should be compatible with dplyr::filter. ')
-        })
-      }
-
-      n_rows <- nrow(trial_data)
-      event_counts <- list()
-
-      ## add event count for patient_id
-      ## patient_id: sorted by enroll_time
-      ord <- order(trial_data$enroll_time)
-      event_counts[['patient_id']] <- data.frame(
-        patient_id    = trial_data$patient_id[ord],
-        arm           = trial_data$arm[ord],
-        enroll_time   = trial_data$enroll_time[ord],
-        calendar_time = trial_data$enroll_time[ord],
-        n_events      = seq_len(n_rows),
-        stringsAsFactors = FALSE
-      )
-
-      ## add event counts for time-to-event endpoints
-      event_cols <- grep('_event$', names(trial_data), value = TRUE)
-      for(event_col in event_cols){
-        tte_col <- gsub('_event$', '', event_col)
-        cal_time <- trial_data$enroll_time + trial_data[[tte_col]]
-        ord      <- order(cal_time)
-        event_counts[[tte_col]] <- data.frame(
-          patient_id    = trial_data$patient_id[ord],
-          arm           = trial_data$arm[ord],
-          enroll_time   = trial_data$enroll_time[ord],
-          calendar_time = cal_time[ord],
-          n_events      = cumsum(trial_data[[event_col]][ord]),
-          stringsAsFactors = FALSE
-        )
-      }
-
-      ## add event counts for non-time-to-event endpoints
-      readout_cols <- grep('_readout$', names(trial_data), value = TRUE)
-      for(readout_col in readout_cols){
-        ep_col <- gsub('_readout$', '', readout_col)
-        valid    <- !is.na(trial_data[[ep_col]])
-        td_sub   <- trial_data[valid, , drop = FALSE]
-        cal_time <- td_sub$enroll_time + td_sub[[readout_col]]
-        ord      <- order(cal_time)
-        m        <- nrow(td_sub)
-        event_counts[[ep_col]] <- data.frame(
-          patient_id    = td_sub$patient_id[ord],
-          arm           = td_sub$arm[ord],
-          enroll_time   = td_sub$enroll_time[ord],
-          calendar_time = cal_time[ord],
-          n_events      = seq_len(m),
-          stringsAsFactors = FALSE
-        )
-      }
-
-      event_counts
-
-    },
-
-    #' @description
-    #' given a set of endpoints and target number of events, determine the data
-    #' lock time for a milestone (futility, interim, final, etc.). This function does
-    #' not change trial object (e.g. rolling back not yet randomized patients after
-    #' the found data lock time).
-    #' @param endpoints character vector. Data lock time is determined by a set
-    #' of endpoints.
-    #' @param target_n_events target number of events for each of the
-    #' \code{endpoints}.
-    #' @param arms a vector of arms' name on which number of events will be
-    #' counted.
-    #' @param type \code{all} if all target number of events are reached.
-    #' \code{any} if the any target number of events is reached.
-    #' @param ... subset conditions compatible with \code{dplyr::filter}. Number
-    #' Time of milestone is based on event counts on the subset of trial data.
-    #' @return data lock time
-    #'
-    get_data_lock_time_by_event_number = function(endpoints, arms,
-                                                  target_n_events,
-                                                  type = c('all', 'any'),
-                                                  ...){
-
-      type <- match.arg(type)
-
-      stopifnot(is.character(endpoints))
-      stopifnot(all(is.wholenumber(target_n_events)))
-      stopifnot(length(endpoints) == length(target_n_events))
-
-      if(is.null(arms)){
-        arms <- self$get_arms_name()
-      }
-
-      ## Fast path: when no filter expressions are passed AND the C++ toggle
-      ## is enabled (the default), use C++ helpers that compute the lock time
-      ## directly without building intermediate event-count data.frames.
-      ## The R fallback is used when callers pass filter conditions via ...
-      ## (which require dplyr) OR when the user has set
-      ## options(trialsimulator.use_cpp = FALSE).
-      if(.use_cpp_lock_time() && length(rlang::enquos(...)) == 0L){
-        td <- self$get_trial_data()
-        td <- td[td$arm %in% arms, , drop = FALSE]
-        milestone_times <- vapply(seq_along(endpoints), function(i){
-          ep <- endpoints[i]
-          n  <- as.integer(target_n_events[i])
-          ec <- paste0(ep, '_event')
-          rc <- paste0(ep, '_readout')
-          if(ec %in% names(td)){
-            mt <- find_event_lock_time_cpp(
-              td$enroll_time, td[[ep]], as.integer(td[[ec]]), n)
-          }else if(rc %in% names(td)){
-            mt <- find_readout_lock_time_cpp(
-              td$enroll_time, td[[rc]], !is.na(td[[ep]]), n)
-          }else{
-            stop('Endpoint <', ep, '> is missing in trial data when ',
-                 'determining data lock time. ')
-          }
-          if(!private$silent && is.infinite(mt)){
-            warning('No enough events/samples for endpoint <', ep,
-                    '> to reach the target number <', n, '>. ',
-                    immediate. = TRUE)
-          }
-          mt
-        }, numeric(1))
-      }else{
-        event_counts <- self$get_event_tables(arms, ...)
-        missing_endpoints <- setdiff(endpoints, names(event_counts))
-        if(length(missing_endpoints) > 0){
-          stop('Endpoints <',
-               paste0(missing_endpoints, collapse = ', '),
-               '> are missing in event_counts when determining data lock time. ')
-        }
-        milestone_times <- NULL
-        for(i in seq_along(endpoints)){
-          if(max(event_counts[[endpoints[i]]]$n_events) < target_n_events[i]){
-            if(!private$silent){
-              warning('No enough events/samples for endpoint <', endpoints[i],
-                   '> to reach the target number <', target_n_events[i], '>. ',
-                   immediate. = TRUE)
-            }
-            milestone_times <- c(milestone_times, Inf)
-          }else{
-            milestone_times <-
-              c(milestone_times,
-                min(event_counts[[endpoints[i]]]$calendar_time[
-                  event_counts[[endpoints[i]]]$n_events >= target_n_events[i]
-                ]))
-          }
-        }
-      }
-
-      lock_time <-
-        case_when(
-          type %in% 'all' ~ max(milestone_times),
-          type %in% 'any' ~ min(milestone_times),
-          TRUE ~ -Inf
-        )
-
-      lock_time
-
-    },
-
-    #' @description
-    #' given a target number of enrolled patients, determine the data
-    #' lock time for a milestone (futility, interim, final, etc.). This function does
-    #' not change trial object (e.g. rolling back not yet randomized patients after
-    #' the found data lock time). It is similar to get_data_lock_time_by_event_number
-    #' but only focus on patient_id.
-    #' @param target_n_patients target number of enrolled patients.
-    #' @param arms a vector of arms' name on which number of events will be
-    #' counted.
-    #' @param min_treatment_duration numeric. Zero or positive value.
-    #' minimum treatment duration of enrolled patients.
-    #' If 0, it looks for triggering time based on number of enrolled
-    #' patients in population specified by \code{...} and \code{arms}. If positive,
-    #' it means that milestone is triggered when a specific number of enrolled
-    #' patients have received treatment for at least \code{min_treatment_duration}
-    #' duration. It is users' responsibility to assure that the unit of
-    #' \code{min_treatment_duration} are consistent with
-    #' readout of non-tte endpoints, dropout time, and trial duration.
-    #' @param ... subset conditions compatible with \code{dplyr::filter}. Number
-    #' Time of milestone is based on event counts on the subset of trial data.
-    #' @return data lock time
-    #'
-    get_data_lock_time_by_enrollment = function(arms,
-                                                target_n_patients,
-                                                min_treatment_duration,
-                                                ...){
-
-      stopifnot(all(is.wholenumber(target_n_patients)))
-      stopifnot(min_treatment_duration >= 0)
-
-      if(is.null(arms)){
-        arms <- self$get_arms_name()
-      }
-
-      ## Fast path: when no filter expressions are passed AND the C++ toggle
-      ## is enabled, use the C++ helper that computes the enrollment lock
-      ## time directly. Filter expressions or options(trialsimulator.use_cpp=FALSE)
-      ## route through the dplyr-backed R path.
-      if(.use_cpp_lock_time() && length(rlang::enquos(...)) == 0L){
-        td <- self$get_trial_data()
-        et <- td$enroll_time[td$arm %in% arms]
-        milestone_time <- find_enrollment_lock_time_cpp(
-          et, as.integer(target_n_patients))
-        if(!private$silent && is.infinite(milestone_time)){
-          warning('No enough patients to reach the target number <',
-                  target_n_patients, '>. ', immediate. = TRUE)
-        }else{
-          milestone_time <- milestone_time + min_treatment_duration
-        }
-      }else{
-        event_counts <- self$get_event_tables(arms, ...)
-        if(max(event_counts[['patient_id']]$n_events) < target_n_patients){
-          if(!private$silent){
-            warning('No enough patients to reach the target number <', target_n_patients, '>. ',
-                    immediate. = TRUE)
-          }
-          milestone_time <- Inf
-        }else{
-          milestone_time <- min(event_counts[['patient_id']]$calendar_time[
-                event_counts[['patient_id']]$n_events >= target_n_patients
-              ]) + min_treatment_duration
-        }
-      }
-
-      lock_time <- milestone_time
-
-      lock_time
-
-    },
-
-    #' @description
-    #' given the calendar time to lock the data, return it with event counts of
-    #' each of the endpoints.
-    #' @param calendar_time numeric. Calendar time to lock the data
-    #' @return data lock time
-    #'
-    get_data_lock_time_by_calendar_time = function(calendar_time){
-
-      stopifnot(is.numeric(calendar_time) && length(calendar_time) && calendar_time >= 0)
-
-      lock_time <- calendar_time
-      lock_time
-
-    },
+    ## ---- methods callable within action functions ---------------------------
 
     #' @description
     #' return locked data, i.e. snapshot at a milestone. TTE data is censored
@@ -1634,7 +892,7 @@ Trials <- R6::R6Class(
     #' data to be extracted.
     get_locked_data = function(milestone_name){
       if(!(milestone_name %in% names(private$locked_data))){
-        triggered_milestone_names <- self$get_locked_data_name()
+        triggered_milestone_names <- private$get_locked_data_name()
         if(length(triggered_milestone_names) == 0){
           stop('Locked data for milestone <', milestone_name, '> cannot be found. ',
                'No milestone has been triggered yet. ',
@@ -1647,535 +905,6 @@ Trials <- R6::R6Class(
       }
 
       private$locked_data[[milestone_name]]
-    },
-
-    #' @description
-    #' return names of locked data
-    get_locked_data_name = function(){
-      names(private$locked_data)
-    },
-
-    #' @description
-    #' return number of events at lock time of milestones
-    #' @param milestone_name names of triggered milestones. Use all triggered milestones
-    #' if \code{NULL}.
-    get_event_number = function(milestone_name = NULL){
-      if(is.null(milestone_name)){
-        milestone_name <- self$get_locked_data_name()
-      }
-
-      n_events <- NULL
-      lock_time <- NULL
-      for(milestone in milestone_name){
-        lock_time <- c(lock_time,
-                       attr(self$get_locked_data(milestone), 'lock_time')[1])
-        n_events <- bind_rows(n_events,
-                              attr(attr(self$get_locked_data(milestone), 'lock_time'), 'n_events'))
-      }
-
-      n_events <- n_events %>%
-        mutate(lock_time = lock_time) %>%
-        mutate(milestone_name = milestone_name) %>%
-        arrange(lock_time)
-
-      n_events
-    },
-
-    #' @description
-    #' save time of a new milestone.
-    #' @param milestone_time numeric. Time of new milestone.
-    #' @param milestone_name character. Name of new milestone.
-    save_milestone_time = function(milestone_time, milestone_name){
-      if(milestone_name %in% names(private$milestone_time)){
-        stop('Time of milestone <', milestone_name, '> has already been saved before. ')
-      }
-
-      if(length(private$milestone_time) > 0){
-        if(any(private$milestone_time > milestone_time)){
-          en <- names(private$milestone_time)[private$milestone_time > milestone_time]
-          et <- private$milestone_time[private$milestone_time > milestone_time]
-          stop('New milestone <', milestone_name, '> (time = ', round(milestone_time, 2),
-               ') happens before milestones <',
-               paste0(en, ' (time = ', round(et, 2), ')', collapse = ', '), '>. \n',
-               'A possible reason is mis-specification of milestone order or triggering conditions. \n',
-               'Use seed = <', self$get_seed(), '> to debug it. ')
-        }
-      }
-
-      private$milestone_time[milestone_name] <- milestone_time
-    },
-
-    #' @description
-    #' return milestone time when triggering a given milestone
-    #' @param milestone_name character. Name of milestone. If \code{NULL},
-    #' time of all triggered milestones are returned.
-    get_milestone_time = function(milestone_name = NULL){
-
-      if(is.null(milestone_name)){
-        return(private$milestone_time)
-      }
-
-      if(!all(milestone_name %in% names(private$milestone_time))){
-        stop('Milestone(s) <',
-             paste0(setdiff(milestone_name, names(private$milestone_time)), collapse = ', '),
-             '> cannot be found. ',
-             'Make sure that milestone(s) have be triggered ',
-             'and their triggering time has been saved by calling get_milestone_time. ',
-             'Usually this function is called automatically while locking a data. ')
-      }
-
-      private$milestone_time[milestone_name]
-    },
-
-    #' @description
-    #' lock data at specific calendar time.
-    #' For time-to-event endpoints, their event indicator \code{*_event} should be
-    #' updated accordingly. Locked data should be stored separately.
-    #' DO NOT OVERWRITE/UPDATE private$trial_data! which can lose actual
-    #' time-to-event information. For example, a patient may be censored at
-    #' the first data lock. However, he may have event being observed in a
-    #' later data lock.
-    #' @param at_calendar_time time point to lock trial data
-    #' @param milestone_name assign milestone name as the name of locked data for
-    #' future reference.
-    lock_data = function(at_calendar_time, milestone_name){
-
-      if(is.infinite(at_calendar_time)){
-        stop('Trial data can only be locked at a finite calendar time. \n',
-             'Check your triggering condition for the milestone <',
-             milestone_name, '>. If it is composite, ',
-             'make sure that at least one condition can be reached in a realistic time window. ',
-             'If not, you may consider reducing the target number in milestone(), ',
-             'and/or extending trial duration in trial(). ')
-      }
-
-      trial_data <- self$get_trial_data()
-
-      event_cols <- grep('_event$', names(trial_data), value = TRUE)
-      tte_cols   <- sub('_event$', '', event_cols)
-
-      ## Censor TTE endpoints: if event falls after lock time, mark as censored.
-      for(k in seq_along(event_cols)){
-        event_col <- event_cols[k]
-        tte_col   <- tte_cols[k]
-        cal_time  <- trial_data$enroll_time + trial_data[[tte_col]]
-        late      <- cal_time > at_calendar_time
-        trial_data[[event_col]][late] <- 0L
-        trial_data[[tte_col]][late]   <- at_calendar_time - trial_data$enroll_time[late]
-      }
-
-      readout_cols <- grep('_readout$', names(trial_data), value = TRUE)
-      ep_cols      <- sub('_readout$', '', readout_cols)
-
-      ## Null-out non-TTE readouts that have not yet occurred by lock time.
-      for(k in seq_along(readout_cols)){
-        readout_col <- readout_cols[k]
-        ep_col      <- ep_cols[k]
-        cal_time    <- trial_data$enroll_time + trial_data[[readout_col]]
-        ## in locked data, some patients may have been enrolled, but
-        ## their non-tte endpoints have no readout, thus set to be NA
-        trial_data[[ep_col]][cal_time > at_calendar_time] <- NA
-      }
-
-      enrolled_mask <- trial_data$enroll_time <= at_calendar_time
-      locked_data   <- trial_data[enrolled_mask, , drop = FALSE]
-      locked_data   <- locked_data[order(locked_data$enroll_time), , drop = FALSE]
-      rownames(locked_data) <- NULL
-
-      if(!is.null(locked_data$regimen_trajectory)){
-        ## only patients with switching events need filtering; non-switchers
-        ## have a single "arm@0" segment that always survives the lock window
-        switchers <- grep(';', locked_data$regimen_trajectory, fixed = TRUE)
-        if(length(switchers) > 0){
-          locked_data$regimen_trajectory[switchers] <- mapply(
-            function(traj_str, enroll_time){
-              entries <- strsplit(traj_str, ';', fixed = TRUE)[[1]]
-              times <- as.numeric(sub('.*@', '', entries))
-              paste(entries[enroll_time + times <= at_calendar_time], collapse = ';')
-            },
-            locked_data$regimen_trajectory[switchers],
-            locked_data$enroll_time[switchers],
-            SIMPLIFY = TRUE, USE.NAMES = FALSE
-          )
-        }
-        ## number of switches = number of '@' minus 1 (the initial arm@0 entry)
-        locked_data$n_switches <- lengths(gregexpr('@', locked_data$regimen_trajectory, fixed = TRUE)) - 1L
-      }
-
-      n_events_or_readouts <- NULL
-      for(tte_col in tte_cols){
-        n_events_or_readouts <- c(n_events_or_readouts, sum(locked_data[[tte_col]] != 0))
-      }
-
-      for(ep_col in ep_cols){
-        n_events_or_readouts <- c(n_events_or_readouts, sum(!is.na(locked_data[[ep_col]])))
-      }
-
-      if(all(n_events_or_readouts == 0)){
-        warning('No TTE event or non-TTE readout of endpoints <',
-                paste0(c(tte_cols, ep_cols), collapse = ', '),
-                '> in data snapshot locked at milestone <',
-                milestone_name, '>. Check: \n',
-                '(1) Is this milestone triggered too early?\n',
-                '(2) Is the dropout rate too high?\n',
-                '(3) Do you use the same unit for readout time, trial duration, and dropout time?')
-      }
-
-      ## Build per-arm event/readout counts without dplyr group_by+summarise.
-      arms_in_locked <- sort(unique(locked_data$arm))
-      arm_factor     <- factor(locked_data$arm, levels = arms_in_locked)
-
-      event_counts_per_arm <- data.frame(arm = arms_in_locked, stringsAsFactors = FALSE)
-
-      for(event_col in event_cols){
-        tte_col <- sub('_event$', '', event_col)
-        event_counts_per_arm[[tte_col]] <- as.integer(
-          tapply(locked_data[[event_col]], arm_factor, sum)
-        )
-      }
-
-      for(readout_col in readout_cols){
-        ep_col <- sub('_readout$', '', readout_col)
-        event_counts_per_arm[[ep_col]] <- as.integer(
-          tapply(!is.na(locked_data[[ep_col]]), arm_factor, sum)
-        )
-      }
-
-      event_counts_per_arm[['patient_id']] <- as.integer(tabulate(arm_factor))
-
-      n_events <- as.data.frame(t(colSums(event_counts_per_arm[, -1])))
-      n_events[['arms']] <- I(list(event_counts_per_arm))
-
-      unenrolled_mask <- trial_data$enroll_time > at_calendar_time
-      unenrolled_data <- trial_data[unenrolled_mask, c('enroll_time', 'arm'), drop = FALSE]
-      unenrolled_data <- unenrolled_data[order(unenrolled_data$enroll_time), , drop = FALSE]
-      rm(trial_data)
-
-      attr(at_calendar_time, 'n_events') <- n_events
-      attr(locked_data, 'lock_time') <- at_calendar_time
-      attr(locked_data, 'n_enrolled_patients') <- length(unique(locked_data$patient_id))
-      attr(locked_data, 'milestone_name') <- milestone_name
-      private$locked_data[[milestone_name]] <- locked_data
-      self$set_current_time(at_calendar_time)
-      self$save_milestone_time(at_calendar_time, milestone_name)
-
-      self$save(value = at_calendar_time, name = paste0('milestone_time_<', milestone_name, '>'))
-
-      self$save(value = attr(at_calendar_time, 'n_events'),
-                name = paste0('n_events_<', milestone_name, '>'))
-
-      if(!private$silent){
-        message('Data is locked at time = ', at_calendar_time, ' for milestone <',
-                milestone_name, '>.\n',
-                'Locked data can be accessed in Trial$get_locked_data(\'',
-                milestone_name, '\'). \n',
-                'Number of events at lock time: \n')
-        out <- as.data.frame(attr(at_calendar_time, 'n_events'))
-        if('patient_id' %in% names(out)){
-          colnames(out)[names(out) == 'patient_id'] <- 'patient'
-        }
-        message(paste0(capture.output(out), collapse = "\n"))
-        message('\n')
-      }
-
-      ## I am not sure about this part yet.
-      ## Once data is locked for a milestone, it is not always necessary to
-      ## roll back. For example, all arms are keeping moving without anything
-      ## change is possible. This could happen except for futility analysis
-      ## (early stop), or adding/removing arms. It seems like this part should
-      ## be done in action() depending on the type of milestone.
-      ##
-      ## updated note: Yes, should be done by users in action function of milestone
-      ## Actually, $add_arms, $remove_arms, and $update_sample_ratio can be
-      ## called by users in action function. All these three functions will
-      ## do randomization, and patient enrollment again. We possibly support
-      ## update enrollment curve in the future.
-      if(0){
-      private$enroll_time <- unenrolled_data$enroll_time
-      private$randomization_queue <- unenrolled_data$arm
-
-
-      private$trial_data <- self$get_trial_data() %>%
-        dplyr::filter(enroll_time <= at_calendar_time)
-
-      self$enroll_patients()
-      }
-
-      NULL
-    },
-
-
-    #' @description
-    #' plot of cumulative number of events/samples over calendar time.
-    event_plot = function(){
-
-      trial_data <- self$get_trial_data()
-
-      event_number <- self$get_event_number()
-      event_number$event_name <- paste0(1:nrow(event_number), ': ',
-                                        event_number$event_name)
-
-      event_cols <- grep('_event$', names(trial_data), value = TRUE)
-      readout_cols <- grep('_readout$', names(trial_data), value = TRUE)
-
-      all_data_list <- NULL
-      for(col in c(event_cols, readout_cols)){
-        tte_col <- gsub('_event$', '', col)
-        ep_col <- gsub('_readout$', '', col)
-
-        stopifnot((tte_col != col) || (ep_col != col))
-
-        data_list <- list()
-
-        if(ep_col == col){ ## a tte endpoint
-          event_counts <- trial_data %>%
-            dplyr::select(all_of(c('patient_id', 'arm', 'enroll_time', tte_col, col))) %>%
-            mutate(calendar_time := enroll_time + !!sym(tte_col)) %>%
-            arrange(calendar_time)
-          col_ <- tte_col
-
-          data_list[['0: overall']] <- event_counts %>%
-            mutate(n_events = cumsum(get(col)))
-
-          idx <- 0
-          for(arm_ in sort(unique(trial_data$arm))){
-            idx <- idx + 1
-            data_list[[paste0(idx, ': ', arm_)]] <- event_counts %>%
-              dplyr::filter(arm %in% arm_) %>%
-              arrange(calendar_time) %>%
-              mutate(n_events = cumsum(get(col)))
-          }
-
-        }else{ ## a non-tte endpoint
-          event_counts <- trial_data %>%
-            dplyr::select(all_of(c('patient_id', 'arm', 'enroll_time', ep_col, col))) %>%
-            dplyr::filter(!is.na(!!sym(ep_col))) %>%
-            mutate(calendar_time := enroll_time + !!sym(col)) %>%
-            arrange(calendar_time)
-          col_ <- ep_col
-
-          data_list[['0: overall']] <- event_counts %>%
-            mutate(n_events = row_number())
-
-          idx <- 0
-          for(arm_ in sort(unique(trial_data$arm))){
-            idx <- idx + 1
-            data_list[[paste0(idx, ': ', arm_)]] <- event_counts %>%
-              dplyr::filter(arm %in% arm_) %>%
-              arrange(calendar_time) %>%
-              mutate(n_events = row_number())
-          }
-
-        }
-
-        all_data_list <- bind_rows(
-          all_data_list,
-          lapply(names(data_list), function(name){
-            data_list[[name]] %>%
-              mutate(arm = name) %>%
-              mutate(endpoint = col_)
-          })
-        )
-
-      }
-
-
-      ## prepare stacked area chart
-      all_data <- all_data_list %>%
-        dplyr::filter(!(arm %in% '0: overall'))
-
-      endpoints <- sort(unique(all_data$endpoint))
-      arms <- sort(unique(all_data$arm))
-      ct <- sort(unique(all_data$calendar_time))
-
-      new_data <- NULL
-      for(col in c(event_cols, readout_cols)){
-        tte_col <- gsub('_event$', '', col)
-        ep_col <- gsub('_readout$', '', col)
-        is_tte <- (ep_col == col)
-        ep <- ifelse(is_tte, tte_col, ep_col)
-
-        for(arm_ in arms){
-          ## Using filter(endpoint %in% ep & ...) is dangerous because all_data
-          ## has a column named ep. This will apply %in% between the two columns
-          ## endpoint and ep in the data frame, rather than comparing column
-          ## endpoint with the character vector ep. Using pronoun .env$ep
-          ## forces R to look for ep in environment, not in the data frame columns
-          ## Consider this example:
-          ## x <- 'x'
-          ## data.frame(x = rnorm(4), y = c('x', 'b', 'a', 'x'), z = 1:4) %>%
-          ##   filter(y %in% x)
-          dat <- all_data %>%
-            dplyr::filter(endpoint %in% .env$ep & arm %in% .env$arm_) %>%
-            dplyr::select(c('arm', all_of(col), 'calendar_time', 'endpoint')) %>%
-            rename(has_event = !!sym(col))
-
-          if(!is_tte){
-            dat$has_event <- 1
-          }
-
-          time <- sort(setdiff(ct, dat$calendar_time))
-          if(length(time) == 0){
-            new_data <- bind_rows(new_data, dat)
-            next
-          }
-
-          dat <- bind_rows(dat,
-                           data.frame(
-                             arm = arm_,
-                             has_event = 0,
-                             calendar_time = time,
-                             endpoint = ep
-                           ))
-          dat <- dat[!duplicated(dat), ] %>%
-            arrange(calendar_time) %>%
-            mutate(n_events = cumsum(has_event)) %>%
-            dplyr::select(-has_event)
-
-          new_data <- bind_rows(new_data, dat)
-        }
-      }
-
-      new_data$arm <- factor(new_data$arm, levels = arms)
-
-      soft_colors <- function(n) {
-        hcl(h = seq(0, 360 * (n-1)/n, length.out = n), c = 60, l = 70)
-      }
-
-      p <- ggplot(new_data, aes(x = calendar_time, y = n_events, fill = arm)) +
-        xlim(0, self$get_duration() * 1.05) +
-        labs(
-          x = 'Calendar Time',
-          y = 'Cumulative N'
-        ) +
-        geom_area() +
-        scale_fill_manual(
-          values = soft_colors(length(arms)),
-          name = "Arm"
-        ) +
-        geom_vline(
-          data = event_number,
-          aes(xintercept = lock_time),
-          linetype = 'dashed'
-        ) +
-        facet_wrap(~ endpoint, scales = 'free_x') +
-        theme_minimal() +
-        theme(legend.position = 'bottom')
-
-      plot(p)
-
-    },
-
-    #' @description
-    #' censor trial data at calendar time. Patients to be censored are
-    #' selected by \code{selected_arms}, \code{enrolled_before} and conditions
-    #' in \code{...}; all of them are combined with AND. Although
-    #' \code{selected_arms} and \code{enrolled_before} can be equally
-    #' expressed through \code{...} (i.e., \code{arm \%in\% selected_arms},
-    #' \code{enroll_time <= enrolled_before}), they are kept as dedicated
-    #' arguments on purpose: they are evaluated in base R, while conditions in
-    #' \code{...} go through \code{dplyr::filter}, which is measurably slower.
-    #' Internal calls on simulation hot paths (\code{enroll_patients},
-    #' \code{set_duration}, \code{remove_arms}, \code{crossover},
-    #' \code{stop_followup}) therefore use the two dedicated arguments only;
-    #' \code{...} is reserved for user-specified conditions, e.g., those
-    #' forwarded from \code{stop_followup}.
-    #'
-    #' Because \code{selected_arms} and \code{enrolled_before} follow
-    #' \code{...} in the argument list, they must always be passed by name.
-    #' This prevents unnamed filter conditions forwarded through \code{...}
-    #' from being positionally matched to them.
-    #' @param censor_at time of censoring. It is set to trial duration if
-    #' \code{NULL}.
-    #' @param selected_arms censoring is applied to selected arms (e.g.,
-    #' removed arms) only. If \code{NULL}, it will be set to all available arms
-    #' in trial data. Otherwise, censoring is applied to user-specified arms only.
-    #' This is necessary because number of events/sample size in removed arms
-    #' should be fixed unchanged since corresponding milestone is triggered. In that
-    #' case, one can update trial data by something like
-    #' \code{censor_trial_data(censor_at = milestone_time, selected_arms = removed_arms)}.
-    #' @param enrolled_before censoring is applied to patients enrolled before
-    #' specific time. This argument would be used when trial duration is
-    #' updated by \code{set_duration}. Adaptation happens when \code{set_duration}
-    #' is called so we fix duration for patients enrolled before adaptation
-    #' to maintain independent increment. This should work when trial duration
-    #' is updated for multiple times.
-    #' @param ... subset conditions compatible with \code{dplyr::filter},
-    #' further restricting the patients to be censored in addition to
-    #' \code{selected_arms} and \code{enrolled_before}. When
-    #' \code{selected_arms} and \code{enrolled_before} take their default
-    #' values, i.e., all arms and no enrollment cutoff, conditions in
-    #' \code{...} alone determine the patients to be censored. If, in
-    #' addition, no condition is provided in \code{...}, all patients in
-    #' trial data are censored. When \code{...} is empty, \code{dplyr} is
-    #' not invoked at all.
-    censor_trial_data = function(censor_at = NULL, ...,
-                                 selected_arms = NULL, enrolled_before = Inf){
-
-      if(is.null(censor_at)){
-        censor_at <- self$get_duration()
-      }
-
-      trial_data <- self$get_trial_data()
-
-      if(is.null(selected_arms)){
-        selected_arms <- unique(trial_data$arm)
-      }
-
-      event_cols <- grep('_event$', names(trial_data), value = TRUE)
-      readout_cols <- grep('_readout$', names(trial_data), value = TRUE)
-
-      ## base R: precompute the arm/enroll mask once (shared by all endpoint loops)
-      sel <- (trial_data$arm %in% selected_arms) & (trial_data$enroll_time <= enrolled_before)
-
-      ## conditions in ... (if any) further restrict the selection. This is
-      ## the only branch that touches dplyr; internal callers pass only the
-      ## base-R arguments above, so simulation hot paths never enter it.
-      if(length(rlang::enquos(...)) > 0L){
-        sel <- sel & tryCatch({
-          indexed <- trial_data
-          indexed$.row_index_for_censoring <- seq_len(nrow(indexed))
-          kept <- indexed %>% dplyr::filter(...)
-          seq_len(nrow(trial_data)) %in% kept$.row_index_for_censoring
-        },
-        error = function(e){
-          self$save(e$message, 'error_message', overwrite = TRUE)
-          stop('Error in filtering data for censoring. ',
-               'Please check condition in ... (most likely of trial$stop_followup()), ',
-               'which should be compatible with dplyr::filter. ')
-        })
-      }
-
-      for(event_col in event_cols){
-        tte_col <- gsub('_event$', '', event_col)
-        ## dropout censoring: event falls after dropout
-        drop_mask <- sel & (trial_data[[tte_col]] > trial_data$dropout_time)
-        trial_data[[event_col]][drop_mask] <- 0L
-        trial_data[[tte_col]][drop_mask]   <- trial_data$dropout_time[drop_mask]
-        ## calendar-time censoring: event falls after data lock
-        cal_time  <- trial_data$enroll_time + trial_data[[tte_col]]
-        late_mask <- sel & (cal_time > censor_at)
-        trial_data[[event_col]][late_mask] <- 0L
-        trial_data[[tte_col]][late_mask]   <- censor_at - trial_data$enroll_time[late_mask]
-        ## defensive clip (censor_at - enroll_time can be negative for patients not yet enrolled)
-        neg_mask <- trial_data[[tte_col]] < 0
-        trial_data[[tte_col]][neg_mask] <- 0
-      }
-
-      for(readout_col in readout_cols){
-        ep_col <- gsub('_readout$', '', readout_col)
-        ## dropout censoring
-        drop_mask <- sel & (trial_data[[readout_col]] > trial_data$dropout_time)
-        trial_data[[ep_col]][drop_mask] <- NA
-        ## calendar-time censoring
-        cal_time  <- trial_data$enroll_time + trial_data[[readout_col]]
-        late_mask <- sel & (cal_time > censor_at)
-        trial_data[[ep_col]][late_mask] <- NA
-      }
-
-      ## sort once at the end (dplyr version re-sorted inside every loop iteration)
-      private$trial_data <- trial_data[order(trial_data$enroll_time), , drop = FALSE]
-      rownames(private$trial_data) <- NULL
     },
 
     #' @description
@@ -2214,7 +943,7 @@ Trials <- R6::R6Class(
       }
 
       if(is.null(private$output)){
-        private$output <- data.frame(trial = self$get_name())
+        private$output <- data.frame(trial = private$get_name())
       }
 
       if(!is_vector_length1(value) && !is.data.frame(value)){
@@ -2263,6 +992,52 @@ Trials <- R6::R6Class(
 
       invisible(NULL)
 
+    },
+
+    #' @description
+    #' return a data frame of all current outputs saved by calling
+    #' \code{Trials$save()}. Usually this function is call at the end of
+    #' simulation for summary.
+    #'
+    #' @param cols columns to be returned from \code{Trial$output}. If
+    #' \code{NULL}, all columns are returned.
+    #' @param simplify logical. Return value rather than a data frame of one
+    #' column when \code{length(col) == 1} and \code{simplify == TRUE}.
+    #' @param tidy logical. \code{TrialSimulator} automatically records a set
+    #' of standard outputs at milestones, even when \code{doNothing} is used
+    #' as action functions. These includes time of triggering milestones,
+    #' number of observed events for time-to-event endpoints, and number of
+    #' non-missing readouts for non-TTE endpoints
+    #' (see \code{vignette('actionFunctions')}). This usually mean a large
+    #' number of columns in outputs. If users have no intent to summarize a
+    #' trial on these columns, setting \code{tidy = TRUE} can eliminate these
+    #' columns from \code{get_output()}. Note that currently we use regex
+    #' \code{"^n_events_<.*?>_<.*?>$"} and
+    #' \code{"^milestone_time_<.*?>$"} to match columns to be eliminated.
+    #' If users plan to use \code{tidy = TRUE}, caution is needed when naming
+    #' custom outputs in \code{save()}. Default \code{FALSE}.
+    get_output = function(cols = NULL, simplify = TRUE, tidy = FALSE){
+      if(is.null(cols)){
+        cols <- colnames(private$output)
+      }
+
+      if(!all(cols %in% names(private$output))){
+        stop('Columns <', paste0(setdiff(cols, names(private$output)), collapse = ', '),
+             '> are not found in trial$output. Check if there is a typo. ')
+      }
+      ret <- private$output[, cols, drop = FALSE]
+
+      if(tidy){
+        ret <- ret %>%
+          select(!matches("^n_events_<.*?>_<.*?>$")) %>%
+          select(!matches("^milestone_time_<.*?>$"))
+      }
+
+      if(simplify && ncol(ret) == 1){
+        return(ret[1, 1])
+      }else{
+        return(ret)
+      }
     },
 
     #' @description
@@ -2391,316 +1166,50 @@ Trials <- R6::R6Class(
     },
 
     #' @description
-    #' return a data frame of all current outputs saved by calling
-    #' \code{Trials$save()}. Usually this function is call at the end of
-    #' simulation for summary.
-    #'
-    #' @param cols columns to be returned from \code{Trial$output}. If
-    #' \code{NULL}, all columns are returned.
-    #' @param simplify logical. Return value rather than a data frame of one
-    #' column when \code{length(col) == 1} and \code{simplify == TRUE}.
-    #' @param tidy logical. \code{TrialSimulator} automatically records a set
-    #' of standard outputs at milestones, even when \code{doNothing} is used
-    #' as action functions. These includes time of triggering milestones,
-    #' number of observed events for time-to-event endpoints, and number of
-    #' non-missing readouts for non-TTE endpoints
-    #' (see \code{vignette('actionFunctions')}). This usually mean a large
-    #' number of columns in outputs. If users have no intent to summarize a
-    #' trial on these columns, setting \code{tidy = TRUE} can eliminate these
-    #' columns from \code{get_output()}. Note that currently we use regex
-    #' \code{"^n_events_<.*?>_<.*?>$"} and
-    #' \code{"^milestone_time_<.*?>$"} to match columns to be eliminated.
-    #' If users plan to use \code{tidy = TRUE}, caution is needed when naming
-    #' custom outputs in \code{save()}. Default \code{FALSE}.
-    get_output = function(cols = NULL, simplify = TRUE, tidy = FALSE){
-      if(is.null(cols)){
-        cols <- colnames(private$output)
-      }
-
-      if(!all(cols %in% names(private$output))){
-        stop('Columns <', paste0(setdiff(cols, names(private$output)), collapse = ', '),
-             '> are not found in trial$output. Check if there is a typo. ')
-      }
-      ret <- private$output[, cols, drop = FALSE]
-
-      if(tidy){
-        ret <- ret %>%
-          select(!matches("^n_events_<.*?>_<.*?>$")) %>%
-          select(!matches("^milestone_time_<.*?>$"))
-      }
-
-      if(simplify && ncol(ret) == 1){
-        return(ret[1, 1])
-      }else{
-        return(ret)
-      }
+    #' return current time of a trial
+    get_current_time = function(){
+      stopifnot(private$now >= 0)
+      private$now
     },
 
     #' @description
-    #' mute all messages (not including warnings)
-    #' @param silent logical.
-    mute = function(silent){
-      private$silent <- silent
+    #' return milestone time when triggering a given milestone
+    #' @param milestone_name character. Name of milestone. If \code{NULL},
+    #' time of all triggered milestones are returned.
+    get_milestone_time = function(milestone_name = NULL){
+
+      if(is.null(milestone_name)){
+        return(private$milestone_time)
+      }
+
+      if(!all(milestone_name %in% names(private$milestone_time))){
+        stop('Milestone(s) <',
+             paste0(setdiff(milestone_name, names(private$milestone_time)), collapse = ', '),
+             '> cannot be found. ',
+             'Make sure that milestone(s) have be triggered ',
+             'and their triggering time has been saved by calling get_milestone_time. ',
+             'Usually this function is called automatically while locking a data. ')
+      }
+
+      private$milestone_time[milestone_name]
     },
 
     #' @description
-    #' save less information in trial output if no intent to use it in summary
-    #' @param tidy logical. If \code{TRUE}, event count per arm per endpoint is
-    #' not computed and saved in trial output. This can speed up simulation by
-    #' up to 40\% under some circumstances.
-    tidy_output = function(tidy){
-      private$save_event_count_per_arm <- !tidy
+    #' return current sample ratio of the trial. The ratio can probably change
+    #' during the trial (e.g., arm is removed or added)
+    #' @param arm_names character vector of arms.
+    get_sample_ratio = function(arm_names = NULL){
+      if(is.null(arm_names)){
+        arm_names <- names(private$sample_ratio)
+      }
+      stopifnot(all(arm_names %in% names(private$sample_ratio)))
+      private$sample_ratio[arm_names]
     },
 
     #' @description
-    #' calculate independent increments from a given set of milestones
-    #' @param formula An object of class \code{formula} that can be used with
-    #' \code{survival::coxph}. Must consist \code{arm} and endpoint in \code{data}.
-    #' No covariate is allowed. Stratification variables are supported and can be
-    #' added using \code{strata(...)}.
-    #' @param placebo character. String of placebo in trial's locked data.
-    #' @param milestones a character vector of milestone names in the trial, e.g.,
-    #' \code{listener$get_milestone_names()}.
-    #' @param alternative a character string specifying the alternative hypothesis,
-    #' must be one of \code{"greater"} or \code{"less"}. No default value.
-    #' \code{"greater"} means superiority of treatment over placebo is established
-    #' by an hazard ratio greater than 1 when a log-rank test is used.
-    #' @param planned_info a vector of planned accumulative number of event of
-    #' time-to-event endpoint. It is named by milestone names.
-    #' Note: \code{planned_info} can also be a character
-    #' \code{"oracle"} so that planned number of events are set to be observed
-    #' number of events, in that case inverse normal z statistics equal to
-    #' one-sided logrank statistics. This is for the purpose of debugging only.
-    #' In formal simulation, \code{"oracle"} should not be used if adaptation
-    #' is present. Pre-fixed \code{planned_info} should be used to create
-    #' weights in combination test that controls the family-wise error rate
-    #' in the strong sense.
-    #' @param ... subset condition that is compatible with \code{dplyr::filter}.
-    #' \code{survdiff} will be fitted on this subset only to compute one-sided
-    #' logrank statistics. It could be useful when a
-    #' trial consists of more than two arms. By default it is not specified,
-    #' all data will be used to fit the model.
-    #'
-    #' @return
-    #' This function returns a data frame with columns:
-    #' \describe{
-    #' \item{\code{p_inverse_normal}}{one-sided p-value for inverse normal test
-    #' based on logrank test (alternative hypothesis: risk is higher in placebo arm).
-    #' Accumulative data is used. }
-    #' \item{\code{z_inverse_normal}}{z statistics of \code{p_inverse_normal}.
-    #' Accumulative data is used. }
-    #' \item{\code{p_lr}}{one-sided p-value for logrank test
-    #'  (alternative hypothesis: risk is higher in placebo arm).
-    #' Accumulative data is used. }
-    #' \item{\code{z_lr}}{z statistics of \code{p_lr}.
-    #' Accumulative data is used. }
-    #' \item{\code{info}}{observed accumulative event number. }
-    #' \item{\code{planned_info}}{planned accumulative event number. }
-    #' \item{\code{info_pbo}}{observed accumulative event number in placebo. }
-    #' \item{\code{info_trt}}{observed accumulative event number in treatment arm. }
-    #' \item{\code{wt}}{weights in \code{z_inverse_normal}. }
-    #' }
-    #'
-    #' @examples
-    #'
-    #' \dontrun{
-    #' trial$independentIncrement(Surv(pfs, pfs_event) ~ arm, 'pbo',
-    #'                            listener$get_milestone_names(),
-    #'                            'less', 'oracle')
-    #' }
-    independentIncrement = function(formula, placebo, milestones, alternative,
-                                    planned_info,
-                                    ...){
-
-      if(!identical(planned_info, 'oracle') && length(milestones) != length(planned_info)){
-        stop('milestones and planned_info should be of same length. ')
-      }
-
-      ## by doing this, milestones in function argument can be in arbitrary order
-      milestone_time <- sort(self$get_milestone_time(milestones))
-      milestones <- names(milestone_time)
-
-      info <- c() ## observed accumulated events
-      lr <- c() ## one-sided log rank statistics
-      info_pbo <- c()
-      info_trt <- c()
-      plan_best_info <- ifelse(identical(planned_info, 'oracle'), TRUE, FALSE)
-      if(plan_best_info){
-        planned_info <- c()
-      }else{
-        ## make it accumulative
-        planned_info <- planned_info[milestones] %>% cumsum()
-      }
-
-
-      ## Get label of treated arm from subset data (through ...)
-      ## We need this label to call Trials$get_arm_removal_time
-
-      # Prepare the data based on condition in ...
-      analysis_set <- if(...length() == 0){
-        self$get_locked_data(tail(milestones, 1))
-      }else{
-        tryCatch({
-          self$get_locked_data(tail(milestones, 1)) %>% dplyr::filter(...)
-        },
-        error = function(e){
-          self$save(e$message, 'error_message', overwrite = TRUE)
-          stop('Error when filtering data in independentIncrement(). ',
-               'Please check condition in ..., ',
-               'which should be compatible with dplyr::filter. ')
-        })
-      }
-
-      trt_arm <- setdiff(unique(analysis_set$arm), placebo)
-      if(length(trt_arm) == 0){
-        stop('No treatment arm can be used in independentIncrement(). ',
-             'Check your ... argument. ')
-      }
-
-      if(length(trt_arm) > 1){
-        stop('More than one treatment arm <',
-             paste0(trt_arm, collapse = ', '),
-             '> are passed into independentIncrement(). ',
-             'Check your ... argument. ')
-      }
-
-      rm(analysis_set)
-
-      n_pbo <- c()
-      n_trt <- c()
-      trt_str <- c()
-      milestone_name <- c()
-      for(i in seq_along(milestones)){
-        milestone_name[i] <- milestones[i]
-
-        ## We assume that placebo and only one treated arm are used in independentIncrement
-        ## thus lr_fit should be a data frame of one row
-        lr_fit <- fitLogrank(formula, placebo, self$get_locked_data(milestones[i]),
-                             alternative, ..., tidy = FALSE)
-        if(nrow(lr_fit) > 1){
-          stop('Trials$independentIncrement() should be applied to one treated arm at a time. ',
-               'Check the entry where you call independentIncrement(). ',
-               'Usually you can use its subsetting argument ... to meet this assumption/requirement. ')
-        }
-
-        info[i] <- lr_fit$info
-        lr[i] <- lr_fit$z
-        info_pbo[i] <- lr_fit$info_pbo
-        info_trt[i] <- lr_fit$info_trt
-
-        n_pbo[i] <- lr_fit$n_pbo
-        n_trt[i] <- lr_fit$n_trt
-        trt_str[i] <- lr_fit$arm
-
-        if(plan_best_info){
-          planned_info[i] <- lr_fit$info
-        }
-      }
-
-      names(info) <- milestones
-
-      if(any(diff(planned_info) < 0)){
-        stop('milestones and planned_info should be in the same order. ')
-      }
-
-      if(any(diff(info) < 0)){
-        stop('Debug this as info should be non-decreasing. ')
-      }
-
-      ii <- c() ## independent increments
-      wt <- c() ## weight in inverse normal statistics
-      inverse_normal <- c() ## inverse normal test statistics
-
-      stage_info <- c()
-      stage_n_pbo <- c()
-      stage_n_trt <- c()
-      for(i in seq_along(info)){
-        if(i == 1){
-          wt[i] <- sqrt(planned_info[i])
-          ii[i] <- lr[i]
-          inverse_normal[i] <- lr[i]
-
-          stage_info[i] <- info[i]
-          stage_n_pbo[i] <- n_pbo[i]
-          stage_n_trt[i] <- n_trt[i]
-
-          next
-        }
-
-        stage_info[i] <- info[i] - info[i - 1]
-        stage_n_pbo[i] <- n_pbo[i] - n_pbo[i - 1]
-        stage_n_trt[i] <- n_trt[i] - n_trt[i - 1]
-        wt[i] <- sqrt(planned_info[i] - planned_info[i - 1])
-
-        arm_removal_time <- self$get_arm_removal_time(arm = trt_arm)
-        milestone_triggering_time <- self$get_milestone_time(milestone_name = names(info)[i])
-
-
-        ## Use "<", not "<="!!
-        ## When arm_removal_time == milestone_triggering_time, it means the arm
-        ## is just removed from the trial at that milestone. Thus, data from the
-        ## arm can still be used to update testing statistics, no need to be
-        ## specified as +/-Inf
-        if(arm_removal_time < milestone_triggering_time){
-          ## This means this treatment arm has been removed from the trial BEFORE milestone i
-          ## Set z statistic of independent increment to be an extremely value
-          ## so that inverse normal combination test would always accept
-          ## the neutral null hypothesis (p-value is close or equal to 1.0)
-          ii[i] <- ifelse(alternative == 'greater', -Inf, Inf) ## 10 * qnorm(.Machine$double.eps) ## about -81
-        }else{
-          ii[i] <- (sqrt(info[i]) * lr[i] - sqrt(info[i - 1]) * lr[i - 1]) /
-            sqrt(stage_info[i])
-        }
-        inverse_normal[i] <- sum(wt * ii) / sqrt(sum(wt^2))
-      }
-
-      ret <-
-        data.frame(
-          milestone = milestone_name,
-          milestone_time = unname(milestone_time),
-          p_inverse_normal =
-            if(alternative == 'greater'){
-              1 - pnorm(inverse_normal)
-            }else{
-              pnorm(inverse_normal)
-            },
-          z_inverse_normal = inverse_normal,
-          p_logrank =
-            if(alternative == 'greater'){
-              1 - pnorm(lr)
-            }else{
-              pnorm(lr)
-            },
-          z_logrank = lr,
-          info = info,
-          planned_info = planned_info,
-          info_pbo = info_pbo,
-          info_trt = info_trt,
-          wt = wt,
-          z_ii = ii, # stage-wise, independent increment
-          n_pbo = n_pbo,
-          n_trt = n_trt,
-          stage_info = stage_info,
-          stage_n_pbo = stage_n_pbo,
-          stage_n_trt = stage_n_trt,
-          trt_str = trt_str
-        )
-
-      if(any(ret$stage_info < 30)){
-        ret_ <- ret %>%
-          dplyr::filter(stage_info < 30) %>%
-          dplyr::select(milestone, milestone_time, planned_info, info, stage_info, stage_n_pbo, stage_n_trt, trt_str)
-
-        warning('In the arm(s) <',
-                paste0(unique(ret_$trt_str), collapse = ', '),
-                '>, stage-wise information (number of events) are lower than 30 (see stage_* below). \n',
-                'Make sure that such a low stage-wise information is sufficient to maintain normality of independent increments of logrank statistics. ',
-                immediate. = TRUE)
-        message(paste0(capture.output(ret_), collapse = "\n"))
-        message("\033[31m>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\033[0m\n")
-      }
-
-      ret
+    #' return arms' name of trial
+    get_arms_name = function(){
+      lapply(private$arms, function(arm){arm$get_name()}) %>% unlist() %>% unname()
     },
 
     #' @description
@@ -2855,7 +1364,7 @@ Trials <- R6::R6Class(
         }
 
         ii[[trt_str]] <-
-          self$independentIncrement(formula, placebo, milestones, alternative,
+          private$independentIncrement(formula, placebo, milestones, alternative,
                                     ## it doesn't matter what is used for planned_info
                                     ## because we only use z_ii in returned object
                                     ## which is irrelevant to planned_info
@@ -2904,7 +1413,7 @@ Trials <- R6::R6Class(
             stage_n_pbo <- c(stage_n_pbo, ii0$stage_n_pbo)
 
 
-            arm_removal_time <- self$get_arm_removal_time(arm = trt)
+            arm_removal_time <- private$get_arm_removal_time(arm = trt)
             milestone_triggering_time <- self$get_milestone_time(milestone_name = milestone_name)
 
 
@@ -3195,84 +1704,584 @@ Trials <- R6::R6Class(
       ret_
     },
 
+    ## ---- trial setup --------------------------------------------------------
+
     #' @description
-    #' return random seed
-    get_seed = function(){
-      private$seed
+    #' register regimen to a trial. The regimen consists of three functions
+    #' to determine the patients who may switch to other treatment during a
+    #' a trial, to determine the switching time and how to update patients'
+    #' endpoint data accordingly.
+    #' @param regimen an object created by \code{regimen()}.
+    add_regimen = function(regimen){
+      if(self$has_arm()){
+        stop('Member function trial$add_regimen() must be called before trial$add_arms(). ',
+             'A good practice is to call trial$add_regimen() immediately after trial() is executed. ')
+      }
+
+      stopifnot(inherits(regimen, 'Regimens'))
+      private$regimen <- regimen
+      ## keep a pristine clone so reset() can restore it between replicates,
+      ## undoing any triplets appended in-run by crossover(). The init-time
+      ## make_snapshot() ran before any regimen existed, so it is captured here.
+      private$.snapshot[['regimen']] <- regimen$clone(deep = TRUE)
     },
 
-    #' @description
-    #' print a trial
-    print = function(){
-      white_text_blue_bg <- "" ## "\033[37;44m"
-      reset <- "" ## "\033[0m"  # Reset to default color
-      logo <- '\u2695\u2695' ## stringi::stri_escape_unicode('⚕')
-
-      cat(white_text_blue_bg, logo, '        Trial Name: ', self$get_name(), reset, '\n')
-      cat(white_text_blue_bg, logo, '       Description: ', self$get_description(), reset, '\n')
-      cat(white_text_blue_bg, logo, '    Number of Arms: ', self$get_number_arms(), reset, '\n')
-      cat(white_text_blue_bg, logo, '   Registered Arms: ',
-          paste0(self$get_arms_name(), collapse = ', '), reset, '\n')
-      cat(white_text_blue_bg, logo, '      Sample Ratio: ',
-          paste0(self$get_sample_ratio(), collapse = ', '), reset, '\n')
-      cat(white_text_blue_bg, logo, 'Number of Patients: ', self$get_number_patients(), reset, '\n')
-      cat(white_text_blue_bg, logo, '  Planned Duration: ', self$get_duration(), reset, '\n')
-      cat(white_text_blue_bg, logo, '           Regimen: ', ifelse(is.null(self$get_regimen()), 'not set', 'set'), reset, '\n')
-      cat(white_text_blue_bg, logo, '       Random Seed: ', self$get_seed(), reset, '\n')
-
-      invisible(self)
-
-    },
+    ## ---- internal machinery (called by other components; not for users) -----
 
     #' @description
-    #' return a snapshot of a trial before it is executed.
-    get_snapshot_copy = function(){
-      private$.snapshot
-    },
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
+    #' lock data at specific calendar time.
+    #' For time-to-event endpoints, their event indicator \code{*_event} should be
+    #' updated accordingly. Locked data should be stored separately.
+    #' DO NOT OVERWRITE/UPDATE private$trial_data! which can lose actual
+    #' time-to-event information. For example, a patient may be censored at
+    #' the first data lock. However, he may have event being observed in a
+    #' later data lock.
+    #' @param at_calendar_time time point to lock trial data
+    #' @param milestone_name assign milestone name as the name of locked data for
+    #' future reference.
+    lock_data = function(at_calendar_time, milestone_name){
 
-    #' @description
-    #' make a snapshot before running a trial. This can be useful when
-    #' resetting a trial. This is only called when initializing a `Trial`
-    #' object, when arms have not been added yet.
-    make_snapshot = function() {
+      if(is.infinite(at_calendar_time)){
+        stop('Trial data can only be locked at a finite calendar time. \n',
+             'Check your triggering condition for the milestone <',
+             milestone_name, '>. If it is composite, ',
+             'make sure that at least one condition can be reached in a realistic time window. ',
+             'If not, you may consider reducing the target number in milestone(), ',
+             'and/or extending trial duration in trial(). ')
+      }
 
-      private$.snapshot <- list()
+      trial_data <- private$get_trial_data()
 
-      for(field in names(private)){
-        if(field %in% c('.snapshot', 'permuted_block_randomization',
-                        'validate_arguments', 'apply_regimens', 'reset_regimen')){
-          next
+      event_cols <- grep('_event$', names(trial_data), value = TRUE)
+      tte_cols   <- sub('_event$', '', event_cols)
+
+      ## Censor TTE endpoints: if event falls after lock time, mark as censored.
+      for(k in seq_along(event_cols)){
+        event_col <- event_cols[k]
+        tte_col   <- tte_cols[k]
+        cal_time  <- trial_data$enroll_time + trial_data[[tte_col]]
+        late      <- cal_time > at_calendar_time
+        trial_data[[event_col]][late] <- 0L
+        trial_data[[tte_col]][late]   <- at_calendar_time - trial_data$enroll_time[late]
+      }
+
+      readout_cols <- grep('_readout$', names(trial_data), value = TRUE)
+      ep_cols      <- sub('_readout$', '', readout_cols)
+
+      ## Null-out non-TTE readouts that have not yet occurred by lock time.
+      for(k in seq_along(readout_cols)){
+        readout_col <- readout_cols[k]
+        ep_col      <- ep_cols[k]
+        cal_time    <- trial_data$enroll_time + trial_data[[readout_col]]
+        ## in locked data, some patients may have been enrolled, but
+        ## their non-tte endpoints have no readout, thus set to be NA
+        trial_data[[ep_col]][cal_time > at_calendar_time] <- NA
+      }
+
+      enrolled_mask <- trial_data$enroll_time <= at_calendar_time
+      locked_data   <- trial_data[enrolled_mask, , drop = FALSE]
+      locked_data   <- locked_data[order(locked_data$enroll_time), , drop = FALSE]
+      rownames(locked_data) <- NULL
+
+      if(!is.null(locked_data$regimen_trajectory)){
+        ## only patients with switching events need filtering; non-switchers
+        ## have a single "arm@0" segment that always survives the lock window
+        switchers <- grep(';', locked_data$regimen_trajectory, fixed = TRUE)
+        if(length(switchers) > 0){
+          locked_data$regimen_trajectory[switchers] <- mapply(
+            function(traj_str, enroll_time){
+              entries <- strsplit(traj_str, ';', fixed = TRUE)[[1]]
+              times <- as.numeric(sub('.*@', '', entries))
+              paste(entries[enroll_time + times <= at_calendar_time], collapse = ';')
+            },
+            locked_data$regimen_trajectory[switchers],
+            locked_data$enroll_time[switchers],
+            SIMPLIFY = TRUE, USE.NAMES = FALSE
+          )
         }
-        ## single-bracket list assignment keeps NULL-valued fields in the
-        ## snapshot; `[[<-` would silently drop them, leaving reset() to
-        ## depend on its explicit re-null list for every such field
-        private$.snapshot[field] <- list(private[[field]])
+        ## number of switches = number of '@' minus 1 (the initial arm@0 entry)
+        locked_data$n_switches <- lengths(gregexpr('@', locked_data$regimen_trajectory, fixed = TRUE)) - 1L
       }
+
+      n_events_or_readouts <- NULL
+      for(tte_col in tte_cols){
+        n_events_or_readouts <- c(n_events_or_readouts, sum(locked_data[[tte_col]] != 0))
+      }
+
+      for(ep_col in ep_cols){
+        n_events_or_readouts <- c(n_events_or_readouts, sum(!is.na(locked_data[[ep_col]])))
+      }
+
+      if(all(n_events_or_readouts == 0)){
+        warning('No TTE event or non-TTE readout of endpoints <',
+                paste0(c(tte_cols, ep_cols), collapse = ', '),
+                '> in data snapshot locked at milestone <',
+                milestone_name, '>. Check: \n',
+                '(1) Is this milestone triggered too early?\n',
+                '(2) Is the dropout rate too high?\n',
+                '(3) Do you use the same unit for readout time, trial duration, and dropout time?')
+      }
+
+      ## Build per-arm event/readout counts without dplyr group_by+summarise.
+      arms_in_locked <- sort(unique(locked_data$arm))
+      arm_factor     <- factor(locked_data$arm, levels = arms_in_locked)
+
+      event_counts_per_arm <- data.frame(arm = arms_in_locked, stringsAsFactors = FALSE)
+
+      for(event_col in event_cols){
+        tte_col <- sub('_event$', '', event_col)
+        event_counts_per_arm[[tte_col]] <- as.integer(
+          tapply(locked_data[[event_col]], arm_factor, sum)
+        )
+      }
+
+      for(readout_col in readout_cols){
+        ep_col <- sub('_readout$', '', readout_col)
+        event_counts_per_arm[[ep_col]] <- as.integer(
+          tapply(!is.na(locked_data[[ep_col]]), arm_factor, sum)
+        )
+      }
+
+      event_counts_per_arm[['patient_id']] <- as.integer(tabulate(arm_factor))
+
+      n_events <- as.data.frame(t(colSums(event_counts_per_arm[, -1])))
+      n_events[['arms']] <- I(list(event_counts_per_arm))
+
+      unenrolled_mask <- trial_data$enroll_time > at_calendar_time
+      unenrolled_data <- trial_data[unenrolled_mask, c('enroll_time', 'arm'), drop = FALSE]
+      unenrolled_data <- unenrolled_data[order(unenrolled_data$enroll_time), , drop = FALSE]
+      rm(trial_data)
+
+      attr(at_calendar_time, 'n_events') <- n_events
+      attr(locked_data, 'lock_time') <- at_calendar_time
+      attr(locked_data, 'n_enrolled_patients') <- length(unique(locked_data$patient_id))
+      attr(locked_data, 'milestone_name') <- milestone_name
+      private$locked_data[[milestone_name]] <- locked_data
+      private$set_current_time(at_calendar_time)
+      private$save_milestone_time(at_calendar_time, milestone_name)
+
+      self$save(value = at_calendar_time, name = paste0('milestone_time_<', milestone_name, '>'))
+
+      self$save(value = attr(at_calendar_time, 'n_events'),
+                name = paste0('n_events_<', milestone_name, '>'))
+
+      if(!private$silent){
+        message('Data is locked at time = ', at_calendar_time, ' for milestone <',
+                milestone_name, '>.\n',
+                'Locked data can be accessed in Trial$get_locked_data(\'',
+                milestone_name, '\'). \n',
+                'Number of events at lock time: \n')
+        out <- as.data.frame(attr(at_calendar_time, 'n_events'))
+        if('patient_id' %in% names(out)){
+          colnames(out)[names(out) == 'patient_id'] <- 'patient'
+        }
+        message(paste0(capture.output(out), collapse = "\n"))
+        message('\n')
+      }
+
+      ## I am not sure about this part yet.
+      ## Once data is locked for a milestone, it is not always necessary to
+      ## roll back. For example, all arms are keeping moving without anything
+      ## change is possible. This could happen except for futility analysis
+      ## (early stop), or adding/removing arms. It seems like this part should
+      ## be done in action() depending on the type of milestone.
+      ##
+      ## updated note: Yes, should be done by users in action function of milestone
+      ## Actually, $add_arms, $remove_arms, and $update_sample_ratio can be
+      ## called by users in action function. All these three functions will
+      ## do randomization, and patient enrollment again. We possibly support
+      ## update enrollment curve in the future.
+      if(0){
+      private$enroll_time <- unenrolled_data$enroll_time
+      private$randomization_queue <- unenrolled_data$arm
+
+
+      private$trial_data <- private$get_trial_data() %>%
+        dplyr::filter(enroll_time <= at_calendar_time)
+
+      private$enroll_patients()
+      }
+
+      NULL
+    },
+
+    #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
+    #' given the calendar time to lock the data, return it with event counts of
+    #' each of the endpoints.
+    #' @param calendar_time numeric. Calendar time to lock the data
+    #' @return data lock time
+    #'
+    get_data_lock_time_by_calendar_time = function(calendar_time){
+
+      stopifnot(is.numeric(calendar_time) && length(calendar_time) && calendar_time >= 0)
+
+      lock_time <- calendar_time
+      lock_time
 
     },
 
     #' @description
-    #' make a snapshot of arms
-    make_arms_snapshot = function(){
-      arm_names <- self$get_arms_name()
-      arms <- self$get_arms()
-      sample_ratio <- self$get_sample_ratio()
-      stopifnot(length(arms) == length(sample_ratio))
-      stopifnot(length(arm_names) == length(sample_ratio))
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
+    #' given a set of endpoints and target number of events, determine the data
+    #' lock time for a milestone (futility, interim, final, etc.). This function does
+    #' not change trial object (e.g. rolling back not yet randomized patients after
+    #' the found data lock time).
+    #' @param endpoints character vector. Data lock time is determined by a set
+    #' of endpoints.
+    #' @param target_n_events target number of events for each of the
+    #' \code{endpoints}.
+    #' @param arms a vector of arms' name on which number of events will be
+    #' counted.
+    #' @param type \code{all} if all target number of events are reached.
+    #' \code{any} if the any target number of events is reached.
+    #' @param ... subset conditions compatible with \code{dplyr::filter}. Number
+    #' Time of milestone is based on event counts on the subset of trial data.
+    #' @return data lock time
+    #'
+    get_data_lock_time_by_event_number = function(endpoints, arms,
+                                                  target_n_events,
+                                                  type = c('all', 'any'),
+                                                  ...){
 
-      private$.snapshot$arms <- list()
-      for(arm_name in arm_names){
-        private$.snapshot$arms[[arm_name]] <- arms[[arm_name]]$clone(deep = TRUE)
+      type <- match.arg(type)
+
+      stopifnot(is.character(endpoints))
+      stopifnot(all(is.wholenumber(target_n_events)))
+      stopifnot(length(endpoints) == length(target_n_events))
+
+      if(is.null(arms)){
+        arms <- self$get_arms_name()
       }
-      private$.snapshot$sample_ratio <- sample_ratio
 
-      ## start each run() from the pristine regimen (also clears any crossover
-      ## triplets left over from a previous run() on the same trial object).
-      private$reset_regimen()
+      ## Fast path: when no filter expressions are passed AND the C++ toggle
+      ## is enabled (the default), use C++ helpers that compute the lock time
+      ## directly without building intermediate event-count data.frames.
+      ## The R fallback is used when callers pass filter conditions via ...
+      ## (which require dplyr) OR when the user has set
+      ## options(trialsimulator.use_cpp = FALSE).
+      if(.use_cpp_lock_time() && length(rlang::enquos(...)) == 0L){
+        td <- private$get_trial_data()
+        td <- td[td$arm %in% arms, , drop = FALSE]
+        milestone_times <- vapply(seq_along(endpoints), function(i){
+          ep <- endpoints[i]
+          n  <- as.integer(target_n_events[i])
+          ec <- paste0(ep, '_event')
+          rc <- paste0(ep, '_readout')
+          if(ec %in% names(td)){
+            mt <- find_event_lock_time_cpp(
+              td$enroll_time, td[[ep]], as.integer(td[[ec]]), n)
+          }else if(rc %in% names(td)){
+            mt <- find_readout_lock_time_cpp(
+              td$enroll_time, td[[rc]], !is.na(td[[ep]]), n)
+          }else{
+            stop('Endpoint <', ep, '> is missing in trial data when ',
+                 'determining data lock time. ')
+          }
+          if(!private$silent && is.infinite(mt)){
+            warning('No enough events/samples for endpoint <', ep,
+                    '> to reach the target number <', n, '>. ',
+                    immediate. = TRUE)
+          }
+          mt
+        }, numeric(1))
+      }else{
+        event_counts <- private$get_event_tables(arms, ...)
+        missing_endpoints <- setdiff(endpoints, names(event_counts))
+        if(length(missing_endpoints) > 0){
+          stop('Endpoints <',
+               paste0(missing_endpoints, collapse = ', '),
+               '> are missing in event_counts when determining data lock time. ')
+        }
+        milestone_times <- NULL
+        for(i in seq_along(endpoints)){
+          if(max(event_counts[[endpoints[i]]]$n_events) < target_n_events[i]){
+            if(!private$silent){
+              warning('No enough events/samples for endpoint <', endpoints[i],
+                   '> to reach the target number <', target_n_events[i], '>. ',
+                   immediate. = TRUE)
+            }
+            milestone_times <- c(milestone_times, Inf)
+          }else{
+            milestone_times <-
+              c(milestone_times,
+                min(event_counts[[endpoints[i]]]$calendar_time[
+                  event_counts[[endpoints[i]]]$n_events >= target_n_events[i]
+                ]))
+          }
+        }
+      }
+
+      lock_time <-
+        case_when(
+          type %in% 'all' ~ max(milestone_times),
+          type %in% 'any' ~ min(milestone_times),
+          TRUE ~ -Inf
+        )
+
+      lock_time
 
     },
 
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
+    #' given a target number of enrolled patients, determine the data
+    #' lock time for a milestone (futility, interim, final, etc.). This function does
+    #' not change trial object (e.g. rolling back not yet randomized patients after
+    #' the found data lock time). It is similar to get_data_lock_time_by_event_number
+    #' but only focus on patient_id.
+    #' @param target_n_patients target number of enrolled patients.
+    #' @param arms a vector of arms' name on which number of events will be
+    #' counted.
+    #' @param min_treatment_duration numeric. Zero or positive value.
+    #' minimum treatment duration of enrolled patients.
+    #' If 0, it looks for triggering time based on number of enrolled
+    #' patients in population specified by \code{...} and \code{arms}. If positive,
+    #' it means that milestone is triggered when a specific number of enrolled
+    #' patients have received treatment for at least \code{min_treatment_duration}
+    #' duration. It is users' responsibility to assure that the unit of
+    #' \code{min_treatment_duration} are consistent with
+    #' readout of non-tte endpoints, dropout time, and trial duration.
+    #' @param ... subset conditions compatible with \code{dplyr::filter}. Number
+    #' Time of milestone is based on event counts on the subset of trial data.
+    #' @return data lock time
+    #'
+    get_data_lock_time_by_enrollment = function(arms,
+                                                target_n_patients,
+                                                min_treatment_duration,
+                                                ...){
+
+      stopifnot(all(is.wholenumber(target_n_patients)))
+      stopifnot(min_treatment_duration >= 0)
+
+      if(is.null(arms)){
+        arms <- self$get_arms_name()
+      }
+
+      ## Fast path: when no filter expressions are passed AND the C++ toggle
+      ## is enabled, use the C++ helper that computes the enrollment lock
+      ## time directly. Filter expressions or options(trialsimulator.use_cpp=FALSE)
+      ## route through the dplyr-backed R path.
+      if(.use_cpp_lock_time() && length(rlang::enquos(...)) == 0L){
+        td <- private$get_trial_data()
+        et <- td$enroll_time[td$arm %in% arms]
+        milestone_time <- find_enrollment_lock_time_cpp(
+          et, as.integer(target_n_patients))
+        if(!private$silent && is.infinite(milestone_time)){
+          warning('No enough patients to reach the target number <',
+                  target_n_patients, '>. ', immediate. = TRUE)
+        }else{
+          milestone_time <- milestone_time + min_treatment_duration
+        }
+      }else{
+        event_counts <- private$get_event_tables(arms, ...)
+        if(max(event_counts[['patient_id']]$n_events) < target_n_patients){
+          if(!private$silent){
+            warning('No enough patients to reach the target number <', target_n_patients, '>. ',
+                    immediate. = TRUE)
+          }
+          milestone_time <- Inf
+        }else{
+          milestone_time <- min(event_counts[['patient_id']]$calendar_time[
+                event_counts[['patient_id']]$n_events >= target_n_patients
+              ]) + min_treatment_duration
+        }
+      }
+
+      lock_time <- milestone_time
+
+      lock_time
+
+    },
+
+    #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
+    #' check if the trial has any arm. Return \code{TRUE} or \code{FALSE}.
+    has_arm = function(){
+      private$get_number_arms() > 0
+    },
+
+    #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
+    #' plot of cumulative number of events/samples over calendar time.
+    event_plot = function(){
+
+      trial_data <- private$get_trial_data()
+
+      event_number <- private$get_event_number()
+      event_number$event_name <- paste0(1:nrow(event_number), ': ',
+                                        event_number$event_name)
+
+      event_cols <- grep('_event$', names(trial_data), value = TRUE)
+      readout_cols <- grep('_readout$', names(trial_data), value = TRUE)
+
+      all_data_list <- NULL
+      for(col in c(event_cols, readout_cols)){
+        tte_col <- gsub('_event$', '', col)
+        ep_col <- gsub('_readout$', '', col)
+
+        stopifnot((tte_col != col) || (ep_col != col))
+
+        data_list <- list()
+
+        if(ep_col == col){ ## a tte endpoint
+          event_counts <- trial_data %>%
+            dplyr::select(all_of(c('patient_id', 'arm', 'enroll_time', tte_col, col))) %>%
+            mutate(calendar_time := enroll_time + !!sym(tte_col)) %>%
+            arrange(calendar_time)
+          col_ <- tte_col
+
+          data_list[['0: overall']] <- event_counts %>%
+            mutate(n_events = cumsum(get(col)))
+
+          idx <- 0
+          for(arm_ in sort(unique(trial_data$arm))){
+            idx <- idx + 1
+            data_list[[paste0(idx, ': ', arm_)]] <- event_counts %>%
+              dplyr::filter(arm %in% arm_) %>%
+              arrange(calendar_time) %>%
+              mutate(n_events = cumsum(get(col)))
+          }
+
+        }else{ ## a non-tte endpoint
+          event_counts <- trial_data %>%
+            dplyr::select(all_of(c('patient_id', 'arm', 'enroll_time', ep_col, col))) %>%
+            dplyr::filter(!is.na(!!sym(ep_col))) %>%
+            mutate(calendar_time := enroll_time + !!sym(col)) %>%
+            arrange(calendar_time)
+          col_ <- ep_col
+
+          data_list[['0: overall']] <- event_counts %>%
+            mutate(n_events = row_number())
+
+          idx <- 0
+          for(arm_ in sort(unique(trial_data$arm))){
+            idx <- idx + 1
+            data_list[[paste0(idx, ': ', arm_)]] <- event_counts %>%
+              dplyr::filter(arm %in% arm_) %>%
+              arrange(calendar_time) %>%
+              mutate(n_events = row_number())
+          }
+
+        }
+
+        all_data_list <- bind_rows(
+          all_data_list,
+          lapply(names(data_list), function(name){
+            data_list[[name]] %>%
+              mutate(arm = name) %>%
+              mutate(endpoint = col_)
+          })
+        )
+
+      }
+
+
+      ## prepare stacked area chart
+      all_data <- all_data_list %>%
+        dplyr::filter(!(arm %in% '0: overall'))
+
+      endpoints <- sort(unique(all_data$endpoint))
+      arms <- sort(unique(all_data$arm))
+      ct <- sort(unique(all_data$calendar_time))
+
+      new_data <- NULL
+      for(col in c(event_cols, readout_cols)){
+        tte_col <- gsub('_event$', '', col)
+        ep_col <- gsub('_readout$', '', col)
+        is_tte <- (ep_col == col)
+        ep <- ifelse(is_tte, tte_col, ep_col)
+
+        for(arm_ in arms){
+          ## Using filter(endpoint %in% ep & ...) is dangerous because all_data
+          ## has a column named ep. This will apply %in% between the two columns
+          ## endpoint and ep in the data frame, rather than comparing column
+          ## endpoint with the character vector ep. Using pronoun .env$ep
+          ## forces R to look for ep in environment, not in the data frame columns
+          ## Consider this example:
+          ## x <- 'x'
+          ## data.frame(x = rnorm(4), y = c('x', 'b', 'a', 'x'), z = 1:4) %>%
+          ##   filter(y %in% x)
+          dat <- all_data %>%
+            dplyr::filter(endpoint %in% .env$ep & arm %in% .env$arm_) %>%
+            dplyr::select(c('arm', all_of(col), 'calendar_time', 'endpoint')) %>%
+            rename(has_event = !!sym(col))
+
+          if(!is_tte){
+            dat$has_event <- 1
+          }
+
+          time <- sort(setdiff(ct, dat$calendar_time))
+          if(length(time) == 0){
+            new_data <- bind_rows(new_data, dat)
+            next
+          }
+
+          dat <- bind_rows(dat,
+                           data.frame(
+                             arm = arm_,
+                             has_event = 0,
+                             calendar_time = time,
+                             endpoint = ep
+                           ))
+          dat <- dat[!duplicated(dat), ] %>%
+            arrange(calendar_time) %>%
+            mutate(n_events = cumsum(has_event)) %>%
+            dplyr::select(-has_event)
+
+          new_data <- bind_rows(new_data, dat)
+        }
+      }
+
+      new_data$arm <- factor(new_data$arm, levels = arms)
+
+      soft_colors <- function(n) {
+        hcl(h = seq(0, 360 * (n-1)/n, length.out = n), c = 60, l = 70)
+      }
+
+      p <- ggplot(new_data, aes(x = calendar_time, y = n_events, fill = arm)) +
+        xlim(0, private$get_duration() * 1.05) +
+        labs(
+          x = 'Calendar Time',
+          y = 'Cumulative N'
+        ) +
+        geom_area() +
+        scale_fill_manual(
+          values = soft_colors(length(arms)),
+          name = "Arm"
+        ) +
+        geom_vline(
+          data = event_number,
+          aes(xintercept = lock_time),
+          linetype = 'dashed'
+        ) +
+        facet_wrap(~ endpoint, scales = 'free_x') +
+        theme_minimal() +
+        theme(legend.position = 'bottom')
+
+      plot(p)
+
+    },
+
+    #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
+    #' mute all messages (not including warnings)
+    #' @param silent logical.
+    mute = function(silent){
+      private$silent <- silent
+    },
+
+    #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' reset a trial to its snapshot taken before it was executed. Seed will be
     #' reassigned with a new one. Enrollment time are re-generated. If the trial
     #' already have arms when this function is called, they are added back to
@@ -3311,7 +2320,7 @@ Trials <- R6::R6Class(
 
       ## see comments in initialize()
       private$enroll_time_with_redundant <-
-        sort(self$get_enroller()(n = private$n_patients * 10), decreasing = FALSE)
+        sort(private$get_enroller()(n = private$n_patients * 10), decreasing = FALSE)
       private$enroll_time <- head(private$enroll_time_with_redundant, private$n_patients)
       private$enroll_time_with_redundant <- private$enroll_time_with_redundant[-c(1:private$n_patients)]
 
@@ -3330,73 +2339,49 @@ Trials <- R6::R6Class(
     },
 
     #' @description
-    #' save time when an arm is added to the trial
-    #' @param arm name of added arm.
-    #' @param time time when an arm is added.
-    set_arm_added_time = function(arm, time){
-      if(!is.null(private$arm_time[[arm]][['time_added']])){
-        stop('The time the arm <', arm, '> was added to the trial has already been recorded <',
-             private$arm_time[[arm]][['time_added']], '>. You cannot overwrite it. ',
-             'Usually this indicates an error in your codes. ')
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
+    #' make a snapshot of arms
+    make_arms_snapshot = function(){
+      arm_names <- self$get_arms_name()
+      arms <- private$get_arms()
+      sample_ratio <- self$get_sample_ratio()
+      stopifnot(length(arms) == length(sample_ratio))
+      stopifnot(length(arm_names) == length(sample_ratio))
+
+      private$.snapshot$arms <- list()
+      for(arm_name in arm_names){
+        private$.snapshot$arms[[arm_name]] <- arms[[arm_name]]$clone(deep = TRUE)
       }
-      stopifnot(time >= 0)
-      private$arm_time[[arm]][['time_added']] <- time
+      private$.snapshot$sample_ratio <- sample_ratio
+
+      ## start each run() from the pristine regimen (also clears any crossover
+      ## triplets left over from a previous run() on the same trial object).
+      private$reset_regimen()
+
     },
 
     #' @description
-    #' get time when an arm is added to the trial
-    #' @param arm arm name.
-    get_arm_added_time = function(arm){
-      ## arm is not in the trial
-      if(is.null(private$arm_time[[arm]][['time_added']])){
-        if(!private$silent){
-          message('Arm <', arm, '> is not in the trial. ')
-        }
-        return(Inf)
-      }else{
-        return(private$arm_time[[arm]][['time_added']])
-      }
-    },
+    #' print a trial
+    print = function(){
+      white_text_blue_bg <- "" ## "\033[37;44m"
+      reset <- "" ## "\033[0m"  # Reset to default color
+      logo <- '\u2695\u2695' ## stringi::stri_escape_unicode('⚕')
 
-    #' @description
-    #' save time when an arm is removed to the trial
-    #' @param arm name of removed arm.
-    #' @param time time when an arm is removed.
-    set_arm_removal_time = function(arm, time){
-      if(!is.null(private$arm_time[[arm]][['time_removed']])){
-        stop('The time the arm <', arm, '> was removed from the trial has already been recorded <',
-             private$arm_time[[arm]][['time_removed']], '>. You cannot overwrite it. ',
-             'Usually this indicates an error in your codes. ')
-      }
-      stopifnot(time >= 0)
-      private$arm_time[[arm]][['time_removed']] <- time
-    },
+      cat(white_text_blue_bg, logo, '        Trial Name: ', private$get_name(), reset, '\n')
+      cat(white_text_blue_bg, logo, '       Description: ', private$get_description(), reset, '\n')
+      cat(white_text_blue_bg, logo, '    Number of Arms: ', private$get_number_arms(), reset, '\n')
+      cat(white_text_blue_bg, logo, '   Registered Arms: ',
+          paste0(self$get_arms_name(), collapse = ', '), reset, '\n')
+      cat(white_text_blue_bg, logo, '      Sample Ratio: ',
+          paste0(self$get_sample_ratio(), collapse = ', '), reset, '\n')
+      cat(white_text_blue_bg, logo, 'Number of Patients: ', private$get_number_patients(), reset, '\n')
+      cat(white_text_blue_bg, logo, '  Planned Duration: ', private$get_duration(), reset, '\n')
+      cat(white_text_blue_bg, logo, '           Regimen: ', ifelse(is.null(private$get_regimen()), 'not set', 'set'), reset, '\n')
+      cat(white_text_blue_bg, logo, '       Random Seed: ', private$get_seed(), reset, '\n')
 
-    #' @description
-    #' get time when an arm is removed from the trial
-    #' @param arm arm name.
-    get_arm_removal_time = function(arm){
-      ## arm is not in the trial
-      if(is.null(private$arm_time[[arm]][['time_removed']])){
-        if(!private$silent){
-          # message('Arm <', arm, '> is still in the trial. ')
-        }
-        return(Inf)
-      }else{
-        return(private$arm_time[[arm]][['time_removed']])
-      }
-    },
+      invisible(self)
 
-    #' @description
-    #' return stratification factors
-    get_stratification_factors = function(){
-      private$stratification_factors
-    },
-
-    #' @description
-    #' has stratification factors
-    has_stratification_factors = function(){
-      !is.null(self$get_stratification_factors())
     }
 
   ),
@@ -3459,7 +2444,7 @@ Trials <- R6::R6Class(
     ## (a changed pre-switch/locked cell is an error).
     apply_regimens = function(patient_data, indices){
 
-      reg <- self$get_regimen()
+      reg <- private$get_regimen()
 
       isValidOutput <- function(op, req_cols, func_name){
         if(!is.data.frame(op)){
@@ -3489,7 +2474,7 @@ Trials <- R6::R6Class(
       tte_cols     <- sub('_event$',   '', event_cols)
       readout_cols <- grep('_readout$', names(patient_data), value = TRUE)
       ep_cols      <- sub('_readout$', '', readout_cols)
-      duration     <- self$get_duration()
+      duration     <- private$get_duration()
       tol          <- 1e-8
 
       for(i in indices){
@@ -3698,15 +2683,15 @@ Trials <- R6::R6Class(
     ## This function will be called by add_arms, remove_arms, etc.
     permuted_block_randomization = function(block_size = NULL){
 
-      if(!is.null(self$get_randomization_queue())){
+      if(!is.null(private$get_randomization_queue())){
         message('condition check is triggered in permuted_block_randomization. ',
         ' Debug this.\n')
         stopifnot(
-          length(self$get_randomization_queue()) ==
-            self$get_number_unenrolled_patients())
+          length(private$get_randomization_queue()) ==
+            private$get_number_unenrolled_patients())
       }
 
-      if(self$get_number_unenrolled_patients() == 0){
+      if(private$get_number_unenrolled_patients() == 0){
         stop('All patients are enrolled. No further randomization is needed. \n',
              'If you see this message, there is probably an unexpected issue with your code. \n',
              'One known reason is that arms are added into the trial one right after one, \n',
@@ -3722,10 +2707,10 @@ Trials <- R6::R6Class(
 
         ## fractional ratios force simple randomization, which cannot honor
         ## stratification; make this conflict loud rather than silent.
-        if(self$has_stratification_factors() && !private$silent){
+        if(private$has_stratification_factors() && !private$silent){
           warning('Stratified randomization is not supported when sample ',
                   'ratios are not whole numbers. Stratification factor(s) <',
-                  paste0(self$get_stratification_factors(), collapse = ', '),
+                  paste0(private$get_stratification_factors(), collapse = ', '),
                   '> are ignored and unenrolled patients are randomized by ',
                   'sample() without stratification. ',
                   immediate. = TRUE)
@@ -3739,14 +2724,14 @@ Trials <- R6::R6Class(
 
         arm_names <- names(private$sample_ratio)
         private$randomization_queue <- sample(arm_names,
-                                              size = self$get_number_unenrolled_patients(),
+                                              size = private$get_number_unenrolled_patients(),
                                               replace = TRUE,
                                               prob = private$sample_ratio)
-        private$stratum_queue <- rep('all', self$get_number_unenrolled_patients())
+        private$stratum_queue <- rep('all', private$get_number_unenrolled_patients())
 
         if(!private$silent){
           message('Randomization is done for ',
-                  self$get_number_unenrolled_patients(),
+                  private$get_number_unenrolled_patients(),
                   ' potential patients. \n')
         }
 
@@ -3763,18 +2748,18 @@ Trials <- R6::R6Class(
         stop('No arm registered to the trial yet. Cannot randomize patients. ')
       }
 
-      if(self$has_stratification_factors()){
-        any_arm <- self$get_an_arm(self$get_arms_name()[1])
-        stratum_queue <- any_arm$generate_data(self$get_number_unenrolled_patients())
+      if(private$has_stratification_factors()){
+        any_arm <- private$get_an_arm(self$get_arms_name()[1])
+        stratum_queue <- any_arm$generate_data(private$get_number_unenrolled_patients())
         stratum_queue <-
-          do.call(paste, c(stratum_queue[, self$get_stratification_factors(), drop = FALSE],
+          do.call(paste, c(stratum_queue[, private$get_stratification_factors(), drop = FALSE],
                            sep = '|')
           )
 
         size_per_stratum <- c(table(stratum_queue))
       }else{
-        stratum_queue <- rep('all', self$get_number_unenrolled_patients())
-        size_per_stratum <- c(all = self$get_number_unenrolled_patients())
+        stratum_queue <- rep('all', private$get_number_unenrolled_patients())
+        size_per_stratum <- c(all = private$get_number_unenrolled_patients())
       }
 
       arm_names <- names(private$sample_ratio)
@@ -3792,7 +2777,7 @@ Trials <- R6::R6Class(
         randomization_queue[[str]] <- arm_names[randomization_queue[[str]]]
       }
 
-      private$randomization_queue <- rep(NA, self$get_number_unenrolled_patients())
+      private$randomization_queue <- rep(NA, private$get_number_unenrolled_patients())
       for(str in names(size_per_stratum)){
         private$randomization_queue[stratum_queue %in% str] <- randomization_queue[[str]]
       }
@@ -3805,6 +2790,1103 @@ Trials <- R6::R6Class(
         message('Randomization is done for ', length(randomization_queue),
                 ' potential patients. \n')
       }
+    },
+
+    ## @description
+    ## return trial data of enrolled patients at the time of this
+    ## function is called
+    get_trial_data = function(){
+      private$trial_data
+    },
+
+    ## @description
+    ## return maximum duration of a trial
+    get_duration = function(){
+      private$duration
+    },
+
+    ## @description
+    ## set recruitment curve when initialize a trial.
+    ## @param func function to generate enrollment time. Must be
+    ## \code{StaggeredRecruiter}; any other value is rejected.
+    ## @param ... (optional) arguments for \code{func}.
+    set_enroller = function(func, ...){
+
+      # StaggeredRecruiter is the only supported enroller.
+      if (!identical(func, StaggeredRecruiter)) {
+        stop("enroller must be StaggeredRecruiter. Supply its accrual_rate via ",
+             "... ; see ?StaggeredRecruiter.", call. = FALSE)
+      }
+
+      # Check that the first argument of enroller is "n"
+      arg_names <- names(formals(func))
+      if (length(arg_names) == 0 || arg_names[1] != "n") {
+        stop("The first argument of enroller must be 'n'.")
+      }
+
+      n_ <- 2
+
+      suppressWarnings(
+        enroller_ <- DynamicRNGFunction(
+          func, rng = deparse(substitute(func)), simplify = TRUE, ...)
+      )
+
+      example_data <- enroller_(n = n_)
+      if(!is.vector(example_data)){
+        stop('enroller must return a vector.')
+      }
+
+      if(length(example_data) != n_){
+        stop('\'n\' in enroller does not work correctly.')
+      }
+
+      private$enroller <- enroller_
+    },
+
+    ## @description
+    ## get function of recruitment curve
+    get_enroller = function(){
+      private$enroller
+    },
+
+    ## @description
+    ## set distribution of drop out time when initializing a trial. This is
+    ## not an adaptation method: dropout times of patients are generated
+    ## when they are enrolled, so calling this function within an action
+    ## function would not apply to patients already enrolled.
+    ## @param func function to generate dropout time. It can be built-in
+    ## function like `rexp` or customized functions.
+    ## @param ... (optional) arguments for \code{func}.
+    set_dropout = function(func, ...){
+
+      arg_names <- names(formals(func))
+      if (length(arg_names) == 0 || arg_names[1] != "n") {
+        stop("The first argument of random number generator for dropout time must be 'n'.")
+      }
+
+      suppressWarnings(
+        dropout_ <- DynamicRNGFunction(func, rng = deparse(substitute(func)),
+                                       simplify = TRUE, ...)
+      )
+
+      n_ <- 2
+      example_data <- dropout_(n = n_)
+      if(!is.vector(example_data)){
+        stop('dropout must return a vector.')
+      }
+
+      if(length(example_data) != n_){
+        stop('\'n\' in dropout does not work correctly.')
+      }
+
+      private$dropout <- dropout_
+
+    },
+
+    ## @description
+    ## get generator of dropout time
+    get_dropout = function(){
+      private$dropout
+    },
+
+    ## @description
+    ## roll back data to current time of trial. By doing so,
+    ## \code{Trial$trial_data} will be cut at current time, and data after then
+    ## are deleted. However, \code{Trial$enroll_time} after current time are
+    ## kept unchanged because that is planned enrollment curve.
+    roll_back = function(){
+
+      current_time <- self$get_current_time()
+
+      td <- private$get_trial_data()
+      future_mask <- td$enroll_time > current_time
+      private$enroll_time <- sort(td$enroll_time[future_mask])
+
+      ## private$get_number_patients(), i.e. private$n_patients may have been
+      ## updated by calling Trials$resize() to resize the trial, in this case
+      ## we need to add more enroll time into private$enroll_time from
+      ## private$enroll_time_with_redundant.
+      ##
+      if(nrow(private$get_trial_data()) != private$get_number_patients()){
+
+        number_new_patients <- private$get_number_patients() - nrow(private$get_trial_data())
+        if(length(private$enroll_time_with_redundant) < number_new_patients){
+          stop('Debug roll_back(). ',
+               'No sufficient redundant enroll time can be used when resizing the trial. ')
+        }
+
+        if(length(private$enroll_time) > 0 &&
+           min(private$enroll_time_with_redundant) < max(private$enroll_time)){
+          stop('Debug roll_back() if Trials$resize() is called. ',
+               'Unlikely to trigger this error. ')
+        }
+
+        private$enroll_time <-
+          c(private$enroll_time,
+            head(private$enroll_time_with_redundant, number_new_patients))
+
+        private$enroll_time_with_redundant <-
+          private$enroll_time_with_redundant[-c(1:number_new_patients)]
+      }
+
+      past_mask <- td$enroll_time <= current_time
+      past_td   <- td[past_mask, , drop = FALSE]
+      private$trial_data <- past_td[order(past_td$enroll_time), , drop = FALSE]
+
+      if(!private$silent){
+        message('Trial data is rolling back to time = ', current_time, '. \n',
+                'Randomization will be carried out again for unenrolled patients. \n')
+      }
+
+    },
+
+    ## @description
+    ## return registered regimen.
+    get_regimen = function(){
+      private$regimen
+    },
+
+    ## @description
+    ## return whether a regimen is registered
+    has_regimen = function(){
+      !is.null(private$regimen)
+    },
+
+    ## @description
+    ## return name of trial
+    get_name = function(){
+      private$name
+    },
+
+    ## @description
+    ## return description of trial
+    get_description = function(){
+      private$description
+    },
+
+    ## @description
+    ## return a list of arms in the trial
+    get_arms = function(){
+      private$arms
+    },
+
+    ## @description
+    ## get number of arms in the trial
+    get_number_arms = function(){
+      length(private$arms)
+    },
+
+    ## @description
+    ## return an arm
+    ## @param arm_name character, name of arm to be extracted
+    get_an_arm = function(arm_name){
+      if(!(arm_name %in% self$get_arms_name())){
+        stop(arm_name, ' is not in the trial \'', private$get_name(), '\'')
+      }
+
+      private$get_arms()[[arm_name]]
+    },
+
+    ## @description
+    ## return number of patients when planning the trial
+    get_number_patients = function(){
+      private$n_patients
+    },
+
+    ## @description
+    ## return number of enrolled (randomized) patients
+    get_number_enrolled_patients = function(){
+      if(is.null(private$get_trial_data())){
+        return(0)
+      }
+      nrow(private$get_trial_data())
+    },
+
+    ## @description
+    ## return number of unenrolled patients
+    get_number_unenrolled_patients = function(){
+      private$get_number_patients() - private$get_number_enrolled_patients()
+    },
+
+    ## @description
+    ## return stratum queue of planned but not yet enrolled patients.
+    ## This function does not update stratum_queue, just return its value
+    ## for debugging purpose.
+    ## @param index index to be extracted. Return all queue if \code{NULL}.
+    get_stratum_queue = function(index = NULL){
+      if(length(private$stratum_queue) == 0){
+        private$stratum_queue <- NULL
+      }
+
+      if(!is.null(index) && is.null(private$stratum_queue)){
+        stop('Cannot randomize patients from empty list. ')
+      }
+
+      if(is.null(index)){ # return all
+        return(private$stratum_queue)
+      }
+      stopifnot(max(abs(index)) <= length(private$stratum_queue))
+
+      private$stratum_queue[index]
+
+    },
+
+    ## @description
+    ## return randomization queue of planned but not yet enrolled patients.
+    ## This function does not update randomization_queue, just return its value
+    ## for debugging purpose.
+    ## @param index index to be extracted. Return all queue if \code{NULL}.
+    get_randomization_queue = function(index = NULL){
+      if(length(private$randomization_queue) == 0){
+        private$randomization_queue <- NULL
+      }
+
+      if(!is.null(index) && is.null(private$randomization_queue)){
+        stop('Cannot randomize patients from empty list. ')
+      }
+
+      if(is.null(index)){ # return all
+        return(private$randomization_queue)
+      }
+      stopifnot(max(abs(index)) <= length(private$randomization_queue))
+
+      private$randomization_queue[index]
+
+    },
+
+    ## @description
+    ## return enrollment time of planned but not yet enrolled patients.
+    ## This function does not update enroll_time, just return its value
+    ## for debugging purpose.
+    ## @param index index to extract. Return all enroll time if \code{NULL}.
+    get_enroll_time = function(index = NULL){
+
+      if(length(private$enroll_time) == 0){
+        private$enroll_time <- NULL
+      }
+
+      if(!is.null(index) && is.null(private$enroll_time)){
+        stop('Cannot enroll patients from empty list. ')
+      }
+
+      if(is.null(index)){ # return all
+        return(private$enroll_time)
+      }
+      stopifnot(max(abs(index)) <= length(private$enroll_time))
+
+      private$enroll_time[index]
+    },
+
+    ## @description
+    ## assign new patients to pre-planned randomization queue at pre-specified
+    ## enrollment time.
+    ## @param n_patients number of new patients to be enrolled. If \code{NULL},
+    ## all remaining patients in plan are enrolled. Error may be triggered if
+    ## n_patients is greater than remaining patients as planned.
+    enroll_patients = function(n_patients = NULL){
+
+      if(!self$has_arm()){
+        stop('No arm is added in the trial yet. Patient cannot be enrolled. ')
+      }
+
+      if(private$get_number_unenrolled_patients() == 0){
+        if(!private$silent){
+          message('Maximum planned sample size has been reached. No more patient to be enrolled. ')
+        }
+        return(invisible(NULL))
+      }
+
+      if(is.null(n_patients)){
+        n_patients <- private$get_number_unenrolled_patients()
+      }
+
+      if(n_patients > private$get_number_unenrolled_patients()){
+        stop('Cannot enroll ', n_patients, ' patients for the trial. ',
+             'Only ', private$get_number_unenrolled_patients(), ' left. ')
+      }
+
+      ## update randomization plan for unenrolled patients
+      private$permuted_block_randomization()
+
+      next_enroll_arms <- private$get_randomization_queue(1:n_patients)
+      next_enroll_stratums <- private$get_stratum_queue(1:n_patients)
+
+      ## update randomization_queue and stratum_queue after enrolling new patients.
+      ## randomization_queue only keeps randomization queue for future patients
+      ## stratum_queue only keeps stratum queue for future patients under
+      ## stratified randomization. If simple randomization is used,
+      ## stratum_queue is a constant vector of "all"
+      private$randomization_queue <- private$get_randomization_queue(-c(1:n_patients))
+      private$stratum_queue <- private$get_stratum_queue(-c(1:n_patients))
+
+      next_enroll_time <- private$get_enroll_time(1:n_patients)
+      private$enroll_time <- private$get_enroll_time(-c(1:n_patients))
+
+      ## create patient pool
+      arms_stratums_data <- list()
+      arms_in_trial <- sort(unique(next_enroll_arms))
+      stratums_in_trial <- sort(unique(next_enroll_stratums))
+
+      make_stratum <- function(dat){
+        ## when fractional sample ratios bypass stratified randomization,
+        ## the stratum queue is a constant 'all'; the pool must be labeled
+        ## the same way or the oversampling loop below never reaches its
+        ## per-stratum targets and cannot terminate.
+        if(!private$has_stratification_factors() ||
+           identical(stratums_in_trial, 'all')){
+          return(rep('all', nrow(dat)))
+        }else{
+          return(
+            do.call(paste,
+                    c(dat[, private$get_stratification_factors(),
+                                   drop = FALSE],
+                      sep = '|'))
+          )
+        }
+      }
+
+      for(i in seq_along(arms_in_trial)){
+        arm <- arms_in_trial[i]
+        n_patients_in_arm <- sum(next_enroll_arms %in% arm)
+        tbl <- table(next_enroll_stratums[next_enroll_arms %in% arm])
+        target_size_per_stratum <- data.frame(
+          stratum     = names(tbl),
+          target_size = as.integer(tbl),
+          stringsAsFactors = FALSE
+        )
+
+        patient_pool <- NULL
+        prop <- 1.1
+        min_sample_size <- 20
+        while(TRUE){
+          new_sets <- private$get_an_arm(arm)$generate_data(max(ceiling(n_patients_in_arm * prop), min_sample_size))
+          new_sets$stratum <- make_stratum(new_sets)
+          patient_pool <- rbind(patient_pool, new_sets)
+
+          tbl1 <- table(patient_pool$stratum)
+          size_per_stratum <- data.frame(
+            stratum      = names(tbl1),
+            current_size = as.integer(tbl1),
+            stringsAsFactors = FALSE
+          )
+
+          tmp <- merge(size_per_stratum, target_size_per_stratum, by = 'stratum', all.y = TRUE)
+          tmp$current_size[is.na(tmp$current_size)] <- 0
+          if(with(tmp, all(current_size >= target_size))){
+            break
+          }
+          prop <- ifelse(any(tmp$current_size <= 10), 1, .2)
+          min_sample_size <- with(tmp, max((target_size - current_size) * 3, 10))
+        }
+
+        col_idx <- which(names(patient_pool) == 'stratum')
+        patient_pool <- split(
+          patient_pool[, -col_idx, drop = FALSE],
+          patient_pool$stratum
+        )
+
+        arms_stratums_data[[arm]] <- list()
+        for(j in seq_along(stratums_in_trial)){
+          stratum <- stratums_in_trial[j]
+          patients_index <- which(next_enroll_arms %in% arm &
+                                    next_enroll_stratums %in% stratum)
+
+          n_patients_in_arm_stratum <- length(patients_index)
+          if(n_patients_in_arm_stratum == 0){
+            next
+          }
+
+          stopifnot(target_size_per_stratum$target_size[target_size_per_stratum$stratum == stratum] == n_patients_in_arm_stratum)
+
+          arms_stratums_data[[arm]][[stratum]] <-
+            data.frame(
+              patient_id = private$get_number_enrolled_patients() + patients_index,
+              arm = arm,
+              enroll_time = next_enroll_time[patients_index],
+              dropout_time = private$get_dropout()(n = n_patients_in_arm_stratum)
+            )
+
+          arms_stratums_data[[arm]][[stratum]] <-
+            cbind(
+              arms_stratums_data[[arm]][[stratum]],
+              patient_pool[[stratum]][1:n_patients_in_arm_stratum, ]
+            )
+
+        }
+
+        arms_stratums_data[[arm]] <- bind_rows(arms_stratums_data[[arm]])
+      }
+
+      patient_data <- do.call(rbind, arms_stratums_data)
+      patient_data <- patient_data[order(patient_data$enroll_time), , drop = FALSE]
+      rownames(patient_data) <- NULL
+
+      if(private$has_regimen()){
+        ## apply all registered regimen triplets (enrollment-time T=0 triplets
+        ## and any milestone crossover triplets) to the freshly generated batch.
+        patient_data <- private$apply_regimens(
+          patient_data,
+          seq_len(private$get_regimen()$get_number_treatment_allocator()))
+      }
+
+      private$trial_data <- bind_rows(private$get_trial_data(), patient_data)
+      ## newly updated trial data should be always censored at trial duration
+      ## also, non-tte endpoints would be NA if readout time is after dropout time,
+      ## and tte endpoints should be censored at dropout time.
+      private$censor_trial_data()
+
+      if(!private$silent){
+        message('Data of ', n_patients,
+                ' potential patients are generated for the trial with ',
+                private$get_number_arms(), ' arm(s) <',
+                paste0(self$get_arms_name(), collapse = ", "), '>. \n')#,
+                # 'Depending on the scenarios, ',
+                # 'some of those patients may be eventually enrolled \n',
+                # 'and used in data lock, \n',
+                # 'while some will be abandoned and re-generated ',
+                # '(e.g. arm is removed or added). \n')
+      }
+
+    },
+
+    ## @description
+    ## set current time of a trial. Any data collected before could not be
+    ## changed. private$now should be set after a milestone is triggered
+    ## (through Milestones class, futility, interim, etc), an arm is added or
+    ## removed at a milestone
+    ## @param time current calendar time of a trial.
+    set_current_time = function(time){
+      stopifnot(time >= 0)
+      attributes(time) <- NULL
+      private$now <- time
+    },
+
+    ## @description
+    ## count accumulative number of events (for TTE) or non-missing samples (otherwise) over
+    ## calendar time (enroll time + tte for TTE, or enroll time + readout otherwise)
+    ##
+    ## @param arms a vector of arms' name on which the event tables are created.
+    ## if \code{NULL}, all arms in the trial will be used.
+    ## @param ... subset conditions compatible with \code{dplyr::filter}.
+    ## Event tables will be counted on subset of trial data only.
+    get_event_tables = function(arms = NULL, ...){
+
+      if(is.null(arms)){
+        arms <- self$get_arms_name()
+      }
+
+      if(!all(arms %in% c(self$get_arms_name(), names(private$.snapshot[['arms']])))){
+        stop('Arm(s) <',
+             paste0(setdiff(arms, self$get_arms_name()), collapse = ', '),
+             '> cannot be found in the trial, debug Trial$get_event_tables. ')
+      }
+
+      trial_data <- private$get_trial_data()
+      trial_data <- trial_data[trial_data$arm %in% arms, , drop = FALSE]
+
+      ## Note: ...length() can report >0 when callers splice an empty list of
+      ## quosures with !!!. Use enquos() to test for real filter expressions.
+      if(length(rlang::enquos(...)) > 0L){
+        trial_data <- tryCatch({
+          trial_data %>% dplyr::filter(...)
+        },
+        error = function(e){
+          self$save(e$message, 'error_message', overwrite = TRUE)
+          stop('Error in filtering data for table of event count. ',
+               'Please check condition in ..., ',
+               'which should be compatible with dplyr::filter. ')
+        })
+      }
+
+      n_rows <- nrow(trial_data)
+      event_counts <- list()
+
+      ## add event count for patient_id
+      ## patient_id: sorted by enroll_time
+      ord <- order(trial_data$enroll_time)
+      event_counts[['patient_id']] <- data.frame(
+        patient_id    = trial_data$patient_id[ord],
+        arm           = trial_data$arm[ord],
+        enroll_time   = trial_data$enroll_time[ord],
+        calendar_time = trial_data$enroll_time[ord],
+        n_events      = seq_len(n_rows),
+        stringsAsFactors = FALSE
+      )
+
+      ## add event counts for time-to-event endpoints
+      event_cols <- grep('_event$', names(trial_data), value = TRUE)
+      for(event_col in event_cols){
+        tte_col <- gsub('_event$', '', event_col)
+        cal_time <- trial_data$enroll_time + trial_data[[tte_col]]
+        ord      <- order(cal_time)
+        event_counts[[tte_col]] <- data.frame(
+          patient_id    = trial_data$patient_id[ord],
+          arm           = trial_data$arm[ord],
+          enroll_time   = trial_data$enroll_time[ord],
+          calendar_time = cal_time[ord],
+          n_events      = cumsum(trial_data[[event_col]][ord]),
+          stringsAsFactors = FALSE
+        )
+      }
+
+      ## add event counts for non-time-to-event endpoints
+      readout_cols <- grep('_readout$', names(trial_data), value = TRUE)
+      for(readout_col in readout_cols){
+        ep_col <- gsub('_readout$', '', readout_col)
+        valid    <- !is.na(trial_data[[ep_col]])
+        td_sub   <- trial_data[valid, , drop = FALSE]
+        cal_time <- td_sub$enroll_time + td_sub[[readout_col]]
+        ord      <- order(cal_time)
+        m        <- nrow(td_sub)
+        event_counts[[ep_col]] <- data.frame(
+          patient_id    = td_sub$patient_id[ord],
+          arm           = td_sub$arm[ord],
+          enroll_time   = td_sub$enroll_time[ord],
+          calendar_time = cal_time[ord],
+          n_events      = seq_len(m),
+          stringsAsFactors = FALSE
+        )
+      }
+
+      event_counts
+
+    },
+
+    ## @description
+    ## return names of locked data
+    get_locked_data_name = function(){
+      names(private$locked_data)
+    },
+
+    ## @description
+    ## return number of events at lock time of milestones
+    ## @param milestone_name names of triggered milestones. Use all triggered milestones
+    ## if \code{NULL}.
+    get_event_number = function(milestone_name = NULL){
+      if(is.null(milestone_name)){
+        milestone_name <- private$get_locked_data_name()
+      }
+
+      n_events <- NULL
+      lock_time <- NULL
+      for(milestone in milestone_name){
+        lock_time <- c(lock_time,
+                       attr(self$get_locked_data(milestone), 'lock_time')[1])
+        n_events <- bind_rows(n_events,
+                              attr(attr(self$get_locked_data(milestone), 'lock_time'), 'n_events'))
+      }
+
+      n_events <- n_events %>%
+        mutate(lock_time = lock_time) %>%
+        mutate(milestone_name = milestone_name) %>%
+        arrange(lock_time)
+
+      n_events
+    },
+
+    ## @description
+    ## save time of a new milestone.
+    ## @param milestone_time numeric. Time of new milestone.
+    ## @param milestone_name character. Name of new milestone.
+    save_milestone_time = function(milestone_time, milestone_name){
+      if(milestone_name %in% names(private$milestone_time)){
+        stop('Time of milestone <', milestone_name, '> has already been saved before. ')
+      }
+
+      if(length(private$milestone_time) > 0){
+        if(any(private$milestone_time > milestone_time)){
+          en <- names(private$milestone_time)[private$milestone_time > milestone_time]
+          et <- private$milestone_time[private$milestone_time > milestone_time]
+          stop('New milestone <', milestone_name, '> (time = ', round(milestone_time, 2),
+               ') happens before milestones <',
+               paste0(en, ' (time = ', round(et, 2), ')', collapse = ', '), '>. \n',
+               'A possible reason is mis-specification of milestone order or triggering conditions. \n',
+               'Use seed = <', private$get_seed(), '> to debug it. ')
+        }
+      }
+
+      private$milestone_time[milestone_name] <- milestone_time
+    },
+
+    ## @description
+    ## censor trial data at calendar time. Patients to be censored are
+    ## selected by \code{selected_arms}, \code{enrolled_before} and conditions
+    ## in \code{...}; all of them are combined with AND. Although
+    ## \code{selected_arms} and \code{enrolled_before} can be equally
+    ## expressed through \code{...} (i.e., \code{arm \%in\% selected_arms},
+    ## \code{enroll_time <= enrolled_before}), they are kept as dedicated
+    ## arguments on purpose: they are evaluated in base R, while conditions in
+    ## \code{...} go through \code{dplyr::filter}, which is measurably slower.
+    ## Internal calls on simulation hot paths (\code{enroll_patients},
+    ## \code{set_duration}, \code{remove_arms}, \code{crossover},
+    ## \code{stop_followup}) therefore use the two dedicated arguments only;
+    ## \code{...} is reserved for user-specified conditions, e.g., those
+    ## forwarded from \code{stop_followup}.
+    ##
+    ## Because \code{selected_arms} and \code{enrolled_before} follow
+    ## \code{...} in the argument list, they must always be passed by name.
+    ## This prevents unnamed filter conditions forwarded through \code{...}
+    ## from being positionally matched to them.
+    ## @param censor_at time of censoring. It is set to trial duration if
+    ## \code{NULL}.
+    ## @param selected_arms censoring is applied to selected arms (e.g.,
+    ## removed arms) only. If \code{NULL}, it will be set to all available arms
+    ## in trial data. Otherwise, censoring is applied to user-specified arms only.
+    ## This is necessary because number of events/sample size in removed arms
+    ## should be fixed unchanged since corresponding milestone is triggered. In that
+    ## case, one can update trial data by something like
+    ## \code{censor_trial_data(censor_at = milestone_time, selected_arms = removed_arms)}.
+    ## @param enrolled_before censoring is applied to patients enrolled before
+    ## specific time. This argument would be used when trial duration is
+    ## updated by \code{set_duration}. Adaptation happens when \code{set_duration}
+    ## is called so we fix duration for patients enrolled before adaptation
+    ## to maintain independent increment. This should work when trial duration
+    ## is updated for multiple times.
+    ## @param ... subset conditions compatible with \code{dplyr::filter},
+    ## further restricting the patients to be censored in addition to
+    ## \code{selected_arms} and \code{enrolled_before}. When
+    ## \code{selected_arms} and \code{enrolled_before} take their default
+    ## values, i.e., all arms and no enrollment cutoff, conditions in
+    ## \code{...} alone determine the patients to be censored. If, in
+    ## addition, no condition is provided in \code{...}, all patients in
+    ## trial data are censored. When \code{...} is empty, \code{dplyr} is
+    ## not invoked at all.
+    censor_trial_data = function(censor_at = NULL, ...,
+                                 selected_arms = NULL, enrolled_before = Inf){
+
+      if(is.null(censor_at)){
+        censor_at <- private$get_duration()
+      }
+
+      trial_data <- private$get_trial_data()
+
+      if(is.null(selected_arms)){
+        selected_arms <- unique(trial_data$arm)
+      }
+
+      event_cols <- grep('_event$', names(trial_data), value = TRUE)
+      readout_cols <- grep('_readout$', names(trial_data), value = TRUE)
+
+      ## base R: precompute the arm/enroll mask once (shared by all endpoint loops)
+      sel <- (trial_data$arm %in% selected_arms) & (trial_data$enroll_time <= enrolled_before)
+
+      ## conditions in ... (if any) further restrict the selection. This is
+      ## the only branch that touches dplyr; internal callers pass only the
+      ## base-R arguments above, so simulation hot paths never enter it.
+      if(length(rlang::enquos(...)) > 0L){
+        sel <- sel & tryCatch({
+          indexed <- trial_data
+          indexed$.row_index_for_censoring <- seq_len(nrow(indexed))
+          kept <- indexed %>% dplyr::filter(...)
+          seq_len(nrow(trial_data)) %in% kept$.row_index_for_censoring
+        },
+        error = function(e){
+          self$save(e$message, 'error_message', overwrite = TRUE)
+          stop('Error in filtering data for censoring. ',
+               'Please check condition in ... (most likely of trial$stop_followup()), ',
+               'which should be compatible with dplyr::filter. ')
+        })
+      }
+
+      for(event_col in event_cols){
+        tte_col <- gsub('_event$', '', event_col)
+        ## dropout censoring: event falls after dropout
+        drop_mask <- sel & (trial_data[[tte_col]] > trial_data$dropout_time)
+        trial_data[[event_col]][drop_mask] <- 0L
+        trial_data[[tte_col]][drop_mask]   <- trial_data$dropout_time[drop_mask]
+        ## calendar-time censoring: event falls after data lock
+        cal_time  <- trial_data$enroll_time + trial_data[[tte_col]]
+        late_mask <- sel & (cal_time > censor_at)
+        trial_data[[event_col]][late_mask] <- 0L
+        trial_data[[tte_col]][late_mask]   <- censor_at - trial_data$enroll_time[late_mask]
+        ## defensive clip (censor_at - enroll_time can be negative for patients not yet enrolled)
+        neg_mask <- trial_data[[tte_col]] < 0
+        trial_data[[tte_col]][neg_mask] <- 0
+      }
+
+      for(readout_col in readout_cols){
+        ep_col <- gsub('_readout$', '', readout_col)
+        ## dropout censoring
+        drop_mask <- sel & (trial_data[[readout_col]] > trial_data$dropout_time)
+        trial_data[[ep_col]][drop_mask] <- NA
+        ## calendar-time censoring
+        cal_time  <- trial_data$enroll_time + trial_data[[readout_col]]
+        late_mask <- sel & (cal_time > censor_at)
+        trial_data[[ep_col]][late_mask] <- NA
+      }
+
+      ## sort once at the end (dplyr version re-sorted inside every loop iteration)
+      private$trial_data <- trial_data[order(trial_data$enroll_time), , drop = FALSE]
+      rownames(private$trial_data) <- NULL
+    },
+
+    ## @description
+    ## save less information in trial output if no intent to use it in summary
+    ## @param tidy logical. If \code{TRUE}, event count per arm per endpoint is
+    ## not computed and saved in trial output. This can speed up simulation by
+    ## up to 40\% under some circumstances.
+    tidy_output = function(tidy){
+      private$save_event_count_per_arm <- !tidy
+    },
+
+    ## @description
+    ## calculate independent increments from a given set of milestones
+    ## @param formula An object of class \code{formula} that can be used with
+    ## \code{survival::coxph}. Must consist \code{arm} and endpoint in \code{data}.
+    ## No covariate is allowed. Stratification variables are supported and can be
+    ## added using \code{strata(...)}.
+    ## @param placebo character. String of placebo in trial's locked data.
+    ## @param milestones a character vector of milestone names in the trial, e.g.,
+    ## \code{listener$get_milestone_names()}.
+    ## @param alternative a character string specifying the alternative hypothesis,
+    ## must be one of \code{"greater"} or \code{"less"}. No default value.
+    ## \code{"greater"} means superiority of treatment over placebo is established
+    ## by an hazard ratio greater than 1 when a log-rank test is used.
+    ## @param planned_info a vector of planned accumulative number of event of
+    ## time-to-event endpoint. It is named by milestone names.
+    ## Note: \code{planned_info} can also be a character
+    ## \code{"oracle"} so that planned number of events are set to be observed
+    ## number of events, in that case inverse normal z statistics equal to
+    ## one-sided logrank statistics. This is for the purpose of debugging only.
+    ## In formal simulation, \code{"oracle"} should not be used if adaptation
+    ## is present. Pre-fixed \code{planned_info} should be used to create
+    ## weights in combination test that controls the family-wise error rate
+    ## in the strong sense.
+    ## @param ... subset condition that is compatible with \code{dplyr::filter}.
+    ## \code{survdiff} will be fitted on this subset only to compute one-sided
+    ## logrank statistics. It could be useful when a
+    ## trial consists of more than two arms. By default it is not specified,
+    ## all data will be used to fit the model.
+    ##
+    ## @return
+    ## This function returns a data frame with columns:
+    ## \describe{
+    ## \item{\code{p_inverse_normal}}{one-sided p-value for inverse normal test
+    ## based on logrank test (alternative hypothesis: risk is higher in placebo arm).
+    ## Accumulative data is used. }
+    ## \item{\code{z_inverse_normal}}{z statistics of \code{p_inverse_normal}.
+    ## Accumulative data is used. }
+    ## \item{\code{p_lr}}{one-sided p-value for logrank test
+    ##  (alternative hypothesis: risk is higher in placebo arm).
+    ## Accumulative data is used. }
+    ## \item{\code{z_lr}}{z statistics of \code{p_lr}.
+    ## Accumulative data is used. }
+    ## \item{\code{info}}{observed accumulative event number. }
+    ## \item{\code{planned_info}}{planned accumulative event number. }
+    ## \item{\code{info_pbo}}{observed accumulative event number in placebo. }
+    ## \item{\code{info_trt}}{observed accumulative event number in treatment arm. }
+    ## \item{\code{wt}}{weights in \code{z_inverse_normal}. }
+    ## }
+    ##
+    ## @examples
+    ##
+    ## \dontrun{
+    ## trial$independentIncrement(Surv(pfs, pfs_event) ~ arm, 'pbo',
+    ##                            listener$get_milestone_names(),
+    ##                            'less', 'oracle')
+    ## }
+    independentIncrement = function(formula, placebo, milestones, alternative,
+                                    planned_info,
+                                    ...){
+
+      if(!identical(planned_info, 'oracle') && length(milestones) != length(planned_info)){
+        stop('milestones and planned_info should be of same length. ')
+      }
+
+      ## by doing this, milestones in function argument can be in arbitrary order
+      milestone_time <- sort(self$get_milestone_time(milestones))
+      milestones <- names(milestone_time)
+
+      info <- c() ## observed accumulated events
+      lr <- c() ## one-sided log rank statistics
+      info_pbo <- c()
+      info_trt <- c()
+      plan_best_info <- ifelse(identical(planned_info, 'oracle'), TRUE, FALSE)
+      if(plan_best_info){
+        planned_info <- c()
+      }else{
+        ## make it accumulative
+        planned_info <- planned_info[milestones] %>% cumsum()
+      }
+
+
+      ## Get label of treated arm from subset data (through ...)
+      ## We need this label to call Trials$get_arm_removal_time
+
+      # Prepare the data based on condition in ...
+      analysis_set <- if(...length() == 0){
+        self$get_locked_data(tail(milestones, 1))
+      }else{
+        tryCatch({
+          self$get_locked_data(tail(milestones, 1)) %>% dplyr::filter(...)
+        },
+        error = function(e){
+          self$save(e$message, 'error_message', overwrite = TRUE)
+          stop('Error when filtering data in independentIncrement(). ',
+               'Please check condition in ..., ',
+               'which should be compatible with dplyr::filter. ')
+        })
+      }
+
+      trt_arm <- setdiff(unique(analysis_set$arm), placebo)
+      if(length(trt_arm) == 0){
+        stop('No treatment arm can be used in independentIncrement(). ',
+             'Check your ... argument. ')
+      }
+
+      if(length(trt_arm) > 1){
+        stop('More than one treatment arm <',
+             paste0(trt_arm, collapse = ', '),
+             '> are passed into independentIncrement(). ',
+             'Check your ... argument. ')
+      }
+
+      rm(analysis_set)
+
+      n_pbo <- c()
+      n_trt <- c()
+      trt_str <- c()
+      milestone_name <- c()
+      for(i in seq_along(milestones)){
+        milestone_name[i] <- milestones[i]
+
+        ## We assume that placebo and only one treated arm are used in independentIncrement
+        ## thus lr_fit should be a data frame of one row
+        lr_fit <- fitLogrank(formula, placebo, self$get_locked_data(milestones[i]),
+                             alternative, ..., tidy = FALSE)
+        if(nrow(lr_fit) > 1){
+          stop('Trials$independentIncrement() should be applied to one treated arm at a time. ',
+               'Check the entry where you call independentIncrement(). ',
+               'Usually you can use its subsetting argument ... to meet this assumption/requirement. ')
+        }
+
+        info[i] <- lr_fit$info
+        lr[i] <- lr_fit$z
+        info_pbo[i] <- lr_fit$info_pbo
+        info_trt[i] <- lr_fit$info_trt
+
+        n_pbo[i] <- lr_fit$n_pbo
+        n_trt[i] <- lr_fit$n_trt
+        trt_str[i] <- lr_fit$arm
+
+        if(plan_best_info){
+          planned_info[i] <- lr_fit$info
+        }
+      }
+
+      names(info) <- milestones
+
+      if(any(diff(planned_info) < 0)){
+        stop('milestones and planned_info should be in the same order. ')
+      }
+
+      if(any(diff(info) < 0)){
+        stop('Debug this as info should be non-decreasing. ')
+      }
+
+      ii <- c() ## independent increments
+      wt <- c() ## weight in inverse normal statistics
+      inverse_normal <- c() ## inverse normal test statistics
+
+      stage_info <- c()
+      stage_n_pbo <- c()
+      stage_n_trt <- c()
+      for(i in seq_along(info)){
+        if(i == 1){
+          wt[i] <- sqrt(planned_info[i])
+          ii[i] <- lr[i]
+          inverse_normal[i] <- lr[i]
+
+          stage_info[i] <- info[i]
+          stage_n_pbo[i] <- n_pbo[i]
+          stage_n_trt[i] <- n_trt[i]
+
+          next
+        }
+
+        stage_info[i] <- info[i] - info[i - 1]
+        stage_n_pbo[i] <- n_pbo[i] - n_pbo[i - 1]
+        stage_n_trt[i] <- n_trt[i] - n_trt[i - 1]
+        wt[i] <- sqrt(planned_info[i] - planned_info[i - 1])
+
+        arm_removal_time <- private$get_arm_removal_time(arm = trt_arm)
+        milestone_triggering_time <- self$get_milestone_time(milestone_name = names(info)[i])
+
+
+        ## Use "<", not "<="!!
+        ## When arm_removal_time == milestone_triggering_time, it means the arm
+        ## is just removed from the trial at that milestone. Thus, data from the
+        ## arm can still be used to update testing statistics, no need to be
+        ## specified as +/-Inf
+        if(arm_removal_time < milestone_triggering_time){
+          ## This means this treatment arm has been removed from the trial BEFORE milestone i
+          ## Set z statistic of independent increment to be an extremely value
+          ## so that inverse normal combination test would always accept
+          ## the neutral null hypothesis (p-value is close or equal to 1.0)
+          ii[i] <- ifelse(alternative == 'greater', -Inf, Inf) ## 10 * qnorm(.Machine$double.eps) ## about -81
+        }else{
+          ii[i] <- (sqrt(info[i]) * lr[i] - sqrt(info[i - 1]) * lr[i - 1]) /
+            sqrt(stage_info[i])
+        }
+        inverse_normal[i] <- sum(wt * ii) / sqrt(sum(wt^2))
+      }
+
+      ret <-
+        data.frame(
+          milestone = milestone_name,
+          milestone_time = unname(milestone_time),
+          p_inverse_normal =
+            if(alternative == 'greater'){
+              1 - pnorm(inverse_normal)
+            }else{
+              pnorm(inverse_normal)
+            },
+          z_inverse_normal = inverse_normal,
+          p_logrank =
+            if(alternative == 'greater'){
+              1 - pnorm(lr)
+            }else{
+              pnorm(lr)
+            },
+          z_logrank = lr,
+          info = info,
+          planned_info = planned_info,
+          info_pbo = info_pbo,
+          info_trt = info_trt,
+          wt = wt,
+          z_ii = ii, # stage-wise, independent increment
+          n_pbo = n_pbo,
+          n_trt = n_trt,
+          stage_info = stage_info,
+          stage_n_pbo = stage_n_pbo,
+          stage_n_trt = stage_n_trt,
+          trt_str = trt_str
+        )
+
+      if(any(ret$stage_info < 30)){
+        ret_ <- ret %>%
+          dplyr::filter(stage_info < 30) %>%
+          dplyr::select(milestone, milestone_time, planned_info, info, stage_info, stage_n_pbo, stage_n_trt, trt_str)
+
+        warning('In the arm(s) <',
+                paste0(unique(ret_$trt_str), collapse = ', '),
+                '>, stage-wise information (number of events) are lower than 30 (see stage_* below). \n',
+                'Make sure that such a low stage-wise information is sufficient to maintain normality of independent increments of logrank statistics. ',
+                immediate. = TRUE)
+        message(paste0(capture.output(ret_), collapse = "\n"))
+        message("\033[31m>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\033[0m\n")
+      }
+
+      ret
+    },
+
+    ## @description
+    ## return random seed
+    get_seed = function(){
+      private$seed
+    },
+
+    ## @description
+    ## return a snapshot of a trial before it is executed.
+    get_snapshot_copy = function(){
+      private$.snapshot
+    },
+
+    ## @description
+    ## make a snapshot before running a trial. This can be useful when
+    ## resetting a trial. This is only called when initializing a `Trial`
+    ## object, when arms have not been added yet.
+    make_snapshot = function() {
+
+      private$.snapshot <- list()
+
+      for(field in names(private)){
+        ## R6 locks the binding of every member DEFINED as a function in the
+        ## class (i.e., methods) and never locks data fields, so
+        ## bindingIsLocked() separates the two exactly: methods are skipped
+        ## (restoring them in reset() would fail on the locked binding),
+        ## while fields declared as NULL that hold a function at run time,
+        ## such as enroller/dropout, are unlocked and correctly snapshotted
+        ## (an is.function() test would misclassify them as methods).
+        if(field == '.snapshot' || bindingIsLocked(field, private)){
+          next
+        }
+        ## single-bracket list assignment keeps NULL-valued fields in the
+        ## snapshot; `[[<-` would silently drop them, leaving reset() to
+        ## depend on its explicit re-null list for every such field
+        private$.snapshot[field] <- list(private[[field]])
+      }
+
+    },
+
+    ## @description
+    ## save time when an arm is added to the trial
+    ## @param arm name of added arm.
+    ## @param time time when an arm is added.
+    set_arm_added_time = function(arm, time){
+      if(!is.null(private$arm_time[[arm]][['time_added']])){
+        stop('The time the arm <', arm, '> was added to the trial has already been recorded <',
+             private$arm_time[[arm]][['time_added']], '>. You cannot overwrite it. ',
+             'Usually this indicates an error in your codes. ')
+      }
+      stopifnot(time >= 0)
+      private$arm_time[[arm]][['time_added']] <- time
+    },
+
+    ## @description
+    ## get time when an arm is added to the trial
+    ## @param arm arm name.
+    get_arm_added_time = function(arm){
+      ## arm is not in the trial
+      if(is.null(private$arm_time[[arm]][['time_added']])){
+        if(!private$silent){
+          message('Arm <', arm, '> is not in the trial. ')
+        }
+        return(Inf)
+      }else{
+        return(private$arm_time[[arm]][['time_added']])
+      }
+    },
+
+    ## @description
+    ## save time when an arm is removed to the trial
+    ## @param arm name of removed arm.
+    ## @param time time when an arm is removed.
+    set_arm_removal_time = function(arm, time){
+      if(!is.null(private$arm_time[[arm]][['time_removed']])){
+        stop('The time the arm <', arm, '> was removed from the trial has already been recorded <',
+             private$arm_time[[arm]][['time_removed']], '>. You cannot overwrite it. ',
+             'Usually this indicates an error in your codes. ')
+      }
+      stopifnot(time >= 0)
+      private$arm_time[[arm]][['time_removed']] <- time
+    },
+
+    ## @description
+    ## get time when an arm is removed from the trial
+    ## @param arm arm name.
+    get_arm_removal_time = function(arm){
+      ## arm is not in the trial
+      if(is.null(private$arm_time[[arm]][['time_removed']])){
+        if(!private$silent){
+          # message('Arm <', arm, '> is still in the trial. ')
+        }
+        return(Inf)
+      }else{
+        return(private$arm_time[[arm]][['time_removed']])
+      }
+    },
+
+    ## @description
+    ## return stratification factors
+    get_stratification_factors = function(){
+      private$stratification_factors
+    },
+
+    ## @description
+    ## has stratification factors
+    has_stratification_factors = function(){
+      !is.null(private$get_stratification_factors())
     },
 
     .snapshot = list()

@@ -29,9 +29,9 @@ test_that("a non-StaggeredRecruiter enroller is rejected by trial()", {
 
 test_that("set_enroller() also enforces StaggeredRecruiter after construction", {
   tr <- make_trial()
-  expect_error(tr$set_enroller(rexp, rate = 0.1), "must be StaggeredRecruiter")
+  expect_error(tr$.__enclos_env__$private$set_enroller(rexp, rate = 0.1), "must be StaggeredRecruiter")
   expect_error(
-    tr$set_enroller(StaggeredRecruiter,
+    tr$.__enclos_env__$private$set_enroller(StaggeredRecruiter,
                     accrual_rate = data.frame(end_time = Inf, piecewise_rate = 5)),
     NA)
 })

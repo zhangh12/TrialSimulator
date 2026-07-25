@@ -617,8 +617,9 @@ test_that('no private field appears mid-run that make_snapshot() does not cover'
   controller(tr, lst)$run(n = 2, silent = TRUE, plot_event = FALSE)
 
   pr <- tr$.__enclos_env__$private
-  private_methods <- c('.snapshot', 'permuted_block_randomization',
-                       'validate_arguments', 'apply_regimens', 'reset_regimen')
-  uncovered <- setdiff(names(pr), c(names(pr$.snapshot), private_methods))
+  ## R6 locks method bindings but not field bindings, so the locked names are
+  ## exactly the private methods, which make_snapshot() skips by the same rule
+  locked <- names(pr)[vapply(names(pr), bindingIsLocked, logical(1), env = pr)]
+  uncovered <- setdiff(names(pr), c(names(pr$.snapshot), locked, '.snapshot'))
   expect_length(uncovered, 0)
 })
