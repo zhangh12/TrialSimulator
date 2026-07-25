@@ -441,8 +441,8 @@ test_that("update_accrual_rate validates context and accrual_rate", {
   # emulate a triggered milestone to reach accrual_rate validation; errors
   # from StaggeredRecruiter are re-signaled with update_accrual_rate context
   # followed by the actual message
-  tr$set_current_time(5)
-  tr$save_milestone_time(5, "checkpoint")
+  tr$.__enclos_env__$private$set_current_time(5)
+  tr$.__enclos_env__$private$save_milestone_time(5, "checkpoint")
 
   expect_error(
     tr$update_accrual_rate(data.frame(end_time = 10, piecewise_rate = 5)),
@@ -467,8 +467,8 @@ test_that("stop_followup validates additional_followup and filter conditions", {
   expect_error(tr$stop_followup(), "within an action function")
 
   # emulate a triggered milestone to reach argument and filter validation
-  tr$set_current_time(5)
-  tr$save_milestone_time(5, "checkpoint")
+  tr$.__enclos_env__$private$set_current_time(5)
+  tr$.__enclos_env__$private$save_milestone_time(5, "checkpoint")
 
   expect_error(tr$stop_followup(additional_followup = -1),
                "cannot be negative")

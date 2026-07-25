@@ -12,9 +12,15 @@ Create a class of trial.
 
 Public methods in this R6 class are used in developing
 this package. Thus, we have to export the whole R6 class which exposures all
-public methods. However, only the public methods in the list below are
-useful to end users.
+public methods. However, only the public methods in the sections below are
+useful to end users, and users are encouraged to restrict themselves to
+them. The remaining public methods are internal machinery of the package
+and should not be called directly (see the last section).
 
+\strong{Adaptation methods.} The following methods adapt an ongoing trial
+and should be called within action functions of milestones. Each of them
+has a user-friendly wrapper of the same name, e.g., \code{set_duration(trial, ...)}
+for \code{trial$set_duration(...)}.
 \itemize{
 \item \code{$set_duration()} set duration of a trial. This function can be
 used to extend duration under adaptive designs.
@@ -30,8 +36,6 @@ function can be used in enrichment design.
 \item \code{$add_arms()} add arms to a trial. This function is used to add
 arms to a newly defined trial, or add arms under adaptive design, e.g.,
 dose-ranging, etc.
-\item \code{$add_regimen()} register a \code{regimen} object to a trial.
-Must be called before \code{$add_arms()}. Applied at enrollment.
 \item \code{$crossover()} apply a milestone-triggered crossover to eligible
 patients in the trial. Called inside a milestone action; only alters patients'
 post-switch endpoint values and leaves already-observed data intact.
@@ -51,6 +55,15 @@ recruitment curve at a milestone, e.g., to revise or pause recruitment
 after dose selection or enrichment. \code{end_time} of the new accrual
 rate is measured from the milestone; patients not yet enrolled are
 re-planned and re-randomized under the new schedule.
+}
+
+\strong{Methods callable within action functions.} In addition to the
+adaptation methods above, users can call the following methods within
+action functions to access and manipulate data, to query the current
+status of a trial, and to carry out statistical testing.
+
+Data access and manipulation:
+\itemize{
 \item \code{$get_locked_data()} request for data snapshot at a milestone.
 Calling this function is recommended as the first action in any action
 function as long as trial data is needed in statistical analysis or decision
@@ -71,25 +84,52 @@ by calling \code{get()} anytime.
 \code{save_custom_data()} or \code{bind()}.
 \item \code{$get_output()} retrieve intermediate results saved by calling
 function \code{save()}.
+}
+
+Trial status queries:
+\itemize{
+\item \code{$get_current_time()} return the triggering time of the
+milestone that the calling action function is attached to.
+\item \code{$get_milestone_time()} return milestone time when triggering a
+given milestone.
+\item \code{$get_sample_ratio()} return current sample ratios of arms.
+\item \code{$get_arms_name()} return names of the arms in the trial at
+the time of calling, i.e., arms that have been added and not yet removed
+by \code{$remove_arms()}. Note that this can differ from the arms present
+in locked data, where data of removed arms remain available (censored at
+the time of removal).
+}
+
+Statistical testing:
+\itemize{
 \item \code{$dunnettTest()} perform Dunnett's test.
 \item \code{$closedTest()} perform combination test based on Dunnett's test.
 }
+
+\strong{Trial setup.}
+\itemize{
+\item \code{$add_regimen()} register a \code{regimen} object to a trial.
+Must be called before \code{$add_arms()}. Applied at enrollment. Unlike
+the adaptation methods above, it belongs to the setup stage of a trial
+and must not be called within action functions.
+}
+
+\strong{Internal machinery.} The remaining public methods
+(\code{$lock_data()}, \code{$get_data_lock_time_by_calendar_time()},
+\code{$get_data_lock_time_by_event_number()},
+\code{$get_data_lock_time_by_enrollment()}, \code{$has_arm()},
+\code{$event_plot()}, \code{$mute()}, \code{$reset()} and
+\code{$make_arms_snapshot()}) are public only because they are invoked on
+a trial object by other components of the package (milestones, listeners,
+controllers and triggering conditions), which R6 cannot grant through
+private members. Users should not call them directly. Note that
+\code{$save()} and \code{$get_output()} are invoked by those components
+too, but they are part of the user-facing API above at the same time.
 }
 \examples{
 # Instead of using Trials$new, please use trial(), a user-friendly
 # wrapper. See examples in ?trial.
 
-
-## ------------------------------------------------
-## Method `Trials$independentIncrement`
-## ------------------------------------------------
-
-
-\dontrun{
-trial$independentIncrement(Surv(pfs, pfs_event) ~ arm, 'pbo',
-                           listener$get_milestone_names(),
-                           'less', 'oracle')
-}
 
 ## ------------------------------------------------
 ## Method `Trials$dunnettTest`
@@ -126,77 +166,39 @@ trial$closedTest(dt, treatments = c('high dose', 'low dose'),
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Trials-new}{\code{Trials$new()}}
-\item \href{#method-Trials-get_trial_data}{\code{Trials$get_trial_data()}}
-\item \href{#method-Trials-get_duration}{\code{Trials$get_duration()}}
 \item \href{#method-Trials-set_duration}{\code{Trials$set_duration()}}
-\item \href{#method-Trials-set_enroller}{\code{Trials$set_enroller()}}
-\item \href{#method-Trials-get_enroller}{\code{Trials$get_enroller()}}
-\item \href{#method-Trials-set_dropout}{\code{Trials$set_dropout()}}
-\item \href{#method-Trials-get_dropout}{\code{Trials$get_dropout()}}
-\item \href{#method-Trials-roll_back}{\code{Trials$roll_back()}}
+\item \href{#method-Trials-resize}{\code{Trials$resize()}}
 \item \href{#method-Trials-remove_arms}{\code{Trials$remove_arms()}}
 \item \href{#method-Trials-update_sample_ratio}{\code{Trials$update_sample_ratio()}}
 \item \href{#method-Trials-update_generator}{\code{Trials$update_generator()}}
-\item \href{#method-Trials-resize}{\code{Trials$resize()}}
 \item \href{#method-Trials-add_arms}{\code{Trials$add_arms()}}
-\item \href{#method-Trials-add_regimen}{\code{Trials$add_regimen()}}
-\item \href{#method-Trials-get_regimen}{\code{Trials$get_regimen()}}
-\item \href{#method-Trials-has_regimen}{\code{Trials$has_regimen()}}
 \item \href{#method-Trials-crossover}{\code{Trials$crossover()}}
 \item \href{#method-Trials-stop_followup}{\code{Trials$stop_followup()}}
 \item \href{#method-Trials-update_accrual_rate}{\code{Trials$update_accrual_rate()}}
-\item \href{#method-Trials-get_name}{\code{Trials$get_name()}}
-\item \href{#method-Trials-get_description}{\code{Trials$get_description()}}
-\item \href{#method-Trials-get_arms}{\code{Trials$get_arms()}}
-\item \href{#method-Trials-get_arms_name}{\code{Trials$get_arms_name()}}
-\item \href{#method-Trials-get_number_arms}{\code{Trials$get_number_arms()}}
-\item \href{#method-Trials-has_arm}{\code{Trials$has_arm()}}
-\item \href{#method-Trials-get_an_arm}{\code{Trials$get_an_arm()}}
-\item \href{#method-Trials-get_sample_ratio}{\code{Trials$get_sample_ratio()}}
-\item \href{#method-Trials-get_number_patients}{\code{Trials$get_number_patients()}}
-\item \href{#method-Trials-get_number_enrolled_patients}{\code{Trials$get_number_enrolled_patients()}}
-\item \href{#method-Trials-get_number_unenrolled_patients}{\code{Trials$get_number_unenrolled_patients()}}
-\item \href{#method-Trials-get_stratum_queue}{\code{Trials$get_stratum_queue()}}
-\item \href{#method-Trials-get_randomization_queue}{\code{Trials$get_randomization_queue()}}
-\item \href{#method-Trials-get_enroll_time}{\code{Trials$get_enroll_time()}}
-\item \href{#method-Trials-enroll_patients}{\code{Trials$enroll_patients()}}
-\item \href{#method-Trials-set_current_time}{\code{Trials$set_current_time()}}
-\item \href{#method-Trials-get_current_time}{\code{Trials$get_current_time()}}
-\item \href{#method-Trials-get_event_tables}{\code{Trials$get_event_tables()}}
-\item \href{#method-Trials-get_data_lock_time_by_event_number}{\code{Trials$get_data_lock_time_by_event_number()}}
-\item \href{#method-Trials-get_data_lock_time_by_enrollment}{\code{Trials$get_data_lock_time_by_enrollment()}}
-\item \href{#method-Trials-get_data_lock_time_by_calendar_time}{\code{Trials$get_data_lock_time_by_calendar_time()}}
 \item \href{#method-Trials-get_locked_data}{\code{Trials$get_locked_data()}}
-\item \href{#method-Trials-get_locked_data_name}{\code{Trials$get_locked_data_name()}}
-\item \href{#method-Trials-get_event_number}{\code{Trials$get_event_number()}}
-\item \href{#method-Trials-save_milestone_time}{\code{Trials$save_milestone_time()}}
-\item \href{#method-Trials-get_milestone_time}{\code{Trials$get_milestone_time()}}
-\item \href{#method-Trials-lock_data}{\code{Trials$lock_data()}}
-\item \href{#method-Trials-event_plot}{\code{Trials$event_plot()}}
-\item \href{#method-Trials-censor_trial_data}{\code{Trials$censor_trial_data()}}
 \item \href{#method-Trials-save}{\code{Trials$save()}}
+\item \href{#method-Trials-get_output}{\code{Trials$get_output()}}
 \item \href{#method-Trials-bind}{\code{Trials$bind()}}
 \item \href{#method-Trials-save_custom_data}{\code{Trials$save_custom_data()}}
 \item \href{#method-Trials-get_custom_data}{\code{Trials$get_custom_data()}}
 \item \href{#method-Trials-get}{\code{Trials$get()}}
-\item \href{#method-Trials-get_output}{\code{Trials$get_output()}}
-\item \href{#method-Trials-mute}{\code{Trials$mute()}}
-\item \href{#method-Trials-tidy_output}{\code{Trials$tidy_output()}}
-\item \href{#method-Trials-independentIncrement}{\code{Trials$independentIncrement()}}
+\item \href{#method-Trials-get_current_time}{\code{Trials$get_current_time()}}
+\item \href{#method-Trials-get_milestone_time}{\code{Trials$get_milestone_time()}}
+\item \href{#method-Trials-get_sample_ratio}{\code{Trials$get_sample_ratio()}}
+\item \href{#method-Trials-get_arms_name}{\code{Trials$get_arms_name()}}
 \item \href{#method-Trials-dunnettTest}{\code{Trials$dunnettTest()}}
 \item \href{#method-Trials-closedTest}{\code{Trials$closedTest()}}
-\item \href{#method-Trials-get_seed}{\code{Trials$get_seed()}}
-\item \href{#method-Trials-print}{\code{Trials$print()}}
-\item \href{#method-Trials-get_snapshot_copy}{\code{Trials$get_snapshot_copy()}}
-\item \href{#method-Trials-make_snapshot}{\code{Trials$make_snapshot()}}
-\item \href{#method-Trials-make_arms_snapshot}{\code{Trials$make_arms_snapshot()}}
+\item \href{#method-Trials-add_regimen}{\code{Trials$add_regimen()}}
+\item \href{#method-Trials-lock_data}{\code{Trials$lock_data()}}
+\item \href{#method-Trials-get_data_lock_time_by_calendar_time}{\code{Trials$get_data_lock_time_by_calendar_time()}}
+\item \href{#method-Trials-get_data_lock_time_by_event_number}{\code{Trials$get_data_lock_time_by_event_number()}}
+\item \href{#method-Trials-get_data_lock_time_by_enrollment}{\code{Trials$get_data_lock_time_by_enrollment()}}
+\item \href{#method-Trials-has_arm}{\code{Trials$has_arm()}}
+\item \href{#method-Trials-event_plot}{\code{Trials$event_plot()}}
+\item \href{#method-Trials-mute}{\code{Trials$mute()}}
 \item \href{#method-Trials-reset}{\code{Trials$reset()}}
-\item \href{#method-Trials-set_arm_added_time}{\code{Trials$set_arm_added_time()}}
-\item \href{#method-Trials-get_arm_added_time}{\code{Trials$get_arm_added_time()}}
-\item \href{#method-Trials-set_arm_removal_time}{\code{Trials$set_arm_removal_time()}}
-\item \href{#method-Trials-get_arm_removal_time}{\code{Trials$get_arm_removal_time()}}
-\item \href{#method-Trials-get_stratification_factors}{\code{Trials$get_stratification_factors()}}
-\item \href{#method-Trials-has_stratification_factors}{\code{Trials$has_stratification_factors()}}
+\item \href{#method-Trials-make_arms_snapshot}{\code{Trials$make_arms_snapshot()}}
+\item \href{#method-Trials-print}{\code{Trials$print()}}
 \item \href{#method-Trials-clone}{\code{Trials$clone()}}
 }
 }
@@ -272,27 +274,6 @@ message is still displayed.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_trial_data"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_trial_data}{}}}
-\subsection{Method \code{get_trial_data()}}{
-return trial data of enrolled patients at the time of this
-function is called
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_trial_data()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_duration"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_duration}{}}}
-\subsection{Method \code{get_duration()}}{
-return maximum duration of a trial
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_duration()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Trials-set_duration"></a>}}
 \if{latex}{\out{\hypertarget{method-Trials-set_duration}{}}}
 \subsection{Method \code{set_duration()}}{
@@ -314,80 +295,25 @@ current duration.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-set_enroller"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-set_enroller}{}}}
-\subsection{Method \code{set_enroller()}}{
-set recruitment curve when initialize a trial.
+\if{html}{\out{<a id="method-Trials-resize"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-resize}{}}}
+\subsection{Method \code{resize()}}{
+resize a trial with a greater sample size. This function is used to
+update the maximum sample size adaptively after sample size reassessment.
+Note that this function should be called within action functions.
+It is users' responsibility to ensure it and \code{TrialSimulator} has
+no way to track this.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$set_enroller(func, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$resize(n_patients)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{func}}{function to generate enrollment time. Must be
-\code{StaggeredRecruiter}; any other value is rejected.}
-
-\item{\code{...}}{(optional) arguments for \code{func}.}
+\item{\code{n_patients}}{integer. Number of maximum sample size of a trial.}
 }
 \if{html}{\out{</div>}}
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_enroller"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_enroller}{}}}
-\subsection{Method \code{get_enroller()}}{
-get function of recruitment curve
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_enroller()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-set_dropout"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-set_dropout}{}}}
-\subsection{Method \code{set_dropout()}}{
-set distribution of drop out time when initializing a trial. This is
-not an adaptation method: dropout times of patients are generated
-when they are enrolled, so calling this function within an action
-function would not apply to patients already enrolled.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$set_dropout(func, ...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{func}}{function to generate dropout time. It can be built-in
-function like `rexp` or customized functions.}
-
-\item{\code{...}}{(optional) arguments for \code{func}.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_dropout"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_dropout}{}}}
-\subsection{Method \code{get_dropout()}}{
-get generator of dropout time
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_dropout()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-roll_back"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-roll_back}{}}}
-\subsection{Method \code{roll_back()}}{
-roll back data to current time of trial. By doing so,
-\code{Trial$trial_data} will be cut at current time, and data after then
-are deleted. However, \code{Trial$enroll_time} after current time are
-kept unchanged because that is planned enrollment curve.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$roll_back()}\if{html}{\out{</div>}}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Trials-remove_arms"></a>}}
@@ -470,27 +396,6 @@ See \code{generator} of \code{endpoint()}.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-resize"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-resize}{}}}
-\subsection{Method \code{resize()}}{
-resize a trial with a greater sample size. This function is used to
-update the maximum sample size adaptively after sample size reassessment.
-Note that this function should be called within action functions.
-It is users' responsibility to ensure it and \code{TrialSimulator} has
-no way to track this.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$resize(n_patients)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{n_patients}}{integer. Number of maximum sample size of a trial.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Trials-add_arms"></a>}}
 \if{latex}{\out{\hypertarget{method-Trials-add_arms}{}}}
 \subsection{Method \code{add_arms()}}{
@@ -532,46 +437,6 @@ of the same distribution.}
 }
 \if{html}{\out{</div>}}
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-add_regimen"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-add_regimen}{}}}
-\subsection{Method \code{add_regimen()}}{
-register regimen to a trial. The regimen consists of three functions
-to determine the patients who may switch to other treatment during a
-a trial, to determine the switching time and how to update patients'
-endpoint data accordingly.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$add_regimen(regimen)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{regimen}}{an object created by \code{regimen()}.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_regimen"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_regimen}{}}}
-\subsection{Method \code{get_regimen()}}{
-return registered regimen.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_regimen()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-has_regimen"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-has_regimen}{}}}
-\subsection{Method \code{has_regimen()}}{
-return whether a regimen is registered
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$has_regimen()}\if{html}{\out{</div>}}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Trials-crossover"></a>}}
@@ -719,368 +584,6 @@ Calling it before any milestone has been triggered is an error.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_name"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_name}{}}}
-\subsection{Method \code{get_name()}}{
-return name of trial
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_name()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_description"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_description}{}}}
-\subsection{Method \code{get_description()}}{
-return description of trial
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_description()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_arms"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_arms}{}}}
-\subsection{Method \code{get_arms()}}{
-return a list of arms in the trial
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_arms()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_arms_name"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_arms_name}{}}}
-\subsection{Method \code{get_arms_name()}}{
-return arms' name of trial
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_arms_name()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_number_arms"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_number_arms}{}}}
-\subsection{Method \code{get_number_arms()}}{
-get number of arms in the trial
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_number_arms()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-has_arm"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-has_arm}{}}}
-\subsection{Method \code{has_arm()}}{
-check if the trial has any arm. Return \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$has_arm()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_an_arm"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_an_arm}{}}}
-\subsection{Method \code{get_an_arm()}}{
-return an arm
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_an_arm(arm_name)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{arm_name}}{character, name of arm to be extracted}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_sample_ratio"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_sample_ratio}{}}}
-\subsection{Method \code{get_sample_ratio()}}{
-return current sample ratio of the trial. The ratio can probably change
-during the trial (e.g., arm is removed or added)
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_sample_ratio(arm_names = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{arm_names}}{character vector of arms.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_number_patients"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_number_patients}{}}}
-\subsection{Method \code{get_number_patients()}}{
-return number of patients when planning the trial
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_number_patients()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_number_enrolled_patients"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_number_enrolled_patients}{}}}
-\subsection{Method \code{get_number_enrolled_patients()}}{
-return number of enrolled (randomized) patients
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_number_enrolled_patients()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_number_unenrolled_patients"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_number_unenrolled_patients}{}}}
-\subsection{Method \code{get_number_unenrolled_patients()}}{
-return number of unenrolled patients
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_number_unenrolled_patients()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_stratum_queue"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_stratum_queue}{}}}
-\subsection{Method \code{get_stratum_queue()}}{
-return stratum queue of planned but not yet enrolled patients.
-This function does not update stratum_queue, just return its value
-for debugging purpose.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_stratum_queue(index = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{index}}{index to be extracted. Return all queue if \code{NULL}.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_randomization_queue"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_randomization_queue}{}}}
-\subsection{Method \code{get_randomization_queue()}}{
-return randomization queue of planned but not yet enrolled patients.
-This function does not update randomization_queue, just return its value
-for debugging purpose.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_randomization_queue(index = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{index}}{index to be extracted. Return all queue if \code{NULL}.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_enroll_time"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_enroll_time}{}}}
-\subsection{Method \code{get_enroll_time()}}{
-return enrollment time of planned but not yet enrolled patients.
-This function does not update enroll_time, just return its value
-for debugging purpose.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_enroll_time(index = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{index}}{index to extract. Return all enroll time if \code{NULL}.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-enroll_patients"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-enroll_patients}{}}}
-\subsection{Method \code{enroll_patients()}}{
-assign new patients to pre-planned randomization queue at pre-specified
-enrollment time.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$enroll_patients(n_patients = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{n_patients}}{number of new patients to be enrolled. If \code{NULL},
-all remaining patients in plan are enrolled. Error may be triggered if
-n_patients is greater than remaining patients as planned.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-set_current_time"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-set_current_time}{}}}
-\subsection{Method \code{set_current_time()}}{
-set current time of a trial. Any data collected before could not be
-changed. private$now should be set after a milestone is triggered
-(through Milestones class, futility, interim, etc), an arm is added or
-removed at a milestone
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$set_current_time(time)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{time}}{current calendar time of a trial.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_current_time"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_current_time}{}}}
-\subsection{Method \code{get_current_time()}}{
-return current time of a trial
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_current_time()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_event_tables"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_event_tables}{}}}
-\subsection{Method \code{get_event_tables()}}{
-count accumulative number of events (for TTE) or non-missing samples (otherwise) over
-calendar time (enroll time + tte for TTE, or enroll time + readout otherwise)
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_event_tables(arms = NULL, ...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{arms}}{a vector of arms' name on which the event tables are created.
-if \code{NULL}, all arms in the trial will be used.}
-
-\item{\code{...}}{subset conditions compatible with \code{dplyr::filter}.
-Event tables will be counted on subset of trial data only.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_data_lock_time_by_event_number"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_data_lock_time_by_event_number}{}}}
-\subsection{Method \code{get_data_lock_time_by_event_number()}}{
-given a set of endpoints and target number of events, determine the data
-lock time for a milestone (futility, interim, final, etc.). This function does
-not change trial object (e.g. rolling back not yet randomized patients after
-the found data lock time).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_data_lock_time_by_event_number(
-  endpoints,
-  arms,
-  target_n_events,
-  type = c("all", "any"),
-  ...
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{endpoints}}{character vector. Data lock time is determined by a set
-of endpoints.}
-
-\item{\code{arms}}{a vector of arms' name on which number of events will be
-counted.}
-
-\item{\code{target_n_events}}{target number of events for each of the
-\code{endpoints}.}
-
-\item{\code{type}}{\code{all} if all target number of events are reached.
-\code{any} if the any target number of events is reached.}
-
-\item{\code{...}}{subset conditions compatible with \code{dplyr::filter}. Number
-Time of milestone is based on event counts on the subset of trial data.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-data lock time
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_data_lock_time_by_enrollment"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_data_lock_time_by_enrollment}{}}}
-\subsection{Method \code{get_data_lock_time_by_enrollment()}}{
-given a target number of enrolled patients, determine the data
-lock time for a milestone (futility, interim, final, etc.). This function does
-not change trial object (e.g. rolling back not yet randomized patients after
-the found data lock time). It is similar to get_data_lock_time_by_event_number
-but only focus on patient_id.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_data_lock_time_by_enrollment(
-  arms,
-  target_n_patients,
-  min_treatment_duration,
-  ...
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{arms}}{a vector of arms' name on which number of events will be
-counted.}
-
-\item{\code{target_n_patients}}{target number of enrolled patients.}
-
-\item{\code{min_treatment_duration}}{numeric. Zero or positive value.
-minimum treatment duration of enrolled patients.
-If 0, it looks for triggering time based on number of enrolled
-patients in population specified by \code{...} and \code{arms}. If positive,
-it means that milestone is triggered when a specific number of enrolled
-patients have received treatment for at least \code{min_treatment_duration}
-duration. It is users' responsibility to assure that the unit of
-\code{min_treatment_duration} are consistent with
-readout of non-tte endpoints, dropout time, and trial duration.}
-
-\item{\code{...}}{subset conditions compatible with \code{dplyr::filter}. Number
-Time of milestone is based on event counts on the subset of trial data.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-data lock time
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_data_lock_time_by_calendar_time"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_data_lock_time_by_calendar_time}{}}}
-\subsection{Method \code{get_data_lock_time_by_calendar_time()}}{
-given the calendar time to lock the data, return it with event counts of
-each of the endpoints.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_data_lock_time_by_calendar_time(calendar_time)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{calendar_time}}{numeric. Calendar time to lock the data}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-data lock time
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Trials-get_locked_data"></a>}}
 \if{latex}{\out{\hypertarget{method-Trials-get_locked_data}{}}}
 \subsection{Method \code{get_locked_data()}}{
@@ -1096,172 +599,6 @@ time simultaneously by the triggering time of milestone.
 \describe{
 \item{\code{milestone_name}}{character. Milestone name of which the locked
 data to be extracted.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_locked_data_name"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_locked_data_name}{}}}
-\subsection{Method \code{get_locked_data_name()}}{
-return names of locked data
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_locked_data_name()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_event_number"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_event_number}{}}}
-\subsection{Method \code{get_event_number()}}{
-return number of events at lock time of milestones
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_event_number(milestone_name = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{milestone_name}}{names of triggered milestones. Use all triggered milestones
-if \code{NULL}.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-save_milestone_time"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-save_milestone_time}{}}}
-\subsection{Method \code{save_milestone_time()}}{
-save time of a new milestone.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$save_milestone_time(milestone_time, milestone_name)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{milestone_time}}{numeric. Time of new milestone.}
-
-\item{\code{milestone_name}}{character. Name of new milestone.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_milestone_time"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_milestone_time}{}}}
-\subsection{Method \code{get_milestone_time()}}{
-return milestone time when triggering a given milestone
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_milestone_time(milestone_name = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{milestone_name}}{character. Name of milestone. If \code{NULL},
-time of all triggered milestones are returned.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-lock_data"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-lock_data}{}}}
-\subsection{Method \code{lock_data()}}{
-lock data at specific calendar time.
-For time-to-event endpoints, their event indicator \code{*_event} should be
-updated accordingly. Locked data should be stored separately.
-DO NOT OVERWRITE/UPDATE private$trial_data! which can lose actual
-time-to-event information. For example, a patient may be censored at
-the first data lock. However, he may have event being observed in a
-later data lock.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$lock_data(at_calendar_time, milestone_name)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{at_calendar_time}}{time point to lock trial data}
-
-\item{\code{milestone_name}}{assign milestone name as the name of locked data for
-future reference.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-event_plot"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-event_plot}{}}}
-\subsection{Method \code{event_plot()}}{
-plot of cumulative number of events/samples over calendar time.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$event_plot()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-censor_trial_data"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-censor_trial_data}{}}}
-\subsection{Method \code{censor_trial_data()}}{
-censor trial data at calendar time. Patients to be censored are
-selected by \code{selected_arms}, \code{enrolled_before} and conditions
-in \code{...}; all of them are combined with AND. Although
-\code{selected_arms} and \code{enrolled_before} can be equally
-expressed through \code{...} (i.e., \code{arm \%in\% selected_arms},
-\code{enroll_time <= enrolled_before}), they are kept as dedicated
-arguments on purpose: they are evaluated in base R, while conditions in
-\code{...} go through \code{dplyr::filter}, which is measurably slower.
-Internal calls on simulation hot paths (\code{enroll_patients},
-\code{set_duration}, \code{remove_arms}, \code{crossover},
-\code{stop_followup}) therefore use the two dedicated arguments only;
-\code{...} is reserved for user-specified conditions, e.g., those
-forwarded from \code{stop_followup}.
-
-Because \code{selected_arms} and \code{enrolled_before} follow
-\code{...} in the argument list, they must always be passed by name.
-This prevents unnamed filter conditions forwarded through \code{...}
-from being positionally matched to them.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$censor_trial_data(
-  censor_at = NULL,
-  ...,
-  selected_arms = NULL,
-  enrolled_before = Inf
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{censor_at}}{time of censoring. It is set to trial duration if
-\code{NULL}.}
-
-\item{\code{...}}{subset conditions compatible with \code{dplyr::filter},
-further restricting the patients to be censored in addition to
-\code{selected_arms} and \code{enrolled_before}. When
-\code{selected_arms} and \code{enrolled_before} take their default
-values, i.e., all arms and no enrollment cutoff, conditions in
-\code{...} alone determine the patients to be censored. If, in
-addition, no condition is provided in \code{...}, all patients in
-trial data are censored. When \code{...} is empty, \code{dplyr} is
-not invoked at all.}
-
-\item{\code{selected_arms}}{censoring is applied to selected arms (e.g.,
-removed arms) only. If \code{NULL}, it will be set to all available arms
-in trial data. Otherwise, censoring is applied to user-specified arms only.
-This is necessary because number of events/sample size in removed arms
-should be fixed unchanged since corresponding milestone is triggered. In that
-case, one can update trial data by something like
-\code{censor_trial_data(censor_at = milestone_time, selected_arms = removed_arms)}.}
-
-\item{\code{enrolled_before}}{censoring is applied to patients enrolled before
-specific time. This argument would be used when trial duration is
-updated by \code{set_duration}. Adaptation happens when \code{set_duration}
-is called so we fix duration for patients enrolled before adaptation
-to maintain independent increment. This should work when trial duration
-is updated for multiple times.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1296,6 +633,43 @@ to be \code{''} as default. Otherwise, column name would be, e.g.,
 
 \item{\code{overwrite}}{logic. \code{TRUE} if overwriting existing entries
 with warning, otherwise, throwing an error and stop.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-get_output"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-get_output}{}}}
+\subsection{Method \code{get_output()}}{
+return a data frame of all current outputs saved by calling
+\code{Trials$save()}. Usually this function is call at the end of
+simulation for summary.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_output(cols = NULL, simplify = TRUE, tidy = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{cols}}{columns to be returned from \code{Trial$output}. If
+\code{NULL}, all columns are returned.}
+
+\item{\code{simplify}}{logical. Return value rather than a data frame of one
+column when \code{length(col) == 1} and \code{simplify == TRUE}.}
+
+\item{\code{tidy}}{logical. \code{TrialSimulator} automatically records a set
+of standard outputs at milestones, even when \code{doNothing} is used
+as action functions. These includes time of triggering milestones,
+number of observed events for time-to-event endpoints, and number of
+non-missing readouts for non-TTE endpoints
+(see \code{vignette('actionFunctions')}). This usually mean a large
+number of columns in outputs. If users have no intent to summarize a
+trial on these columns, setting \code{tidy = TRUE} can eliminate these
+columns from \code{get_output()}. Note that currently we use regex
+\code{"^n_events_<.*?>_<.*?>$"} and
+\code{"^milestone_time_<.*?>$"} to match columns to be eliminated.
+If users plan to use \code{tidy = TRUE}, caution is needed when naming
+custom outputs in \code{save()}. Default \code{FALSE}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1398,162 +772,58 @@ alias of function \code{get_custom_data} to make it short and cool.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_output"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_output}{}}}
-\subsection{Method \code{get_output()}}{
-return a data frame of all current outputs saved by calling
-\code{Trials$save()}. Usually this function is call at the end of
-simulation for summary.
+\if{html}{\out{<a id="method-Trials-get_current_time"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-get_current_time}{}}}
+\subsection{Method \code{get_current_time()}}{
+return current time of a trial
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_output(cols = NULL, simplify = TRUE, tidy = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_current_time()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-get_milestone_time"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-get_milestone_time}{}}}
+\subsection{Method \code{get_milestone_time()}}{
+return milestone time when triggering a given milestone
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_milestone_time(milestone_name = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{cols}}{columns to be returned from \code{Trial$output}. If
-\code{NULL}, all columns are returned.}
-
-\item{\code{simplify}}{logical. Return value rather than a data frame of one
-column when \code{length(col) == 1} and \code{simplify == TRUE}.}
-
-\item{\code{tidy}}{logical. \code{TrialSimulator} automatically records a set
-of standard outputs at milestones, even when \code{doNothing} is used
-as action functions. These includes time of triggering milestones,
-number of observed events for time-to-event endpoints, and number of
-non-missing readouts for non-TTE endpoints
-(see \code{vignette('actionFunctions')}). This usually mean a large
-number of columns in outputs. If users have no intent to summarize a
-trial on these columns, setting \code{tidy = TRUE} can eliminate these
-columns from \code{get_output()}. Note that currently we use regex
-\code{"^n_events_<.*?>_<.*?>$"} and
-\code{"^milestone_time_<.*?>$"} to match columns to be eliminated.
-If users plan to use \code{tidy = TRUE}, caution is needed when naming
-custom outputs in \code{save()}. Default \code{FALSE}.}
+\item{\code{milestone_name}}{character. Name of milestone. If \code{NULL},
+time of all triggered milestones are returned.}
 }
 \if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-mute"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-mute}{}}}
-\subsection{Method \code{mute()}}{
-mute all messages (not including warnings)
+\if{html}{\out{<a id="method-Trials-get_sample_ratio"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-get_sample_ratio}{}}}
+\subsection{Method \code{get_sample_ratio()}}{
+return current sample ratio of the trial. The ratio can probably change
+during the trial (e.g., arm is removed or added)
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$mute(silent)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_sample_ratio(arm_names = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{silent}}{logical.}
+\item{\code{arm_names}}{character vector of arms.}
 }
 \if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-tidy_output"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-tidy_output}{}}}
-\subsection{Method \code{tidy_output()}}{
-save less information in trial output if no intent to use it in summary
+\if{html}{\out{<a id="method-Trials-get_arms_name"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-get_arms_name}{}}}
+\subsection{Method \code{get_arms_name()}}{
+return arms' name of trial
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$tidy_output(tidy)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{tidy}}{logical. If \code{TRUE}, event count per arm per endpoint is
-not computed and saved in trial output. This can speed up simulation by
-up to 40\% under some circumstances.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-independentIncrement"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-independentIncrement}{}}}
-\subsection{Method \code{independentIncrement()}}{
-calculate independent increments from a given set of milestones
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$independentIncrement(
-  formula,
-  placebo,
-  milestones,
-  alternative,
-  planned_info,
-  ...
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{formula}}{An object of class \code{formula} that can be used with
-\code{survival::coxph}. Must consist \code{arm} and endpoint in \code{data}.
-No covariate is allowed. Stratification variables are supported and can be
-added using \code{strata(...)}.}
-
-\item{\code{placebo}}{character. String of placebo in trial's locked data.}
-
-\item{\code{milestones}}{a character vector of milestone names in the trial, e.g.,
-\code{listener$get_milestone_names()}.}
-
-\item{\code{alternative}}{a character string specifying the alternative hypothesis,
-must be one of \code{"greater"} or \code{"less"}. No default value.
-\code{"greater"} means superiority of treatment over placebo is established
-by an hazard ratio greater than 1 when a log-rank test is used.}
-
-\item{\code{planned_info}}{a vector of planned accumulative number of event of
-time-to-event endpoint. It is named by milestone names.
-Note: \code{planned_info} can also be a character
-\code{"oracle"} so that planned number of events are set to be observed
-number of events, in that case inverse normal z statistics equal to
-one-sided logrank statistics. This is for the purpose of debugging only.
-In formal simulation, \code{"oracle"} should not be used if adaptation
-is present. Pre-fixed \code{planned_info} should be used to create
-weights in combination test that controls the family-wise error rate
-in the strong sense.}
-
-\item{\code{...}}{subset condition that is compatible with \code{dplyr::filter}.
-\code{survdiff} will be fitted on this subset only to compute one-sided
-logrank statistics. It could be useful when a
-trial consists of more than two arms. By default it is not specified,
-all data will be used to fit the model.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-This function returns a data frame with columns:
-\describe{
-\item{\code{p_inverse_normal}}{one-sided p-value for inverse normal test
-based on logrank test (alternative hypothesis: risk is higher in placebo arm).
-Accumulative data is used. }
-\item{\code{z_inverse_normal}}{z statistics of \code{p_inverse_normal}.
-Accumulative data is used. }
-\item{\code{p_lr}}{one-sided p-value for logrank test
- (alternative hypothesis: risk is higher in placebo arm).
-Accumulative data is used. }
-\item{\code{z_lr}}{z statistics of \code{p_lr}.
-Accumulative data is used. }
-\item{\code{info}}{observed accumulative event number. }
-\item{\code{planned_info}}{planned accumulative event number. }
-\item{\code{info_pbo}}{observed accumulative event number in placebo. }
-\item{\code{info_trt}}{observed accumulative event number in treatment arm. }
-\item{\code{wt}}{weights in \code{z_inverse_normal}. }
-}
-}
-\subsection{Examples}{
-\if{html}{\out{<div class="r example copy">}}
-\preformatted{
-\dontrun{
-trial$independentIncrement(Surv(pfs, pfs_event) ~ arm, 'pbo',
-                           listener$get_milestone_names(),
-                           'less', 'oracle')
-}
-}
-\if{html}{\out{</div>}}
-
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_arms_name()}\if{html}{\out{</div>}}
 }
 
 }
@@ -1757,61 +1027,216 @@ trial$closedTest(dt, treatments = c('high dose', 'low dose'),
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_seed"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_seed}{}}}
-\subsection{Method \code{get_seed()}}{
-return random seed
+\if{html}{\out{<a id="method-Trials-add_regimen"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-add_regimen}{}}}
+\subsection{Method \code{add_regimen()}}{
+register regimen to a trial. The regimen consists of three functions
+to determine the patients who may switch to other treatment during a
+a trial, to determine the switching time and how to update patients'
+endpoint data accordingly.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_seed()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$add_regimen(regimen)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{regimen}}{an object created by \code{regimen()}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-lock_data"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-lock_data}{}}}
+\subsection{Method \code{lock_data()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
+lock data at specific calendar time.
+For time-to-event endpoints, their event indicator \code{*_event} should be
+updated accordingly. Locked data should be stored separately.
+DO NOT OVERWRITE/UPDATE private$trial_data! which can lose actual
+time-to-event information. For example, a patient may be censored at
+the first data lock. However, he may have event being observed in a
+later data lock.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$lock_data(at_calendar_time, milestone_name)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{at_calendar_time}}{time point to lock trial data}
+
+\item{\code{milestone_name}}{assign milestone name as the name of locked data for
+future reference.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-get_data_lock_time_by_calendar_time"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-get_data_lock_time_by_calendar_time}{}}}
+\subsection{Method \code{get_data_lock_time_by_calendar_time()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
+given the calendar time to lock the data, return it with event counts of
+each of the endpoints.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_data_lock_time_by_calendar_time(calendar_time)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{calendar_time}}{numeric. Calendar time to lock the data}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+data lock time
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-get_data_lock_time_by_event_number"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-get_data_lock_time_by_event_number}{}}}
+\subsection{Method \code{get_data_lock_time_by_event_number()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
+given a set of endpoints and target number of events, determine the data
+lock time for a milestone (futility, interim, final, etc.). This function does
+not change trial object (e.g. rolling back not yet randomized patients after
+the found data lock time).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_data_lock_time_by_event_number(
+  endpoints,
+  arms,
+  target_n_events,
+  type = c("all", "any"),
+  ...
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{endpoints}}{character vector. Data lock time is determined by a set
+of endpoints.}
+
+\item{\code{arms}}{a vector of arms' name on which number of events will be
+counted.}
+
+\item{\code{target_n_events}}{target number of events for each of the
+\code{endpoints}.}
+
+\item{\code{type}}{\code{all} if all target number of events are reached.
+\code{any} if the any target number of events is reached.}
+
+\item{\code{...}}{subset conditions compatible with \code{dplyr::filter}. Number
+Time of milestone is based on event counts on the subset of trial data.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+data lock time
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-get_data_lock_time_by_enrollment"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-get_data_lock_time_by_enrollment}{}}}
+\subsection{Method \code{get_data_lock_time_by_enrollment()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
+given a target number of enrolled patients, determine the data
+lock time for a milestone (futility, interim, final, etc.). This function does
+not change trial object (e.g. rolling back not yet randomized patients after
+the found data lock time). It is similar to get_data_lock_time_by_event_number
+but only focus on patient_id.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_data_lock_time_by_enrollment(
+  arms,
+  target_n_patients,
+  min_treatment_duration,
+  ...
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{arms}}{a vector of arms' name on which number of events will be
+counted.}
+
+\item{\code{target_n_patients}}{target number of enrolled patients.}
+
+\item{\code{min_treatment_duration}}{numeric. Zero or positive value.
+minimum treatment duration of enrolled patients.
+If 0, it looks for triggering time based on number of enrolled
+patients in population specified by \code{...} and \code{arms}. If positive,
+it means that milestone is triggered when a specific number of enrolled
+patients have received treatment for at least \code{min_treatment_duration}
+duration. It is users' responsibility to assure that the unit of
+\code{min_treatment_duration} are consistent with
+readout of non-tte endpoints, dropout time, and trial duration.}
+
+\item{\code{...}}{subset conditions compatible with \code{dplyr::filter}. Number
+Time of milestone is based on event counts on the subset of trial data.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+data lock time
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-has_arm"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-has_arm}{}}}
+\subsection{Method \code{has_arm()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
+check if the trial has any arm. Return \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$has_arm()}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-print"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-print}{}}}
-\subsection{Method \code{print()}}{
-print a trial
+\if{html}{\out{<a id="method-Trials-event_plot"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-event_plot}{}}}
+\subsection{Method \code{event_plot()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
+plot of cumulative number of events/samples over calendar time.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$print()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$event_plot()}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_snapshot_copy"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_snapshot_copy}{}}}
-\subsection{Method \code{get_snapshot_copy()}}{
-return a snapshot of a trial before it is executed.
+\if{html}{\out{<a id="method-Trials-mute"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-mute}{}}}
+\subsection{Method \code{mute()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
+mute all messages (not including warnings)
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_snapshot_copy()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$mute(silent)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{silent}}{logical.}
 }
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-make_snapshot"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-make_snapshot}{}}}
-\subsection{Method \code{make_snapshot()}}{
-make a snapshot before running a trial. This can be useful when
-resetting a trial. This is only called when initializing a `Trial`
-object, when arms have not been added yet.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$make_snapshot()}\if{html}{\out{</div>}}
+\if{html}{\out{</div>}}
 }
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-make_arms_snapshot"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-make_arms_snapshot}{}}}
-\subsection{Method \code{make_arms_snapshot()}}{
-make a snapshot of arms
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$make_arms_snapshot()}\if{html}{\out{</div>}}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Trials-reset"></a>}}
 \if{latex}{\out{\hypertarget{method-Trials-reset}{}}}
 \subsection{Method \code{reset()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 reset a trial to its snapshot taken before it was executed. Seed will be
 reassigned with a new one. Enrollment time are re-generated. If the trial
 already have arms when this function is called, they are added back to
@@ -1822,94 +1247,24 @@ recruit patients again.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-set_arm_added_time"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-set_arm_added_time}{}}}
-\subsection{Method \code{set_arm_added_time()}}{
-save time when an arm is added to the trial
+\if{html}{\out{<a id="method-Trials-make_arms_snapshot"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-make_arms_snapshot}{}}}
+\subsection{Method \code{make_arms_snapshot()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
+make a snapshot of arms
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$set_arm_added_time(arm, time)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{arm}}{name of added arm.}
-
-\item{\code{time}}{time when an arm is added.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_arm_added_time"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_arm_added_time}{}}}
-\subsection{Method \code{get_arm_added_time()}}{
-get time when an arm is added to the trial
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_arm_added_time(arm)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{arm}}{arm name.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-set_arm_removal_time"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-set_arm_removal_time}{}}}
-\subsection{Method \code{set_arm_removal_time()}}{
-save time when an arm is removed to the trial
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$set_arm_removal_time(arm, time)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{arm}}{name of removed arm.}
-
-\item{\code{time}}{time when an arm is removed.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_arm_removal_time"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_arm_removal_time}{}}}
-\subsection{Method \code{get_arm_removal_time()}}{
-get time when an arm is removed from the trial
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_arm_removal_time(arm)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{arm}}{arm name.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-get_stratification_factors"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-get_stratification_factors}{}}}
-\subsection{Method \code{get_stratification_factors()}}{
-return stratification factors
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$get_stratification_factors()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$make_arms_snapshot()}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-has_stratification_factors"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-has_stratification_factors}{}}}
-\subsection{Method \code{has_stratification_factors()}}{
-has stratification factors
+\if{html}{\out{<a id="method-Trials-print"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-print}{}}}
+\subsection{Method \code{print()}}{
+print a trial
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$has_stratification_factors()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$print()}\if{html}{\out{</div>}}
 }
 
 }
