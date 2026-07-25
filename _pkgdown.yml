@@ -33,6 +33,7 @@ reference:
   - crossover
   - stop_followup
   - update_accrual_rate
+  - update_milestone
 - title: Statistical analysis
   desc: Model fitting and multiplicity-controlled testing.
   contents:
