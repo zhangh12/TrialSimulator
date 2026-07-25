@@ -1,3 +1,9 @@
+# TrialSimulator 1.28.1
+
+## Updates
+
+- `trial$set_duration()`, `trial$resize()`, `trial$remove_arms()`, `trial$update_sample_ratio()` and `trial$update_generator()` now raise an error when called before any milestone has been triggered, i.e., outside an action function.
+
 # TrialSimulator 1.28.0
 
 ## New Feature

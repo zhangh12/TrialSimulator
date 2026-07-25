@@ -616,3 +616,22 @@ test_that("crossover registered before update_accrual_rate reaches re-planned pa
   expect_true('n_switches' %in% names(d))
   expect_true(any(d$n_switches[d$arm == 'control' & d$enroll_time > 20] >= 1))
 })
+
+
+test_that("adaptation methods reject calls outside action functions", {
+
+  pbo <- make_arm("pbo", 10)
+  trt <- make_arm("trt", 12)
+  tr <- make_trial()
+  add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+  # no milestone has been triggered yet, so every guarded adaptation
+  # method must refuse to run at setup time
+  expect_error(tr$set_duration(50), "within an action function")
+  expect_error(tr$resize(500), "within an action function")
+  expect_error(tr$remove_arms("trt"), "within an action function")
+  expect_error(tr$update_sample_ratio(c("pbo", "trt"), c(1, 2)),
+               "within an action function")
+  expect_error(tr$update_generator("trt", "pfs", rexp, rate = 1),
+               "within an action function")
+})

@@ -256,6 +256,12 @@ Trials <- R6::R6Class(
     #' current duration.
     set_duration = function(duration){
 
+      if(length(self$get_milestone_time()) == 0){
+        stop('set_duration() can only be called within an action ',
+             'function of a milestone, i.e., after at least one milestone ',
+             'has been triggered. ')
+      }
+
       if(duration <= private$get_duration()){
         stop('Trial duration can only be set to be longer. <', duration,
              '> is shorter than <', private$get_duration(), '>. ')
@@ -294,6 +300,13 @@ Trials <- R6::R6Class(
     #'
     #' @param n_patients integer. Number of maximum sample size of a trial.
     resize = function(n_patients){
+
+      if(length(self$get_milestone_time()) == 0){
+        stop('resize() can only be called within an action ',
+             'function of a milestone, i.e., after at least one milestone ',
+             'has been triggered. ')
+      }
+
       if(n_patients <= private$get_number_patients()){
         stop('TrialSimulator can only increase sample size of a trial. ',
              'When calling Trials$resize(n_patients), use n_patients > ',
@@ -323,6 +336,13 @@ Trials <- R6::R6Class(
     #' the time of arm removal.
     #' @param arms_name character vector. Name of arms to be removed.
     remove_arms = function(arms_name){
+
+      if(length(self$get_milestone_time()) == 0){
+        stop('remove_arms() can only be called within an action ',
+             'function of a milestone, i.e., after at least one milestone ',
+             'has been triggered. ')
+      }
+
       stopifnot(is.character(arms_name))
       stopifnot(all(arms_name %in% self$get_arms_name()))
 
@@ -389,6 +409,12 @@ Trials <- R6::R6Class(
     #' simulation.
     update_sample_ratio = function(arm_names, sample_ratios){
 
+      if(length(self$get_milestone_time()) == 0){
+        stop('update_sample_ratio() can only be called within an action ',
+             'function of a milestone, i.e., after at least one milestone ',
+             'has been triggered. ')
+      }
+
       stopifnot(is.character(arm_names))
       # stopifnot(length(arm_name) == 1)
       # stopifnot(is.numeric(sample_ratio) && all(is.wholenumber(sample_ratio)))
@@ -437,6 +463,12 @@ Trials <- R6::R6Class(
     #' See \code{generator} of \code{endpoint()}.
     #' @param ... optional arguments for \code{generator}.
     update_generator = function(arm_name, endpoint_name, generator, ...){
+
+      if(length(self$get_milestone_time()) == 0){
+        stop('update_generator() can only be called within an action ',
+             'function of a milestone, i.e., after at least one milestone ',
+             'has been triggered. ')
+      }
 
       stopifnot(is.character(arm_name))
       if(length(arm_name) != 1){
