@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.27.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.28.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,6 +50,25 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.28.1" id="trialsimulator-1281">TrialSimulator 1.28.1<a class="anchor" aria-label="anchor" href="#trialsimulator-1281"></a></h2>
+<div class="section level3">
+<h3 id="updates-1-28-1">Updates<a class="anchor" aria-label="anchor" href="#updates-1-28-1"></a></h3>
+<ul><li>
+<code>trial$set_duration()</code>, <code>trial$resize()</code>, <code>trial$remove_arms()</code>, <code>trial$update_sample_ratio()</code> and <code>trial$update_generator()</code> now raise an error when called before any milestone has been triggered, i.e., outside an action function.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.28.0" id="trialsimulator-1280">TrialSimulator 1.28.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1280"></a></h2>
+<div class="section level3">
+<h3 id="new-feature-1-28-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-1-28-0"></a></h3>
+<ul><li>New adaptation method <code>trial$update_milestone()</code> (wrapper <code><a href="../reference/update_milestone.html">update_milestone()</a></code>): update the triggering condition and/or the action of a not-yet-triggered milestone from within an action function. The update takes effect right after the current action function returns, and the as-designed milestone is restored between simulation replicates.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="updates-1-28-0">Updates<a class="anchor" aria-label="anchor" href="#updates-1-28-0"></a></h3>
+<ul><li>The <code>action</code> of a milestone must be a function; <code>NULL</code> is no longer accepted. Use <code>doNothing</code> if no action is intended.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.27.0" id="trialsimulator-1270">TrialSimulator 1.27.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1270"></a></h2>
 <div class="section level3">

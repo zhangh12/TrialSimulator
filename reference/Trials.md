@@ -58,6 +58,10 @@ a user-friendly wrapper of the same name, e.g.,
   measured from the milestone; patients not yet enrolled are re-planned
   and re-randomized under the new schedule.
 
+- `$update_milestone()` update the trigger condition and/or the action
+  of a not-yet-triggered milestone. The update takes effect right after
+  the current action function returns.
+
 **Methods callable within action functions.** In addition to the
 adaptation methods above, users can call the following methods within
 action functions to access and manipulate data, to query the current
@@ -125,13 +129,13 @@ Statistical testing:
 `$get_data_lock_time_by_calendar_time()`,
 `$get_data_lock_time_by_event_number()`,
 `$get_data_lock_time_by_enrollment()`, `$has_arm()`, `$event_plot()`,
-`$mute()`, `$reset()` and `$make_arms_snapshot()`) are public only
-because they are invoked on a trial object by other components of the
-package (milestones, listeners, controllers and triggering conditions),
-which R6 cannot grant through private members. Users should not call
-them directly. Note that `$save()` and `$get_output()` are invoked by
-those components too, but they are part of the user-facing API above at
-the same time.
+`$mute()`, `$reset()`, `$make_arms_snapshot()` and
+`$pop_milestone_updates()`) are public only because they are invoked on
+a trial object by other components of the package (milestones,
+listeners, controllers and triggering conditions), which R6 cannot grant
+through private members. Users should not call them directly. Note that
+`$save()` and `$get_output()` are invoked by those components too, but
+they are part of the user-facing API above at the same time.
 
 ## Value
 
@@ -162,6 +166,8 @@ to create a trial.
 - [`Trials$stop_followup()`](#method-Trials-stop_followup)
 
 - [`Trials$update_accrual_rate()`](#method-Trials-update_accrual_rate)
+
+- [`Trials$update_milestone()`](#method-Trials-update_milestone)
 
 - [`Trials$get_locked_data()`](#method-Trials-get_locked_data)
 
@@ -208,6 +214,8 @@ to create a trial.
 - [`Trials$reset()`](#method-Trials-reset)
 
 - [`Trials$make_arms_snapshot()`](#method-Trials-make_arms_snapshot)
+
+- [`Trials$pop_milestone_updates()`](#method-Trials-pop_milestone_updates)
 
 - [`Trials$print()`](#method-Trials-print)
 
@@ -614,6 +622,66 @@ Calling it before any milestone has been triggered is an error.
   a data frame of columns `end_time` and `piecewise_rate` as in
   `StaggeredRecruiter`, with `end_time` measured from the current
   milestone. The last `end_time` must be `Inf` with a positive rate.
+
+------------------------------------------------------------------------
+
+### Method [`update_milestone()`](https://zhangh12.github.io/TrialSimulator/reference/update_milestone.md)
+
+update the trigger condition and/or the action of a not-yet-triggered
+milestone at a milestone. The milestone to be updated is identified by
+its name, which cannot be changed. This function can be used in adaptive
+designs, e.g., when conditional power at an interim analysis is lower
+than expected, the final analysis can be postponed by increasing the
+target number of events in its triggering condition, or its triggering
+condition can be switched from a calendar time to an event count
+entirely.
+
+The update is not applied immediately: it is queued and takes effect
+right after the current action function returns, before the next
+milestone is evaluated. The new trigger condition and action replace the
+old ones as a whole. Between simulation replicates the milestone is
+restored to its as-designed trigger condition and action, so every
+replicate starts from the original design. A milestone that has already
+been triggered cannot be updated.
+
+Note that this function should only be called within action functions.
+Calling it before any milestone has been triggered is an error. Also
+note that milestones must trigger in their registration order: an
+updated triggering condition that makes a later-registered milestone
+fire before an earlier one stops the simulation with an error.
+
+#### Usage
+
+    Trials$update_milestone(name, when = NULL, action = NULL, ...)
+
+#### Arguments
+
+- `name`:
+
+  character. Name of the milestone to be updated. It must be registered
+  with the listener and not yet triggered.
+
+- `when`:
+
+  (optional) new triggering condition, an object returned by
+  [`calendarTime()`](https://zhangh12.github.io/TrialSimulator/reference/calendarTime.md),
+  [`enrollment()`](https://zhangh12.github.io/TrialSimulator/reference/enrollment.md),
+  [`eventNumber()`](https://zhangh12.github.io/TrialSimulator/reference/eventNumber.md)
+  or their combinations using `&` and `|`. If `NULL`, the triggering
+  condition is left unchanged.
+
+- `action`:
+
+  (optional) new action function. See `action` of
+  [`milestone()`](https://zhangh12.github.io/TrialSimulator/reference/milestone.md).
+  If `NULL`, the action is left unchanged.
+
+- `...`:
+
+  (optional) named arguments of the new `action`. Only allowed when
+  `action` is provided. The new action is executed with exactly the
+  arguments supplied here: fixed arguments of the previous action are
+  never carried over.
 
 ------------------------------------------------------------------------
 
@@ -1304,6 +1372,22 @@ make a snapshot of arms
 #### Usage
 
     Trials$make_arms_snapshot()
+
+------------------------------------------------------------------------
+
+### Method `pop_milestone_updates()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
+return and clear the queue of milestone update requests scheduled by
+[`update_milestone()`](https://zhangh12.github.io/TrialSimulator/reference/update_milestone.md)
+within the current action function. It is called by the listener right
+after each action function returns, to apply the requested updates to
+its registered milestones.
+
+#### Usage
+
+    Trials$pop_milestone_updates()
 
 ------------------------------------------------------------------------
 

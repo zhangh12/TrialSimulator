@@ -45,15 +45,21 @@ milestone(name = 'end of trial', when = calendarTime(time = 12))
 #>     initialize: function (name, type = name, trigger_condition, action = doNothing, 
 #>     mute: function (silent) 
 #>     reset: function () 
+#>     set_action_function: function (action, action_args = list()) 
 #>     set_dry_run: function (dry_run) 
+#>     set_trigger_condition: function (trigger_condition) 
 #>     trigger_milestone: function (trial) 
 #>   Private:
 #>     action: function (trial, ...) 
 #>     action_args: list
 #>     is_dry_run: FALSE
 #>     name: end of trial
+#>     original_action: function (trial, ...) 
+#>     original_action_args: list
+#>     original_trigger_condition: CalendarTimeCondition, Condition, R6
 #>     silent: FALSE
 #>     trigger_condition: CalendarTimeCondition, Condition, R6
 #>     triggered: FALSE
 #>     type: end of trial
+#>     validate_action: function (action, dots, name) 
 ```

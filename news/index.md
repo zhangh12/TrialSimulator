@@ -1,5 +1,30 @@
 # Changelog
 
+## TrialSimulator 1.28.1
+
+### Updates
+
+- `trial$set_duration()`, `trial$resize()`, `trial$remove_arms()`,
+  `trial$update_sample_ratio()` and `trial$update_generator()` now raise
+  an error when called before any milestone has been triggered, i.e.,
+  outside an action function.
+
+## TrialSimulator 1.28.0
+
+### New Feature
+
+- New adaptation method `trial$update_milestone()` (wrapper
+  [`update_milestone()`](https://zhangh12.github.io/TrialSimulator/reference/update_milestone.md)):
+  update the triggering condition and/or the action of a
+  not-yet-triggered milestone from within an action function. The update
+  takes effect right after the current action function returns, and the
+  as-designed milestone is restored between simulation replicates.
+
+### Updates
+
+- The `action` of a milestone must be a function; `NULL` is no longer
+  accepted. Use `doNothing` if no action is intended.
+
 ## TrialSimulator 1.27.0
 
 ### Updates

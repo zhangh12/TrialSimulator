@@ -193,6 +193,8 @@ Methods called within action functions to adapt an ongoing trial.
   : Stopping Follow-Up of Selected Patients in a Trial
 - [`update_accrual_rate()`](https://zhangh12.github.io/TrialSimulator/reference/update_accrual_rate.md)
   : Updating the Accrual Rate of a Trial at a Milestone
+- [`update_milestone()`](https://zhangh12.github.io/TrialSimulator/reference/update_milestone.md)
+  : Updating a Not-Yet-Triggered Milestone of a Trial
 
 ## Statistical analysis
 

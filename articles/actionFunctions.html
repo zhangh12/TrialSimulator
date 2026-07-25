@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.27.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.28.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -623,8 +623,9 @@ trial simulation.</p>
 <tr class="even">
 <td>Extend trial duration</td>
 <td>
-<code>trial$set_duration()</code> or add a event-driven
-milestone</td>
+<code>trial$set_duration()</code> or
+<code>trial$update_milestone()</code>
+</td>
 <td>actual patient or event accrual is slower than expected</td>
 </tr>
 <tr class="odd">
@@ -650,6 +651,13 @@ combination test</td>
 <td><code>trial$update_accrual_rate()</code></td>
 <td>revise accrual after dose selection or enrichment; pause and resume
 enrollment at a milestone</td>
+</tr>
+<tr class="odd">
+<td>Update a milestone</td>
+<td><code>trial$update_milestone()</code></td>
+<td>postpone the final analysis by raising its target event number, or
+switch its triggering condition, when conditional power at an interim is
+low</td>
 </tr>
 </tbody>
 </table>

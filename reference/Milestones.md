@@ -36,6 +36,10 @@ to create a milestone.
 
 - [`Milestones$get_action()`](#method-Milestones-get_action)
 
+- [`Milestones$set_trigger_condition()`](#method-Milestones-set_trigger_condition)
+
+- [`Milestones$set_action_function()`](#method-Milestones-set_action_function)
+
 - [`Milestones$set_dry_run()`](#method-Milestones-set_dry_run)
 
 - [`Milestones$execute_action()`](#method-Milestones-execute_action)
@@ -127,6 +131,57 @@ return action function
 
 ------------------------------------------------------------------------
 
+### Method `set_trigger_condition()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
+replace the trigger condition of a not-yet-triggered milestone. This is
+invoked by the listener when it applies an update requested through
+`Trials$update_milestone()` within an action function. The condition in
+effect at construction is captured on first replacement and restored by
+`reset()` between simulation replicates.
+
+#### Usage
+
+    Milestones$set_trigger_condition(trigger_condition)
+
+#### Arguments
+
+- `trigger_condition`:
+
+  an object of class `Condition`. See `trigger_condition` of
+  [`milestone()`](https://zhangh12.github.io/TrialSimulator/reference/milestone.md).
+
+------------------------------------------------------------------------
+
+### Method `set_action_function()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
+replace the action function (and its fixed arguments) of a
+not-yet-triggered milestone. This is invoked by the listener when it
+applies an update requested through `Trials$update_milestone()` within
+an action function. The action in effect at construction is restored by
+`reset()` between simulation replicates.
+
+#### Usage
+
+    Milestones$set_action_function(action, action_args = list())
+
+#### Arguments
+
+- `action`:
+
+  function to execute when the milestone triggers. See `action` of
+  [`milestone()`](https://zhangh12.github.io/TrialSimulator/reference/milestone.md).
+
+- `action_args`:
+
+  named list. Fixed arguments of `action`, corresponding to `...` of
+  [`milestone()`](https://zhangh12.github.io/TrialSimulator/reference/milestone.md).
+
+------------------------------------------------------------------------
+
 ### Method `set_dry_run()`
 
 set if dry run should be carried out for the milestone. For more
@@ -174,7 +229,9 @@ return trigger status
 
 reset an milestone so that it can be triggered again. Usually, this is
 called before the controller of a trial can run additional replicates of
-simulation.
+simulation. If the trigger condition or the action was replaced in-run
+through `Trials$update_milestone()`, the as-designed version is restored
+so that every replicate starts from the original design.
 
 #### Usage
 

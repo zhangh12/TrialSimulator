@@ -33,7 +33,7 @@ TrialSimulator."><meta property="og:image" content="https://zhangh12.github.io/T
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.27.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.28.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -110,6 +110,8 @@ to learn how to define milestones when performing simulation using
 <li><p><a href="#method-Milestones-get_type"><code>Milestones$get_type()</code></a></p></li>
 <li><p><a href="#method-Milestones-get_trigger_condition"><code>Milestones$get_trigger_condition()</code></a></p></li>
 <li><p><a href="#method-Milestones-get_action"><code>Milestones$get_action()</code></a></p></li>
+<li><p><a href="#method-Milestones-set_trigger_condition"><code>Milestones$set_trigger_condition()</code></a></p></li>
+<li><p><a href="#method-Milestones-set_action_function"><code>Milestones$set_action_function()</code></a></p></li>
 <li><p><a href="#method-Milestones-set_dry_run"><code>Milestones$set_dry_run()</code></a></p></li>
 <li><p><a href="#method-Milestones-execute_action"><code>Milestones$execute_action()</code></a></p></li>
 <li><p><a href="#method-Milestones-get_trigger_status"><code>Milestones$get_trigger_status()</code></a></p></li>
@@ -184,16 +186,65 @@ trigger. See vignette <code>Condition System for Triggering Milestones in a Tria
 </div>
 
 
-</div><p></p><hr><a id="method-Milestones-set_dry_run"></a><div class="section">
-<h3 id="method-set-dry-run-">Method <code>set_dry_run()</code><a class="anchor" aria-label="anchor" href="#method-set-dry-run-"></a></h3>
-<p>set if dry run should be carried out for the milestone. For more details,
-refer to <code>Controller::run</code>.</p><div class="section">
+</div><p></p><hr><a id="method-Milestones-set_trigger_condition"></a><div class="section">
+<h3 id="method-set-trigger-condition-">Method <code>set_trigger_condition()</code><a class="anchor" aria-label="anchor" href="#method-set-trigger-condition-"></a></h3>
+<p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
+<p>replace the trigger condition of a not-yet-triggered milestone. This
+is invoked by the listener when it applies an update requested through
+<code>Trials$update_milestone()</code> within an action function. The
+condition in effect at construction is captured on first replacement
+and restored by <code>reset()</code> between simulation replicates.</p><div class="section">
 <h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Milestones</span><span class="op">$</span><span class="fu">set_dry_run</span><span class="op">(</span><span class="va">dry_run</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Milestones</span><span class="op">$</span><span class="fu">set_trigger_condition</span><span class="op">(</span><span class="va">trigger_condition</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-1">Arguments<a class="anchor" aria-label="anchor" href="#arguments-1"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>trigger_condition</code></dt>
+<dd><p>an object of class <code>Condition</code>. See
+<code>trigger_condition</code> of <code><a href="milestone.html">milestone()</a></code>.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-Milestones-set_action_function"></a><div class="section">
+<h3 id="method-set-action-function-">Method <code>set_action_function()</code><a class="anchor" aria-label="anchor" href="#method-set-action-function-"></a></h3>
+<p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
+<p>replace the action function (and its fixed arguments) of a
+not-yet-triggered milestone. This is invoked by the listener when it
+applies an update requested through <code>Trials$update_milestone()</code>
+within an action function. The action in effect at construction is
+restored by <code>reset()</code> between simulation replicates.</p><div class="section">
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Milestones</span><span class="op">$</span><span class="fu">set_action_function</span><span class="op">(</span><span class="va">action</span>, action_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>action</code></dt>
+<dd><p>function to execute when the milestone triggers. See
+<code>action</code> of <code><a href="milestone.html">milestone()</a></code>.</p></dd>
+
+
+<dt><code>action_args</code></dt>
+<dd><p>named list. Fixed arguments of <code>action</code>,
+corresponding to <code>...</code> of <code><a href="milestone.html">milestone()</a></code>.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-Milestones-set_dry_run"></a><div class="section">
+<h3 id="method-set-dry-run-">Method <code>set_dry_run()</code><a class="anchor" aria-label="anchor" href="#method-set-dry-run-"></a></h3>
+<p>set if dry run should be carried out for the milestone. For more details,
+refer to <code>Controller::run</code>.</p><div class="section">
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Milestones</span><span class="op">$</span><span class="fu">set_dry_run</span><span class="op">(</span><span class="va">dry_run</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>dry_run</code></dt>
 <dd><p>logical.</p></dd>
 
@@ -204,12 +255,12 @@ refer to <code>Controller::run</code>.</p><div class="section">
 </div><p></p><hr><a id="method-Milestones-execute_action"></a><div class="section">
 <h3 id="method-execute-action-">Method <code>execute_action()</code><a class="anchor" aria-label="anchor" href="#method-execute-action-"></a></h3>
 <p>execute action function</p><div class="section">
-<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Milestones</span><span class="op">$</span><span class="fu">execute_action</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
+<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>trial</code></dt>
 <dd><p>a <code>Trial</code> object.</p></dd>
 
@@ -220,7 +271,7 @@ refer to <code>Controller::run</code>.</p><div class="section">
 </div><p></p><hr><a id="method-Milestones-get_trigger_status"></a><div class="section">
 <h3 id="method-get-trigger-status-">Method <code>get_trigger_status()</code><a class="anchor" aria-label="anchor" href="#method-get-trigger-status-"></a></h3>
 <p>return trigger status</p><div class="section">
-<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Milestones</span><span class="op">$</span><span class="fu">get_trigger_status</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -229,8 +280,11 @@ refer to <code>Controller::run</code>.</p><div class="section">
 <h3 id="method-reset-">Method <code>reset()</code><a class="anchor" aria-label="anchor" href="#method-reset-"></a></h3>
 <p>reset an milestone so that it can be triggered again. Usually, this is called
 before the controller of a trial can run additional replicates
-of simulation.</p><div class="section">
-<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+of simulation. If the trigger condition or the action was replaced
+in-run through <code>Trials$update_milestone()</code>, the as-designed
+version is restored so that every replicate starts from the original
+design.</p><div class="section">
+<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Milestones</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -244,12 +298,12 @@ found, Trial$get_data_lock_time() will throw an error and stop the
 program. This means that user needs to adjust their trigger_condition
 (e.g., target number of events (target_n_events) is impossible to
 reach).</p><div class="section">
-<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
+<h4 id="usage-11">Usage<a class="anchor" aria-label="anchor" href="#usage-11"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Milestones</span><span class="op">$</span><span class="fu">trigger_milestone</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
+<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>trial</code></dt>
 <dd><p>a <code>Trial</code> object.</p></dd>
 
@@ -260,12 +314,12 @@ reach).</p><div class="section">
 </div><p></p><hr><a id="method-Milestones-mute"></a><div class="section">
 <h3 id="method-mute-">Method <code>mute()</code><a class="anchor" aria-label="anchor" href="#method-mute-"></a></h3>
 <p>mute all messages (not including warnings)</p><div class="section">
-<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
+<h4 id="usage-12">Usage<a class="anchor" aria-label="anchor" href="#usage-12"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Milestones</span><span class="op">$</span><span class="fu">mute</span><span class="op">(</span><span class="va">silent</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
+<h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>silent</code></dt>
 <dd><p>logical.</p></dd>
 
@@ -276,12 +330,12 @@ reach).</p><div class="section">
 </div><p></p><hr><a id="method-Milestones-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-11">Usage<a class="anchor" aria-label="anchor" href="#usage-11"></a></h4>
+<h4 id="usage-13">Usage<a class="anchor" aria-label="anchor" href="#usage-13"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Milestones</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
+<h4 id="arguments-7">Arguments<a class="anchor" aria-label="anchor" href="#arguments-7"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 
