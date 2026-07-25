@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.26.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.27.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,6 +50,15 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.27.0" id="trialsimulator-1270">TrialSimulator 1.27.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1270"></a></h2>
+<div class="section level3">
+<h3 id="updates-1-27-0">Updates<a class="anchor" aria-label="anchor" href="#updates-1-27-0"></a></h3>
+<ul><li>Minimize the public API of the <code>Trials</code> class: 38 methods used only internally are now private (including <code>censor_trial_data()</code>, <code>roll_back()</code>, <code>enroll_patients()</code>, <code>get_trial_data()</code> and <code>independentIncrement()</code>), leaving 34 public members whose definitions and documentation are reorganized into sections: adaptation methods, methods callable within action functions (data access and manipulation, trial status queries, statistical testing), trial setup (<code>add_regimen()</code>, which must not be called within action functions), and internal machinery. Machinery methods that stay public only because other components of the package invoke them now carry a bold warning that users should not call them directly.</li>
+<li>
+<code>make_snapshot()</code> distinguishes private methods from data fields via <code><a href="https://rdrr.io/r/base/bindenv.html" class="external-link">bindingIsLocked()</a></code> (R6 locks the binding of every member defined as a function) instead of a hardcoded name list, so snapshot/reset stay correct as methods are added.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.26.2" id="trialsimulator-1262">TrialSimulator 1.26.2<a class="anchor" aria-label="anchor" href="#trialsimulator-1262"></a></h2>
 <div class="section level3">

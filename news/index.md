@@ -1,5 +1,26 @@
 # Changelog
 
+## TrialSimulator 1.27.0
+
+### Updates
+
+- Minimize the public API of the `Trials` class: 38 methods used only
+  internally are now private (including `censor_trial_data()`,
+  `roll_back()`, `enroll_patients()`, `get_trial_data()` and
+  `independentIncrement()`), leaving 34 public members whose definitions
+  and documentation are reorganized into sections: adaptation methods,
+  methods callable within action functions (data access and
+  manipulation, trial status queries, statistical testing), trial setup
+  (`add_regimen()`, which must not be called within action functions),
+  and internal machinery. Machinery methods that stay public only
+  because other components of the package invoke them now carry a bold
+  warning that users should not call them directly.
+- `make_snapshot()` distinguishes private methods from data fields via
+  [`bindingIsLocked()`](https://rdrr.io/r/base/bindenv.html) (R6 locks
+  the binding of every member defined as a function) instead of a
+  hardcoded name list, so snapshot/reset stay correct as methods are
+  added.
+
 ## TrialSimulator 1.26.2
 
 ### Updates

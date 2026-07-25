@@ -4,8 +4,15 @@ Create a class of trial.
 
 Public methods in this R6 class are used in developing this package.
 Thus, we have to export the whole R6 class which exposures all public
-methods. However, only the public methods in the list below are useful
-to end users.
+methods. However, only the public methods in the sections below are
+useful to end users, and users are encouraged to restrict themselves to
+them. The remaining public methods are internal machinery of the package
+and should not be called directly (see the last section).
+
+**Adaptation methods.** The following methods adapt an ongoing trial and
+should be called within action functions of milestones. Each of them has
+a user-friendly wrapper of the same name, e.g.,
+`set_duration(trial, ...)` for `trial$set_duration(...)`.
 
 - `$set_duration()` set duration of a trial. This function can be used
   to extend duration under adaptive designs.
@@ -26,9 +33,6 @@ to end users.
 - `$add_arms()` add arms to a trial. This function is used to add arms
   to a newly defined trial, or add arms under adaptive design, e.g.,
   dose-ranging, etc.
-
-- `$add_regimen()` register a `regimen` object to a trial. Must be
-  called before `$add_arms()`. Applied at enrollment.
 
 - `$crossover()` apply a milestone-triggered crossover to eligible
   patients in the trial. Called inside a milestone action; only alters
@@ -53,6 +57,13 @@ to end users.
   selection or enrichment. `end_time` of the new accrual rate is
   measured from the milestone; patients not yet enrolled are re-planned
   and re-randomized under the new schedule.
+
+**Methods callable within action functions.** In addition to the
+adaptation methods above, users can call the following methods within
+action functions to access and manipulate data, to query the current
+status of a trial, and to carry out statistical testing.
+
+Data access and manipulation:
 
 - `$get_locked_data()` request for data snapshot at a milestone. Calling
   this function is recommended as the first action in any action
@@ -81,9 +92,46 @@ to end users.
 - `$get_output()` retrieve intermediate results saved by calling
   function [`save()`](https://rdrr.io/r/base/save.html).
 
+Trial status queries:
+
+- `$get_current_time()` return the triggering time of the milestone that
+  the calling action function is attached to.
+
+- `$get_milestone_time()` return milestone time when triggering a given
+  milestone.
+
+- `$get_sample_ratio()` return current sample ratios of arms.
+
+- `$get_arms_name()` return names of the arms in the trial at the time
+  of calling, i.e., arms that have been added and not yet removed by
+  `$remove_arms()`. Note that this can differ from the arms present in
+  locked data, where data of removed arms remain available (censored at
+  the time of removal).
+
+Statistical testing:
+
 - `$dunnettTest()` perform Dunnett's test.
 
 - `$closedTest()` perform combination test based on Dunnett's test.
+
+**Trial setup.**
+
+- `$add_regimen()` register a `regimen` object to a trial. Must be
+  called before `$add_arms()`. Applied at enrollment. Unlike the
+  adaptation methods above, it belongs to the setup stage of a trial and
+  must not be called within action functions.
+
+**Internal machinery.** The remaining public methods (`$lock_data()`,
+`$get_data_lock_time_by_calendar_time()`,
+`$get_data_lock_time_by_event_number()`,
+`$get_data_lock_time_by_enrollment()`, `$has_arm()`, `$event_plot()`,
+`$mute()`, `$reset()` and `$make_arms_snapshot()`) are public only
+because they are invoked on a trial object by other components of the
+package (milestones, listeners, controllers and triggering conditions),
+which R6 cannot grant through private members. Users should not call
+them directly. Note that `$save()` and `$get_output()` are invoked by
+those components too, but they are part of the user-facing API above at
+the same time.
 
 ## Value
 
@@ -97,21 +145,9 @@ to create a trial.
 
 - [`Trials$new()`](#method-Trials-new)
 
-- [`Trials$get_trial_data()`](#method-Trials-get_trial_data)
-
-- [`Trials$get_duration()`](#method-Trials-get_duration)
-
 - [`Trials$set_duration()`](#method-Trials-set_duration)
 
-- [`Trials$set_enroller()`](#method-Trials-set_enroller)
-
-- [`Trials$get_enroller()`](#method-Trials-get_enroller)
-
-- [`Trials$set_dropout()`](#method-Trials-set_dropout)
-
-- [`Trials$get_dropout()`](#method-Trials-get_dropout)
-
-- [`Trials$roll_back()`](#method-Trials-roll_back)
+- [`Trials$resize()`](#method-Trials-resize)
 
 - [`Trials$remove_arms()`](#method-Trials-remove_arms)
 
@@ -119,15 +155,7 @@ to create a trial.
 
 - [`Trials$update_generator()`](#method-Trials-update_generator)
 
-- [`Trials$resize()`](#method-Trials-resize)
-
 - [`Trials$add_arms()`](#method-Trials-add_arms)
-
-- [`Trials$add_regimen()`](#method-Trials-add_regimen)
-
-- [`Trials$get_regimen()`](#method-Trials-get_regimen)
-
-- [`Trials$has_regimen()`](#method-Trials-has_regimen)
 
 - [`Trials$crossover()`](#method-Trials-crossover)
 
@@ -135,65 +163,11 @@ to create a trial.
 
 - [`Trials$update_accrual_rate()`](#method-Trials-update_accrual_rate)
 
-- [`Trials$get_name()`](#method-Trials-get_name)
-
-- [`Trials$get_description()`](#method-Trials-get_description)
-
-- [`Trials$get_arms()`](#method-Trials-get_arms)
-
-- [`Trials$get_arms_name()`](#method-Trials-get_arms_name)
-
-- [`Trials$get_number_arms()`](#method-Trials-get_number_arms)
-
-- [`Trials$has_arm()`](#method-Trials-has_arm)
-
-- [`Trials$get_an_arm()`](#method-Trials-get_an_arm)
-
-- [`Trials$get_sample_ratio()`](#method-Trials-get_sample_ratio)
-
-- [`Trials$get_number_patients()`](#method-Trials-get_number_patients)
-
-- [`Trials$get_number_enrolled_patients()`](#method-Trials-get_number_enrolled_patients)
-
-- [`Trials$get_number_unenrolled_patients()`](#method-Trials-get_number_unenrolled_patients)
-
-- [`Trials$get_stratum_queue()`](#method-Trials-get_stratum_queue)
-
-- [`Trials$get_randomization_queue()`](#method-Trials-get_randomization_queue)
-
-- [`Trials$get_enroll_time()`](#method-Trials-get_enroll_time)
-
-- [`Trials$enroll_patients()`](#method-Trials-enroll_patients)
-
-- [`Trials$set_current_time()`](#method-Trials-set_current_time)
-
-- [`Trials$get_current_time()`](#method-Trials-get_current_time)
-
-- [`Trials$get_event_tables()`](#method-Trials-get_event_tables)
-
-- [`Trials$get_data_lock_time_by_event_number()`](#method-Trials-get_data_lock_time_by_event_number)
-
-- [`Trials$get_data_lock_time_by_enrollment()`](#method-Trials-get_data_lock_time_by_enrollment)
-
-- [`Trials$get_data_lock_time_by_calendar_time()`](#method-Trials-get_data_lock_time_by_calendar_time)
-
 - [`Trials$get_locked_data()`](#method-Trials-get_locked_data)
 
-- [`Trials$get_locked_data_name()`](#method-Trials-get_locked_data_name)
-
-- [`Trials$get_event_number()`](#method-Trials-get_event_number)
-
-- [`Trials$save_milestone_time()`](#method-Trials-save_milestone_time)
-
-- [`Trials$get_milestone_time()`](#method-Trials-get_milestone_time)
-
-- [`Trials$lock_data()`](#method-Trials-lock_data)
-
-- [`Trials$event_plot()`](#method-Trials-event_plot)
-
-- [`Trials$censor_trial_data()`](#method-Trials-censor_trial_data)
-
 - [`Trials$save()`](#method-Trials-save)
+
+- [`Trials$get_output()`](#method-Trials-get_output)
 
 - [`Trials$bind()`](#method-Trials-bind)
 
@@ -203,41 +177,39 @@ to create a trial.
 
 - [`Trials$get()`](#method-Trials-get)
 
-- [`Trials$get_output()`](#method-Trials-get_output)
+- [`Trials$get_current_time()`](#method-Trials-get_current_time)
 
-- [`Trials$mute()`](#method-Trials-mute)
+- [`Trials$get_milestone_time()`](#method-Trials-get_milestone_time)
 
-- [`Trials$tidy_output()`](#method-Trials-tidy_output)
+- [`Trials$get_sample_ratio()`](#method-Trials-get_sample_ratio)
 
-- [`Trials$independentIncrement()`](#method-Trials-independentIncrement)
+- [`Trials$get_arms_name()`](#method-Trials-get_arms_name)
 
 - [`Trials$dunnettTest()`](#method-Trials-dunnettTest)
 
 - [`Trials$closedTest()`](#method-Trials-closedTest)
 
-- [`Trials$get_seed()`](#method-Trials-get_seed)
+- [`Trials$add_regimen()`](#method-Trials-add_regimen)
 
-- [`Trials$print()`](#method-Trials-print)
+- [`Trials$lock_data()`](#method-Trials-lock_data)
 
-- [`Trials$get_snapshot_copy()`](#method-Trials-get_snapshot_copy)
+- [`Trials$get_data_lock_time_by_calendar_time()`](#method-Trials-get_data_lock_time_by_calendar_time)
 
-- [`Trials$make_snapshot()`](#method-Trials-make_snapshot)
+- [`Trials$get_data_lock_time_by_event_number()`](#method-Trials-get_data_lock_time_by_event_number)
 
-- [`Trials$make_arms_snapshot()`](#method-Trials-make_arms_snapshot)
+- [`Trials$get_data_lock_time_by_enrollment()`](#method-Trials-get_data_lock_time_by_enrollment)
+
+- [`Trials$has_arm()`](#method-Trials-has_arm)
+
+- [`Trials$event_plot()`](#method-Trials-event_plot)
+
+- [`Trials$mute()`](#method-Trials-mute)
 
 - [`Trials$reset()`](#method-Trials-reset)
 
-- [`Trials$set_arm_added_time()`](#method-Trials-set_arm_added_time)
+- [`Trials$make_arms_snapshot()`](#method-Trials-make_arms_snapshot)
 
-- [`Trials$get_arm_added_time()`](#method-Trials-get_arm_added_time)
-
-- [`Trials$set_arm_removal_time()`](#method-Trials-set_arm_removal_time)
-
-- [`Trials$get_arm_removal_time()`](#method-Trials-get_arm_removal_time)
-
-- [`Trials$get_stratification_factors()`](#method-Trials-get_stratification_factors)
-
-- [`Trials$has_stratification_factors()`](#method-Trials-has_stratification_factors)
+- [`Trials$print()`](#method-Trials-print)
 
 - [`Trials$clone()`](#method-Trials-clone)
 
@@ -330,27 +302,6 @@ initialize a trial
 
 ------------------------------------------------------------------------
 
-### Method `get_trial_data()`
-
-return trial data of enrolled patients at the time of this function is
-called
-
-#### Usage
-
-    Trials$get_trial_data()
-
-------------------------------------------------------------------------
-
-### Method `get_duration()`
-
-return maximum duration of a trial
-
-#### Usage
-
-    Trials$get_duration()
-
-------------------------------------------------------------------------
-
 ### Method [`set_duration()`](https://zhangh12.github.io/TrialSimulator/reference/set_duration.md)
 
 set trial duration in an adaptive designed trial. All patients enrolled
@@ -370,81 +321,23 @@ are re-randomized. New duration must be longer than the old one.
 
 ------------------------------------------------------------------------
 
-### Method `set_enroller()`
+### Method [`resize()`](https://zhangh12.github.io/TrialSimulator/reference/resize.md)
 
-set recruitment curve when initialize a trial.
+resize a trial with a greater sample size. This function is used to
+update the maximum sample size adaptively after sample size
+reassessment. Note that this function should be called within action
+functions. It is users' responsibility to ensure it and `TrialSimulator`
+has no way to track this.
 
 #### Usage
 
-    Trials$set_enroller(func, ...)
+    Trials$resize(n_patients)
 
 #### Arguments
 
-- `func`:
+- `n_patients`:
 
-  function to generate enrollment time. Must be `StaggeredRecruiter`;
-  any other value is rejected.
-
-- `...`:
-
-  (optional) arguments for `func`.
-
-------------------------------------------------------------------------
-
-### Method `get_enroller()`
-
-get function of recruitment curve
-
-#### Usage
-
-    Trials$get_enroller()
-
-------------------------------------------------------------------------
-
-### Method `set_dropout()`
-
-set distribution of drop out time when initializing a trial. This is not
-an adaptation method: dropout times of patients are generated when they
-are enrolled, so calling this function within an action function would
-not apply to patients already enrolled.
-
-#### Usage
-
-    Trials$set_dropout(func, ...)
-
-#### Arguments
-
-- `func`:
-
-  function to generate dropout time. It can be built-in function like
-  \`rexp\` or customized functions.
-
-- `...`:
-
-  (optional) arguments for `func`.
-
-------------------------------------------------------------------------
-
-### Method `get_dropout()`
-
-get generator of dropout time
-
-#### Usage
-
-    Trials$get_dropout()
-
-------------------------------------------------------------------------
-
-### Method `roll_back()`
-
-roll back data to current time of trial. By doing so, `Trial$trial_data`
-will be cut at current time, and data after then are deleted. However,
-`Trial$enroll_time` after current time are kept unchanged because that
-is planned enrollment curve.
-
-#### Usage
-
-    Trials$roll_back()
+  integer. Number of maximum sample size of a trial.
 
 ------------------------------------------------------------------------
 
@@ -531,26 +424,6 @@ update endpoint generator in an arm
 
 ------------------------------------------------------------------------
 
-### Method [`resize()`](https://zhangh12.github.io/TrialSimulator/reference/resize.md)
-
-resize a trial with a greater sample size. This function is used to
-update the maximum sample size adaptively after sample size
-reassessment. Note that this function should be called within action
-functions. It is users' responsibility to ensure it and `TrialSimulator`
-has no way to track this.
-
-#### Usage
-
-    Trials$resize(n_patients)
-
-#### Arguments
-
-- `n_patients`:
-
-  integer. Number of maximum sample size of a trial.
-
-------------------------------------------------------------------------
-
 ### Method [`add_arms()`](https://zhangh12.github.io/TrialSimulator/reference/add_arms.md)
 
 add one or more arms to the trial. `enroll_patients()` will be called at
@@ -591,46 +464,6 @@ to track this.
   randomization_queue were generated twice in the first approach but
   only once in the second approach. But statistically, they are
   equivalent and of the same distribution.
-
-------------------------------------------------------------------------
-
-### Method `add_regimen()`
-
-register regimen to a trial. The regimen consists of three functions to
-determine the patients who may switch to other treatment during a a
-trial, to determine the switching time and how to update patients'
-endpoint data accordingly.
-
-#### Usage
-
-    Trials$add_regimen(regimen)
-
-#### Arguments
-
-- `regimen`:
-
-  an object created by
-  [`regimen()`](https://zhangh12.github.io/TrialSimulator/reference/regimen.md).
-
-------------------------------------------------------------------------
-
-### Method `get_regimen()`
-
-return registered regimen.
-
-#### Usage
-
-    Trials$get_regimen()
-
-------------------------------------------------------------------------
-
-### Method `has_regimen()`
-
-return whether a regimen is registered
-
-#### Usage
-
-    Trials$has_regimen()
 
 ------------------------------------------------------------------------
 
@@ -784,377 +617,6 @@ Calling it before any milestone has been triggered is an error.
 
 ------------------------------------------------------------------------
 
-### Method `get_name()`
-
-return name of trial
-
-#### Usage
-
-    Trials$get_name()
-
-------------------------------------------------------------------------
-
-### Method `get_description()`
-
-return description of trial
-
-#### Usage
-
-    Trials$get_description()
-
-------------------------------------------------------------------------
-
-### Method `get_arms()`
-
-return a list of arms in the trial
-
-#### Usage
-
-    Trials$get_arms()
-
-------------------------------------------------------------------------
-
-### Method `get_arms_name()`
-
-return arms' name of trial
-
-#### Usage
-
-    Trials$get_arms_name()
-
-------------------------------------------------------------------------
-
-### Method `get_number_arms()`
-
-get number of arms in the trial
-
-#### Usage
-
-    Trials$get_number_arms()
-
-------------------------------------------------------------------------
-
-### Method `has_arm()`
-
-check if the trial has any arm. Return `TRUE` or `FALSE`.
-
-#### Usage
-
-    Trials$has_arm()
-
-------------------------------------------------------------------------
-
-### Method `get_an_arm()`
-
-return an arm
-
-#### Usage
-
-    Trials$get_an_arm(arm_name)
-
-#### Arguments
-
-- `arm_name`:
-
-  character, name of arm to be extracted
-
-------------------------------------------------------------------------
-
-### Method `get_sample_ratio()`
-
-return current sample ratio of the trial. The ratio can probably change
-during the trial (e.g., arm is removed or added)
-
-#### Usage
-
-    Trials$get_sample_ratio(arm_names = NULL)
-
-#### Arguments
-
-- `arm_names`:
-
-  character vector of arms.
-
-------------------------------------------------------------------------
-
-### Method `get_number_patients()`
-
-return number of patients when planning the trial
-
-#### Usage
-
-    Trials$get_number_patients()
-
-------------------------------------------------------------------------
-
-### Method `get_number_enrolled_patients()`
-
-return number of enrolled (randomized) patients
-
-#### Usage
-
-    Trials$get_number_enrolled_patients()
-
-------------------------------------------------------------------------
-
-### Method `get_number_unenrolled_patients()`
-
-return number of unenrolled patients
-
-#### Usage
-
-    Trials$get_number_unenrolled_patients()
-
-------------------------------------------------------------------------
-
-### Method `get_stratum_queue()`
-
-return stratum queue of planned but not yet enrolled patients. This
-function does not update stratum_queue, just return its value for
-debugging purpose.
-
-#### Usage
-
-    Trials$get_stratum_queue(index = NULL)
-
-#### Arguments
-
-- `index`:
-
-  index to be extracted. Return all queue if `NULL`.
-
-------------------------------------------------------------------------
-
-### Method `get_randomization_queue()`
-
-return randomization queue of planned but not yet enrolled patients.
-This function does not update randomization_queue, just return its value
-for debugging purpose.
-
-#### Usage
-
-    Trials$get_randomization_queue(index = NULL)
-
-#### Arguments
-
-- `index`:
-
-  index to be extracted. Return all queue if `NULL`.
-
-------------------------------------------------------------------------
-
-### Method `get_enroll_time()`
-
-return enrollment time of planned but not yet enrolled patients. This
-function does not update enroll_time, just return its value for
-debugging purpose.
-
-#### Usage
-
-    Trials$get_enroll_time(index = NULL)
-
-#### Arguments
-
-- `index`:
-
-  index to extract. Return all enroll time if `NULL`.
-
-------------------------------------------------------------------------
-
-### Method `enroll_patients()`
-
-assign new patients to pre-planned randomization queue at pre-specified
-enrollment time.
-
-#### Usage
-
-    Trials$enroll_patients(n_patients = NULL)
-
-#### Arguments
-
-- `n_patients`:
-
-  number of new patients to be enrolled. If `NULL`, all remaining
-  patients in plan are enrolled. Error may be triggered if n_patients is
-  greater than remaining patients as planned.
-
-------------------------------------------------------------------------
-
-### Method `set_current_time()`
-
-set current time of a trial. Any data collected before could not be
-changed. private\$now should be set after a milestone is triggered
-(through Milestones class, futility, interim, etc), an arm is added or
-removed at a milestone
-
-#### Usage
-
-    Trials$set_current_time(time)
-
-#### Arguments
-
-- `time`:
-
-  current calendar time of a trial.
-
-------------------------------------------------------------------------
-
-### Method `get_current_time()`
-
-return current time of a trial
-
-#### Usage
-
-    Trials$get_current_time()
-
-------------------------------------------------------------------------
-
-### Method `get_event_tables()`
-
-count accumulative number of events (for TTE) or non-missing samples
-(otherwise) over calendar time (enroll time + tte for TTE, or enroll
-time + readout otherwise)
-
-#### Usage
-
-    Trials$get_event_tables(arms = NULL, ...)
-
-#### Arguments
-
-- `arms`:
-
-  a vector of arms' name on which the event tables are created. if
-  `NULL`, all arms in the trial will be used.
-
-- `...`:
-
-  subset conditions compatible with
-  [`dplyr::filter`](https://dplyr.tidyverse.org/reference/filter.html).
-  Event tables will be counted on subset of trial data only.
-
-------------------------------------------------------------------------
-
-### Method `get_data_lock_time_by_event_number()`
-
-given a set of endpoints and target number of events, determine the data
-lock time for a milestone (futility, interim, final, etc.). This
-function does not change trial object (e.g. rolling back not yet
-randomized patients after the found data lock time).
-
-#### Usage
-
-    Trials$get_data_lock_time_by_event_number(
-      endpoints,
-      arms,
-      target_n_events,
-      type = c("all", "any"),
-      ...
-    )
-
-#### Arguments
-
-- `endpoints`:
-
-  character vector. Data lock time is determined by a set of endpoints.
-
-- `arms`:
-
-  a vector of arms' name on which number of events will be counted.
-
-- `target_n_events`:
-
-  target number of events for each of the `endpoints`.
-
-- `type`:
-
-  `all` if all target number of events are reached. `any` if the any
-  target number of events is reached.
-
-- `...`:
-
-  subset conditions compatible with
-  [`dplyr::filter`](https://dplyr.tidyverse.org/reference/filter.html).
-  Number Time of milestone is based on event counts on the subset of
-  trial data.
-
-#### Returns
-
-data lock time
-
-------------------------------------------------------------------------
-
-### Method `get_data_lock_time_by_enrollment()`
-
-given a target number of enrolled patients, determine the data lock time
-for a milestone (futility, interim, final, etc.). This function does not
-change trial object (e.g. rolling back not yet randomized patients after
-the found data lock time). It is similar to
-get_data_lock_time_by_event_number but only focus on patient_id.
-
-#### Usage
-
-    Trials$get_data_lock_time_by_enrollment(
-      arms,
-      target_n_patients,
-      min_treatment_duration,
-      ...
-    )
-
-#### Arguments
-
-- `arms`:
-
-  a vector of arms' name on which number of events will be counted.
-
-- `target_n_patients`:
-
-  target number of enrolled patients.
-
-- `min_treatment_duration`:
-
-  numeric. Zero or positive value. minimum treatment duration of
-  enrolled patients. If 0, it looks for triggering time based on number
-  of enrolled patients in population specified by `...` and `arms`. If
-  positive, it means that milestone is triggered when a specific number
-  of enrolled patients have received treatment for at least
-  `min_treatment_duration` duration. It is users' responsibility to
-  assure that the unit of `min_treatment_duration` are consistent with
-  readout of non-tte endpoints, dropout time, and trial duration.
-
-- `...`:
-
-  subset conditions compatible with
-  [`dplyr::filter`](https://dplyr.tidyverse.org/reference/filter.html).
-  Number Time of milestone is based on event counts on the subset of
-  trial data.
-
-#### Returns
-
-data lock time
-
-------------------------------------------------------------------------
-
-### Method `get_data_lock_time_by_calendar_time()`
-
-given the calendar time to lock the data, return it with event counts of
-each of the endpoints.
-
-#### Usage
-
-    Trials$get_data_lock_time_by_calendar_time(calendar_time)
-
-#### Arguments
-
-- `calendar_time`:
-
-  numeric. Calendar time to lock the data
-
-#### Returns
-
-data lock time
-
-------------------------------------------------------------------------
-
 ### Method `get_locked_data()`
 
 return locked data, i.e. snapshot at a milestone. TTE data is censored
@@ -1170,173 +632,6 @@ time simultaneously by the triggering time of milestone.
 - `milestone_name`:
 
   character. Milestone name of which the locked data to be extracted.
-
-------------------------------------------------------------------------
-
-### Method `get_locked_data_name()`
-
-return names of locked data
-
-#### Usage
-
-    Trials$get_locked_data_name()
-
-------------------------------------------------------------------------
-
-### Method `get_event_number()`
-
-return number of events at lock time of milestones
-
-#### Usage
-
-    Trials$get_event_number(milestone_name = NULL)
-
-#### Arguments
-
-- `milestone_name`:
-
-  names of triggered milestones. Use all triggered milestones if `NULL`.
-
-------------------------------------------------------------------------
-
-### Method `save_milestone_time()`
-
-save time of a new milestone.
-
-#### Usage
-
-    Trials$save_milestone_time(milestone_time, milestone_name)
-
-#### Arguments
-
-- `milestone_time`:
-
-  numeric. Time of new milestone.
-
-- `milestone_name`:
-
-  character. Name of new milestone.
-
-------------------------------------------------------------------------
-
-### Method `get_milestone_time()`
-
-return milestone time when triggering a given milestone
-
-#### Usage
-
-    Trials$get_milestone_time(milestone_name = NULL)
-
-#### Arguments
-
-- `milestone_name`:
-
-  character. Name of milestone. If `NULL`, time of all triggered
-  milestones are returned.
-
-------------------------------------------------------------------------
-
-### Method `lock_data()`
-
-lock data at specific calendar time. For time-to-event endpoints, their
-event indicator `*_event` should be updated accordingly. Locked data
-should be stored separately. DO NOT OVERWRITE/UPDATE
-private\$trial_data! which can lose actual time-to-event information.
-For example, a patient may be censored at the first data lock. However,
-he may have event being observed in a later data lock.
-
-#### Usage
-
-    Trials$lock_data(at_calendar_time, milestone_name)
-
-#### Arguments
-
-- `at_calendar_time`:
-
-  time point to lock trial data
-
-- `milestone_name`:
-
-  assign milestone name as the name of locked data for future reference.
-
-------------------------------------------------------------------------
-
-### Method `event_plot()`
-
-plot of cumulative number of events/samples over calendar time.
-
-#### Usage
-
-    Trials$event_plot()
-
-------------------------------------------------------------------------
-
-### Method `censor_trial_data()`
-
-censor trial data at calendar time. Patients to be censored are selected
-by `selected_arms`, `enrolled_before` and conditions in `...`; all of
-them are combined with AND. Although `selected_arms` and
-`enrolled_before` can be equally expressed through `...` (i.e.,
-`arm %in% selected_arms`, `enroll_time <= enrolled_before`), they are
-kept as dedicated arguments on purpose: they are evaluated in base R,
-while conditions in `...` go through
-[`dplyr::filter`](https://dplyr.tidyverse.org/reference/filter.html),
-which is measurably slower. Internal calls on simulation hot paths
-(`enroll_patients`, `set_duration`, `remove_arms`, `crossover`,
-`stop_followup`) therefore use the two dedicated arguments only; `...`
-is reserved for user-specified conditions, e.g., those forwarded from
-`stop_followup`.
-
-Because `selected_arms` and `enrolled_before` follow `...` in the
-argument list, they must always be passed by name. This prevents unnamed
-filter conditions forwarded through `...` from being positionally
-matched to them.
-
-#### Usage
-
-    Trials$censor_trial_data(
-      censor_at = NULL,
-      ...,
-      selected_arms = NULL,
-      enrolled_before = Inf
-    )
-
-#### Arguments
-
-- `censor_at`:
-
-  time of censoring. It is set to trial duration if `NULL`.
-
-- `...`:
-
-  subset conditions compatible with
-  [`dplyr::filter`](https://dplyr.tidyverse.org/reference/filter.html),
-  further restricting the patients to be censored in addition to
-  `selected_arms` and `enrolled_before`. When `selected_arms` and
-  `enrolled_before` take their default values, i.e., all arms and no
-  enrollment cutoff, conditions in `...` alone determine the patients to
-  be censored. If, in addition, no condition is provided in `...`, all
-  patients in trial data are censored. When `...` is empty, `dplyr` is
-  not invoked at all.
-
-- `selected_arms`:
-
-  censoring is applied to selected arms (e.g., removed arms) only. If
-  `NULL`, it will be set to all available arms in trial data. Otherwise,
-  censoring is applied to user-specified arms only. This is necessary
-  because number of events/sample size in removed arms should be fixed
-  unchanged since corresponding milestone is triggered. In that case,
-  one can update trial data by something like
-  `censor_trial_data(censor_at = milestone_time, selected_arms = removed_arms)`.
-
-- `enrolled_before`:
-
-  censoring is applied to patients enrolled before specific time. This
-  argument would be used when trial duration is updated by
-  `set_duration`. Adaptation happens when `set_duration` is called so we
-  fix duration for patients enrolled before adaptation to maintain
-  independent increment. This should work when trial duration is updated
-  for multiple times.
 
 ------------------------------------------------------------------------
 
@@ -1372,6 +667,46 @@ summary later.
 
   logic. `TRUE` if overwriting existing entries with warning, otherwise,
   throwing an error and stop.
+
+------------------------------------------------------------------------
+
+### Method `get_output()`
+
+return a data frame of all current outputs saved by calling
+`Trials$save()`. Usually this function is call at the end of simulation
+for summary.
+
+#### Usage
+
+    Trials$get_output(cols = NULL, simplify = TRUE, tidy = FALSE)
+
+#### Arguments
+
+- `cols`:
+
+  columns to be returned from `Trial$output`. If `NULL`, all columns are
+  returned.
+
+- `simplify`:
+
+  logical. Return value rather than a data frame of one column when
+  `length(col) == 1` and `simplify == TRUE`.
+
+- `tidy`:
+
+  logical. `TrialSimulator` automatically records a set of standard
+  outputs at milestones, even when `doNothing` is used as action
+  functions. These includes time of triggering milestones, number of
+  observed events for time-to-event endpoints, and number of non-missing
+  readouts for non-TTE endpoints (see
+  [`vignette('actionFunctions')`](https://zhangh12.github.io/TrialSimulator/articles/actionFunctions.md)).
+  This usually mean a large number of columns in outputs. If users have
+  no intent to summarize a trial on these columns, setting `tidy = TRUE`
+  can eliminate these columns from `get_output()`. Note that currently
+  we use regex `"^n_events_<.*?>_<.*?>$"` and `"^milestone_time_<.*?>$"`
+  to match columns to be eliminated. If users plan to use `tidy = TRUE`,
+  caution is needed when naming custom outputs in
+  [`save()`](https://rdrr.io/r/base/save.html). Default `FALSE`.
 
 ------------------------------------------------------------------------
 
@@ -1472,193 +807,57 @@ alias of function `get_custom_data` to make it short and cool.
 
 ------------------------------------------------------------------------
 
-### Method `get_output()`
+### Method `get_current_time()`
 
-return a data frame of all current outputs saved by calling
-`Trials$save()`. Usually this function is call at the end of simulation
-for summary.
+return current time of a trial
 
 #### Usage
 
-    Trials$get_output(cols = NULL, simplify = TRUE, tidy = FALSE)
-
-#### Arguments
-
-- `cols`:
-
-  columns to be returned from `Trial$output`. If `NULL`, all columns are
-  returned.
-
-- `simplify`:
-
-  logical. Return value rather than a data frame of one column when
-  `length(col) == 1` and `simplify == TRUE`.
-
-- `tidy`:
-
-  logical. `TrialSimulator` automatically records a set of standard
-  outputs at milestones, even when `doNothing` is used as action
-  functions. These includes time of triggering milestones, number of
-  observed events for time-to-event endpoints, and number of non-missing
-  readouts for non-TTE endpoints (see
-  [`vignette('actionFunctions')`](https://zhangh12.github.io/TrialSimulator/articles/actionFunctions.md)).
-  This usually mean a large number of columns in outputs. If users have
-  no intent to summarize a trial on these columns, setting `tidy = TRUE`
-  can eliminate these columns from `get_output()`. Note that currently
-  we use regex `"^n_events_<.*?>_<.*?>$"` and `"^milestone_time_<.*?>$"`
-  to match columns to be eliminated. If users plan to use `tidy = TRUE`,
-  caution is needed when naming custom outputs in
-  [`save()`](https://rdrr.io/r/base/save.html). Default `FALSE`.
+    Trials$get_current_time()
 
 ------------------------------------------------------------------------
 
-### Method `mute()`
+### Method `get_milestone_time()`
 
-mute all messages (not including warnings)
+return milestone time when triggering a given milestone
 
 #### Usage
 
-    Trials$mute(silent)
+    Trials$get_milestone_time(milestone_name = NULL)
 
 #### Arguments
 
-- `silent`:
+- `milestone_name`:
 
-  logical.
+  character. Name of milestone. If `NULL`, time of all triggered
+  milestones are returned.
 
 ------------------------------------------------------------------------
 
-### Method `tidy_output()`
+### Method `get_sample_ratio()`
 
-save less information in trial output if no intent to use it in summary
+return current sample ratio of the trial. The ratio can probably change
+during the trial (e.g., arm is removed or added)
 
 #### Usage
 
-    Trials$tidy_output(tidy)
+    Trials$get_sample_ratio(arm_names = NULL)
 
 #### Arguments
 
-- `tidy`:
+- `arm_names`:
 
-  logical. If `TRUE`, event count per arm per endpoint is not computed
-  and saved in trial output. This can speed up simulation by up to 40%
-  under some circumstances.
+  character vector of arms.
 
 ------------------------------------------------------------------------
 
-### Method `independentIncrement()`
+### Method `get_arms_name()`
 
-calculate independent increments from a given set of milestones
+return arms' name of trial
 
 #### Usage
 
-    Trials$independentIncrement(
-      formula,
-      placebo,
-      milestones,
-      alternative,
-      planned_info,
-      ...
-    )
-
-#### Arguments
-
-- `formula`:
-
-  An object of class `formula` that can be used with
-  [`survival::coxph`](https://rdrr.io/pkg/survival/man/coxph.html). Must
-  consist `arm` and endpoint in `data`. No covariate is allowed.
-  Stratification variables are supported and can be added using
-  `strata(...)`.
-
-- `placebo`:
-
-  character. String of placebo in trial's locked data.
-
-- `milestones`:
-
-  a character vector of milestone names in the trial, e.g.,
-  `listener$get_milestone_names()`.
-
-- `alternative`:
-
-  a character string specifying the alternative hypothesis, must be one
-  of `"greater"` or `"less"`. No default value. `"greater"` means
-  superiority of treatment over placebo is established by an hazard
-  ratio greater than 1 when a log-rank test is used.
-
-- `planned_info`:
-
-  a vector of planned accumulative number of event of time-to-event
-  endpoint. It is named by milestone names. Note: `planned_info` can
-  also be a character `"oracle"` so that planned number of events are
-  set to be observed number of events, in that case inverse normal z
-  statistics equal to one-sided logrank statistics. This is for the
-  purpose of debugging only. In formal simulation, `"oracle"` should not
-  be used if adaptation is present. Pre-fixed `planned_info` should be
-  used to create weights in combination test that controls the
-  family-wise error rate in the strong sense.
-
-- `...`:
-
-  subset condition that is compatible with
-  [`dplyr::filter`](https://dplyr.tidyverse.org/reference/filter.html).
-  `survdiff` will be fitted on this subset only to compute one-sided
-  logrank statistics. It could be useful when a trial consists of more
-  than two arms. By default it is not specified, all data will be used
-  to fit the model.
-
-#### Returns
-
-This function returns a data frame with columns:
-
-- `p_inverse_normal`:
-
-  one-sided p-value for inverse normal test based on logrank test
-  (alternative hypothesis: risk is higher in placebo arm). Accumulative
-  data is used.
-
-- `z_inverse_normal`:
-
-  z statistics of `p_inverse_normal`. Accumulative data is used.
-
-- `p_lr`:
-
-  one-sided p-value for logrank test (alternative hypothesis: risk is
-  higher in placebo arm). Accumulative data is used.
-
-- `z_lr`:
-
-  z statistics of `p_lr`. Accumulative data is used.
-
-- `info`:
-
-  observed accumulative event number.
-
-- `planned_info`:
-
-  planned accumulative event number.
-
-- `info_pbo`:
-
-  observed accumulative event number in placebo.
-
-- `info_trt`:
-
-  observed accumulative event number in treatment arm.
-
-- `wt`:
-
-  weights in `z_inverse_normal`.
-
-#### Examples
-
-
-    \dontrun{
-    trial$independentIncrement(Surv(pfs, pfs_event) ~ arm, 'pbo',
-                               listener$get_milestone_names(),
-                               'less', 'oracle')
-    }
+    Trials$get_arms_name()
 
 ------------------------------------------------------------------------
 
@@ -1865,59 +1064,225 @@ rejected at all milestones.
 
 ------------------------------------------------------------------------
 
-### Method `get_seed()`
+### Method `add_regimen()`
 
-return random seed
+register regimen to a trial. The regimen consists of three functions to
+determine the patients who may switch to other treatment during a a
+trial, to determine the switching time and how to update patients'
+endpoint data accordingly.
 
 #### Usage
 
-    Trials$get_seed()
+    Trials$add_regimen(regimen)
+
+#### Arguments
+
+- `regimen`:
+
+  an object created by
+  [`regimen()`](https://zhangh12.github.io/TrialSimulator/reference/regimen.md).
 
 ------------------------------------------------------------------------
 
-### Method [`print()`](https://rdrr.io/r/base/print.html)
+### Method `lock_data()`
 
-print a trial
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
+lock data at specific calendar time. For time-to-event endpoints, their
+event indicator `*_event` should be updated accordingly. Locked data
+should be stored separately. DO NOT OVERWRITE/UPDATE
+private\$trial_data! which can lose actual time-to-event information.
+For example, a patient may be censored at the first data lock. However,
+he may have event being observed in a later data lock.
 
 #### Usage
 
-    Trials$print()
+    Trials$lock_data(at_calendar_time, milestone_name)
+
+#### Arguments
+
+- `at_calendar_time`:
+
+  time point to lock trial data
+
+- `milestone_name`:
+
+  assign milestone name as the name of locked data for future reference.
 
 ------------------------------------------------------------------------
 
-### Method `get_snapshot_copy()`
+### Method `get_data_lock_time_by_calendar_time()`
 
-return a snapshot of a trial before it is executed.
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
+given the calendar time to lock the data, return it with event counts of
+each of the endpoints.
 
 #### Usage
 
-    Trials$get_snapshot_copy()
+    Trials$get_data_lock_time_by_calendar_time(calendar_time)
+
+#### Arguments
+
+- `calendar_time`:
+
+  numeric. Calendar time to lock the data
+
+#### Returns
+
+data lock time
 
 ------------------------------------------------------------------------
 
-### Method `make_snapshot()`
+### Method `get_data_lock_time_by_event_number()`
 
-make a snapshot before running a trial. This can be useful when
-resetting a trial. This is only called when initializing a \`Trial\`
-object, when arms have not been added yet.
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
+given a set of endpoints and target number of events, determine the data
+lock time for a milestone (futility, interim, final, etc.). This
+function does not change trial object (e.g. rolling back not yet
+randomized patients after the found data lock time).
 
 #### Usage
 
-    Trials$make_snapshot()
+    Trials$get_data_lock_time_by_event_number(
+      endpoints,
+      arms,
+      target_n_events,
+      type = c("all", "any"),
+      ...
+    )
+
+#### Arguments
+
+- `endpoints`:
+
+  character vector. Data lock time is determined by a set of endpoints.
+
+- `arms`:
+
+  a vector of arms' name on which number of events will be counted.
+
+- `target_n_events`:
+
+  target number of events for each of the `endpoints`.
+
+- `type`:
+
+  `all` if all target number of events are reached. `any` if the any
+  target number of events is reached.
+
+- `...`:
+
+  subset conditions compatible with
+  [`dplyr::filter`](https://dplyr.tidyverse.org/reference/filter.html).
+  Number Time of milestone is based on event counts on the subset of
+  trial data.
+
+#### Returns
+
+data lock time
 
 ------------------------------------------------------------------------
 
-### Method `make_arms_snapshot()`
+### Method `get_data_lock_time_by_enrollment()`
 
-make a snapshot of arms
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
+given a target number of enrolled patients, determine the data lock time
+for a milestone (futility, interim, final, etc.). This function does not
+change trial object (e.g. rolling back not yet randomized patients after
+the found data lock time). It is similar to
+get_data_lock_time_by_event_number but only focus on patient_id.
 
 #### Usage
 
-    Trials$make_arms_snapshot()
+    Trials$get_data_lock_time_by_enrollment(
+      arms,
+      target_n_patients,
+      min_treatment_duration,
+      ...
+    )
+
+#### Arguments
+
+- `arms`:
+
+  a vector of arms' name on which number of events will be counted.
+
+- `target_n_patients`:
+
+  target number of enrolled patients.
+
+- `min_treatment_duration`:
+
+  numeric. Zero or positive value. minimum treatment duration of
+  enrolled patients. If 0, it looks for triggering time based on number
+  of enrolled patients in population specified by `...` and `arms`. If
+  positive, it means that milestone is triggered when a specific number
+  of enrolled patients have received treatment for at least
+  `min_treatment_duration` duration. It is users' responsibility to
+  assure that the unit of `min_treatment_duration` are consistent with
+  readout of non-tte endpoints, dropout time, and trial duration.
+
+- `...`:
+
+  subset conditions compatible with
+  [`dplyr::filter`](https://dplyr.tidyverse.org/reference/filter.html).
+  Number Time of milestone is based on event counts on the subset of
+  trial data.
+
+#### Returns
+
+data lock time
+
+------------------------------------------------------------------------
+
+### Method `has_arm()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
+check if the trial has any arm. Return `TRUE` or `FALSE`.
+
+#### Usage
+
+    Trials$has_arm()
+
+------------------------------------------------------------------------
+
+### Method `event_plot()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
+plot of cumulative number of events/samples over calendar time.
+
+#### Usage
+
+    Trials$event_plot()
+
+------------------------------------------------------------------------
+
+### Method `mute()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
+mute all messages (not including warnings)
+
+#### Usage
+
+    Trials$mute(silent)
+
+#### Arguments
+
+- `silent`:
+
+  logical.
 
 ------------------------------------------------------------------------
 
 ### Method `reset()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
 
 reset a trial to its snapshot taken before it was executed. Seed will be
 reassigned with a new one. Enrollment time are re-generated. If the
@@ -1930,95 +1295,25 @@ back to recruit patients again.
 
 ------------------------------------------------------------------------
 
-### Method `set_arm_added_time()`
+### Method `make_arms_snapshot()`
 
-save time when an arm is added to the trial
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
+make a snapshot of arms
 
 #### Usage
 
-    Trials$set_arm_added_time(arm, time)
-
-#### Arguments
-
-- `arm`:
-
-  name of added arm.
-
-- `time`:
-
-  time when an arm is added.
+    Trials$make_arms_snapshot()
 
 ------------------------------------------------------------------------
 
-### Method `get_arm_added_time()`
+### Method [`print()`](https://rdrr.io/r/base/print.html)
 
-get time when an arm is added to the trial
-
-#### Usage
-
-    Trials$get_arm_added_time(arm)
-
-#### Arguments
-
-- `arm`:
-
-  arm name.
-
-------------------------------------------------------------------------
-
-### Method `set_arm_removal_time()`
-
-save time when an arm is removed to the trial
+print a trial
 
 #### Usage
 
-    Trials$set_arm_removal_time(arm, time)
-
-#### Arguments
-
-- `arm`:
-
-  name of removed arm.
-
-- `time`:
-
-  time when an arm is removed.
-
-------------------------------------------------------------------------
-
-### Method `get_arm_removal_time()`
-
-get time when an arm is removed from the trial
-
-#### Usage
-
-    Trials$get_arm_removal_time(arm)
-
-#### Arguments
-
-- `arm`:
-
-  arm name.
-
-------------------------------------------------------------------------
-
-### Method `get_stratification_factors()`
-
-return stratification factors
-
-#### Usage
-
-    Trials$get_stratification_factors()
-
-------------------------------------------------------------------------
-
-### Method `has_stratification_factors()`
-
-has stratification factors
-
-#### Usage
-
-    Trials$has_stratification_factors()
+    Trials$print()
 
 ------------------------------------------------------------------------
 
