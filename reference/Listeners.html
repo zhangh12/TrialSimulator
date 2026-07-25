@@ -7,9 +7,15 @@ this package. Thus, we have to export the whole R6 class which exposures all
 public methods. However, only the public methods in the list below are
 useful to end users.
 
-$add_milestones()
+$add_milestones() register milestone(s) with the listener.
+$get_milestone_names() return names of registered milestones.
 
-"><meta property="og:description" content="Create a class of listener. A listener monitors the trial while checking
+
+Internal machinery. The remaining public methods
+($monitor(), $mute() and $reset()) are public only
+because they are invoked on a listener object by other components of the
+package (controllers), which R6 cannot grant through private members.
+Users should not call them directly."><meta property="og:description" content="Create a class of listener. A listener monitors the trial while checking
 condition of pre-defined milestones. Actions are triggered and executed
 automatically.
 Public methods in this R6 class are used in developing
@@ -17,9 +23,15 @@ this package. Thus, we have to export the whole R6 class which exposures all
 public methods. However, only the public methods in the list below are
 useful to end users.
 
-$add_milestones()
+$add_milestones() register milestone(s) with the listener.
+$get_milestone_names() return names of registered milestones.
 
-"><meta property="og:image" content="https://zhangh12.github.io/TrialSimulator/logo.svg"></head><body>
+
+Internal machinery. The remaining public methods
+($monitor(), $mute() and $reset()) are public only
+because they are invoked on a listener object by other components of the
+package (controllers), which R6 cannot grant through private members.
+Users should not call them directly."><meta property="og:image" content="https://zhangh12.github.io/TrialSimulator/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -27,7 +39,7 @@ $add_milestones()
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.28.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.29.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -79,8 +91,14 @@ automatically.</p>
 this package. Thus, we have to export the whole R6 class which exposures all
 public methods. However, only the public methods in the list below are
 useful to end users.</p>
-<ul><li><p><code>$add_milestones()</code></p></li>
-</ul></div>
+<ul><li><p><code>$add_milestones()</code> register milestone(s) with the listener.</p></li>
+<li><p><code>$get_milestone_names()</code> return names of registered milestones.</p></li>
+</ul><p><strong>Internal machinery.</strong> The remaining public methods
+(<code>$monitor()</code>, <code>$mute()</code> and <code>$reset()</code>) are public only
+because they are invoked on a listener object by other components of the
+package (controllers), which R6 cannot grant through private members.
+Users should not call them directly.</p>
+    </div>
 
 
     <div class="section level2">
@@ -95,7 +113,6 @@ useful to end users.</p>
 
 <ul><li><p><a href="#method-Listeners-new"><code>Listeners$new()</code></a></p></li>
 <li><p><a href="#method-Listeners-add_milestones"><code>Listeners$add_milestones()</code></a></p></li>
-<li><p><a href="#method-Listeners-get_milestones"><code>Listeners$get_milestones()</code></a></p></li>
 <li><p><a href="#method-Listeners-get_milestone_names"><code>Listeners$get_milestone_names()</code></a></p></li>
 <li><p><a href="#method-Listeners-monitor"><code>Listeners$monitor()</code></a></p></li>
 <li><p><a href="#method-Listeners-mute"><code>Listeners$mute()</code></a></p></li>
@@ -149,42 +166,26 @@ otherwise, the result of <code>Listeners$monitor()</code> can be problematic.</p
 </div>
 
 
-</div><p></p><hr><a id="method-Listeners-get_milestones"></a><div class="section">
-<h3 id="method-get-milestones-">Method <code>get_milestones()</code><a class="anchor" aria-label="anchor" href="#method-get-milestones-"></a></h3>
-<p>return registered milestones</p><div class="section">
-<h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Listeners</span><span class="op">$</span><span class="fu">get_milestones</span><span class="op">(</span>milestone_name <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>milestone_name</code></dt>
-<dd><p>return <code>Milestone</code> object with given name(s).
-If <code>NULL</code>, all registered milestones are returned.</p></dd>
-
-
-</dl><p></p></div>
-</div>
-
 </div><p></p><hr><a id="method-Listeners-get_milestone_names"></a><div class="section">
 <h3 id="method-get-milestone-names-">Method <code>get_milestone_names()</code><a class="anchor" aria-label="anchor" href="#method-get-milestone-names-"></a></h3>
 <p>return names of registered milestones</p><div class="section">
-<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
+<h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Listeners</span><span class="op">$</span><span class="fu">get_milestone_names</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 
 </div><p></p><hr><a id="method-Listeners-monitor"></a><div class="section">
 <h3 id="method-monitor-">Method <code>monitor()</code><a class="anchor" aria-label="anchor" href="#method-monitor-"></a></h3>
+<p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>scan, check, and trigger registered milestones.
 Milestones are triggered in the order when calling
 <code>Listener$add_milestones</code>.</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Listeners</span><span class="op">$</span><span class="fu">monitor</span><span class="op">(</span><span class="va">trial</span>, <span class="va">dry_run</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
+<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>trial</code></dt>
 <dd><p>a <code>Trial</code> object.</p></dd>
 
@@ -198,13 +199,14 @@ Milestones are triggered in the order when calling
 
 </div><p></p><hr><a id="method-Listeners-mute"></a><div class="section">
 <h3 id="method-mute-">Method <code>mute()</code><a class="anchor" aria-label="anchor" href="#method-mute-"></a></h3>
+<p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>mute all messages (not including warnings)</p><div class="section">
-<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Listeners</span><span class="op">$</span><span class="fu">mute</span><span class="op">(</span><span class="va">silent</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
+<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>silent</code></dt>
 <dd><p>logical.</p></dd>
 
@@ -214,9 +216,10 @@ Milestones are triggered in the order when calling
 
 </div><p></p><hr><a id="method-Listeners-reset"></a><div class="section">
 <h3 id="method-reset-">Method <code>reset()</code><a class="anchor" aria-label="anchor" href="#method-reset-"></a></h3>
+<p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>reset all milestones registered to the listener. Usually, this is called
 before a controller can run additional replicates of simulation.</p><div class="section">
-<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Listeners</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -224,12 +227,12 @@ before a controller can run additional replicates of simulation.</p><div class="
 </div><p></p><hr><a id="method-Listeners-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Listeners</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
+<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

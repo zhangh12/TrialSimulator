@@ -9,7 +9,15 @@ Thus, we have to export the whole R6 class which exposures all public
 methods. However, only the public methods in the list below are useful
 to end users.
 
-- `$add_milestones()`
+- `$add_milestones()` register milestone(s) with the listener.
+
+- `$get_milestone_names()` return names of registered milestones.
+
+**Internal machinery.** The remaining public methods (`$monitor()`,
+`$mute()` and `$reset()`) are public only because they are invoked on a
+listener object by other components of the package (controllers), which
+R6 cannot grant through private members. Users should not call them
+directly.
 
 ## Value
 
@@ -24,8 +32,6 @@ to create a listener.
 - [`Listeners$new()`](#method-Listeners-new)
 
 - [`Listeners$add_milestones()`](#method-Listeners-add_milestones)
-
-- [`Listeners$get_milestones()`](#method-Listeners-get_milestones)
 
 - [`Listeners$get_milestone_names()`](#method-Listeners-get_milestone_names)
 
@@ -86,23 +92,6 @@ reasonable order when calling this function, otherwise, the result of
 
 ------------------------------------------------------------------------
 
-### Method `get_milestones()`
-
-return registered milestones
-
-#### Usage
-
-    Listeners$get_milestones(milestone_name = NULL)
-
-#### Arguments
-
-- `milestone_name`:
-
-  return `Milestone` object with given name(s). If `NULL`, all
-  registered milestones are returned.
-
-------------------------------------------------------------------------
-
 ### Method `get_milestone_names()`
 
 return names of registered milestones
@@ -114,6 +103,8 @@ return names of registered milestones
 ------------------------------------------------------------------------
 
 ### Method `monitor()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
 
 scan, check, and trigger registered milestones. Milestones are triggered
 in the order when calling `Listener$add_milestones`.
@@ -136,6 +127,8 @@ in the order when calling `Listener$add_milestones`.
 
 ### Method `mute()`
 
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
 mute all messages (not including warnings)
 
 #### Usage
@@ -151,6 +144,8 @@ mute all messages (not including warnings)
 ------------------------------------------------------------------------
 
 ### Method `reset()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
 
 reset all milestones registered to the listener. Usually, this is called
 before a controller can run additional replicates of simulation.

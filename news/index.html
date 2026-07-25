@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.28.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.29.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,6 +50,13 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.29.0" id="trialsimulator-1290">TrialSimulator 1.29.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1290"></a></h2>
+<div class="section level3">
+<h3 id="updates-1-29-0">Updates<a class="anchor" aria-label="anchor" href="#updates-1-29-0"></a></h3>
+<ul><li>Minimize the public API of the <code>Listeners</code> class: <code>get_milestones()</code> is now private. The machinery methods <code>monitor()</code>, <code>mute()</code> and <code>reset()</code>, which stay public only because the controller invokes them, now carry a bold warning that users should not call them directly, in the same style as the <code>Trials</code> class.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.28.1" id="trialsimulator-1281">TrialSimulator 1.28.1<a class="anchor" aria-label="anchor" href="#trialsimulator-1281"></a></h2>
 <div class="section level3">

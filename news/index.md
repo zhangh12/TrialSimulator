@@ -1,5 +1,15 @@
 # Changelog
 
+## TrialSimulator 1.29.0
+
+### Updates
+
+- Minimize the public API of the `Listeners` class: `get_milestones()`
+  is now private. The machinery methods `monitor()`, `mute()` and
+  `reset()`, which stay public only because the controller invokes them,
+  now carry a bold warning that users should not call them directly, in
+  the same style as the `Trials` class.
+
 ## TrialSimulator 1.28.1
 
 ### Updates
