@@ -32,6 +32,8 @@ to learn how to define milestones when performing simulation using
 \item \href{#method-Milestones-get_type}{\code{Milestones$get_type()}}
 \item \href{#method-Milestones-get_trigger_condition}{\code{Milestones$get_trigger_condition()}}
 \item \href{#method-Milestones-get_action}{\code{Milestones$get_action()}}
+\item \href{#method-Milestones-set_trigger_condition}{\code{Milestones$set_trigger_condition()}}
+\item \href{#method-Milestones-set_action_function}{\code{Milestones$set_action_function()}}
 \item \href{#method-Milestones-set_dry_run}{\code{Milestones$set_dry_run()}}
 \item \href{#method-Milestones-execute_action}{\code{Milestones$execute_action()}}
 \item \href{#method-Milestones-get_trigger_status}{\code{Milestones$get_trigger_status()}}
@@ -110,6 +112,57 @@ return action function
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Milestones-set_trigger_condition"></a>}}
+\if{latex}{\out{\hypertarget{method-Milestones-set_trigger_condition}{}}}
+\subsection{Method \code{set_trigger_condition()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
+replace the trigger condition of a not-yet-triggered milestone. This
+is invoked by the listener when it applies an update requested through
+\code{Trials$update_milestone()} within an action function. The
+condition in effect at construction is captured on first replacement
+and restored by \code{reset()} between simulation replicates.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Milestones$set_trigger_condition(trigger_condition)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{trigger_condition}}{an object of class \code{Condition}. See
+\code{trigger_condition} of \code{milestone()}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Milestones-set_action_function"></a>}}
+\if{latex}{\out{\hypertarget{method-Milestones-set_action_function}{}}}
+\subsection{Method \code{set_action_function()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
+replace the action function (and its fixed arguments) of a
+not-yet-triggered milestone. This is invoked by the listener when it
+applies an update requested through \code{Trials$update_milestone()}
+within an action function. The action in effect at construction is
+restored by \code{reset()} between simulation replicates.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Milestones$set_action_function(action, action_args = list())}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{action}}{function to execute when the milestone triggers. See
+\code{action} of \code{milestone()}.}
+
+\item{\code{action_args}}{named list. Fixed arguments of \code{action},
+corresponding to \code{...} of \code{milestone()}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Milestones-set_dry_run"></a>}}
 \if{latex}{\out{\hypertarget{method-Milestones-set_dry_run}{}}}
 \subsection{Method \code{set_dry_run()}}{
@@ -160,7 +213,10 @@ return trigger status
 \subsection{Method \code{reset()}}{
 reset an milestone so that it can be triggered again. Usually, this is called
 before the controller of a trial can run additional replicates
-of simulation.
+of simulation. If the trigger condition or the action was replaced
+in-run through \code{Trials$update_milestone()}, the as-designed
+version is restored so that every replicate starts from the original
+design.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Milestones$reset()}\if{html}{\out{</div>}}
 }

@@ -115,7 +115,42 @@ Listeners <- R6::R6Class(
       for(milestone in self$get_milestones()){
         milestone$set_dry_run(dry_run)
         tryCatch(
-          {milestone$trigger_milestone(trial)},
+          {
+            milestone$trigger_milestone(trial)
+
+            ## apply milestone updates requested by the action just executed
+            ## through Trials$update_milestone(). The trial object serves as
+            ## the mailbox between the action function (which can only reach
+            ## the trial) and this listener (which owns the milestones):
+            ## requests are queued during the action and consumed here,
+            ## right after the action returns and before the loop moves on,
+            ## so an update to the very next milestone is already in effect
+            ## when it is evaluated.
+            for(request in trial$pop_milestone_updates()){
+              target <- private$milestones[[request$name]]
+              if(is.null(target)){
+                stop('Milestone <', request$name,
+                     '> is not registered with the trial and thus cannot ',
+                     'be modified in milestone <', request$requested_by,
+                     '>. Registered milestone(s): <',
+                     paste0(names(private$milestones), collapse = ', '),
+                     '>. ')
+              }
+              if(target$get_trigger_status()){
+                stop('update_milestone() called in the action function of ',
+                     'milestone <', request$requested_by, '>: milestone <',
+                     request$name,
+                     '> has already been triggered and cannot be updated. ')
+              }
+              if(!is.null(request$when)){
+                target$set_trigger_condition(request$when)
+              }
+              if(!is.null(request$action)){
+                target$set_action_function(request$action,
+                                           request$action_args)
+              }
+            }
+          },
           error = function(e){
             trial$save(e$message, 'error_message', overwrite = TRUE)
             stop('Error in executing action function of milestone <',

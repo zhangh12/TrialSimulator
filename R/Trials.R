@@ -47,6 +47,9 @@
 #' after dose selection or enrichment. \code{end_time} of the new accrual
 #' rate is measured from the milestone; patients not yet enrolled are
 #' re-planned and re-randomized under the new schedule.
+#' \item \code{$update_milestone()} update the trigger condition and/or the
+#' action of a not-yet-triggered milestone. The update takes effect right
+#' after the current action function returns.
 #' }
 #'
 #' \strong{Methods callable within action functions.} In addition to the
@@ -110,8 +113,9 @@
 #' (\code{$lock_data()}, \code{$get_data_lock_time_by_calendar_time()},
 #' \code{$get_data_lock_time_by_event_number()},
 #' \code{$get_data_lock_time_by_enrollment()}, \code{$has_arm()},
-#' \code{$event_plot()}, \code{$mute()}, \code{$reset()} and
-#' \code{$make_arms_snapshot()}) are public only because they are invoked on
+#' \code{$event_plot()}, \code{$mute()}, \code{$reset()},
+#' \code{$make_arms_snapshot()} and \code{$pop_milestone_updates()}) are
+#' public only because they are invoked on
 #' a trial object by other components of the package (milestones, listeners,
 #' controllers and triggering conditions), which R6 cannot grant through
 #' private members. Users should not call them directly. Note that
@@ -881,6 +885,100 @@ Trials <- R6::R6Class(
 
       invisible(NULL)
     },
+
+    #' @description
+    #' update the trigger condition and/or the action of a not-yet-triggered
+    #' milestone at a milestone. The milestone to be updated is identified by
+    #' its name, which cannot be changed. This function can be used in
+    #' adaptive designs, e.g., when conditional power at an interim analysis
+    #' is lower than expected, the final analysis can be postponed by
+    #' increasing the target number of events in its triggering condition,
+    #' or its triggering condition can be switched from a calendar time to
+    #' an event count entirely.
+    #'
+    #' The update is not applied immediately: it is queued and takes effect
+    #' right after the current action function returns, before the next
+    #' milestone is evaluated. The new trigger condition and action replace
+    #' the old ones as a whole. Between simulation replicates the milestone
+    #' is restored to its as-designed trigger condition and action, so every
+    #' replicate starts from the original design. A milestone that has
+    #' already been triggered cannot be updated.
+    #'
+    #' Note that this function should only be called within action functions.
+    #' Calling it before any milestone has been triggered is an error. Also
+    #' note that milestones must trigger in their registration order: an
+    #' updated triggering condition that makes a later-registered milestone
+    #' fire before an earlier one stops the simulation with an error.
+    #' @param name character. Name of the milestone to be updated. It must be
+    #' registered with the listener and not yet triggered.
+    #' @param when (optional) new triggering condition, an object returned by
+    #' \code{calendarTime()}, \code{enrollment()}, \code{eventNumber()} or
+    #' their combinations using \code{&} and \code{|}. If \code{NULL}, the
+    #' triggering condition is left unchanged.
+    #' @param action (optional) new action function. See \code{action} of
+    #' \code{milestone()}. If \code{NULL}, the action is left unchanged.
+    #' @param ... (optional) named arguments of the new \code{action}. Only
+    #' allowed when \code{action} is provided.
+    #' The new action is executed with exactly the arguments supplied
+    #' here: fixed arguments of the previous action are never carried over.
+    update_milestone = function(name, when = NULL, action = NULL, ...){
+
+      milestone_time <- self$get_milestone_time()
+      if(length(milestone_time) == 0){
+        stop('update_milestone() can only be called within an action ',
+             'function of a milestone, i.e., after at least one milestone ',
+             'has been triggered. ')
+      }
+
+      if(!is.character(name) || length(name) != 1){
+        stop('name in update_milestone() must be a single character, ',
+             'the name of a registered milestone. ')
+      }
+
+      action_args <- list(...)
+      if(is.null(action) && length(action_args) > 0){
+        stop('Arguments in ... of update_milestone() are fixed arguments ',
+             'of the new action, thus can only be used when action is ',
+             'provided. ')
+      }
+
+      if(is.null(when) && is.null(action)){
+        stop('At least one of <when, action> must be provided in ',
+             'update_milestone() to update milestone <', name, '>. ')
+      }
+
+      if(!is.null(when) && !('Condition' %in% class(when))){
+        stop('when in update_milestone() should be created by functions <',
+             'eventNumber, calendarTime, enrollment',
+             '> and their combination using (), & and |. ')
+      }
+      if(!is.null(action) && !is.function(action)){
+        stop('action in update_milestone() must be a function. ')
+      }
+
+      ## the request is queued here and applied by the listener right after
+      ## the current action function returns: an action function can only
+      ## reach the trial object, while the milestones are owned by the
+      ## listener, so the trial serves as the mailbox between the two.
+      ## Deeper validation (the milestone exists and is not yet triggered,
+      ## the action signature is valid) happens at that point.
+      private$milestone_update_queue[[length(private$milestone_update_queue) + 1]] <-
+        list(name = name, when = when, action = action,
+             action_args = action_args,
+             ## the milestone whose action function scheduled this request;
+             ## carried along so that errors raised when the update is
+             ## applied can name their origin
+             requested_by = names(milestone_time)[which.max(milestone_time)])
+
+      if(!private$silent){
+        message('An update to milestone <', name, '> is scheduled and will ',
+                'be applied right after the current action function ',
+                'returns. ')
+      }
+
+      invisible(NULL)
+    },
+
 
     ## ---- methods callable within action functions ---------------------------
 
@@ -2362,6 +2460,19 @@ Trials <- R6::R6Class(
     },
 
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
+    #' return and clear the queue of milestone update requests scheduled by
+    #' \code{update_milestone()} within the current action function. It is
+    #' called by the listener right after each action function returns, to
+    #' apply the requested updates to its registered milestones.
+    pop_milestone_updates = function(){
+      requests <- private$milestone_update_queue
+      private$milestone_update_queue <- list()
+      requests
+    },
+
+    #' @description
     #' print a trial
     print = function(){
       white_text_blue_bg <- "" ## "\033[37;44m"
@@ -2419,6 +2530,12 @@ Trials <- R6::R6Class(
     locked_data = list(),
 
     milestone_time = c(),
+
+    ## requests queued by Trials$update_milestone() within an action
+    ## function; consumed by Listeners$monitor() right after the action
+    ## returns. A plain data field, so it is covered by make_snapshot()
+    ## and cleared by reset() automatically.
+    milestone_update_queue = list(),
     arm_time = list(), # time when arms are added to or removed from the trial
 
     regimen = NULL,

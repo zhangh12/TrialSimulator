@@ -55,6 +55,9 @@ recruitment curve at a milestone, e.g., to revise or pause recruitment
 after dose selection or enrichment. \code{end_time} of the new accrual
 rate is measured from the milestone; patients not yet enrolled are
 re-planned and re-randomized under the new schedule.
+\item \code{$update_milestone()} update the trigger condition and/or the
+action of a not-yet-triggered milestone. The update takes effect right
+after the current action function returns.
 }
 
 \strong{Methods callable within action functions.} In addition to the
@@ -118,8 +121,9 @@ and must not be called within action functions.
 (\code{$lock_data()}, \code{$get_data_lock_time_by_calendar_time()},
 \code{$get_data_lock_time_by_event_number()},
 \code{$get_data_lock_time_by_enrollment()}, \code{$has_arm()},
-\code{$event_plot()}, \code{$mute()}, \code{$reset()} and
-\code{$make_arms_snapshot()}) are public only because they are invoked on
+\code{$event_plot()}, \code{$mute()}, \code{$reset()},
+\code{$make_arms_snapshot()} and \code{$pop_milestone_updates()}) are
+public only because they are invoked on
 a trial object by other components of the package (milestones, listeners,
 controllers and triggering conditions), which R6 cannot grant through
 private members. Users should not call them directly. Note that
@@ -175,6 +179,7 @@ trial$closedTest(dt, treatments = c('high dose', 'low dose'),
 \item \href{#method-Trials-crossover}{\code{Trials$crossover()}}
 \item \href{#method-Trials-stop_followup}{\code{Trials$stop_followup()}}
 \item \href{#method-Trials-update_accrual_rate}{\code{Trials$update_accrual_rate()}}
+\item \href{#method-Trials-update_milestone}{\code{Trials$update_milestone()}}
 \item \href{#method-Trials-get_locked_data}{\code{Trials$get_locked_data()}}
 \item \href{#method-Trials-save}{\code{Trials$save()}}
 \item \href{#method-Trials-get_output}{\code{Trials$get_output()}}
@@ -198,6 +203,7 @@ trial$closedTest(dt, treatments = c('high dose', 'low dose'),
 \item \href{#method-Trials-mute}{\code{Trials$mute()}}
 \item \href{#method-Trials-reset}{\code{Trials$reset()}}
 \item \href{#method-Trials-make_arms_snapshot}{\code{Trials$make_arms_snapshot()}}
+\item \href{#method-Trials-pop_milestone_updates}{\code{Trials$pop_milestone_updates()}}
 \item \href{#method-Trials-print}{\code{Trials$print()}}
 \item \href{#method-Trials-clone}{\code{Trials$clone()}}
 }
@@ -579,6 +585,58 @@ Calling it before any milestone has been triggered is an error.
 \code{piecewise_rate} as in \code{StaggeredRecruiter}, with
 \code{end_time} measured from the current milestone. The last
 \code{end_time} must be \code{Inf} with a positive rate.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-update_milestone"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-update_milestone}{}}}
+\subsection{Method \code{update_milestone()}}{
+update the trigger condition and/or the action of a not-yet-triggered
+milestone at a milestone. The milestone to be updated is identified by
+its name, which cannot be changed. This function can be used in
+adaptive designs, e.g., when conditional power at an interim analysis
+is lower than expected, the final analysis can be postponed by
+increasing the target number of events in its triggering condition,
+or its triggering condition can be switched from a calendar time to
+an event count entirely.
+
+The update is not applied immediately: it is queued and takes effect
+right after the current action function returns, before the next
+milestone is evaluated. The new trigger condition and action replace
+the old ones as a whole. Between simulation replicates the milestone
+is restored to its as-designed trigger condition and action, so every
+replicate starts from the original design. A milestone that has
+already been triggered cannot be updated.
+
+Note that this function should only be called within action functions.
+Calling it before any milestone has been triggered is an error. Also
+note that milestones must trigger in their registration order: an
+updated triggering condition that makes a later-registered milestone
+fire before an earlier one stops the simulation with an error.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$update_milestone(name, when = NULL, action = NULL, ...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{name}}{character. Name of the milestone to be updated. It must be
+registered with the listener and not yet triggered.}
+
+\item{\code{when}}{(optional) new triggering condition, an object returned by
+\code{calendarTime()}, \code{enrollment()}, \code{eventNumber()} or
+their combinations using \code{&} and \code{|}. If \code{NULL}, the
+triggering condition is left unchanged.}
+
+\item{\code{action}}{(optional) new action function. See \code{action} of
+\code{milestone()}. If \code{NULL}, the action is left unchanged.}
+
+\item{\code{...}}{(optional) named arguments of the new \code{action}. Only
+allowed when \code{action} is provided.
+The new action is executed with exactly the arguments supplied
+here: fixed arguments of the previous action are never carried over.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1255,6 +1313,21 @@ recruit patients again.
 make a snapshot of arms
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$make_arms_snapshot()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-pop_milestone_updates"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-pop_milestone_updates}{}}}
+\subsection{Method \code{pop_milestone_updates()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
+return and clear the queue of milestone update requests scheduled by
+\code{update_milestone()} within the current action function. It is
+called by the listener right after each action function returns, to
+apply the requested updates to its registered milestones.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$pop_milestone_updates()}\if{html}{\out{</div>}}
 }
 
 }

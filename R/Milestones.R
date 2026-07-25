@@ -33,7 +33,62 @@ Milestones <- R6::R6Class(
     triggered = FALSE, ## logical. Whether this milestone has been triggered
                       ## (to avoid repeated execution)
     silent = FALSE,
-    is_dry_run = FALSE
+    is_dry_run = FALSE,
+
+    ## as-designed trigger condition and action, fixed at construction.
+    ## reset() unconditionally restores them between simulation replicates,
+    ## undoing any in-run replacement made through set_trigger_condition()
+    ## or set_action_function() (i.e., via Trials$update_milestone() within
+    ## an action function), so that every replicate starts from the
+    ## original design.
+    original_trigger_condition = NULL,
+    original_action = NULL,
+    original_action_args = list(),
+
+    ## shared validation of an action function and its fixed arguments;
+    ## used by initialize() and set_action_function()
+    validate_action = function(action, dots, name){
+      if(!is.function(action)){
+        stop('The action of milestone <', name, '> must be a function. ',
+             'Use doNothing if no action is intended. ')
+      }
+
+      if(length(dots) && (is.null(names(dots)) || any(names(dots) == ''))){
+        stop('All extra arguments to milestone(...) must be named; ',
+             'they are passed to `action`.')
+      }
+
+      args_in_action <- names(formals(action))
+      if(length(args_in_action) == 0 || args_in_action[1] != 'trial'){
+        stop('Action function of milestone <', name, '> must have ',
+             '\'trial\' as its first argument.')
+      }
+
+      if(!('...' %in% args_in_action)){
+        allowed_args <- setdiff(args_in_action, 'trial')
+        unknown_args <- setdiff(names(dots), allowed_args)
+        if(length(unknown_args)){
+          stop('Unknown argument(s) <',
+               paste0(unknown_args, collapse = ', '),
+               '> in the action function of milestone <',
+               name, '>. ')
+        }
+
+        req_mask <- vapply(formals(action)[allowed_args],
+                           function(x)
+                             identical(x, quote(expr=)), logical(1))
+        required <- allowed_args[req_mask]
+        missing_req <- setdiff(required, names(dots))
+        if(length(missing_req)){
+          stop('Missing required argument(s) <',
+               paste0(missing_req, collapse = ', '),
+               '> in action function of milestone <',
+               name, '>. ')
+        }
+      }
+
+      invisible(NULL)
+    }
   ),
 
   public = list(
@@ -60,46 +115,10 @@ Milestones <- R6::R6Class(
              'eventNumber, calendarTime, enrollment',
              '> and their combination using (), & and |. ')
       }
-      # allow no specified action, for testing purpose.
-      stopifnot(is.function(action) || is.null(action))
-
-      # Capture fixed arguments for action
+      # Capture fixed arguments for action; validation shared with
+      # set_action_function()
       dots <- list(...)
-      if(length(dots) && (is.null(names(dots)) || any(names(dots) == ''))){
-        stop('All extra arguments to milestone(...) must be named; ',
-             'they are passed to `action`.')
-      }
-
-      if(is.function(action)){
-        args_in_action <- names(formals(action))
-        if(length(args_in_action) == 0 || args_in_action[1] != 'trial'){
-          stop('Action function ', deparse(substitute(action)), ' must have ',
-               '\'trial\' as its first argument.')
-        }
-      }
-
-      if(!('...' %in% args_in_action)){
-        allowed_args <- setdiff(args_in_action, 'trial')
-        unknown_args <- setdiff(names(dots), allowed_args)
-        if(length(unknown_args)){
-          stop('Unknown argument(s) <',
-               paste0(unknown_args, collapse = ', '),
-               '> in the action function of milestone <',
-               name, '>. ')
-        }
-
-        req_mask <- vapply(formals(action)[allowed_args],
-                           function(x)
-                             identical(x, quote(expr=)), logical(1))
-        required <- allowed_args[req_mask]
-        missing_req <- setdiff(required, names(dots))
-        if(length(missing_req)){
-          stop('Missing required argument(s) <',
-               paste0(missing_req, collapse = ', '),
-               '> in action function of milestone <',
-               name, '>. ')
-        }
-      }
+      private$validate_action(action, dots, name)
 
       private$name <- name
       private$type <- type
@@ -110,6 +129,11 @@ Milestones <- R6::R6Class(
       private$action_args <- dots
       private$triggered <- FALSE
       private$is_dry_run <- FALSE
+
+      ## freeze the as-designed trigger condition and action for reset()
+      private$original_trigger_condition <- trigger_condition
+      private$original_action <- action
+      private$original_action_args <- dots
     },
 
     #' @description
@@ -134,6 +158,56 @@ Milestones <- R6::R6Class(
     #' return action function
     get_action = function(){
       private$action
+    },
+
+    #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
+    #' replace the trigger condition of a not-yet-triggered milestone. This
+    #' is invoked by the listener when it applies an update requested through
+    #' \code{Trials$update_milestone()} within an action function. The
+    #' condition in effect at construction is captured on first replacement
+    #' and restored by \code{reset()} between simulation replicates.
+    #' @param trigger_condition an object of class \code{Condition}. See
+    #' \code{trigger_condition} of \code{milestone()}.
+    set_trigger_condition = function(trigger_condition){
+      if(self$get_trigger_status()){
+        stop('Milestone <', self$get_name(), '> has already been triggered ',
+             'and its trigger condition can no longer be updated. ')
+      }
+      if(!('Condition' %in% class(trigger_condition))){
+        stop('The replacement trigger condition of milestone <',
+             self$get_name(), '> should be created by functions <',
+             'eventNumber, calendarTime, enrollment',
+             '> and their combination using (), & and |. ')
+      }
+      private$trigger_condition <- trigger_condition
+    },
+
+    #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
+    #' replace the action function (and its fixed arguments) of a
+    #' not-yet-triggered milestone. This is invoked by the listener when it
+    #' applies an update requested through \code{Trials$update_milestone()}
+    #' within an action function. The action in effect at construction is
+    #' restored by \code{reset()} between simulation replicates.
+    #' @param action function to execute when the milestone triggers. See
+    #' \code{action} of \code{milestone()}.
+    #' @param action_args named list. Fixed arguments of \code{action},
+    #' corresponding to \code{...} of \code{milestone()}.
+    set_action_function = function(action, action_args = list()){
+      if(self$get_trigger_status()){
+        stop('Milestone <', self$get_name(), '> has already been triggered ',
+             'and its action can no longer be updated. ')
+      }
+      if(!is.function(action)){
+        stop('The replacement action of milestone <', self$get_name(),
+             '> must be a function. ')
+      }
+      private$validate_action(action, action_args, self$get_name())
+      private$action <- action
+      private$action_args <- action_args
     },
 
     #' @description
@@ -170,9 +244,19 @@ Milestones <- R6::R6Class(
     #' @description
     #' reset an milestone so that it can be triggered again. Usually, this is called
     #' before the controller of a trial can run additional replicates
-    #' of simulation.
+    #' of simulation. If the trigger condition or the action was replaced
+    #' in-run through \code{Trials$update_milestone()}, the as-designed
+    #' version is restored so that every replicate starts from the original
+    #' design.
     reset = function(){
       private$triggered <- FALSE
+
+      ## restore the as-designed trigger condition and action fixed at
+      ## construction; for a milestone that was never updated in-run this
+      ## reassigns the same objects and is a no-op
+      private$trigger_condition <- private$original_trigger_condition
+      private$action <- private$original_action
+      private$action_args <- private$original_action_args
     },
 
     #' @description
