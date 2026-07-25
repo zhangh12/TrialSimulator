@@ -18,8 +18,15 @@ public methods. However, only the public methods in the list below are
 useful to end users.
 
 \itemize{
-\item \code{$add_milestones()}
+\item \code{$add_milestones()} register milestone(s) with the listener.
+\item \code{$get_milestone_names()} return names of registered milestones.
 }
+
+\strong{Internal machinery.} The remaining public methods
+(\code{$monitor()}, \code{$mute()} and \code{$reset()}) are public only
+because they are invoked on a listener object by other components of the
+package (controllers), which R6 cannot grant through private members.
+Users should not call them directly.
 }
 \examples{
 ##
@@ -43,7 +50,6 @@ listener$add_milestones(interim, final)
 \itemize{
 \item \href{#method-Listeners-new}{\code{Listeners$new()}}
 \item \href{#method-Listeners-add_milestones}{\code{Listeners$add_milestones()}}
-\item \href{#method-Listeners-get_milestones}{\code{Listeners$get_milestones()}}
 \item \href{#method-Listeners-get_milestone_names}{\code{Listeners$get_milestone_names()}}
 \item \href{#method-Listeners-monitor}{\code{Listeners$monitor()}}
 \item \href{#method-Listeners-mute}{\code{Listeners$mute()}}
@@ -105,24 +111,6 @@ listener$add_milestones(interim, final)
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Listeners-get_milestones"></a>}}
-\if{latex}{\out{\hypertarget{method-Listeners-get_milestones}{}}}
-\subsection{Method \code{get_milestones()}}{
-return registered milestones
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Listeners$get_milestones(milestone_name = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{milestone_name}}{return \code{Milestone} object with given name(s).
-If \code{NULL}, all registered milestones are returned.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Listeners-get_milestone_names"></a>}}
 \if{latex}{\out{\hypertarget{method-Listeners-get_milestone_names}{}}}
 \subsection{Method \code{get_milestone_names()}}{
@@ -136,6 +124,8 @@ return names of registered milestones
 \if{html}{\out{<a id="method-Listeners-monitor"></a>}}
 \if{latex}{\out{\hypertarget{method-Listeners-monitor}{}}}
 \subsection{Method \code{monitor()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 scan, check, and trigger registered milestones.
 Milestones are triggered in the order when calling
 \code{Listener$add_milestones}.
@@ -157,6 +147,8 @@ Milestones are triggered in the order when calling
 \if{html}{\out{<a id="method-Listeners-mute"></a>}}
 \if{latex}{\out{\hypertarget{method-Listeners-mute}{}}}
 \subsection{Method \code{mute()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 mute all messages (not including warnings)
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Listeners$mute(silent)}\if{html}{\out{</div>}}
@@ -174,6 +166,8 @@ mute all messages (not including warnings)
 \if{html}{\out{<a id="method-Listeners-reset"></a>}}
 \if{latex}{\out{\hypertarget{method-Listeners-reset}{}}}
 \subsection{Method \code{reset()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 reset all milestones registered to the listener. Usually, this is called
 before a controller can run additional replicates of simulation.
 \subsection{Usage}{
