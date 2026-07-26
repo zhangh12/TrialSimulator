@@ -10,8 +10,8 @@
 #'
 #' Public methods in this R6 class are used in developing
 #' this package. Thus, we have to export the whole R6 class which exposures all
-#' public methods. However, none of the public methods on this page is
-#' useful to end users. Instead, refer to the
+#' public methods. However, \strong{none of the public methods on this page is
+#' useful to end users}. Instead, refer to the
 #' \href{https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html}{vignette}
 #' to learn how to define milestones when performing simulation using
 #' \code{TrialSimulator}.

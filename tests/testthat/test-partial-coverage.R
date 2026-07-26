@@ -185,8 +185,8 @@ test_that("Endpoints exposes test_generator, accessors and print", {
                  generator = rexp, rate = log(2) / 5)
 
   expect_equal(ep$get_name(), "pfs")
-  expect_equal(ep$get_type(), "tte")
-  expect_null(ep$get_readout())
+  expect_equal(ep$.__enclos_env__$private$get_type(), "tte")
+  expect_null(ep$.__enclos_env__$private$get_readout())
 
   d <- ep$test_generator(200)
   expect_true(nrow(d) == 200)
@@ -212,12 +212,12 @@ test_that("Arms rejects duplicate endpoints and reports counts", {
 
   a <- arm(name = "trt")
   expect_false(a$has_endpoint())
-  expect_equal(a$get_number_endpoints(), 0)
+  expect_equal(a$.__enclos_env__$private$get_number_endpoints(), 0)
 
   ep <- endpoint(name = "pfs", type = "tte", generator = rexp, rate = 0.1)
   a$add_endpoints(ep)
   expect_true(a$has_endpoint())
-  expect_equal(a$get_number_endpoints(), 1)
+  expect_equal(a$.__enclos_env__$private$get_number_endpoints(), 1)
 
   # same endpoint twice -> error
   expect_error(a$add_endpoints(ep), "already in the arm")

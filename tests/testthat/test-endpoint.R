@@ -13,8 +13,8 @@ test_that('"baseline" collapses to non-tte with readout 0', {
   set.seed(1)
   bm <- endpoint(name = 'biomarker', type = 'baseline', generator = rnorm)
 
-  expect_equal(bm$get_type(), 'non-tte')
-  expect_equal(bm$get_readout(), c(biomarker = 0))
+  expect_equal(bm$.__enclos_env__$private$get_type(), 'non-tte')
+  expect_equal(bm$.__enclos_env__$private$get_readout(), c(biomarker = 0))
 
   dat <- bm$test_generator(n = 5)
   expect_true(all(c('biomarker', 'biomarker_readout') %in% names(dat)))
@@ -32,9 +32,9 @@ test_that('"baseline" works in a multi-endpoint generator with other readouts', 
                  readout = c(orr = 3),
                  generator = rng)
 
-  expect_equal(ep$get_type(), c('non-tte', 'non-tte'))
-  expect_equal(ep$get_readout()[['sub']], 0)
-  expect_equal(ep$get_readout()[['orr']], 3)
+  expect_equal(ep$.__enclos_env__$private$get_type(), c('non-tte', 'non-tte'))
+  expect_equal(ep$.__enclos_env__$private$get_readout()[['sub']], 0)
+  expect_equal(ep$.__enclos_env__$private$get_readout()[['orr']], 3)
 
   dat <- ep$test_generator(n = 4)
   expect_equal(unique(dat$sub_readout), 0)
@@ -51,9 +51,9 @@ test_that('a length-1 "baseline" type recycles over multiple names', {
                  type = 'baseline',
                  generator = rng)
 
-  expect_equal(ep$get_type(), c('non-tte', 'non-tte'))
-  expect_equal(ep$get_readout()[['age']], 0)
-  expect_equal(ep$get_readout()[['sex']], 0)
+  expect_equal(ep$.__enclos_env__$private$get_type(), c('non-tte', 'non-tte'))
+  expect_equal(ep$.__enclos_env__$private$get_readout()[['age']], 0)
+  expect_equal(ep$.__enclos_env__$private$get_readout()[['sex']], 0)
 })
 
 test_that('specifying a readout for a "baseline" endpoint errors', {
@@ -77,8 +77,8 @@ test_that('a plain non-tte endpoint with readout 0 is still accepted', {
   ep <- endpoint(name = 'x', type = 'non-tte',
                  readout = c(x = 0), generator = rnorm)
 
-  expect_equal(ep$get_type(), 'non-tte')
-  expect_equal(ep$get_readout(), c(x = 0))
+  expect_equal(ep$.__enclos_env__$private$get_type(), 'non-tte')
+  expect_equal(ep$.__enclos_env__$private$get_readout(), c(x = 0))
 })
 
 test_that('Endpoints$new() does not accept "baseline"', {

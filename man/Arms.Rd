@@ -16,9 +16,22 @@ public methods. However, only the public methods in the list below are
 useful to end users.
 
 \itemize{
-\item \code{$add_endpoints()}
-\item \code{$print()}
+\item \code{$add_endpoints()} add one or multiple endpoints to the arm.
+\item \code{$print()} print a summary report of the arm based on
+example data of its endpoints.
 }
+
+In addition, \code{$generate_data()} and \code{$get_endpoints()} are for
+exploratory purpose only. They appear in examples and vignettes to help
+users understand how this class works, but they are not needed at all in
+formal simulation once users know how to use this package.
+
+\strong{Internal machinery.} The remaining public methods
+(\code{$get_name()}, \code{$get_endpoints_name()}, \code{$has_endpoint()}
+and \code{$update_endpoint_generator()}) are public only because they are
+invoked on an arm object by other components of the package (trials),
+which R6 cannot grant through private members. Users should not call them
+directly.
 }
 \examples{
 # Instead of using Arms$new(), please use arm(), a user-friendly
@@ -50,7 +63,6 @@ print(a) # use the print method
 \item \href{#method-Arms-new}{\code{Arms$new()}}
 \item \href{#method-Arms-add_endpoints}{\code{Arms$add_endpoints()}}
 \item \href{#method-Arms-get_name}{\code{Arms$get_name()}}
-\item \href{#method-Arms-get_number_endpoints}{\code{Arms$get_number_endpoints()}}
 \item \href{#method-Arms-has_endpoint}{\code{Arms$has_endpoint()}}
 \item \href{#method-Arms-get_endpoints}{\code{Arms$get_endpoints()}}
 \item \href{#method-Arms-get_endpoints_name}{\code{Arms$get_endpoints_name()}}
@@ -125,6 +137,8 @@ print(a) # use the print method
 \if{html}{\out{<a id="method-Arms-get_name"></a>}}
 \if{latex}{\out{\hypertarget{method-Arms-get_name}{}}}
 \subsection{Method \code{get_name()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 return name of arm.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Arms$get_name()}\if{html}{\out{</div>}}
@@ -132,19 +146,11 @@ return name of arm.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Arms-get_number_endpoints"></a>}}
-\if{latex}{\out{\hypertarget{method-Arms-get_number_endpoints}{}}}
-\subsection{Method \code{get_number_endpoints()}}{
-return number of endpoints in the arm.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Arms$get_number_endpoints()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Arms-has_endpoint"></a>}}
 \if{latex}{\out{\hypertarget{method-Arms-has_endpoint}{}}}
 \subsection{Method \code{has_endpoint()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 check if the arm has any endpoint. Return \code{TRUE} or \code{FALSE}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Arms$has_endpoint()}\if{html}{\out{</div>}}
@@ -165,6 +171,8 @@ return a list of endpoints in the arm.
 \if{html}{\out{<a id="method-Arms-get_endpoints_name"></a>}}
 \if{latex}{\out{\hypertarget{method-Arms-get_endpoints_name}{}}}
 \subsection{Method \code{get_endpoints_name()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 return name of endpoints registered to the arm.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Arms$get_endpoints_name()}\if{html}{\out{</div>}}
@@ -175,6 +183,8 @@ return name of endpoints registered to the arm.
 \if{html}{\out{<a id="method-Arms-update_endpoint_generator"></a>}}
 \if{latex}{\out{\hypertarget{method-Arms-update_endpoint_generator}{}}}
 \subsection{Method \code{update_endpoint_generator()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 update generator of an endpoint object
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Arms$update_endpoint_generator(endpoint_name, generator, ...)}\if{html}{\out{</div>}}

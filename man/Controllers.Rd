@@ -16,9 +16,11 @@ public methods. However, only the public methods in the list below are
 useful to end users.
 
 \itemize{
-\item \code{$run()}
-\item \code{$get_output()}
-\item \code{$reset()}
+\item \code{$run()} run trial simulation, sequentially or in parallel.
+\item \code{$get_output()} return a data frame of all outputs saved
+during simulation.
+\item \code{$reset()} reset the trial and listener registered to the
+controller before running additional replicate of simulation.
 }
 }
 \examples{
