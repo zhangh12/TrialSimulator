@@ -4,6 +4,13 @@
 #' patients switch, to determine the time of switching, and to update patients'
 #' endpoint data.
 #'
+#' Public methods in this R6 class are used in developing
+#' this package. Thus, we have to export the whole R6 class which exposures all
+#' public methods. However, none of the public methods on this page is
+#' useful to end users. Instead, use \code{regimen()} to create a regimen and
+#' register it with a trial through \code{trial$add_regimen()} or
+#' \code{trial$crossover()}.
+#'
 #' @docType class
 #'
 #' @return an \code{R6Class} generator object; use \code{regimen()} to create a regimen.
@@ -102,12 +109,16 @@ Regimens <- R6::R6Class(
       },
 
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' return number of treatment allocators for regimen
     get_number_treatment_allocator = function(){
       length(private$treatment_allocator)
     },
 
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' return user-defined new treatment for a patient
     #' @param index integer. Index of allocator. Return all allocators if \code{NULL}.
     get_treatment_allocator = function(index = NULL){
@@ -126,12 +137,8 @@ Regimens <- R6::R6Class(
     },
 
     #' @description
-    #' return number of time selector for regimen
-    get_number_time_selector = function(){
-      length(private$time_selector)
-    },
-
-    #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' return user-defined time selector
     #' @param index integer. Index of selector. Return all selectors if \code{NULL}.
     get_time_selector = function(index = NULL){
@@ -140,8 +147,8 @@ Regimens <- R6::R6Class(
       }else{
         stopifnot(is.wholenumber(index) && index > 0)
         stopifnot(length(index) == 1)
-        if(index > self$get_number_time_selector()){
-          stop('There are only <', self$get_number_time_selector(),
+        if(index > private$get_number_time_selector()){
+          stop('There are only <', private$get_number_time_selector(),
                '> time selectors, and cannot request for the ',
                index, 'th. ')
         }
@@ -150,12 +157,8 @@ Regimens <- R6::R6Class(
     },
 
     #' @description
-    #' return number of data modifier for regimen
-    get_number_data_modifier = function(){
-      length(private$data_modifier)
-    },
-
-    #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' return user-defined endpoint data modifier
     #' @param index integer. Index of selector. Return all modifiers if \code{NULL}.
     get_data_modifier = function(index = NULL){
@@ -164,8 +167,8 @@ Regimens <- R6::R6Class(
       }else{
         stopifnot(is.wholenumber(index) && index > 0)
         stopifnot(length(index) == 1)
-        if(index > self$get_number_data_modifier()){
-          stop('There are only <', self$get_number_data_modifier(),
+        if(index > private$get_number_data_modifier()){
+          stop('There are only <', private$get_number_data_modifier(),
                '> data modifiers, and cannot request for the ',
                index, 'th. ')
         }
@@ -174,6 +177,8 @@ Regimens <- R6::R6Class(
     },
 
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' return pre-bound arguments for the i-th treatment allocator
     #' @param index integer.
     get_treatment_allocator_args = function(index){
@@ -181,6 +186,8 @@ Regimens <- R6::R6Class(
     },
 
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' return pre-bound arguments for the i-th time selector
     #' @param index integer.
     get_time_selector_args = function(index){
@@ -188,6 +195,8 @@ Regimens <- R6::R6Class(
     },
 
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' return pre-bound arguments for the i-th data modifier
     #' @param index integer.
     get_data_modifier_args = function(index){
@@ -195,6 +204,8 @@ Regimens <- R6::R6Class(
     },
 
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' return the earliest crossover calendar time of triplet(s)
     #' @param index integer. Index of triplet. Return all if \code{NULL}.
     get_earliest_crossover_calendar_time = function(index = NULL){
@@ -205,6 +216,8 @@ Regimens <- R6::R6Class(
     },
 
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' append one more triplet to the regimen. Used by milestone-triggered
     #' crossover to stack a new \code{what}/\code{when}/\code{how} (with its own
     #' \code{earliest_crossover_calendar_time}) onto an existing regimen without
@@ -255,6 +268,18 @@ Regimens <- R6::R6Class(
     when_args = NULL,
     how_args  = NULL,
     earliest_crossover_calendar_time = NULL,
+
+    ## @description
+    ## return number of time selector for regimen
+    get_number_time_selector = function(){
+      length(private$time_selector)
+    },
+
+    ## @description
+    ## return number of data modifier for regimen
+    get_number_data_modifier = function(){
+      length(private$data_modifier)
+    },
 
     validate_arguments = function(what, when, how){
 

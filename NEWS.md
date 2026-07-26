@@ -1,3 +1,10 @@
+# TrialSimulator 1.30.0
+
+## Updates
+
+- Continue minimizing the public API of R6 classes: `Controllers$get_trial()`, `Controllers$get_listener()`, `Controllers$mute()`, `Milestones$execute_action()`, `Milestones$get_type()`, `Milestones$get_trigger_condition()`, `Milestones$get_action()`, `Regimens$get_number_time_selector()` and `Regimens$get_number_data_modifier()` are now private. They were used only internally by their own classes.
+- The remaining public methods of `Milestones` and all public methods of `Regimens` are invoked on their objects by other components of the package (listeners and trials) and stay public only for that reason; they now carry a bold warning that users should not call them directly, in the same style as the `Trials` and `Listeners` classes.
+
 # TrialSimulator 1.29.0
 
 ## Updates

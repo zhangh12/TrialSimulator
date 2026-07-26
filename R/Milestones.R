@@ -88,6 +88,41 @@ Milestones <- R6::R6Class(
       }
 
       invisible(NULL)
+    },
+
+    ## @description
+    ## execute action function
+    ## @param trial a \code{Trial} object.
+    execute_action = function(trial){
+
+      if(private$is_dry_run){
+        action <- .default_action()
+      }else{
+        action <- do.call(private$get_action(), c(list(trial), private$action_args))
+      }
+
+      if(!private$silent && !is.null(action)){
+        message('Action for milestone <', self$get_name(), '> is executed. ')
+      }
+
+    },
+
+    ## @description
+    ## return type(s) of milestone
+    get_type = function(){
+      private$type
+    },
+
+    ## @description
+    ## return trigger_condition function
+    get_trigger_condition = function(){
+      private$trigger_condition
+    },
+
+    ## @description
+    ## return action function
+    get_action = function(){
+      private$action
     }
   ),
 
@@ -137,27 +172,11 @@ Milestones <- R6::R6Class(
     },
 
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' return name of milestone
     get_name = function(){
       private$name
-    },
-
-    #' @description
-    #' return type(s) of milestone
-    get_type = function(){
-      private$type
-    },
-
-    #' @description
-    #' return trigger_condition function
-    get_trigger_condition = function(){
-      private$trigger_condition
-    },
-
-    #' @description
-    #' return action function
-    get_action = function(){
-      private$action
     },
 
     #' @description
@@ -211,6 +230,8 @@ Milestones <- R6::R6Class(
     },
 
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' set if dry run should be carried out for the milestone. For more details,
     #' refer to \code{Controller::run}.
     #' @param dry_run logical.
@@ -219,29 +240,16 @@ Milestones <- R6::R6Class(
     },
 
     #' @description
-    #' execute action function
-    #' @param trial a \code{Trial} object.
-    execute_action = function(trial){
-
-      if(private$is_dry_run){
-        action <- .default_action()
-      }else{
-        action <- do.call(self$get_action(), c(list(trial), private$action_args))
-      }
-
-      if(!private$silent && !is.null(action)){
-        message('Action for milestone <', self$get_name(), '> is executed. ')
-      }
-
-    },
-
-    #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' return trigger status
     get_trigger_status = function(){
       private$triggered
     },
 
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' reset an milestone so that it can be triggered again. Usually, this is called
     #' before the controller of a trial can run additional replicates
     #' of simulation. If the trigger condition or the action was replaced
@@ -260,6 +268,8 @@ Milestones <- R6::R6Class(
     },
 
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' trigger an milestone (always TRUE) and execute action accordingly. It calls
     #' Trial$get_data_lock_time() to lock data based on conditions implemented
     #' in Milestones$trigger_condition. If time that meets the condition cannot be
@@ -283,16 +293,18 @@ Milestones <- R6::R6Class(
         message('Condition of milestone <', self$get_name(), '> is being checked. \n')
       }
 
-      data_lock_time <- self$get_trigger_condition()$get_trigger_time(trial)
+      data_lock_time <- private$get_trigger_condition()$get_trigger_time(trial)
 
       ## always lock data after an milestone and before taking actions
       trial$lock_data(data_lock_time, self$get_name())
 
-      self$execute_action(trial)
+      private$execute_action(trial)
       private$triggered <- TRUE
     },
 
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' mute all messages (not including warnings)
     #' @param silent logical.
     mute = function(silent){

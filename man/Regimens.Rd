@@ -11,6 +11,13 @@ an \code{R6Class} generator object; use \code{regimen()} to create a regimen.
 Create a class of regimen. A regimen defines the rules to select treatments for
 patients switch, to determine the time of switching, and to update patients'
 endpoint data.
+
+Public methods in this R6 class are used in developing
+this package. Thus, we have to export the whole R6 class which exposures all
+public methods. However, none of the public methods on this page is
+useful to end users. Instead, use \code{regimen()} to create a regimen and
+register it with a trial through \code{trial$add_regimen()} or
+\code{trial$crossover()}.
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -18,9 +25,7 @@ endpoint data.
 \item \href{#method-Regimens-new}{\code{Regimens$new()}}
 \item \href{#method-Regimens-get_number_treatment_allocator}{\code{Regimens$get_number_treatment_allocator()}}
 \item \href{#method-Regimens-get_treatment_allocator}{\code{Regimens$get_treatment_allocator()}}
-\item \href{#method-Regimens-get_number_time_selector}{\code{Regimens$get_number_time_selector()}}
 \item \href{#method-Regimens-get_time_selector}{\code{Regimens$get_time_selector()}}
-\item \href{#method-Regimens-get_number_data_modifier}{\code{Regimens$get_number_data_modifier()}}
 \item \href{#method-Regimens-get_data_modifier}{\code{Regimens$get_data_modifier()}}
 \item \href{#method-Regimens-get_treatment_allocator_args}{\code{Regimens$get_treatment_allocator_args()}}
 \item \href{#method-Regimens-get_time_selector_args}{\code{Regimens$get_time_selector_args()}}
@@ -92,6 +97,8 @@ user argument of \code{regimen()}.}
 \if{html}{\out{<a id="method-Regimens-get_number_treatment_allocator"></a>}}
 \if{latex}{\out{\hypertarget{method-Regimens-get_number_treatment_allocator}{}}}
 \subsection{Method \code{get_number_treatment_allocator()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 return number of treatment allocators for regimen
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Regimens$get_number_treatment_allocator()}\if{html}{\out{</div>}}
@@ -102,6 +109,8 @@ return number of treatment allocators for regimen
 \if{html}{\out{<a id="method-Regimens-get_treatment_allocator"></a>}}
 \if{latex}{\out{\hypertarget{method-Regimens-get_treatment_allocator}{}}}
 \subsection{Method \code{get_treatment_allocator()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 return user-defined new treatment for a patient
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Regimens$get_treatment_allocator(index = NULL)}\if{html}{\out{</div>}}
@@ -116,19 +125,11 @@ return user-defined new treatment for a patient
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Regimens-get_number_time_selector"></a>}}
-\if{latex}{\out{\hypertarget{method-Regimens-get_number_time_selector}{}}}
-\subsection{Method \code{get_number_time_selector()}}{
-return number of time selector for regimen
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Regimens$get_number_time_selector()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Regimens-get_time_selector"></a>}}
 \if{latex}{\out{\hypertarget{method-Regimens-get_time_selector}{}}}
 \subsection{Method \code{get_time_selector()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 return user-defined time selector
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Regimens$get_time_selector(index = NULL)}\if{html}{\out{</div>}}
@@ -143,19 +144,11 @@ return user-defined time selector
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Regimens-get_number_data_modifier"></a>}}
-\if{latex}{\out{\hypertarget{method-Regimens-get_number_data_modifier}{}}}
-\subsection{Method \code{get_number_data_modifier()}}{
-return number of data modifier for regimen
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Regimens$get_number_data_modifier()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Regimens-get_data_modifier"></a>}}
 \if{latex}{\out{\hypertarget{method-Regimens-get_data_modifier}{}}}
 \subsection{Method \code{get_data_modifier()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 return user-defined endpoint data modifier
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Regimens$get_data_modifier(index = NULL)}\if{html}{\out{</div>}}
@@ -173,6 +166,8 @@ return user-defined endpoint data modifier
 \if{html}{\out{<a id="method-Regimens-get_treatment_allocator_args"></a>}}
 \if{latex}{\out{\hypertarget{method-Regimens-get_treatment_allocator_args}{}}}
 \subsection{Method \code{get_treatment_allocator_args()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 return pre-bound arguments for the i-th treatment allocator
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Regimens$get_treatment_allocator_args(index)}\if{html}{\out{</div>}}
@@ -190,6 +185,8 @@ return pre-bound arguments for the i-th treatment allocator
 \if{html}{\out{<a id="method-Regimens-get_time_selector_args"></a>}}
 \if{latex}{\out{\hypertarget{method-Regimens-get_time_selector_args}{}}}
 \subsection{Method \code{get_time_selector_args()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 return pre-bound arguments for the i-th time selector
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Regimens$get_time_selector_args(index)}\if{html}{\out{</div>}}
@@ -207,6 +204,8 @@ return pre-bound arguments for the i-th time selector
 \if{html}{\out{<a id="method-Regimens-get_data_modifier_args"></a>}}
 \if{latex}{\out{\hypertarget{method-Regimens-get_data_modifier_args}{}}}
 \subsection{Method \code{get_data_modifier_args()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 return pre-bound arguments for the i-th data modifier
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Regimens$get_data_modifier_args(index)}\if{html}{\out{</div>}}
@@ -224,6 +223,8 @@ return pre-bound arguments for the i-th data modifier
 \if{html}{\out{<a id="method-Regimens-get_earliest_crossover_calendar_time"></a>}}
 \if{latex}{\out{\hypertarget{method-Regimens-get_earliest_crossover_calendar_time}{}}}
 \subsection{Method \code{get_earliest_crossover_calendar_time()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 return the earliest crossover calendar time of triplet(s)
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Regimens$get_earliest_crossover_calendar_time(index = NULL)}\if{html}{\out{</div>}}
@@ -241,6 +242,8 @@ return the earliest crossover calendar time of triplet(s)
 \if{html}{\out{<a id="method-Regimens-append_triplet"></a>}}
 \if{latex}{\out{\hypertarget{method-Regimens-append_triplet}{}}}
 \subsection{Method \code{append_triplet()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 append one more triplet to the regimen. Used by milestone-triggered
 crossover to stack a new \code{what}/\code{when}/\code{how} (with its own
 \code{earliest_crossover_calendar_time}) onto an existing regimen without

@@ -29,13 +29,9 @@ to learn how to define milestones when performing simulation using
 \itemize{
 \item \href{#method-Milestones-new}{\code{Milestones$new()}}
 \item \href{#method-Milestones-get_name}{\code{Milestones$get_name()}}
-\item \href{#method-Milestones-get_type}{\code{Milestones$get_type()}}
-\item \href{#method-Milestones-get_trigger_condition}{\code{Milestones$get_trigger_condition()}}
-\item \href{#method-Milestones-get_action}{\code{Milestones$get_action()}}
 \item \href{#method-Milestones-set_trigger_condition}{\code{Milestones$set_trigger_condition()}}
 \item \href{#method-Milestones-set_action_function}{\code{Milestones$set_action_function()}}
 \item \href{#method-Milestones-set_dry_run}{\code{Milestones$set_dry_run()}}
-\item \href{#method-Milestones-execute_action}{\code{Milestones$execute_action()}}
 \item \href{#method-Milestones-get_trigger_status}{\code{Milestones$get_trigger_status()}}
 \item \href{#method-Milestones-reset}{\code{Milestones$reset()}}
 \item \href{#method-Milestones-trigger_milestone}{\code{Milestones$trigger_milestone()}}
@@ -75,39 +71,11 @@ trigger. See vignette \code{Condition System for Triggering Milestones in a Tria
 \if{html}{\out{<a id="method-Milestones-get_name"></a>}}
 \if{latex}{\out{\hypertarget{method-Milestones-get_name}{}}}
 \subsection{Method \code{get_name()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 return name of milestone
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Milestones$get_name()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Milestones-get_type"></a>}}
-\if{latex}{\out{\hypertarget{method-Milestones-get_type}{}}}
-\subsection{Method \code{get_type()}}{
-return type(s) of milestone
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Milestones$get_type()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Milestones-get_trigger_condition"></a>}}
-\if{latex}{\out{\hypertarget{method-Milestones-get_trigger_condition}{}}}
-\subsection{Method \code{get_trigger_condition()}}{
-return trigger_condition function
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Milestones$get_trigger_condition()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Milestones-get_action"></a>}}
-\if{latex}{\out{\hypertarget{method-Milestones-get_action}{}}}
-\subsection{Method \code{get_action()}}{
-return action function
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Milestones$get_action()}\if{html}{\out{</div>}}
 }
 
 }
@@ -166,6 +134,8 @@ corresponding to \code{...} of \code{milestone()}.}
 \if{html}{\out{<a id="method-Milestones-set_dry_run"></a>}}
 \if{latex}{\out{\hypertarget{method-Milestones-set_dry_run}{}}}
 \subsection{Method \code{set_dry_run()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 set if dry run should be carried out for the milestone. For more details,
 refer to \code{Controller::run}.
 \subsection{Usage}{
@@ -181,26 +151,11 @@ refer to \code{Controller::run}.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Milestones-execute_action"></a>}}
-\if{latex}{\out{\hypertarget{method-Milestones-execute_action}{}}}
-\subsection{Method \code{execute_action()}}{
-execute action function
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Milestones$execute_action(trial)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{trial}}{a \code{Trial} object.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Milestones-get_trigger_status"></a>}}
 \if{latex}{\out{\hypertarget{method-Milestones-get_trigger_status}{}}}
 \subsection{Method \code{get_trigger_status()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 return trigger status
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Milestones$get_trigger_status()}\if{html}{\out{</div>}}
@@ -211,6 +166,8 @@ return trigger status
 \if{html}{\out{<a id="method-Milestones-reset"></a>}}
 \if{latex}{\out{\hypertarget{method-Milestones-reset}{}}}
 \subsection{Method \code{reset()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 reset an milestone so that it can be triggered again. Usually, this is called
 before the controller of a trial can run additional replicates
 of simulation. If the trigger condition or the action was replaced
@@ -226,6 +183,8 @@ design.
 \if{html}{\out{<a id="method-Milestones-trigger_milestone"></a>}}
 \if{latex}{\out{\hypertarget{method-Milestones-trigger_milestone}{}}}
 \subsection{Method \code{trigger_milestone()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 trigger an milestone (always TRUE) and execute action accordingly. It calls
 Trial$get_data_lock_time() to lock data based on conditions implemented
 in Milestones$trigger_condition. If time that meets the condition cannot be
@@ -249,6 +208,8 @@ reach).
 \if{html}{\out{<a id="method-Milestones-mute"></a>}}
 \if{latex}{\out{\hypertarget{method-Milestones-mute}{}}}
 \subsection{Method \code{mute()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 mute all messages (not including warnings)
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Milestones$mute(silent)}\if{html}{\out{</div>}}

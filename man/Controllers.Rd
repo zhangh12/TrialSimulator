@@ -28,9 +28,6 @@ useful to end users.
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Controllers-new}{\code{Controllers$new()}}
-\item \href{#method-Controllers-get_listener}{\code{Controllers$get_listener()}}
-\item \href{#method-Controllers-get_trial}{\code{Controllers$get_trial()}}
-\item \href{#method-Controllers-mute}{\code{Controllers$mute()}}
 \item \href{#method-Controllers-reset}{\code{Controllers$reset()}}
 \item \href{#method-Controllers-get_output}{\code{Controllers$get_output()}}
 \item \href{#method-Controllers-run}{\code{Controllers$run()}}
@@ -52,43 +49,6 @@ initialize a controller of the trial
 \item{\code{trial}}{a trial object returned from \code{trial()}.}
 
 \item{\code{listener}}{a listener object returned from \code{listener()}.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Controllers-get_listener"></a>}}
-\if{latex}{\out{\hypertarget{method-Controllers-get_listener}{}}}
-\subsection{Method \code{get_listener()}}{
-return listener in a controller.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Controllers$get_listener()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Controllers-get_trial"></a>}}
-\if{latex}{\out{\hypertarget{method-Controllers-get_trial}{}}}
-\subsection{Method \code{get_trial()}}{
-return trial in a controller.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Controllers$get_trial()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Controllers-mute"></a>}}
-\if{latex}{\out{\hypertarget{method-Controllers-mute}{}}}
-\subsection{Method \code{mute()}}{
-mute all messages (not including warnings).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Controllers$mute()}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{silent}}{logical.}
 }
 \if{html}{\out{</div>}}
 }

@@ -29,15 +29,34 @@ Controllers <- R6::R6Class(
     dry_run = FALSE,
     output = NULL,
 
+    ## @description
+    ## return listener in a controller.
+    get_listener = function(){
+      private$listener
+    },
+
+    ## @description
+    ## return trial in a controller.
+    get_trial = function(){
+      private$trial
+    },
+
+    ## @description
+    ## mute all messages (not including warnings).
+    mute = function(){
+      private$get_trial()$mute(private$silent)
+      private$get_listener()$mute(private$silent)
+    },
+
     run_ = function(plot_event = TRUE, silent = FALSE, dry_run = FALSE){
 
       private$silent <- silent
       private$dry_run <- dry_run
-      self$mute()
+      private$mute()
 
-      self$get_listener()$monitor(self$get_trial(), private$dry_run)
+      private$get_listener()$monitor(private$get_trial(), private$dry_run)
       if(plot_event){
-        self$get_trial()$event_plot()
+        private$get_trial()$event_plot()
       }
 
     },
@@ -64,13 +83,13 @@ Controllers <- R6::R6Class(
           },
 
           error = function(e){
-            self$get_trial()$save(e$message, 'error_message', overwrite = TRUE)
-            private$output <- bind_rows(private$output, self$get_trial()$get_output())
+            private$get_trial()$save(e$message, 'error_message', overwrite = TRUE)
+            private$output <- bind_rows(private$output, private$get_trial()$get_output())
             stop(e$message)
           }
         )
 
-        private$output <- bind_rows(private$output, self$get_trial()$get_output())
+        private$output <- bind_rows(private$output, private$get_trial()$get_output())
 
         if(silent && is.null(bar_id) && idx < n){
           now <- Sys.time()
@@ -112,8 +131,8 @@ Controllers <- R6::R6Class(
       ## Serialize trial and listener once; workers will deserialize
       ## independent copies. make_arms_snapshot() has already been called
       ## in run(), so the snapshot is baked into the serialized bytes.
-      trial_raw <- serialize(self$get_trial()$clone(deep = TRUE), NULL)
-      listener_raw <- serialize(self$get_listener()$clone(deep = TRUE), NULL)
+      trial_raw <- serialize(private$get_trial()$clone(deep = TRUE), NULL)
+      listener_raw <- serialize(private$get_listener()$clone(deep = TRUE), NULL)
 
       ## Distribute replicates evenly across workers
       reps_per_worker <- rep(floor(n / n_workers), n_workers)
@@ -223,33 +242,13 @@ Controllers <- R6::R6Class(
     },
 
     #' @description
-    #' return listener in a controller.
-    get_listener = function(){
-      private$listener
-    },
-
-    #' @description
-    #' return trial in a controller.
-    get_trial = function(){
-      private$trial
-    },
-
-    #' @description
-    #' mute all messages (not including warnings).
-    #' @param silent logical.
-    mute = function(){
-      self$get_trial()$mute(private$silent)
-      self$get_listener()$mute(private$silent)
-    },
-
-    #' @description
     #' reset the trial and listener registered to the controller before running
     #' additional replicate of simulation. This is usually done between two
     #' calls of \code{controller$run()}.
     #'
     reset = function(){
-      self$get_trial()$reset()
-      self$get_listener()$reset()
+      private$get_trial()$reset()
+      private$get_listener()$reset()
     },
 
     #' @description
@@ -343,7 +342,7 @@ Controllers <- R6::R6Class(
     #' before estimating the milestone time.
     run = function(n = 1, n_workers = 1, plot_event = TRUE, silent = FALSE, dry_run = FALSE){
 
-      self$get_trial()$make_arms_snapshot()
+      private$get_trial()$make_arms_snapshot()
       private$output <- NULL
 
       if(plot_event){

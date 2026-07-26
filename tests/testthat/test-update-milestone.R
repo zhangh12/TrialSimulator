@@ -110,8 +110,8 @@ test_that("as-designed when/action are restored between replicates", {
 
   final_ms <- milestone(name = "final",
                         when = eventNumber(endpoint = 'pfs', n = 100))
-  when_orig <- final_ms$get_trigger_condition()
-  action_orig <- final_ms$get_action()
+  when_orig <- final_ms$.__enclos_env__$private$get_trigger_condition()
+  action_orig <- final_ms$.__enclos_env__$private$get_action()
 
   interim <- milestone(name = "interim", when = calendarTime(time = 8),
                        action = function(trial) {
@@ -128,13 +128,13 @@ test_that("as-designed when/action are restored between replicates", {
   expect_no_error(ctrl$run(n = 2, silent = TRUE, plot_event = FALSE))
 
   ## after the last replicate the update from that replicate is in place ...
-  expect_false(identical(final_ms$get_trigger_condition(), when_orig))
-  expect_false(identical(final_ms$get_action(), action_orig))
+  expect_false(identical(final_ms$.__enclos_env__$private$get_trigger_condition(), when_orig))
+  expect_false(identical(final_ms$.__enclos_env__$private$get_action(), action_orig))
 
   ## ... and reset() restores the as-designed milestone exactly
   lstn$reset()
-  expect_identical(final_ms$get_trigger_condition(), when_orig)
-  expect_identical(final_ms$get_action(), action_orig)
+  expect_identical(final_ms$.__enclos_env__$private$get_trigger_condition(), when_orig)
+  expect_identical(final_ms$.__enclos_env__$private$get_action(), action_orig)
 })
 
 
