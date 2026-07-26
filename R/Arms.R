@@ -8,9 +8,22 @@
 #' useful to end users.
 #'
 #' \itemize{
-#' \item \code{$add_endpoints()}
-#' \item \code{$print()}
+#' \item \code{$add_endpoints()} add one or multiple endpoints to the arm.
+#' \item \code{$print()} print a summary report of the arm based on
+#' example data of its endpoints.
 #' }
+#'
+#' In addition, \code{$generate_data()} and \code{$get_endpoints()} are for
+#' exploratory purpose only. They appear in examples and vignettes to help
+#' users understand how this class works, but they are not needed at all in
+#' formal simulation once users know how to use this package.
+#'
+#' \strong{Internal machinery.} The remaining public methods
+#' (\code{$get_name()}, \code{$get_endpoints_name()}, \code{$has_endpoint()}
+#' and \code{$update_endpoint_generator()}) are public only because they are
+#' invoked on an arm object by other components of the package (trials),
+#' which R6 cannot grant through private members. Users should not call them
+#' directly.
 #'
 #' @docType class
 #'
@@ -74,32 +87,19 @@ Arms <- R6::R6Class(
     },
 
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' return name of arm.
     get_name = function(){
       private$name
     },
 
     #' @description
-    #' return number of endpoints in the arm.
-    get_number_endpoints = function(){
-
-      if(length(private$endpoints) == 0){
-        return(0)
-      }
-
-      sapply(
-        private$endpoints,
-        function(ep){
-          length(ep$get_name())
-        }
-      ) %>%
-        sum()
-    },
-
-    #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' check if the arm has any endpoint. Return \code{TRUE} or \code{FALSE}.
     has_endpoint = function(){
-      self$get_number_endpoints() > 0
+      private$get_number_endpoints() > 0
     },
 
     #' @description
@@ -109,6 +109,8 @@ Arms <- R6::R6Class(
     },
 
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' return name of endpoints registered to the arm.
     get_endpoints_name = function(){
       lapply(
@@ -122,6 +124,8 @@ Arms <- R6::R6Class(
     },
 
     #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' update generator of an endpoint object
     #'
     #' @param endpoint_name character. A vector of endpoint names whose
@@ -200,7 +204,7 @@ Arms <- R6::R6Class(
 
       title <- paste0('Arm Name: ', self$get_name())
       sub_title <- paste0('Endpoints (',
-                          self$get_number_endpoints(), '):',
+                          private$get_number_endpoints(), '):',
                           paste0(self$get_endpoints_name(), collapse = ', '))
 
       dat <- self$generate_data(n_patients_in_arm = 1e4)
@@ -249,6 +253,23 @@ Arms <- R6::R6Class(
   private = list(
     name = NULL,
     inclusion_filters = NULL,
-    endpoints = list()
+    endpoints = list(),
+
+    ## @description
+    ## return number of endpoints in the arm.
+    get_number_endpoints = function(){
+
+      if(length(private$endpoints) == 0){
+        return(0)
+      }
+
+      sapply(
+        private$endpoints,
+        function(ep){
+          length(ep$get_name())
+        }
+      ) %>%
+        sum()
+    }
   )
 )

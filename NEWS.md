@@ -1,3 +1,10 @@
+# TrialSimulator 1.30.1
+
+## Updates
+
+- Continue minimizing the public API of R6 classes: `Arms$get_number_endpoints()`, `Endpoints$get_readout()` and `Endpoints$get_type()` are now private. The machinery methods of `Arms` (`get_name()`, `get_endpoints_name()`, `has_endpoint()` and `update_endpoint_generator()`) and of `Endpoints` (`get_uid()` and `update_generator()`), which stay public only because trials and arms invoke them, now carry a bold warning that users should not call them directly.
+- Polish class documentation: user-facing methods of `Controllers`, `Arms` and `Endpoints` now come with brief usage notes in the class description; exploratory methods (`test_generator()`, `get_generator()` and `get_name()` of `Endpoints`; `generate_data()` and `get_endpoints()` of `Arms`) are documented as helpful for understanding the classes but not needed in formal simulation.
+
 # TrialSimulator 1.30.0
 
 ## Updates

@@ -13,12 +13,25 @@ Create a class of endpoint to specify its name, type, readout time
 
 Public methods in this R6 class are used in developing
 this package. Thus, I have to export the whole R6 class which exposures all
-public methods. However, none of the public methods is useful to end users
-except for the one below.
+public methods. However, \strong{none of the public methods is useful to
+end users except for the one below}.
 
 \itemize{
-\item \code{$print()}
+\item \code{$print()} print a summary report of endpoint(s) based on
+example data from the generator.
 }
+
+In addition, \code{$test_generator()}, \code{$get_generator()} and
+\code{$get_name()} are for exploratory purpose only. They appear in
+examples and vignettes to help users understand how this class works,
+but they are not needed at all in formal simulation once users know how
+to use this package.
+
+\strong{Internal machinery.} The remaining public methods
+(\code{$get_uid()} and \code{$update_generator()}) are public only because
+they are invoked on an endpoint object by other components of the package
+(arms), which R6 cannot grant through private members. Users should not
+call them directly.
 }
 \examples{
 # Instead of using Endpoints$new(), please use endpoint(), a user-friendly
@@ -54,10 +67,8 @@ print(ep, categorical_vars = 'y')
 \item \href{#method-Endpoints-test_generator}{\code{Endpoints$test_generator()}}
 \item \href{#method-Endpoints-get_generator}{\code{Endpoints$get_generator()}}
 \item \href{#method-Endpoints-update_generator}{\code{Endpoints$update_generator()}}
-\item \href{#method-Endpoints-get_readout}{\code{Endpoints$get_readout()}}
 \item \href{#method-Endpoints-get_uid}{\code{Endpoints$get_uid()}}
 \item \href{#method-Endpoints-get_name}{\code{Endpoints$get_name()}}
-\item \href{#method-Endpoints-get_type}{\code{Endpoints$get_type()}}
 \item \href{#method-Endpoints-print}{\code{Endpoints$print()}}
 \item \href{#method-Endpoints-clone}{\code{Endpoints$clone()}}
 }
@@ -170,6 +181,8 @@ return random number generator of an endpoint
 \if{html}{\out{<a id="method-Endpoints-update_generator"></a>}}
 \if{latex}{\out{\hypertarget{method-Endpoints-update_generator}{}}}
 \subsection{Method \code{update_generator()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 update endpoint generator
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Endpoints$update_generator(generator, ...)}\if{html}{\out{</div>}}
@@ -187,19 +200,11 @@ See \code{generator} of \code{endpoint()}.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Endpoints-get_readout"></a>}}
-\if{latex}{\out{\hypertarget{method-Endpoints-get_readout}{}}}
-\subsection{Method \code{get_readout()}}{
-return readout function
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Endpoints$get_readout()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Endpoints-get_uid"></a>}}
 \if{latex}{\out{\hypertarget{method-Endpoints-get_uid}{}}}
 \subsection{Method \code{get_uid()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
 return uid
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Endpoints$get_uid()}\if{html}{\out{</div>}}
@@ -213,16 +218,6 @@ return uid
 return endpoints' name
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Endpoints$get_name()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Endpoints-get_type"></a>}}
-\if{latex}{\out{\hypertarget{method-Endpoints-get_type}{}}}
-\subsection{Method \code{get_type()}}{
-return endpoints' type
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Endpoints$get_type()}\if{html}{\out{</div>}}
 }
 
 }
