@@ -28,8 +28,6 @@ useful to end users.
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Controllers-new}{\code{Controllers$new()}}
-\item \href{#method-Controllers-get_listener}{\code{Controllers$get_listener()}}
-\item \href{#method-Controllers-get_trial}{\code{Controllers$get_trial()}}
 \item \href{#method-Controllers-mute}{\code{Controllers$mute()}}
 \item \href{#method-Controllers-reset}{\code{Controllers$reset()}}
 \item \href{#method-Controllers-get_output}{\code{Controllers$get_output()}}
@@ -55,26 +53,6 @@ initialize a controller of the trial
 }
 \if{html}{\out{</div>}}
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Controllers-get_listener"></a>}}
-\if{latex}{\out{\hypertarget{method-Controllers-get_listener}{}}}
-\subsection{Method \code{get_listener()}}{
-return listener in a controller.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Controllers$get_listener()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Controllers-get_trial"></a>}}
-\if{latex}{\out{\hypertarget{method-Controllers-get_trial}{}}}
-\subsection{Method \code{get_trial()}}{
-return trial in a controller.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Controllers$get_trial()}\if{html}{\out{</div>}}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Controllers-mute"></a>}}

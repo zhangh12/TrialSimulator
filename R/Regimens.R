@@ -126,12 +126,6 @@ Regimens <- R6::R6Class(
     },
 
     #' @description
-    #' return number of time selector for regimen
-    get_number_time_selector = function(){
-      length(private$time_selector)
-    },
-
-    #' @description
     #' return user-defined time selector
     #' @param index integer. Index of selector. Return all selectors if \code{NULL}.
     get_time_selector = function(index = NULL){
@@ -140,19 +134,13 @@ Regimens <- R6::R6Class(
       }else{
         stopifnot(is.wholenumber(index) && index > 0)
         stopifnot(length(index) == 1)
-        if(index > self$get_number_time_selector()){
-          stop('There are only <', self$get_number_time_selector(),
+        if(index > private$get_number_time_selector()){
+          stop('There are only <', private$get_number_time_selector(),
                '> time selectors, and cannot request for the ',
                index, 'th. ')
         }
         return(private$time_selector[[index]])
       }
-    },
-
-    #' @description
-    #' return number of data modifier for regimen
-    get_number_data_modifier = function(){
-      length(private$data_modifier)
     },
 
     #' @description
@@ -164,8 +152,8 @@ Regimens <- R6::R6Class(
       }else{
         stopifnot(is.wholenumber(index) && index > 0)
         stopifnot(length(index) == 1)
-        if(index > self$get_number_data_modifier()){
-          stop('There are only <', self$get_number_data_modifier(),
+        if(index > private$get_number_data_modifier()){
+          stop('There are only <', private$get_number_data_modifier(),
                '> data modifiers, and cannot request for the ',
                index, 'th. ')
         }
@@ -255,6 +243,18 @@ Regimens <- R6::R6Class(
     when_args = NULL,
     how_args  = NULL,
     earliest_crossover_calendar_time = NULL,
+
+    ## @description
+    ## return number of time selector for regimen
+    get_number_time_selector = function(){
+      length(private$time_selector)
+    },
+
+    ## @description
+    ## return number of data modifier for regimen
+    get_number_data_modifier = function(){
+      length(private$data_modifier)
+    },
 
     validate_arguments = function(what, when, how){
 

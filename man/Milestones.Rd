@@ -35,7 +35,6 @@ to learn how to define milestones when performing simulation using
 \item \href{#method-Milestones-set_trigger_condition}{\code{Milestones$set_trigger_condition()}}
 \item \href{#method-Milestones-set_action_function}{\code{Milestones$set_action_function()}}
 \item \href{#method-Milestones-set_dry_run}{\code{Milestones$set_dry_run()}}
-\item \href{#method-Milestones-execute_action}{\code{Milestones$execute_action()}}
 \item \href{#method-Milestones-get_trigger_status}{\code{Milestones$get_trigger_status()}}
 \item \href{#method-Milestones-reset}{\code{Milestones$reset()}}
 \item \href{#method-Milestones-trigger_milestone}{\code{Milestones$trigger_milestone()}}
@@ -176,23 +175,6 @@ refer to \code{Controller::run}.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{dry_run}}{logical.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Milestones-execute_action"></a>}}
-\if{latex}{\out{\hypertarget{method-Milestones-execute_action}{}}}
-\subsection{Method \code{execute_action()}}{
-execute action function
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Milestones$execute_action(trial)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{trial}}{a \code{Trial} object.}
 }
 \if{html}{\out{</div>}}
 }

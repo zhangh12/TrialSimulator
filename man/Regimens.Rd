@@ -18,9 +18,7 @@ endpoint data.
 \item \href{#method-Regimens-new}{\code{Regimens$new()}}
 \item \href{#method-Regimens-get_number_treatment_allocator}{\code{Regimens$get_number_treatment_allocator()}}
 \item \href{#method-Regimens-get_treatment_allocator}{\code{Regimens$get_treatment_allocator()}}
-\item \href{#method-Regimens-get_number_time_selector}{\code{Regimens$get_number_time_selector()}}
 \item \href{#method-Regimens-get_time_selector}{\code{Regimens$get_time_selector()}}
-\item \href{#method-Regimens-get_number_data_modifier}{\code{Regimens$get_number_data_modifier()}}
 \item \href{#method-Regimens-get_data_modifier}{\code{Regimens$get_data_modifier()}}
 \item \href{#method-Regimens-get_treatment_allocator_args}{\code{Regimens$get_treatment_allocator_args()}}
 \item \href{#method-Regimens-get_time_selector_args}{\code{Regimens$get_time_selector_args()}}
@@ -116,16 +114,6 @@ return user-defined new treatment for a patient
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Regimens-get_number_time_selector"></a>}}
-\if{latex}{\out{\hypertarget{method-Regimens-get_number_time_selector}{}}}
-\subsection{Method \code{get_number_time_selector()}}{
-return number of time selector for regimen
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Regimens$get_number_time_selector()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Regimens-get_time_selector"></a>}}
 \if{latex}{\out{\hypertarget{method-Regimens-get_time_selector}{}}}
 \subsection{Method \code{get_time_selector()}}{
@@ -141,16 +129,6 @@ return user-defined time selector
 }
 \if{html}{\out{</div>}}
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Regimens-get_number_data_modifier"></a>}}
-\if{latex}{\out{\hypertarget{method-Regimens-get_number_data_modifier}{}}}
-\subsection{Method \code{get_number_data_modifier()}}{
-return number of data modifier for regimen
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Regimens$get_number_data_modifier()}\if{html}{\out{</div>}}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Regimens-get_data_modifier"></a>}}

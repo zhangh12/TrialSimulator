@@ -88,6 +88,23 @@ Milestones <- R6::R6Class(
       }
 
       invisible(NULL)
+    },
+
+    ## @description
+    ## execute action function
+    ## @param trial a \code{Trial} object.
+    execute_action = function(trial){
+
+      if(private$is_dry_run){
+        action <- .default_action()
+      }else{
+        action <- do.call(self$get_action(), c(list(trial), private$action_args))
+      }
+
+      if(!private$silent && !is.null(action)){
+        message('Action for milestone <', self$get_name(), '> is executed. ')
+      }
+
     }
   ),
 
@@ -219,23 +236,6 @@ Milestones <- R6::R6Class(
     },
 
     #' @description
-    #' execute action function
-    #' @param trial a \code{Trial} object.
-    execute_action = function(trial){
-
-      if(private$is_dry_run){
-        action <- .default_action()
-      }else{
-        action <- do.call(self$get_action(), c(list(trial), private$action_args))
-      }
-
-      if(!private$silent && !is.null(action)){
-        message('Action for milestone <', self$get_name(), '> is executed. ')
-      }
-
-    },
-
-    #' @description
     #' return trigger status
     get_trigger_status = function(){
       private$triggered
@@ -288,7 +288,7 @@ Milestones <- R6::R6Class(
       ## always lock data after an milestone and before taking actions
       trial$lock_data(data_lock_time, self$get_name())
 
-      self$execute_action(trial)
+      private$execute_action(trial)
       private$triggered <- TRUE
     },
 
