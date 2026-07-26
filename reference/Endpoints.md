@@ -5,10 +5,22 @@ Create a class of endpoint to specify its name, type, readout time
 
 Public methods in this R6 class are used in developing this package.
 Thus, I have to export the whole R6 class which exposures all public
-methods. However, none of the public methods is useful to end users
-except for the one below.
+methods. However, **none of the public methods is useful to end users
+except for the one below**.
 
-- `$print()`
+- `$print()` print a summary report of endpoint(s) based on example data
+  from the generator.
+
+In addition, `$test_generator()`, `$get_generator()` and `$get_name()`
+are for exploratory purpose only. They appear in examples and vignettes
+to help users understand how this class works, but they are not needed
+at all in formal simulation once users know how to use this package.
+
+**Internal machinery.** The remaining public methods (`$get_uid()` and
+`$update_generator()`) are public only because they are invoked on an
+endpoint object by other components of the package (arms), which R6
+cannot grant through private members. Users should not call them
+directly.
 
 ## Value
 
@@ -28,13 +40,9 @@ to create endpoints.
 
 - [`Endpoints$update_generator()`](#method-Endpoints-update_generator)
 
-- [`Endpoints$get_readout()`](#method-Endpoints-get_readout)
-
 - [`Endpoints$get_uid()`](#method-Endpoints-get_uid)
 
 - [`Endpoints$get_name()`](#method-Endpoints-get_name)
-
-- [`Endpoints$get_type()`](#method-Endpoints-get_type)
 
 - [`Endpoints$print()`](#method-Endpoints-print)
 
@@ -155,6 +163,8 @@ return random number generator of an endpoint
 
 ### Method [`update_generator()`](https://zhangh12.github.io/TrialSimulator/reference/update_generator.md)
 
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
 update endpoint generator
 
 #### Usage
@@ -174,17 +184,9 @@ update endpoint generator
 
 ------------------------------------------------------------------------
 
-### Method `get_readout()`
-
-return readout function
-
-#### Usage
-
-    Endpoints$get_readout()
-
-------------------------------------------------------------------------
-
 ### Method `get_uid()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
 
 return uid
 
@@ -201,16 +203,6 @@ return endpoints' name
 #### Usage
 
     Endpoints$get_name()
-
-------------------------------------------------------------------------
-
-### Method `get_type()`
-
-return endpoints' type
-
-#### Usage
-
-    Endpoints$get_type()
 
 ------------------------------------------------------------------------
 

@@ -1,5 +1,41 @@
 # Changelog
 
+## TrialSimulator 1.30.1
+
+### Updates
+
+- Continue minimizing the public API of R6 classes:
+  `Arms$get_number_endpoints()`, `Endpoints$get_readout()` and
+  `Endpoints$get_type()` are now private. The machinery methods of
+  `Arms` (`get_name()`, `get_endpoints_name()`, `has_endpoint()` and
+  `update_endpoint_generator()`) and of `Endpoints` (`get_uid()` and
+  [`update_generator()`](https://zhangh12.github.io/TrialSimulator/reference/update_generator.md)),
+  which stay public only because trials and arms invoke them, now carry
+  a bold warning that users should not call them directly.
+- Polish class documentation: user-facing methods of `Controllers`,
+  `Arms` and `Endpoints` now come with brief usage notes in the class
+  description; exploratory methods (`test_generator()`,
+  `get_generator()` and `get_name()` of `Endpoints`; `generate_data()`
+  and `get_endpoints()` of `Arms`) are documented as helpful for
+  understanding the classes but not needed in formal simulation.
+
+## TrialSimulator 1.30.0
+
+### Updates
+
+- Continue minimizing the public API of R6 classes:
+  `Controllers$get_trial()`, `Controllers$get_listener()`,
+  `Controllers$mute()`, `Milestones$execute_action()`,
+  `Milestones$get_type()`, `Milestones$get_trigger_condition()`,
+  `Milestones$get_action()`, `Regimens$get_number_time_selector()` and
+  `Regimens$get_number_data_modifier()` are now private. They were used
+  only internally by their own classes.
+- The remaining public methods of `Milestones` and all public methods of
+  `Regimens` are invoked on their objects by other components of the
+  package (listeners and trials) and stay public only for that reason;
+  they now carry a bold warning that users should not call them
+  directly, in the same style as the `Trials` and `Listeners` classes.
+
 ## TrialSimulator 1.29.0
 
 ### Updates

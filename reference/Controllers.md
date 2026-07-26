@@ -7,11 +7,13 @@ Thus, we have to export the whole R6 class which exposures all public
 methods. However, only the public methods in the list below are useful
 to end users.
 
-- `$run()`
+- `$run()` run trial simulation, sequentially or in parallel.
 
-- `$get_output()`
+- `$get_output()` return a data frame of all outputs saved during
+  simulation.
 
-- `$reset()`
+- `$reset()` reset the trial and listener registered to the controller
+  before running additional replicate of simulation.
 
 ## Value
 
@@ -24,12 +26,6 @@ to create a controller.
 ### Public methods
 
 - [`Controllers$new()`](#method-Controllers-new)
-
-- [`Controllers$get_listener()`](#method-Controllers-get_listener)
-
-- [`Controllers$get_trial()`](#method-Controllers-get_trial)
-
-- [`Controllers$mute()`](#method-Controllers-mute)
 
 - [`Controllers$reset()`](#method-Controllers-reset)
 
@@ -60,42 +56,6 @@ initialize a controller of the trial
 
   a listener object returned from
   [`listener()`](https://zhangh12.github.io/TrialSimulator/reference/listener.md).
-
-------------------------------------------------------------------------
-
-### Method `get_listener()`
-
-return listener in a controller.
-
-#### Usage
-
-    Controllers$get_listener()
-
-------------------------------------------------------------------------
-
-### Method `get_trial()`
-
-return trial in a controller.
-
-#### Usage
-
-    Controllers$get_trial()
-
-------------------------------------------------------------------------
-
-### Method `mute()`
-
-mute all messages (not including warnings).
-
-#### Usage
-
-    Controllers$mute()
-
-#### Arguments
-
-- `silent`:
-
-  logical.
 
 ------------------------------------------------------------------------
 

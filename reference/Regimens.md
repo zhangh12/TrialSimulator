@@ -4,6 +4,14 @@ Create a class of regimen. A regimen defines the rules to select
 treatments for patients switch, to determine the time of switching, and
 to update patients' endpoint data.
 
+Public methods in this R6 class are used in developing this package.
+Thus, we have to export the whole R6 class which exposures all public
+methods. However, **none of the public methods on this page is useful to
+end users**. Instead, use
+[`regimen()`](https://zhangh12.github.io/TrialSimulator/reference/regimen.md)
+to create a regimen and register it with a trial through
+`trial$add_regimen()` or `trial$crossover()`.
+
 ## Value
 
 an `R6Class` generator object; use
@@ -20,11 +28,7 @@ to create a regimen.
 
 - [`Regimens$get_treatment_allocator()`](#method-Regimens-get_treatment_allocator)
 
-- [`Regimens$get_number_time_selector()`](#method-Regimens-get_number_time_selector)
-
 - [`Regimens$get_time_selector()`](#method-Regimens-get_time_selector)
-
-- [`Regimens$get_number_data_modifier()`](#method-Regimens-get_number_data_modifier)
 
 - [`Regimens$get_data_modifier()`](#method-Regimens-get_data_modifier)
 
@@ -107,6 +111,8 @@ initialize regimen
 
 ### Method `get_number_treatment_allocator()`
 
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
 return number of treatment allocators for regimen
 
 #### Usage
@@ -116,6 +122,8 @@ return number of treatment allocators for regimen
 ------------------------------------------------------------------------
 
 ### Method `get_treatment_allocator()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
 
 return user-defined new treatment for a patient
 
@@ -131,17 +139,9 @@ return user-defined new treatment for a patient
 
 ------------------------------------------------------------------------
 
-### Method `get_number_time_selector()`
-
-return number of time selector for regimen
-
-#### Usage
-
-    Regimens$get_number_time_selector()
-
-------------------------------------------------------------------------
-
 ### Method `get_time_selector()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
 
 return user-defined time selector
 
@@ -157,17 +157,9 @@ return user-defined time selector
 
 ------------------------------------------------------------------------
 
-### Method `get_number_data_modifier()`
-
-return number of data modifier for regimen
-
-#### Usage
-
-    Regimens$get_number_data_modifier()
-
-------------------------------------------------------------------------
-
 ### Method `get_data_modifier()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
 
 return user-defined endpoint data modifier
 
@@ -185,6 +177,8 @@ return user-defined endpoint data modifier
 
 ### Method `get_treatment_allocator_args()`
 
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
 return pre-bound arguments for the i-th treatment allocator
 
 #### Usage
@@ -200,6 +194,8 @@ return pre-bound arguments for the i-th treatment allocator
 ------------------------------------------------------------------------
 
 ### Method `get_time_selector_args()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
 
 return pre-bound arguments for the i-th time selector
 
@@ -217,6 +213,8 @@ return pre-bound arguments for the i-th time selector
 
 ### Method `get_data_modifier_args()`
 
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
 return pre-bound arguments for the i-th data modifier
 
 #### Usage
@@ -233,6 +231,8 @@ return pre-bound arguments for the i-th data modifier
 
 ### Method `get_earliest_crossover_calendar_time()`
 
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
 return the earliest crossover calendar time of triplet(s)
 
 #### Usage
@@ -248,6 +248,8 @@ return the earliest crossover calendar time of triplet(s)
 ------------------------------------------------------------------------
 
 ### Method `append_triplet()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
 
 append one more triplet to the regimen. Used by milestone-triggered
 crossover to stack a new `what`/`when`/`how` (with its own

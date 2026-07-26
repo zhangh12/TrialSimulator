@@ -5,9 +5,11 @@ this package. Thus, we have to export the whole R6 class which exposures all
 public methods. However, only the public methods in the list below are
 useful to end users.
 
-$run()
-$get_output()
-$reset()
+$run() run trial simulation, sequentially or in parallel.
+$get_output() return a data frame of all outputs saved
+during simulation.
+$reset() reset the trial and listener registered to the
+controller before running additional replicate of simulation.
 
 "><meta property="og:description" content="Create a class of controller to run a trial.
 Public methods in this R6 class are used in developing
@@ -15,9 +17,11 @@ this package. Thus, we have to export the whole R6 class which exposures all
 public methods. However, only the public methods in the list below are
 useful to end users.
 
-$run()
-$get_output()
-$reset()
+$run() run trial simulation, sequentially or in parallel.
+$get_output() return a data frame of all outputs saved
+during simulation.
+$reset() reset the trial and listener registered to the
+controller before running additional replicate of simulation.
 
 "><meta property="og:image" content="https://zhangh12.github.io/TrialSimulator/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -27,7 +31,7 @@ $reset()
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.29.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.30.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -77,9 +81,11 @@ $reset()
 this package. Thus, we have to export the whole R6 class which exposures all
 public methods. However, only the public methods in the list below are
 useful to end users.</p>
-<ul><li><p><code>$run()</code></p></li>
-<li><p><code>$get_output()</code></p></li>
-<li><p><code>$reset()</code></p></li>
+<ul><li><p><code>$run()</code> run trial simulation, sequentially or in parallel.</p></li>
+<li><p><code>$get_output()</code> return a data frame of all outputs saved
+during simulation.</p></li>
+<li><p><code>$reset()</code> reset the trial and listener registered to the
+controller before running additional replicate of simulation.</p></li>
 </ul></div>
 
 
@@ -94,9 +100,6 @@ useful to end users.</p>
 <h3 id="public-methods">Public methods<a class="anchor" aria-label="anchor" href="#public-methods"></a></h3>
 
 <ul><li><p><a href="#method-Controllers-new"><code>Controllers$new()</code></a></p></li>
-<li><p><a href="#method-Controllers-get_listener"><code>Controllers$get_listener()</code></a></p></li>
-<li><p><a href="#method-Controllers-get_trial"><code>Controllers$get_trial()</code></a></p></li>
-<li><p><a href="#method-Controllers-mute"><code>Controllers$mute()</code></a></p></li>
 <li><p><a href="#method-Controllers-reset"><code>Controllers$reset()</code></a></p></li>
 <li><p><a href="#method-Controllers-get_output"><code>Controllers$get_output()</code></a></p></li>
 <li><p><a href="#method-Controllers-run"><code>Controllers$run()</code></a></p></li>
@@ -121,44 +124,12 @@ useful to end users.</p>
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-Controllers-get_listener"></a><div class="section">
-<h3 id="method-get-listener-">Method <code>get_listener()</code><a class="anchor" aria-label="anchor" href="#method-get-listener-"></a></h3>
-<p>return listener in a controller.</p><div class="section">
-<h4 id="usage-1">Usage<a class="anchor" aria-label="anchor" href="#usage-1"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controllers</span><span class="op">$</span><span class="fu">get_listener</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-
-</div><p></p><hr><a id="method-Controllers-get_trial"></a><div class="section">
-<h3 id="method-get-trial-">Method <code>get_trial()</code><a class="anchor" aria-label="anchor" href="#method-get-trial-"></a></h3>
-<p>return trial in a controller.</p><div class="section">
-<h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controllers</span><span class="op">$</span><span class="fu">get_trial</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-
-</div><p></p><hr><a id="method-Controllers-mute"></a><div class="section">
-<h3 id="method-mute-">Method <code>mute()</code><a class="anchor" aria-label="anchor" href="#method-mute-"></a></h3>
-<p>mute all messages (not including warnings).</p><div class="section">
-<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controllers</span><span class="op">$</span><span class="fu">mute</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-1">Arguments<a class="anchor" aria-label="anchor" href="#arguments-1"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>silent</code></dt>
-<dd><p>logical.</p></dd>
-
-
-</dl><p></p></div>
-</div>
-
 </div><p></p><hr><a id="method-Controllers-reset"></a><div class="section">
 <h3 id="method-reset-">Method <code>reset()</code><a class="anchor" aria-label="anchor" href="#method-reset-"></a></h3>
 <p>reset the trial and listener registered to the controller before running
 additional replicate of simulation. This is usually done between two
 calls of <code>controller$run()</code>.</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<h4 id="usage-1">Usage<a class="anchor" aria-label="anchor" href="#usage-1"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controllers</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -166,12 +137,12 @@ calls of <code>controller$run()</code>.</p><div class="section">
 </div><p></p><hr><a id="method-Controllers-get_output"></a><div class="section">
 <h3 id="method-get-output-">Method <code>get_output()</code><a class="anchor" aria-label="anchor" href="#method-get-output-"></a></h3>
 <p>return a data frame of all current outputs saved by calling <code><a href="https://rdrr.io/r/base/save.html" class="external-link">save()</a></code>.</p><div class="section">
-<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controllers</span><span class="op">$</span><span class="fu">get_output</span><span class="op">(</span>cols <span class="op">=</span> <span class="cn">NULL</span>, simplify <span class="op">=</span> <span class="cn">TRUE</span>, tidy <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
+<h4 id="arguments-1">Arguments<a class="anchor" aria-label="anchor" href="#arguments-1"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>cols</code></dt>
 <dd><p>character vector. Columns to be returned from the data frame
 of simulation outputs. If <code>NULL</code>, all columns are returned.</p></dd>
@@ -206,7 +177,7 @@ custom outputs in <code><a href="https://rdrr.io/r/base/save.html" class="extern
 </div><p></p><hr><a id="method-Controllers-run"></a><div class="section">
 <h3 id="method-run-">Method <code>run()</code><a class="anchor" aria-label="anchor" href="#method-run-"></a></h3>
 <p>run trial simulation.</p><div class="section">
-<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controllers</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span></span>
 <span>  n <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  n_workers <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -217,7 +188,7 @@ custom outputs in <code><a href="https://rdrr.io/r/base/save.html" class="extern
 </div>
 
 <div class="section">
-<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
+<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>n</code></dt>
 <dd><p>integer. Number of replicates of simulation.
 <code>n = 1</code> by default. Simulation results can be accessed by
@@ -280,12 +251,12 @@ before estimating the milestone time.</p></dd>
 </div><p></p><hr><a id="method-Controllers-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controllers</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
+<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

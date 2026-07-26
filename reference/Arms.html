@@ -5,19 +5,41 @@ this package. Thus, we have to export the whole R6 class which exposures all
 public methods. However, only the public methods in the list below are
 useful to end users.
 
-$add_endpoints()
-$print()
+$add_endpoints() add one or multiple endpoints to the arm.
+$print() print a summary report of the arm based on
+example data of its endpoints.
 
-"><meta property="og:description" content="Create a class of arm.
+
+In addition, $generate_data() and $get_endpoints() are for
+exploratory purpose only. They appear in examples and vignettes to help
+users understand how this class works, but they are not needed at all in
+formal simulation once users know how to use this package.
+Internal machinery. The remaining public methods
+($get_name(), $get_endpoints_name(), $has_endpoint()
+and $update_endpoint_generator()) are public only because they are
+invoked on an arm object by other components of the package (trials),
+which R6 cannot grant through private members. Users should not call them
+directly."><meta property="og:description" content="Create a class of arm.
 Public methods in this R6 class are used in developing
 this package. Thus, we have to export the whole R6 class which exposures all
 public methods. However, only the public methods in the list below are
 useful to end users.
 
-$add_endpoints()
-$print()
+$add_endpoints() add one or multiple endpoints to the arm.
+$print() print a summary report of the arm based on
+example data of its endpoints.
 
-"><meta property="og:image" content="https://zhangh12.github.io/TrialSimulator/logo.svg"></head><body>
+
+In addition, $generate_data() and $get_endpoints() are for
+exploratory purpose only. They appear in examples and vignettes to help
+users understand how this class works, but they are not needed at all in
+formal simulation once users know how to use this package.
+Internal machinery. The remaining public methods
+($get_name(), $get_endpoints_name(), $has_endpoint()
+and $update_endpoint_generator()) are public only because they are
+invoked on an arm object by other components of the package (trials),
+which R6 cannot grant through private members. Users should not call them
+directly."><meta property="og:image" content="https://zhangh12.github.io/TrialSimulator/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -25,7 +47,7 @@ $print()
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.29.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.30.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,9 +97,20 @@ $print()
 this package. Thus, we have to export the whole R6 class which exposures all
 public methods. However, only the public methods in the list below are
 useful to end users.</p>
-<ul><li><p><code>$add_endpoints()</code></p></li>
-<li><p><code>$print()</code></p></li>
-</ul></div>
+<ul><li><p><code>$add_endpoints()</code> add one or multiple endpoints to the arm.</p></li>
+<li><p><code>$print()</code> print a summary report of the arm based on
+example data of its endpoints.</p></li>
+</ul><p>In addition, <code>$generate_data()</code> and <code>$get_endpoints()</code> are for
+exploratory purpose only. They appear in examples and vignettes to help
+users understand how this class works, but they are not needed at all in
+formal simulation once users know how to use this package.</p>
+<p><strong>Internal machinery.</strong> The remaining public methods
+(<code>$get_name()</code>, <code>$get_endpoints_name()</code>, <code>$has_endpoint()</code>
+and <code>$update_endpoint_generator()</code>) are public only because they are
+invoked on an arm object by other components of the package (trials),
+which R6 cannot grant through private members. Users should not call them
+directly.</p>
+    </div>
 
 
     <div class="section level2">
@@ -93,7 +126,6 @@ useful to end users.</p>
 <ul><li><p><a href="#method-Arms-new"><code>Arms$new()</code></a></p></li>
 <li><p><a href="#method-Arms-add_endpoints"><code>Arms$add_endpoints()</code></a></p></li>
 <li><p><a href="#method-Arms-get_name"><code>Arms$get_name()</code></a></p></li>
-<li><p><a href="#method-Arms-get_number_endpoints"><code>Arms$get_number_endpoints()</code></a></p></li>
 <li><p><a href="#method-Arms-has_endpoint"><code>Arms$has_endpoint()</code></a></p></li>
 <li><p><a href="#method-Arms-get_endpoints"><code>Arms$get_endpoints()</code></a></p></li>
 <li><p><a href="#method-Arms-get_endpoints_name"><code>Arms$get_endpoints_name()</code></a></p></li>
@@ -161,24 +193,18 @@ specified in <code>...</code>.</p></dd>
 
 </div><p></p><hr><a id="method-Arms-get_name"></a><div class="section">
 <h3 id="method-get-name-">Method <code>get_name()</code><a class="anchor" aria-label="anchor" href="#method-get-name-"></a></h3>
+<p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>return name of arm.</p><div class="section">
 <h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Arms</span><span class="op">$</span><span class="fu">get_name</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 
-</div><p></p><hr><a id="method-Arms-get_number_endpoints"></a><div class="section">
-<h3 id="method-get-number-endpoints-">Method <code>get_number_endpoints()</code><a class="anchor" aria-label="anchor" href="#method-get-number-endpoints-"></a></h3>
-<p>return number of endpoints in the arm.</p><div class="section">
-<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Arms</span><span class="op">$</span><span class="fu">get_number_endpoints</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-
 </div><p></p><hr><a id="method-Arms-has_endpoint"></a><div class="section">
 <h3 id="method-has-endpoint-">Method <code>has_endpoint()</code><a class="anchor" aria-label="anchor" href="#method-has-endpoint-"></a></h3>
+<p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>check if the arm has any endpoint. Return <code>TRUE</code> or <code>FALSE</code>.</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Arms</span><span class="op">$</span><span class="fu">has_endpoint</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -186,23 +212,25 @@ specified in <code>...</code>.</p></dd>
 </div><p></p><hr><a id="method-Arms-get_endpoints"></a><div class="section">
 <h3 id="method-get-endpoints-">Method <code>get_endpoints()</code><a class="anchor" aria-label="anchor" href="#method-get-endpoints-"></a></h3>
 <p>return a list of endpoints in the arm.</p><div class="section">
-<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Arms</span><span class="op">$</span><span class="fu">get_endpoints</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 
 </div><p></p><hr><a id="method-Arms-get_endpoints_name"></a><div class="section">
 <h3 id="method-get-endpoints-name-">Method <code>get_endpoints_name()</code><a class="anchor" aria-label="anchor" href="#method-get-endpoints-name-"></a></h3>
+<p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>return name of endpoints registered to the arm.</p><div class="section">
-<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Arms</span><span class="op">$</span><span class="fu">get_endpoints_name</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 
 </div><p></p><hr><a id="method-Arms-update_endpoint_generator"></a><div class="section">
 <h3 id="method-update-endpoint-generator-">Method <code>update_endpoint_generator()</code><a class="anchor" aria-label="anchor" href="#method-update-endpoint-generator-"></a></h3>
+<p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>update generator of an endpoint object</p><div class="section">
-<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Arms</span><span class="op">$</span><span class="fu">update_endpoint_generator</span><span class="op">(</span><span class="va">endpoint_name</span>, <span class="va">generator</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -228,7 +256,7 @@ See <code>generator</code> of <code><a href="endpoint.html">endpoint()</a></code
 </div><p></p><hr><a id="method-Arms-generate_data"></a><div class="section">
 <h3 id="method-generate-data-">Method <code>generate_data()</code><a class="anchor" aria-label="anchor" href="#method-generate-data-"></a></h3>
 <p>generate arm data.</p><div class="section">
-<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Arms</span><span class="op">$</span><span class="fu">generate_data</span><span class="op">(</span><span class="va">n_patients_in_arm</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -245,7 +273,7 @@ Number of patients randomized to the arm.</p></dd>
 </div><p></p><hr><a id="method-Arms-print"></a><div class="section">
 <h3 id="method-print-">Method <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code><a class="anchor" aria-label="anchor" href="#method-print-"></a></h3>
 <p>print an arm.</p><div class="section">
-<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
+<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Arms</span><span class="op">$</span><span class="fu">print</span><span class="op">(</span>categorical_vars <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -263,7 +291,7 @@ values as categorical variables in summary report.</p></dd>
 </div><p></p><hr><a id="method-Arms-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
+<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Arms</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 

@@ -36,12 +36,8 @@ milestone(name = 'end of trial', when = calendarTime(time = 12))
 #> <Milestones>
 #>   Public:
 #>     clone: function (deep = FALSE) 
-#>     execute_action: function (trial) 
-#>     get_action: function () 
 #>     get_name: function () 
-#>     get_trigger_condition: function () 
 #>     get_trigger_status: function () 
-#>     get_type: function () 
 #>     initialize: function (name, type = name, trigger_condition, action = doNothing, 
 #>     mute: function (silent) 
 #>     reset: function () 
@@ -52,6 +48,10 @@ milestone(name = 'end of trial', when = calendarTime(time = 12))
 #>   Private:
 #>     action: function (trial, ...) 
 #>     action_args: list
+#>     execute_action: function (trial) 
+#>     get_action: function () 
+#>     get_trigger_condition: function () 
+#>     get_type: function () 
 #>     is_dry_run: FALSE
 #>     name: end of trial
 #>     original_action: function (trial, ...) 

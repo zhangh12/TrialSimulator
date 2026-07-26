@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.29.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.30.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,6 +50,22 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.30.1" id="trialsimulator-1301">TrialSimulator 1.30.1<a class="anchor" aria-label="anchor" href="#trialsimulator-1301"></a></h2>
+<div class="section level3">
+<h3 id="updates-1-30-1">Updates<a class="anchor" aria-label="anchor" href="#updates-1-30-1"></a></h3>
+<ul><li>Continue minimizing the public API of R6 classes: <code>Arms$get_number_endpoints()</code>, <code>Endpoints$get_readout()</code> and <code>Endpoints$get_type()</code> are now private. The machinery methods of <code>Arms</code> (<code>get_name()</code>, <code>get_endpoints_name()</code>, <code>has_endpoint()</code> and <code>update_endpoint_generator()</code>) and of <code>Endpoints</code> (<code>get_uid()</code> and <code><a href="../reference/update_generator.html">update_generator()</a></code>), which stay public only because trials and arms invoke them, now carry a bold warning that users should not call them directly.</li>
+<li>Polish class documentation: user-facing methods of <code>Controllers</code>, <code>Arms</code> and <code>Endpoints</code> now come with brief usage notes in the class description; exploratory methods (<code>test_generator()</code>, <code>get_generator()</code> and <code>get_name()</code> of <code>Endpoints</code>; <code>generate_data()</code> and <code>get_endpoints()</code> of <code>Arms</code>) are documented as helpful for understanding the classes but not needed in formal simulation.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.30.0" id="trialsimulator-1300">TrialSimulator 1.30.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1300"></a></h2>
+<div class="section level3">
+<h3 id="updates-1-30-0">Updates<a class="anchor" aria-label="anchor" href="#updates-1-30-0"></a></h3>
+<ul><li>Continue minimizing the public API of R6 classes: <code>Controllers$get_trial()</code>, <code>Controllers$get_listener()</code>, <code>Controllers$mute()</code>, <code>Milestones$execute_action()</code>, <code>Milestones$get_type()</code>, <code>Milestones$get_trigger_condition()</code>, <code>Milestones$get_action()</code>, <code>Regimens$get_number_time_selector()</code> and <code>Regimens$get_number_data_modifier()</code> are now private. They were used only internally by their own classes.</li>
+<li>The remaining public methods of <code>Milestones</code> and all public methods of <code>Regimens</code> are invoked on their objects by other components of the package (listeners and trials) and stay public only for that reason; they now carry a bold warning that users should not call them directly, in the same style as the <code>Trials</code> and <code>Listeners</code> classes.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.29.0" id="trialsimulator-1290">TrialSimulator 1.29.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1290"></a></h2>
 <div class="section level3">

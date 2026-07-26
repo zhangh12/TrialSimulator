@@ -7,9 +7,22 @@ Thus, we have to export the whole R6 class which exposures all public
 methods. However, only the public methods in the list below are useful
 to end users.
 
-- `$add_endpoints()`
+- `$add_endpoints()` add one or multiple endpoints to the arm.
 
-- `$print()`
+- `$print()` print a summary report of the arm based on example data of
+  its endpoints.
+
+In addition, `$generate_data()` and `$get_endpoints()` are for
+exploratory purpose only. They appear in examples and vignettes to help
+users understand how this class works, but they are not needed at all in
+formal simulation once users know how to use this package.
+
+**Internal machinery.** The remaining public methods (`$get_name()`,
+`$get_endpoints_name()`, `$has_endpoint()` and
+`$update_endpoint_generator()`) are public only because they are invoked
+on an arm object by other components of the package (trials), which R6
+cannot grant through private members. Users should not call them
+directly.
 
 ## Value
 
@@ -26,8 +39,6 @@ create an arm.
 - [`Arms$add_endpoints()`](#method-Arms-add_endpoints)
 
 - [`Arms$get_name()`](#method-Arms-get_name)
-
-- [`Arms$get_number_endpoints()`](#method-Arms-get_number_endpoints)
 
 - [`Arms$has_endpoint()`](#method-Arms-has_endpoint)
 
@@ -105,6 +116,8 @@ add one or multiple endpoints to the arm.
 
 ### Method `get_name()`
 
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
 return name of arm.
 
 #### Usage
@@ -113,17 +126,9 @@ return name of arm.
 
 ------------------------------------------------------------------------
 
-### Method `get_number_endpoints()`
-
-return number of endpoints in the arm.
-
-#### Usage
-
-    Arms$get_number_endpoints()
-
-------------------------------------------------------------------------
-
 ### Method `has_endpoint()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
 
 check if the arm has any endpoint. Return `TRUE` or `FALSE`.
 
@@ -145,6 +150,8 @@ return a list of endpoints in the arm.
 
 ### Method `get_endpoints_name()`
 
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
 return name of endpoints registered to the arm.
 
 #### Usage
@@ -154,6 +161,8 @@ return name of endpoints registered to the arm.
 ------------------------------------------------------------------------
 
 ### Method `update_endpoint_generator()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
 
 update generator of an endpoint object
 

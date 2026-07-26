@@ -10,8 +10,8 @@ extension etc.
 
 Public methods in this R6 class are used in developing this package.
 Thus, we have to export the whole R6 class which exposures all public
-methods. However, none of the public methods on this page is useful to
-end users. Instead, refer to the
+methods. However, **none of the public methods on this page is useful to
+end users**. Instead, refer to the
 [vignette](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.html)
 to learn how to define milestones when performing simulation using
 `TrialSimulator`.
@@ -30,19 +30,11 @@ to create a milestone.
 
 - [`Milestones$get_name()`](#method-Milestones-get_name)
 
-- [`Milestones$get_type()`](#method-Milestones-get_type)
-
-- [`Milestones$get_trigger_condition()`](#method-Milestones-get_trigger_condition)
-
-- [`Milestones$get_action()`](#method-Milestones-get_action)
-
 - [`Milestones$set_trigger_condition()`](#method-Milestones-set_trigger_condition)
 
 - [`Milestones$set_action_function()`](#method-Milestones-set_action_function)
 
 - [`Milestones$set_dry_run()`](#method-Milestones-set_dry_run)
-
-- [`Milestones$execute_action()`](#method-Milestones-execute_action)
 
 - [`Milestones$get_trigger_status()`](#method-Milestones-get_trigger_status)
 
@@ -93,41 +85,13 @@ initialize milestone
 
 ### Method `get_name()`
 
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
 return name of milestone
 
 #### Usage
 
     Milestones$get_name()
-
-------------------------------------------------------------------------
-
-### Method `get_type()`
-
-return type(s) of milestone
-
-#### Usage
-
-    Milestones$get_type()
-
-------------------------------------------------------------------------
-
-### Method `get_trigger_condition()`
-
-return trigger_condition function
-
-#### Usage
-
-    Milestones$get_trigger_condition()
-
-------------------------------------------------------------------------
-
-### Method `get_action()`
-
-return action function
-
-#### Usage
-
-    Milestones$get_action()
 
 ------------------------------------------------------------------------
 
@@ -184,6 +148,8 @@ an action function. The action in effect at construction is restored by
 
 ### Method `set_dry_run()`
 
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
 set if dry run should be carried out for the milestone. For more
 details, refer to `Controller::run`.
 
@@ -199,23 +165,9 @@ details, refer to `Controller::run`.
 
 ------------------------------------------------------------------------
 
-### Method `execute_action()`
-
-execute action function
-
-#### Usage
-
-    Milestones$execute_action(trial)
-
-#### Arguments
-
-- `trial`:
-
-  a `Trial` object.
-
-------------------------------------------------------------------------
-
 ### Method `get_trigger_status()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
 
 return trigger status
 
@@ -226,6 +178,8 @@ return trigger status
 ------------------------------------------------------------------------
 
 ### Method `reset()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
 
 reset an milestone so that it can be triggered again. Usually, this is
 called before the controller of a trial can run additional replicates of
@@ -240,6 +194,8 @@ so that every replicate starts from the original design.
 ------------------------------------------------------------------------
 
 ### Method `trigger_milestone()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
 
 trigger an milestone (always TRUE) and execute action accordingly. It
 calls Trial\$get_data_lock_time() to lock data based on conditions
@@ -262,6 +218,8 @@ impossible to reach).
 ------------------------------------------------------------------------
 
 ### Method `mute()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
 
 mute all messages (not including warnings)
 
