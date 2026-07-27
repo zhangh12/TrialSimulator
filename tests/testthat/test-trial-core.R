@@ -296,28 +296,20 @@ test_that('endpoint event counts work as expected when duration is adapted', {
                        when = eventNumber(endpoint = 'os', n = 150),
                        action = action_at_interim)
 
-  listener <- listener(silent = TRUE)
-  listener$add_milestones(interim)
-
-  controller <- controller(trial, listener)
-  controller$run(plot_event = FALSE, silent = TRUE)
-
-  dat1_ <- trial$get_locked_data('interim')
-
-  expect_equal(sum(dat1_$os_event %in% 1), 150)
-
   final <- milestone(name = 'final',
                      when = eventNumber(endpoint = 'os', n = 400) |
                        calendarTime(time = 40))
 
+  listener <- listener(silent = TRUE)
+  listener$add_milestones(interim, final)
 
-  listener$add_milestones(final)
+  controller <- controller(trial, listener)
   controller$run(plot_event = FALSE, silent = TRUE)
 
   dat1 <- trial$get_locked_data('interim')
   dat2 <- trial$get_locked_data('final')
 
-  expect_identical(dat1_, dat1)
+  expect_equal(sum(dat1$os_event %in% 1), 150)
 
   expect_true(sum(dat2$os_event %in% 1) == 400 ||
                 all((dat2$enroll_time + dat2$os_event)[dat2$os_event %in% 1] <= 40))

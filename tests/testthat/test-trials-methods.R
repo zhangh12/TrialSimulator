@@ -75,7 +75,9 @@ test_that("Listeners reject duplicate milestones and list their names", {
   expect_equal(sort(lstn$get_milestone_names()),
                sort(c("m1", "m2")))
 
-  expect_warning(lstn$add_milestones(dup), regexp = "over-write|already")
+  expect_error(lstn$add_milestones(dup), regexp = "cannot be over-written")
+  expect_equal(sort(lstn$get_milestone_names()),
+               sort(c("m1", "m2")))
 
   out <- capture.output(print(lstn))
   expect_true(length(out) > 0)

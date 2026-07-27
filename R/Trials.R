@@ -1882,6 +1882,23 @@ Trials <- R6::R6Class(
              'and/or extending trial duration in trial(). ')
       }
 
+      ## validate chronology before any state is touched: a milestone must
+      ## not lock data earlier than the current trial time. This is the
+      ## early, user-facing guard; save_milestone_time() re-checks the same
+      ## invariant as an internal assertion after the lock.
+      if(at_calendar_time < private$now){
+        latest <- private$milestone_time[which.max(private$milestone_time)]
+        stop('Cannot lock data for milestone <', milestone_name, '> at time ',
+             round(at_calendar_time, 2), ': the trial clock is already at time ',
+             round(private$now, 2),
+             if(length(latest) > 0){
+               paste0(', set by milestone <', names(latest), '>')
+             },
+             '. A milestone cannot be triggered earlier than a previously triggered one. \n',
+             'A possible reason is mis-specification of milestone order or triggering conditions. \n',
+             'Use seed = <', private$get_seed(), '> to debug it. ')
+      }
+
       trial_data <- private$get_trial_data()
 
       event_cols <- grep('_event$', names(trial_data), value = TRUE)
@@ -3406,6 +3423,12 @@ Trials <- R6::R6Class(
     ## @param time current calendar time of a trial.
     set_current_time = function(time){
       stopifnot(time >= 0)
+      if(time < private$now){
+        stop('Internal error: trial clock cannot move backward (current time = ',
+             round(private$now, 2), ', attempted = ', round(time, 2), '). ',
+             'This should have been caught when locking data. ',
+             'Please report it at https://github.com/zhangh12/TrialSimulator/issues. ')
+      }
       attributes(time) <- NULL
       private$now <- time
     },

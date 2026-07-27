@@ -84,8 +84,11 @@ Listeners <- R6::R6Class(
       for(milestone in milestone_list){
         stopifnot(inherits(milestone, 'Milestones'))
         if(milestone$get_name() %in% names(private$milestones)){
-          warning('Listener has milestone <', milestone$get_name(), '> already. ',
-                  'Do you want to over-write it? \n')
+          stop('Listener has milestone <', milestone$get_name(), '> already. ',
+               'A registered milestone cannot be over-written. ',
+               'Use a different name, create a new listener, or update a ',
+               'not-yet-triggered milestone within an action function ',
+               'through update_milestone(). ')
         }
         private$milestones[[milestone$get_name()]] <- milestone
 

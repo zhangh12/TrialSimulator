@@ -401,7 +401,8 @@ test_that("an update breaking chronological order is caught by the guard", {
 
   ## milestones must trigger in registration order; an update that makes a
   ## later-registered milestone fire before an earlier one aborts with the
-  ## established monotonicity error of save_milestone_time()
+  ## backward-clock error raised by lock_data() before any state is touched
+  ## (save_milestone_time() re-checks the same invariant afterwards)
   expect_error(
     {
       pbo <- make_arm("pbo", 10)
@@ -423,5 +424,5 @@ test_that("an update breaking chronological order is caught by the guard", {
       lstn$add_milestones(interim, m2, final)
       controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
     },
-    "happens before milestones")
+    "Cannot lock data for milestone <final>")
 })
