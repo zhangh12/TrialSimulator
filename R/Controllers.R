@@ -9,10 +9,12 @@
 #'
 #' \itemize{
 #' \item \code{$run()} run trial simulation, sequentially or in parallel.
+#' It cannot be called twice on a controller unless \code{$reset()} is
+#' called in between.
 #' \item \code{$get_output()} return a data frame of all outputs saved
 #' during simulation.
 #' \item \code{$reset()} reset the trial and listener registered to the
-#' controller before running additional replicate of simulation.
+#' controller before starting a new simulation with \code{$run()}.
 #' }
 #'
 #' @docType class
@@ -30,6 +32,11 @@ Controllers <- R6::R6Class(
     silent = FALSE,
     dry_run = FALSE,
     output = NULL,
+
+    ## TRUE once run() has been called (successfully or not); cleared by
+    ## reset(). run() refuses to start when TRUE, because the trial is no
+    ## longer in its as-designed state.
+    has_run = FALSE,
 
     ## @description
     ## return listener in a controller.
@@ -244,13 +251,14 @@ Controllers <- R6::R6Class(
     },
 
     #' @description
-    #' reset the trial and listener registered to the controller before running
-    #' additional replicate of simulation. This is usually done between two
-    #' calls of \code{controller$run()}.
+    #' reset the trial and listener registered to the controller so that a
+    #' new simulation can be started with \code{controller$run()}. The trial
+    #' and the milestones are restored to their as-designed version.
     #'
     reset = function(){
       private$get_trial()$reset()
       private$get_listener()$reset()
+      private$has_run <- FALSE
     },
 
     #' @description
@@ -300,7 +308,8 @@ Controllers <- R6::R6Class(
     },
 
     #' @description
-    #' run trial simulation.
+    #' run trial simulation. It cannot be called again on the same
+    #' controller unless \code{reset()} is called first.
     #' @param n integer. Number of replicates of simulation.
     #' \code{n = 1} by default. Simulation results can be accessed by
     #' \code{controller$get_output()}.
@@ -343,6 +352,17 @@ Controllers <- R6::R6Class(
     #' is usually not helpful because adaption should be executed
     #' before estimating the milestone time.
     run = function(n = 1, n_workers = 1, plot_event = TRUE, silent = FALSE, dry_run = FALSE){
+
+      if(private$has_run){
+        stop('run() has already been called on this controller. ',
+             'Call reset() before running a new simulation. ')
+      }
+
+      ## stamp on exit so that a failed run also counts: the trial is no
+      ## longer in its as-designed state and must be reset() before another
+      ## run(). on.exit is required because reset() between replicates in
+      ## run_sequential_() clears the flag while the run is still going.
+      on.exit(private$has_run <- TRUE, add = TRUE)
 
       private$get_trial()$make_arms_snapshot()
       private$output <- NULL

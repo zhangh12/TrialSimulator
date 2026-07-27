@@ -17,10 +17,12 @@ useful to end users.
 
 \itemize{
 \item \code{$run()} run trial simulation, sequentially or in parallel.
+It cannot be called twice on a controller unless \code{$reset()} is
+called in between.
 \item \code{$get_output()} return a data frame of all outputs saved
 during simulation.
 \item \code{$reset()} reset the trial and listener registered to the
-controller before running additional replicate of simulation.
+controller before starting a new simulation with \code{$run()}.
 }
 }
 \examples{
@@ -59,9 +61,9 @@ initialize a controller of the trial
 \if{html}{\out{<a id="method-Controllers-reset"></a>}}
 \if{latex}{\out{\hypertarget{method-Controllers-reset}{}}}
 \subsection{Method \code{reset()}}{
-reset the trial and listener registered to the controller before running
-additional replicate of simulation. This is usually done between two
-calls of \code{controller$run()}.
+reset the trial and listener registered to the controller so that a
+new simulation can be started with \code{controller$run()}. The trial
+and the milestones are restored to their as-designed version.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Controllers$reset()}\if{html}{\out{</div>}}
 }
@@ -108,7 +110,8 @@ custom outputs in \code{save()}. Default \code{FALSE}.}
 \if{html}{\out{<a id="method-Controllers-run"></a>}}
 \if{latex}{\out{\hypertarget{method-Controllers-run}{}}}
 \subsection{Method \code{run()}}{
-run trial simulation.
+run trial simulation. It cannot be called again on the same
+controller unless \code{reset()} is called first.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Controllers$run(
   n = 1,

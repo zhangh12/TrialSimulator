@@ -185,8 +185,8 @@ Milestones <- R6::R6Class(
     #' replace the trigger condition of a not-yet-triggered milestone. This
     #' is invoked by the listener when it applies an update requested through
     #' \code{Trials$update_milestone()} within an action function. The
-    #' condition in effect at construction is captured on first replacement
-    #' and restored by \code{reset()} between simulation replicates.
+    #' as-designed condition, frozen at construction, is restored by
+    #' \code{reset()} between simulation replicates.
     #' @param trigger_condition an object of class \code{Condition}. See
     #' \code{trigger_condition} of \code{milestone()}.
     set_trigger_condition = function(trigger_condition){

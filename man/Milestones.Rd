@@ -88,8 +88,8 @@ return name of milestone
 replace the trigger condition of a not-yet-triggered milestone. This
 is invoked by the listener when it applies an update requested through
 \code{Trials$update_milestone()} within an action function. The
-condition in effect at construction is captured on first replacement
-and restored by \code{reset()} between simulation replicates.
+as-designed condition, frozen at construction, is restored by
+\code{reset()} between simulation replicates.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Milestones$set_trigger_condition(trigger_condition)}\if{html}{\out{</div>}}
 }
