@@ -130,15 +130,13 @@ scan, check, and trigger registered milestones.
 Milestones are triggered in the order when calling
 \code{Listener$add_milestones}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Listeners$monitor(trial, dry_run)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Listeners$monitor(trial)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{trial}}{a \code{Trial} object.}
-
-\item{\code{dry_run}}{logical. See \code{Controller::run} for more information.}
 }
 \if{html}{\out{</div>}}
 }

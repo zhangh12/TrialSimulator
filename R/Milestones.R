@@ -33,7 +33,6 @@ Milestones <- R6::R6Class(
     triggered = FALSE, ## logical. Whether this milestone has been triggered
                       ## (to avoid repeated execution)
     silent = FALSE,
-    is_dry_run = FALSE,
 
     ## as-designed trigger condition and action, fixed at construction.
     ## reset() unconditionally restores them between simulation replicates,
@@ -95,11 +94,7 @@ Milestones <- R6::R6Class(
     ## @param trial a \code{Trial} object.
     execute_action = function(trial){
 
-      if(private$is_dry_run){
-        action <- .default_action()
-      }else{
-        action <- do.call(private$get_action(), c(list(trial), private$action_args))
-      }
+      action <- do.call(private$get_action(), c(list(trial), private$action_args))
 
       if(!private$silent && !is.null(action)){
         message('Action for milestone <', self$get_name(), '> is executed. ')
@@ -163,7 +158,6 @@ Milestones <- R6::R6Class(
       private$action <- action
       private$action_args <- dots
       private$triggered <- FALSE
-      private$is_dry_run <- FALSE
 
       ## freeze the as-designed trigger condition and action for reset()
       private$original_trigger_condition <- trigger_condition
@@ -227,16 +221,6 @@ Milestones <- R6::R6Class(
       private$validate_action(action, action_args, self$get_name())
       private$action <- action
       private$action_args <- action_args
-    },
-
-    #' @description
-    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
-    #'
-    #' set if dry run should be carried out for the milestone. For more details,
-    #' refer to \code{Controller::run}.
-    #' @param dry_run logical.
-    set_dry_run = function(dry_run){
-      private$is_dry_run <- dry_run
     },
 
     #' @description

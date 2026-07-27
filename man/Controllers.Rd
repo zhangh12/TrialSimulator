@@ -113,13 +113,7 @@ custom outputs in \code{save()}. Default \code{FALSE}.}
 run trial simulation. It cannot be called again on the same
 controller unless \code{reset()} is called first.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Controllers$run(
-  n = 1,
-  n_workers = 1,
-  plot_event = TRUE,
-  silent = FALSE,
-  dry_run = FALSE
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Controllers$run(n = 1, n_workers = 1, plot_event = TRUE, silent = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -154,22 +148,6 @@ trial. Note that warning messages are still displayed. When
 \code{silent = TRUE} and replicates are run sequentially
 (\code{n_workers = 1}), a progress bar is displayed automatically
 if the simulation is expected to take more than 1 minute.}
-
-\item{\code{dry_run}}{logical. We are considering retire this argument.
-\code{TRUE} if action function provided by users is
-ignored and an internal default action \code{.default_action} is called
-instead. This default function only locks data when the milestone is
-triggered. Milestone time and number of endpoints' events or sample sizes
-are saved. It is suggested to set \code{dry_run = TRUE} to estimate
-distributions of triggering time and number of events before formally
-using custom action functions if a fixed design is in use.
-This helps determining planned maximum
-information for group sequential design and reasonable time of milestone
-of interest when planning a trial. Set it to \code{FALSE} for formal
-simulations. However, for an adaptive design where arm(s) could
-possibly be added or removed, setting \code{dry_run} to \code{TRUE}
-is usually not helpful because adaption should be executed
-before estimating the milestone time.}
 }
 \if{html}{\out{</div>}}
 }
