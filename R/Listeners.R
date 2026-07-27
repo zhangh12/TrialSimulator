@@ -119,15 +119,13 @@ Listeners <- R6::R6Class(
     #' Milestones are triggered in the order when calling
     #' \code{Listener$add_milestones}.
     #' @param trial a \code{Trial} object.
-    #' @param dry_run logical. See \code{Controller::run} for more information.
-    monitor = function(trial, dry_run){
+    monitor = function(trial){
 
       if(!trial$has_arm()){
         stop('No arm is found in the trial. ',
              'Make sure that Trial$add_arms() has been executed before running the trial. ')
       }
       for(milestone in private$get_milestones()){
-        milestone$set_dry_run(dry_run)
         tryCatch(
           {
             milestone$trigger_milestone(trial)
@@ -176,7 +174,6 @@ Listeners <- R6::R6Class(
                  trial$get_output('seed'), ' in trial(...). ')
           }
         )
-        milestone$set_dry_run(FALSE)
       }
     },
 

@@ -31,7 +31,6 @@ to learn how to define milestones when performing simulation using
 \item \href{#method-Milestones-get_name}{\code{Milestones$get_name()}}
 \item \href{#method-Milestones-set_trigger_condition}{\code{Milestones$set_trigger_condition()}}
 \item \href{#method-Milestones-set_action_function}{\code{Milestones$set_action_function()}}
-\item \href{#method-Milestones-set_dry_run}{\code{Milestones$set_dry_run()}}
 \item \href{#method-Milestones-get_trigger_status}{\code{Milestones$get_trigger_status()}}
 \item \href{#method-Milestones-reset}{\code{Milestones$reset()}}
 \item \href{#method-Milestones-trigger_milestone}{\code{Milestones$trigger_milestone()}}
@@ -126,26 +125,6 @@ restored by \code{reset()} between simulation replicates.
 
 \item{\code{action_args}}{named list. Fixed arguments of \code{action},
 corresponding to \code{...} of \code{milestone()}.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Milestones-set_dry_run"></a>}}
-\if{latex}{\out{\hypertarget{method-Milestones-set_dry_run}{}}}
-\subsection{Method \code{set_dry_run()}}{
-\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
-
-set if dry run should be carried out for the milestone. For more details,
-refer to \code{Controller::run}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Milestones$set_dry_run(dry_run)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{dry_run}}{logical.}
 }
 \if{html}{\out{</div>}}
 }

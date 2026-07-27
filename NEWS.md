@@ -1,3 +1,9 @@
+# TrialSimulator 1.32.0
+
+## Updates
+
+- The `dry_run` argument of `controller$run()` is now defunct.
+
 # TrialSimulator 1.31.0
 
 ## Updates
