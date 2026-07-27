@@ -33,7 +33,7 @@ TrialSimulator."><meta property="og:image" content="https://zhangh12.github.io/T
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.31.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.32.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -109,7 +109,6 @@ to learn how to define milestones when performing simulation using
 <li><p><a href="#method-Milestones-get_name"><code>Milestones$get_name()</code></a></p></li>
 <li><p><a href="#method-Milestones-set_trigger_condition"><code>Milestones$set_trigger_condition()</code></a></p></li>
 <li><p><a href="#method-Milestones-set_action_function"><code>Milestones$set_action_function()</code></a></p></li>
-<li><p><a href="#method-Milestones-set_dry_run"><code>Milestones$set_dry_run()</code></a></p></li>
 <li><p><a href="#method-Milestones-get_trigger_status"><code>Milestones$get_trigger_status()</code></a></p></li>
 <li><p><a href="#method-Milestones-reset"><code>Milestones$reset()</code></a></p></li>
 <li><p><a href="#method-Milestones-trigger_milestone"><code>Milestones$trigger_milestone()</code></a></p></li>
@@ -208,29 +207,11 @@ corresponding to <code>...</code> of <code><a href="milestone.html">milestone()<
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-Milestones-set_dry_run"></a><div class="section">
-<h3 id="method-set-dry-run-">Method <code>set_dry_run()</code><a class="anchor" aria-label="anchor" href="#method-set-dry-run-"></a></h3>
-<p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
-<p>set if dry run should be carried out for the milestone. For more details,
-refer to <code>Controller::run</code>.</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Milestones</span><span class="op">$</span><span class="fu">set_dry_run</span><span class="op">(</span><span class="va">dry_run</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>dry_run</code></dt>
-<dd><p>logical.</p></dd>
-
-
-</dl><p></p></div>
-</div>
-
 </div><p></p><hr><a id="method-Milestones-get_trigger_status"></a><div class="section">
 <h3 id="method-get-trigger-status-">Method <code>get_trigger_status()</code><a class="anchor" aria-label="anchor" href="#method-get-trigger-status-"></a></h3>
 <p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>return trigger status</p><div class="section">
-<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Milestones</span><span class="op">$</span><span class="fu">get_trigger_status</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -244,7 +225,7 @@ of simulation. If the trigger condition or the action was replaced
 in-run through <code>Trials$update_milestone()</code>, the as-designed
 version is restored so that every replicate starts from the original
 design.</p><div class="section">
-<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Milestones</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -259,12 +240,12 @@ found, Trial$get_data_lock_time() will throw an error and stop the
 program. This means that user needs to adjust their trigger_condition
 (e.g., target number of events (target_n_events) is impossible to
 reach).</p><div class="section">
-<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Milestones</span><span class="op">$</span><span class="fu">trigger_milestone</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
+<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>trial</code></dt>
 <dd><p>a <code>Trial</code> object.</p></dd>
 
@@ -276,12 +257,12 @@ reach).</p><div class="section">
 <h3 id="method-mute-">Method <code>mute()</code><a class="anchor" aria-label="anchor" href="#method-mute-"></a></h3>
 <p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>mute all messages (not including warnings)</p><div class="section">
-<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Milestones</span><span class="op">$</span><span class="fu">mute</span><span class="op">(</span><span class="va">silent</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
+<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>silent</code></dt>
 <dd><p>logical.</p></dd>
 
@@ -292,12 +273,12 @@ reach).</p><div class="section">
 </div><p></p><hr><a id="method-Milestones-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
+<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Milestones</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
+<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

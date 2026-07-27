@@ -42,7 +42,6 @@ milestone(name = 'end of trial', when = calendarTime(time = 12))
 #>     mute: function (silent) 
 #>     reset: function () 
 #>     set_action_function: function (action, action_args = list()) 
-#>     set_dry_run: function (dry_run) 
 #>     set_trigger_condition: function (trigger_condition) 
 #>     trigger_milestone: function (trial) 
 #>   Private:
@@ -52,7 +51,6 @@ milestone(name = 'end of trial', when = calendarTime(time = 12))
 #>     get_action: function () 
 #>     get_trigger_condition: function () 
 #>     get_type: function () 
-#>     is_dry_run: FALSE
 #>     name: end of trial
 #>     original_action: function (trial, ...) 
 #>     original_action_args: list

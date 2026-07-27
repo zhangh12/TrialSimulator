@@ -34,8 +34,6 @@ to create a milestone.
 
 - [`Milestones$set_action_function()`](#method-Milestones-set_action_function)
 
-- [`Milestones$set_dry_run()`](#method-Milestones-set_dry_run)
-
 - [`Milestones$get_trigger_status()`](#method-Milestones-get_trigger_status)
 
 - [`Milestones$reset()`](#method-Milestones-reset)
@@ -143,25 +141,6 @@ an action function. The action in effect at construction is restored by
 
   named list. Fixed arguments of `action`, corresponding to `...` of
   [`milestone()`](https://zhangh12.github.io/TrialSimulator/reference/milestone.md).
-
-------------------------------------------------------------------------
-
-### Method `set_dry_run()`
-
-**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
-
-set if dry run should be carried out for the milestone. For more
-details, refer to `Controller::run`.
-
-#### Usage
-
-    Milestones$set_dry_run(dry_run)
-
-#### Arguments
-
-- `dry_run`:
-
-  logical.
 
 ------------------------------------------------------------------------
 

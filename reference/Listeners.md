@@ -111,17 +111,13 @@ in the order when calling `Listener$add_milestones`.
 
 #### Usage
 
-    Listeners$monitor(trial, dry_run)
+    Listeners$monitor(trial)
 
 #### Arguments
 
 - `trial`:
 
   a `Trial` object.
-
-- `dry_run`:
-
-  logical. See `Controller::run` for more information.
 
 ------------------------------------------------------------------------
 
