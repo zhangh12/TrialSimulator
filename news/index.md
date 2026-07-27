@@ -1,5 +1,30 @@
 # Changelog
 
+## TrialSimulator 1.31.0
+
+### Updates
+
+- `controller$run()` can no longer be called twice without `reset()` in
+  between. Previously, a second `run()` silently continued the
+  already-executed trial (all milestones already triggered, snapshots
+  partially overwritten) instead of starting a new simulation. To define
+  a milestone whose triggering condition or action depends on interim
+  results, register it upfront and revise it within an action function
+  through
+  [`update_milestone()`](https://zhangh12.github.io/TrialSimulator/reference/update_milestone.md).
+- A milestone that would lock data at a time earlier than the current
+  trial time now raises an informative error before any trial state is
+  modified, naming both milestones involved and the seed to debug with.
+  Previously the violation was caught by `save_milestone_time()` only
+  after the trial clock had been moved backwards and the locked snapshot
+  stored; that check remains as an internal assertion, and
+  `set_current_time()` gains a backstop against backward clock moves.
+- `listener$add_milestones()` now raises an error when a milestone with
+  the same name is already registered. Previously it warned and silently
+  over-wrote the registered milestone. To modify a not-yet-triggered
+  milestone within an action function, use
+  [`update_milestone()`](https://zhangh12.github.io/TrialSimulator/reference/update_milestone.md).
+
 ## TrialSimulator 1.30.1
 
 ### Updates

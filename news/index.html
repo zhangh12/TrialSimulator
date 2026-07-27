@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.30.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.31.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,6 +50,17 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.31.0" id="trialsimulator-1310">TrialSimulator 1.31.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1310"></a></h2>
+<div class="section level3">
+<h3 id="updates-1-31-0">Updates<a class="anchor" aria-label="anchor" href="#updates-1-31-0"></a></h3>
+<ul><li>
+<code>controller$run()</code> can no longer be called twice without <code>reset()</code> in between. Previously, a second <code>run()</code> silently continued the already-executed trial (all milestones already triggered, snapshots partially overwritten) instead of starting a new simulation. To define a milestone whose triggering condition or action depends on interim results, register it upfront and revise it within an action function through <code><a href="../reference/update_milestone.html">update_milestone()</a></code>.</li>
+<li>A milestone that would lock data at a time earlier than the current trial time now raises an informative error before any trial state is modified, naming both milestones involved and the seed to debug with. Previously the violation was caught by <code>save_milestone_time()</code> only after the trial clock had been moved backwards and the locked snapshot stored; that check remains as an internal assertion, and <code>set_current_time()</code> gains a backstop against backward clock moves.</li>
+<li>
+<code>listener$add_milestones()</code> now raises an error when a milestone with the same name is already registered. Previously it warned and silently over-wrote the registered milestone. To modify a not-yet-triggered milestone within an action function, use <code><a href="../reference/update_milestone.html">update_milestone()</a></code>.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.30.1" id="trialsimulator-1301">TrialSimulator 1.30.1<a class="anchor" aria-label="anchor" href="#trialsimulator-1301"></a></h2>
 <div class="section level3">

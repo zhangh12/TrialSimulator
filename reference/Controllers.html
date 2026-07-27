@@ -6,10 +6,12 @@ public methods. However, only the public methods in the list below are
 useful to end users.
 
 $run() run trial simulation, sequentially or in parallel.
+It cannot be called twice on a controller unless $reset() is
+called in between.
 $get_output() return a data frame of all outputs saved
 during simulation.
 $reset() reset the trial and listener registered to the
-controller before running additional replicate of simulation.
+controller before starting a new simulation with $run().
 
 "><meta property="og:description" content="Create a class of controller to run a trial.
 Public methods in this R6 class are used in developing
@@ -18,10 +20,12 @@ public methods. However, only the public methods in the list below are
 useful to end users.
 
 $run() run trial simulation, sequentially or in parallel.
+It cannot be called twice on a controller unless $reset() is
+called in between.
 $get_output() return a data frame of all outputs saved
 during simulation.
 $reset() reset the trial and listener registered to the
-controller before running additional replicate of simulation.
+controller before starting a new simulation with $run().
 
 "><meta property="og:image" content="https://zhangh12.github.io/TrialSimulator/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -31,7 +35,7 @@ controller before running additional replicate of simulation.
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.30.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.31.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -81,11 +85,13 @@ controller before running additional replicate of simulation.
 this package. Thus, we have to export the whole R6 class which exposures all
 public methods. However, only the public methods in the list below are
 useful to end users.</p>
-<ul><li><p><code>$run()</code> run trial simulation, sequentially or in parallel.</p></li>
+<ul><li><p><code>$run()</code> run trial simulation, sequentially or in parallel.
+It cannot be called twice on a controller unless <code>$reset()</code> is
+called in between.</p></li>
 <li><p><code>$get_output()</code> return a data frame of all outputs saved
 during simulation.</p></li>
 <li><p><code>$reset()</code> reset the trial and listener registered to the
-controller before running additional replicate of simulation.</p></li>
+controller before starting a new simulation with <code>$run()</code>.</p></li>
 </ul></div>
 
 
@@ -126,9 +132,9 @@ controller before running additional replicate of simulation.</p></li>
 
 </div><p></p><hr><a id="method-Controllers-reset"></a><div class="section">
 <h3 id="method-reset-">Method <code>reset()</code><a class="anchor" aria-label="anchor" href="#method-reset-"></a></h3>
-<p>reset the trial and listener registered to the controller before running
-additional replicate of simulation. This is usually done between two
-calls of <code>controller$run()</code>.</p><div class="section">
+<p>reset the trial and listener registered to the controller so that a
+new simulation can be started with <code>controller$run()</code>. The trial
+and the milestones are restored to their as-designed version.</p><div class="section">
 <h4 id="usage-1">Usage<a class="anchor" aria-label="anchor" href="#usage-1"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controllers</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -176,7 +182,8 @@ custom outputs in <code><a href="https://rdrr.io/r/base/save.html" class="extern
 
 </div><p></p><hr><a id="method-Controllers-run"></a><div class="section">
 <h3 id="method-run-">Method <code>run()</code><a class="anchor" aria-label="anchor" href="#method-run-"></a></h3>
-<p>run trial simulation.</p><div class="section">
+<p>run trial simulation. It cannot be called again on the same
+controller unless <code>reset()</code> is called first.</p><div class="section">
 <h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Controllers</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span></span>
 <span>  n <span class="op">=</span> <span class="fl">1</span>,</span>

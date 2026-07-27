@@ -7,13 +7,15 @@ Thus, we have to export the whole R6 class which exposures all public
 methods. However, only the public methods in the list below are useful
 to end users.
 
-- `$run()` run trial simulation, sequentially or in parallel.
+- `$run()` run trial simulation, sequentially or in parallel. It cannot
+  be called twice on a controller unless `$reset()` is called in
+  between.
 
 - `$get_output()` return a data frame of all outputs saved during
   simulation.
 
 - `$reset()` reset the trial and listener registered to the controller
-  before running additional replicate of simulation.
+  before starting a new simulation with `$run()`.
 
 ## Value
 
@@ -61,9 +63,9 @@ initialize a controller of the trial
 
 ### Method `reset()`
 
-reset the trial and listener registered to the controller before running
-additional replicate of simulation. This is usually done between two
-calls of `controller$run()`.
+reset the trial and listener registered to the controller so that a new
+simulation can be started with `controller$run()`. The trial and the
+milestones are restored to their as-designed version.
 
 #### Usage
 
@@ -114,7 +116,8 @@ return a data frame of all current outputs saved by calling
 
 ### Method `run()`
 
-run trial simulation.
+run trial simulation. It cannot be called again on the same controller
+unless `reset()` is called first.
 
 #### Usage
 

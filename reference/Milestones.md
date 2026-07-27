@@ -101,9 +101,9 @@ return name of milestone
 
 replace the trigger condition of a not-yet-triggered milestone. This is
 invoked by the listener when it applies an update requested through
-`Trials$update_milestone()` within an action function. The condition in
-effect at construction is captured on first replacement and restored by
-`reset()` between simulation replicates.
+`Trials$update_milestone()` within an action function. The as-designed
+condition, frozen at construction, is restored by `reset()` between
+simulation replicates.
 
 #### Usage
 
