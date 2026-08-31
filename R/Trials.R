@@ -2189,7 +2189,7 @@ Trials <- R6::R6Class(
     #' \item if it does not, and \code{D_cap} is finite, the cap itself is
     #' returned with its achieved conditional power, and
     #' \code{target_reached} is \code{FALSE};
-    #' \item an infinite \code{D_cap} (the default) requests the smallest
+    #' \item an infinite \code{D_cap} requests the smallest
     #' finite solution regardless of size. An error is raised if no finite
     #' event number can reach \code{target_cp} under the specified effect.
     #' }
@@ -2241,10 +2241,12 @@ Trials <- R6::R6Class(
     #' Details).
     #' @param ... subset conditions compatible with \code{dplyr::filter},
     #' passed to \code{fitLogrank()}.
-    #' @param D_cap numeric. Practical upper bound(s) of the re-estimated
-    #' event number, counted on the two arms of each comparison. Whole
-    #' number(s) greater than the observed \code{d}, or \code{Inf} for an
-    #' exact solution. A scalar \code{Inf} (the default) applies to all
+    #' @param D_cap \code{NULL} or numeric. Practical upper bound(s) of the
+    #' re-estimated event number, counted on the two arms of each comparison.
+    #' Whole number(s) greater than the observed \code{d}, or \code{Inf} for
+    #' an exact solution. The default \code{NULL} is converted internally to
+    #' scalar \code{Inf} for one comparison or a named vector of \code{Inf}
+    #' for multiple comparisons. An explicit scalar \code{Inf} applies to all
     #' comparisons; a finite unnamed scalar is accepted when a single
     #' treatment arm is compared with placebo; otherwise \code{D_cap} must
     #' be a named vector over the same treatment arms as \code{alpha} and
@@ -2303,7 +2305,7 @@ Trials <- R6::R6Class(
                                                            alternative,
                                                            alpha, target_cp,
                                                            effect, ...,
-                                                           D_cap = Inf){
+                                                           D_cap = NULL){
 
       if(!is.character(milestone) || length(milestone) != 1){
         stop('milestone in eventNumberReestimationFromConditionalPower() ',
@@ -2443,6 +2445,14 @@ Trials <- R6::R6Class(
 
       selected_arms <- names(alpha)
 
+      if(is.null(D_cap)){
+        D_cap <- if(length(selected_arms) == 1){
+          Inf
+        }else{
+          setNames(rep(Inf, length(selected_arms)), selected_arms)
+        }
+      }
+
       if(!is.numeric(D_cap) || length(D_cap) == 0 || any(is.na(D_cap)) ||
          any(D_cap <= 0) ||
          !all(is.infinite(D_cap) | is.wholenumber(D_cap))){
@@ -2454,7 +2464,7 @@ Trials <- R6::R6Class(
 
       if(length(D_cap) == 1 && !is_fully_named(D_cap) &&
          is.infinite(D_cap)){
-        ## the default: no cap on any comparison
+        ## no cap on any comparison
         D_cap <- rep(Inf, length(selected_arms))
         names(D_cap) <- selected_arms
       }else if(!is_fully_named(D_cap)){

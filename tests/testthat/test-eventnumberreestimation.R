@@ -343,6 +343,18 @@ test_that("the method extracts z and d and inverts conditionalPower (two arms)",
   expect_equal(res$D_cap, Inf)
   expect_true(res$target_reached)
 
+  ## The NULL default and an explicit Inf request the same unbounded search.
+  res_null <- tr$eventNumberReestimationFromConditionalPower(
+    'interim', Surv(pfs, pfs_event) ~ arm,
+    placebo = 'pbo', alternative = 'less',
+    alpha = 0.022, target_cp = 0.9, effect = 'trend', D_cap = NULL)
+  res_inf <- tr$eventNumberReestimationFromConditionalPower(
+    'interim', Surv(pfs, pfs_event) ~ arm,
+    placebo = 'pbo', alternative = 'less',
+    alpha = 0.022, target_cp = 0.9, effect = 'trend', D_cap = Inf)
+  expect_equal(res_null, res)
+  expect_equal(res_inf, res)
+
   ## the returned D inverts conditionalPower(): CP(D) >= target > CP(D - 1)
   cp_at <- function(D){
     tr$conditionalPower('interim', Surv(pfs, pfs_event) ~ arm,
@@ -455,6 +467,7 @@ test_that("multiple arms follow the named-vector rules of conditionalPower", {
   ## matched by name, not position
   expect_equal(res$target_cp, c(0.9, 0.85))
   expect_equal(res$alpha, c(0.005, 0.002))
+  expect_equal(res$D_cap, c(Inf, Inf))
 
   ## a subset of arms restricts the comparisons
   res_sub <- tr$eventNumberReestimationFromConditionalPower(

@@ -1360,7 +1360,7 @@ subset conditions in \code{...}, if any).
   target_cp,
   effect,
   ...,
-  D_cap = Inf
+  D_cap = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -1409,10 +1409,12 @@ Details).}
 \item{\code{...}}{subset conditions compatible with \code{dplyr::filter},
 passed to \code{fitLogrank()}.}
 
-\item{\code{D_cap}}{numeric. Practical upper bound(s) of the re-estimated
-event number, counted on the two arms of each comparison. Whole
-number(s) greater than the observed \code{d}, or \code{Inf} for an
-exact solution. A scalar \code{Inf} (the default) applies to all
+\item{\code{D_cap}}{\code{NULL} or numeric. Practical upper bound(s) of the
+re-estimated event number, counted on the two arms of each comparison.
+Whole number(s) greater than the observed \code{d}, or \code{Inf} for
+an exact solution. The default \code{NULL} is converted internally to
+scalar \code{Inf} for one comparison or a named vector of \code{Inf}
+for multiple comparisons. An explicit scalar \code{Inf} applies to all
 comparisons; a finite unnamed scalar is accepted when a single
 treatment arm is compared with placebo; otherwise \code{D_cap} must
 be a named vector over the same treatment arms as \code{alpha} and
@@ -1451,7 +1453,7 @@ returned, and \code{target_reached} is \code{TRUE};
 \item if it does not, and \code{D_cap} is finite, the cap itself is
 returned with its achieved conditional power, and
 \code{target_reached} is \code{FALSE};
-\item an infinite \code{D_cap} (the default) requests the smallest
+\item an infinite \code{D_cap} requests the smallest
 finite solution regardless of size. An error is raised if no finite
 event number can reach \code{target_cp} under the specified effect.
 }
