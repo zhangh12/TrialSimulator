@@ -1188,7 +1188,7 @@ no allocation ratio of the pair is recorded at the milestone.
       alternative,
       alpha,
       D,
-      effect = "trend",
+      effect,
       ...
     )
 
@@ -1248,12 +1248,13 @@ no allocation ratio of the pair is recorded at the milestone.
 
 - `effect`:
 
-  the treatment effect at which conditional power is evaluated.
-  `'trend'` (default) extrapolates the effect observed at the interim;
-  `'null'` assumes no effect for the remaining events (conditional type
-  I error); a single positive numeric value is interpreted as a hazard
-  ratio (e.g., `effect = 0.75`), which is converted internally using the
-  allocation ratio of each pair recorded at the milestone.
+  the treatment effect at which conditional power is evaluated. No
+  default value. `'trend'` extrapolates the effect observed at the
+  interim; `'null'` assumes no effect for the remaining events
+  (conditional type I error); a single positive numeric value is
+  interpreted as a hazard ratio (e.g., `effect = 0.75`), which is
+  converted internally using the allocation ratio of each pair recorded
+  at the milestone.
 
 - `...`:
 
