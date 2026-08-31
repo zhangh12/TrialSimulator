@@ -5,7 +5,7 @@
 #' @importFrom dplyr filter select group_by group_split summarise contains all_of matches
 #' @importFrom rlang expr_text sym .data enquos :=
 #' @importFrom mvtnorm pmvnorm
-#' @importFrom stats as.formula pnorm model.frame model.response rexp cor runif
+#' @importFrom stats as.formula pnorm qnorm model.frame model.response rexp cor runif
 #' @importFrom stats IQR complete.cases median sd setNames glm pt terms uniroot
 #' @importFrom stats rweibull
 #' @importFrom R6 R6Class
@@ -21,5 +21,4 @@
 #' @importFrom Rcpp sourceCpp
 #' @useDynLib TrialSimulator, .registration = TRUE
 NULL
-
 

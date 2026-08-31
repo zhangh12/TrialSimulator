@@ -2149,9 +2149,9 @@ Trials <- R6::R6Class(
     #' @description
     #' re-estimate the number of events at the final analysis for each
     #' treatment-vs-placebo comparison of a time-to-event endpoint: the
-    #' smallest whole number of events \code{D} at which the conditional
-    #' power computed by \code{$conditionalPower()} reaches a target, given
-    #' the observations at a triggered interim milestone, under a group
+    #' smallest whole number of events \code{D}, not below the event number
+    #' observed at the interim, at which the conditional power computed by
+    #' \code{$conditionalPower()} reaches a target, under a group
     #' sequential design with one interim and one final analysis. Locked
     #' data of the milestone is pulled automatically; \code{fitLogrank()}
     #' is called internally to obtain, for every treatment arm vs
@@ -2160,22 +2160,31 @@ Trials <- R6::R6Class(
     #' subset conditions in \code{...}, if any).
     #'
     #' @details
-    #' For each comparison, the method returns the smallest whole number
-    #' \code{D > d} satisfying
+    #' Following the EAST event-number re-estimation rule, the method returns
+    #' the smallest whole number \code{D >= d} satisfying
     #' \deqn{CP(D) \ge \gamma,}
     #' where \eqn{\gamma} is \code{target_cp} and \eqn{CP(D)} is the
     #' conditional power of \code{$conditionalPower()} at the same
-    #' \code{milestone}, \code{alpha} and \code{effect}. In the settings this method
-    #' supports, \eqn{CP(D)} increases in \code{D}, so the solution is the
-    #' unique crossing point; it is found by a bracketing search followed
-    #' by integer bisection, whose cost is negligible even within a large
-    #' simulation.
+    #' \code{milestone}, \code{alpha} and \code{effect}. If the interim z
+    #' statistic already reaches the final boundary, the decision with no
+    #' additional information is deterministic, \eqn{CP(d) = 1}, and
+    #' \code{D = d} is returned.
+    #'
+    #' Conditional power need not be monotone in \code{D}, particularly when
+    #' a numeric effect differs from the interim trend. The method finds the
+    #' stationary points of conditional power by solving a cubic equation,
+    #' partitions the integer search range into monotone intervals, and
+    #' searches them from left to right. Integer bisection within the first
+    #' interval that reaches \code{target_cp} therefore returns the earliest
+    #' crossing required by the rule above, even if conditional power later
+    #' falls below the target and recovers.
     #'
     #' \code{D_cap} bounds the answer by the largest event number
-    #' considered practical. Conditional power is first evaluated at the
-    #' cap:
+    #' considered practical. The complete integer range through the cap is
+    #' searched:
     #' \itemize{
-    #' \item if it reaches \code{target_cp}, the exact solution is
+    #' \item if any event number through the cap reaches \code{target_cp},
+    #' the smallest such number is
     #' returned, and \code{target_reached} is \code{TRUE};
     #' \item if it does not, and \code{D_cap} is finite, the cap itself is
     #' returned with its achieved conditional power, and
@@ -2185,17 +2194,13 @@ Trials <- R6::R6Class(
     #' power can approach 1 as \code{D} grows, i.e., when the interim
     #' trend favors treatment (\code{effect = 'trend'}) or the specified
     #' hazard ratio does (numeric \code{effect}). Otherwise conditional
-    #' power is bounded near the nominal level \code{alpha} for any
-    #' \code{D}, and an error suggests specifying a finite \code{D_cap}
-    #' to obtain the capped answer.
+    #' power does not approach 1 as \code{D} grows, and an error suggests
+    #' specifying a finite \code{D_cap} to obtain the capped answer. This
+    #' restriction does not apply when the final boundary has already been
+    #' reached, because \code{D = d} is then the exact solution.
     #' }
     #'
-    #' An error is also raised when the interim z statistic already
-    #' reaches the planned final critical value: conditional power then
-    #' tends to 1 as \code{D} approaches \code{d}, and additional events
-    #' initially dilute the crossing, so the smallest \code{D} reaching
-    #' the target is not a meaningful quantity. \code{effect = 'null'} is
-    #' not supported for the same boundedness reason; use
+    #' \code{effect = 'null'} is not supported; use
     #' \code{$conditionalPower()} to compute the conditional type I error
     #' at a given \code{D} instead.
     #'
@@ -2317,9 +2322,7 @@ Trials <- R6::R6Class(
 
       if(identical(effect, 'null')){
         stop('effect = "null" is not supported in ',
-             'eventNumberReestimationFromConditionalPower(): under the ',
-             'null, conditional power is bounded and cannot reach a ',
-             'conventional target for any final event number. Use ',
+             'eventNumberReestimationFromConditionalPower(). Use ',
              'conditionalPower() to compute the conditional type I error ',
              'at a given D instead. ')
       }
@@ -2502,24 +2505,11 @@ Trials <- R6::R6Class(
              'late. ')
       }
 
-      ## interim statistic already at or beyond the planned final
-      ## boundary: conditional power tends to 1 as D approaches d, and
-      ## additional events initially dilute the crossing, so the smallest
-      ## D reaching the target is not a meaningful quantity
+      ## Work on the lower-tail scale to identify comparisons whose interim
+      ## statistic already reaches the final boundary. Under the EAST rule,
+      ## these comparisons have the degenerate solution D = d.
       z_less <- if(alternative == 'greater') -z else z
       crossed <- z_less <= qnorm(unname(alpha))
-      if(any(crossed)){
-        stop('Cannot re-estimate the event number at milestone <',
-             milestone, '> vs placebo <', placebo, '>: ',
-             paste0('arm <', selected_arms[crossed],
-                    '> observed z = ', signif(z[crossed], 4),
-                    ' already reaches the planned final critical value ',
-                    'at nominal level alpha = ', unname(alpha)[crossed],
-                    collapse = '; '),
-             '. Conditional power is high for any final event number ',
-             'and decreases before it recovers; re-estimation is not ',
-             'meaningful. ')
-      }
 
       ## omega = r / (1 + r)^2 converts a hazard ratio into the drift of
       ## the z statistic; it is needed only when effect is numeric. r
@@ -2556,7 +2546,7 @@ Trials <- R6::R6Class(
         }
         rep(theta_less < 0, length(selected_arms))
       }
-      unbounded <- !beneficial & is.infinite(unname(D_cap))
+      unbounded <- !crossed & !beneficial & is.infinite(unname(D_cap))
       if(any(unbounded)){
         stop('Cannot re-estimate the event number at milestone <',
              milestone, '> vs placebo <', placebo, '> for arm(s) <',
@@ -2578,10 +2568,14 @@ Trials <- R6::R6Class(
                                       effect = effect, omega = omega,
                                       alternative = alternative)
 
-      achieved <- .conditional_power(z = z, d = d, D = D,
-                                     alpha = unname(alpha),
-                                     effect = effect, omega = omega,
-                                     alternative = alternative)
+      achieved <- rep(1, length(D))
+      needs_future <- D > d
+      if(any(needs_future)){
+        achieved[needs_future] <- .conditional_power(
+          z = z[needs_future], d = d[needs_future], D = D[needs_future],
+          alpha = unname(alpha)[needs_future], effect = effect,
+          omega = omega[needs_future], alternative = alternative)
+      }
 
       ret <- data.frame(
         arm = selected_arms,

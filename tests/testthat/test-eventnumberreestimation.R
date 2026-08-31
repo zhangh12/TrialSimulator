@@ -2,8 +2,9 @@
 #
 # Covers: the internal solver .event_number_reestimation(), verified by the
 # crossing property against the oracle-validated .conditional_power() (the
-# returned D is the smallest whole number with CP >= target) and against
-# rpact::getConditionalPower directly; cap semantics; and the method
+# returned D is the smallest whole number with CP >= target, including when
+# CP is nonmonotone) and against rpact::getConditionalPower directly; cap
+# semantics; and the method
 # Trials$eventNumberReestimationFromConditionalPower() (wiring to locked
 # data, alpha/target_cp/D_cap shape rules, degenerate and unbounded error
 # paths).
@@ -60,11 +61,66 @@ test_that(".event_number_reestimation returns the smallest D reaching the target
     }
   }
 
-  ## a barely-missed target is reached immediately after the interim
+  ## if the final boundary is already crossed, the EAST rule permits the
+  ## degenerate solution D = d with no additional event
   expect_equal(
     solver(z = -3, d = 100, alpha = 0.4, target_cp = 0.05, D_cap = Inf,
            effect = 'trend', omega = NA, alternative = 'less'),
-    101
+    100
+  )
+
+  ## Boundary-crossed and ongoing comparisons can be solved together.
+  mixed <- solver(z = c(-3, -1.2), d = c(100, 100),
+                  alpha = c(0.4, 0.025), target_cp = c(0.9, 0.9),
+                  D_cap = c(Inf, Inf), effect = 'trend', omega = NA,
+                  alternative = 'less')
+  expect_equal(mixed[1], 100)
+  expect_equal(
+    mixed[2],
+    solver(z = -1.2, d = 100, alpha = 0.025, target_cp = 0.9,
+           D_cap = Inf, effect = 'trend', omega = NA,
+           alternative = 'less')
+  )
+})
+
+
+test_that(".event_number_reestimation finds the first of multiple crossings", {
+
+  ## A weak beneficial fixed effect can make CP rise above the target near
+  ## the interim, fall below it, and recover much later. The three continuous
+  ## crossings are around D = 107, 183 and 8675; EAST selects the first.
+  z <- -1.8; d <- 100; alpha <- 0.025; target <- 0.2
+  effect <- 0.98; omega <- 0.25
+
+  cp_at <- function(D){
+    cp_internal(z, d, D, alpha, effect, omega, 'less')
+  }
+  brute_Ds <- (d + 1):10000
+  first <- brute_Ds[which(cp_at(brute_Ds) >= target)[1]]
+  expect_equal(first, 107)
+
+  ## Infinite and finite searches must both retain the early crossing, even
+  ## though CP at the finite cap is below the target.
+  expect_equal(
+    solver(z, d, alpha, target, D_cap = Inf, effect = effect,
+           omega = omega, alternative = 'less'),
+    first
+  )
+  expect_lt(cp_at(5000), target)
+  expect_equal(
+    solver(z, d, alpha, target, D_cap = 5000, effect = effect,
+           omega = omega, alternative = 'less'),
+    first
+  )
+
+  expect_lt(cp_at(first - 1), target)
+  expect_gte(cp_at(first), target)
+
+  ## Direction mirroring preserves every crossing and hence the EAST result.
+  expect_equal(
+    solver(-z, d, alpha, target, D_cap = Inf, effect = 1 / effect,
+           omega = omega, alternative = 'greater'),
+    first
   )
 })
 
@@ -515,18 +571,21 @@ test_that("the method validates milestone and effect", {
 })
 
 
-test_that("degenerate and unbounded requests raise informative errors", {
+test_that("boundary-crossed and unbounded requests follow EAST semantics", {
 
   tr <- run_two_arm_trial()
   frm <- Surv(pfs, pfs_event) ~ arm
 
-  ## a lenient boundary already crossed at interim: alpha = 0.4 puts the
-  ## final critical value above the observed z
-  expect_error(
-    tr$eventNumberReestimationFromConditionalPower(
-      'interim', frm, 'pbo', 'less',
-      alpha = 0.4, target_cp = 0.9, effect = 'trend'),
-    'already reaches the planned final critical value')
+  ## A lenient boundary already crossed at interim: alpha = 0.4 puts the
+  ## final critical value above the observed z. No additional event is needed.
+  fit <- fitLogrank(frm, 'pbo', tr$get_locked_data('interim'), 'less',
+                    tidy = FALSE)
+  crossed <- tr$eventNumberReestimationFromConditionalPower(
+    'interim', frm, 'pbo', 'less',
+    alpha = 0.4, target_cp = 0.9, effect = 'trend')
+  expect_equal(crossed$D, fit$info)
+  expect_equal(crossed$achieved_cp, 1)
+  expect_true(crossed$target_reached)
 
   ## an unfavorable trend (the reference is the better arm) cannot reach
   ## the target for any D: error without a cap, capped answer with one
