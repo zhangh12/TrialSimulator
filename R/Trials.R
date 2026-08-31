@@ -99,6 +99,10 @@
 #' \itemize{
 #' \item \code{$dunnettTest()} perform Dunnett's test.
 #' \item \code{$closedTest()} perform combination test based on Dunnett's test.
+#' \item \code{$conditionalPower()} compute conditional power at a triggered
+#' interim milestone for each treatment-vs-placebo comparison of a
+#' time-to-event endpoint, under a design with one interim and one final
+#' analysis and a constant allocation ratio.
 #' }
 #'
 #' \strong{Trial setup.}
@@ -1834,6 +1838,274 @@ Trials <- R6::R6Class(
       ret_
     },
 
+    #' @description
+    #' compute conditional power at a triggered interim milestone for each
+    #' treatment-vs-placebo comparison of a time-to-event endpoint, under a
+    #' group sequential design with one interim and one final analysis.
+    #' Locked data of the milestone is pulled automatically;
+    #' \code{fitLogrank()} is called internally to obtain, for every
+    #' treatment arm vs \code{placebo}, the observed z statistic and the
+    #' observed number of events \code{d} on the two arms of that
+    #' comparison (after applying subset conditions in \code{...}, if
+    #' any). Conditional power is then
+    #' \deqn{CP = \Phi\left(\frac{\Phi^{-1}(\alpha) - \sqrt{d/D}\,z -
+    #' \theta\sqrt{\omega D}\,(1 - d/D)}{\sqrt{1 - d/D}}\right)}
+    #' under \code{alternative = 'less'} (mirrored for \code{'greater'}),
+    #' where \eqn{\theta} is the log hazard ratio at which conditional
+    #' power is evaluated and \eqn{\omega = r/(1+r)^2} with \eqn{r} the
+    #' allocation ratio of the pair recorded when the milestone's data was
+    #' locked. Like \eqn{z} and \eqn{d}, \eqn{r} is an interim quantity:
+    #' the result depends on the requested milestone only, not on
+    #' adaptations applied after it.
+    #'
+    #' The calculation assumes the trial continues as designed: the
+    #' allocation ratio of the compared arms is constant from the start of
+    #' enrollment through the final analysis, and the final analysis tests
+    #' the planned statistic at the planned boundary. A data-dependent
+    #' design change (e.g., updating the sample ratio based on interim
+    #' results) alters both the final test statistic and its boundary;
+    #' such adaptations require a combination-test analysis instead (see
+    #' \code{$dunnettTest()} and \code{$closedTest()}). It is users'
+    #' responsibility to call this function only when the calculation is
+    #' legitimate -- in particular, the allocation ratio of the compared
+    #' arms has not been updated before the milestone, the compared arms
+    #' are enrolled concurrently with placebo, and subset conditions in
+    #' \code{...} are independent of randomization --
+    #' \code{TrialSimulator} has no way to track this.
+    #'
+    #' Conditional power can be requested for an arm that has been removed
+    #' from the trial: its z and \code{d} are well-defined historical
+    #' quantities, although no further event will accrue on it. With a
+    #' numeric \code{effect}, however, an error is raised for an arm
+    #' removed before the milestone, as no allocation ratio of the pair is
+    #' recorded at the milestone.
+    #' @param milestone character. Name of a triggered milestone at which
+    #' the interim results are observed.
+    #' @param formula an object of class \code{formula} as in
+    #' \code{fitLogrank()}, e.g., \code{Surv(pfs, pfs_event) ~ arm}.
+    #' Stratification via \code{strata(...)} is supported; no covariate is
+    #' allowed.
+    #' @param placebo character. Name of the placebo arm.
+    #' @param alternative a character string specifying the alternative
+    #' hypothesis, must be one of \code{"greater"} or \code{"less"}. No
+    #' default value. \code{"greater"} means superiority of treatment over
+    #' placebo is established by a hazard ratio greater than 1. See
+    #' \code{fitLogrank()}.
+    #' @param alpha numeric. The one-sided nominal significance level(s)
+    #' corresponding to the planned final critical boundary, in (0, 1):
+    #' under \code{alternative = 'less'} the final z statistic is compared
+    #' with \code{qnorm(alpha)}. Under a group sequential design it is
+    #' implied by the alpha spending function, e.g., \code{1 - pnorm(c)}
+    #' for a final critical value \code{c} on the upper scale; in general
+    #' it differs from both the total design alpha and the alpha spent,
+    #' cumulatively or incrementally, at the final look. If a single
+    #' treatment arm is compared with placebo, an unnamed scalar is
+    #' accepted; otherwise \code{alpha} must be a named vector using
+    #' treatment arm names, matching the names of \code{D}. Entries are
+    #' matched to \code{D} by name, so the order of components does not
+    #' matter.
+    #' @param D numeric. Planned number of events at the final analysis for
+    #' each comparison, counted on the two arms of that comparison (placebo
+    #' plus one treatment arm). If a single treatment arm is compared with
+    #' placebo, an unnamed scalar is accepted; otherwise \code{D} must be a
+    #' named vector using treatment arm names. A subset of the treatment
+    #' arms can be specified, in which case conditional power is computed
+    #' for that subset of comparisons only. \code{D} and \code{alpha} must
+    #' be of the same length and, when named, use the identical set of arm
+    #' names. An error is raised if the observed number of events \code{d}
+    #' of a comparison already reaches \code{D}.
+    #' @param effect the treatment effect at which conditional power is
+    #' evaluated. \code{'trend'} (default) extrapolates the effect observed
+    #' at the interim; \code{'null'} assumes no effect for the remaining
+    #' events (conditional type I error); a single positive numeric value
+    #' is interpreted as a hazard ratio (e.g., \code{effect = 0.75}), which
+    #' is converted internally using the allocation ratio of each pair
+    #' recorded at the milestone.
+    #' @param ... subset conditions compatible with \code{dplyr::filter},
+    #' passed to \code{fitLogrank()}.
+    #'
+    #' @return a data frame with one row per treatment-vs-placebo
+    #' comparison, with columns \code{arm}, \code{placebo}, \code{z},
+    #' \code{d}, \code{D}, \code{info_fraction}, \code{alpha},
+    #' \code{effect} and \code{cp}.
+    conditionalPower = function(milestone, formula, placebo, alternative,
+                                alpha, D, effect = 'trend', ...){
+
+      if(!is.character(milestone) || length(milestone) != 1){
+        stop('milestone in conditionalPower() must be a single character, ',
+             'the name of a triggered milestone. ')
+      }
+
+      alternative <- match.arg(alternative, choices = c('greater', 'less'))
+
+      if(is.character(effect)){
+        if(length(effect) != 1 || !(effect %in% c('trend', 'null'))){
+          stop('effect in conditionalPower() must be "trend", "null", or a ',
+               'single positive numeric value on the hazard ratio scale. ')
+        }
+      }else if(is.numeric(effect)){
+        if(length(effect) != 1 || is.na(effect) ||
+           !is.finite(effect) || effect <= 0){
+          stop('A numeric effect in conditionalPower() is interpreted as a ',
+               'hazard ratio, thus must be a single positive finite value. ')
+        }
+      }else{
+        stop('effect in conditionalPower() must be "trend", "null", or a ',
+             'single positive numeric value on the hazard ratio scale. ')
+      }
+
+      locked_data <- self$get_locked_data(milestone)
+
+      ## fitLogrank() owns validation of formula and placebo, the subset
+      ## conditions in ..., and the model fitting; any error is re-signaled
+      ## with conditional power context. The most common failure is an arm
+      ## without any observed event at the milestone.
+      fit <- tryCatch(
+        fitLogrank(formula, placebo, locked_data, alternative, ...,
+                   tidy = FALSE),
+        error = function(e){
+          stop('Unable to fit logrank models on the data locked at ',
+               'milestone <', milestone, '> when computing conditional ',
+               'power. A common cause is that an arm has no observed ',
+               'event at the milestone (is the milestone triggered too ',
+               'early?). The actual error is:\n', conditionMessage(e),
+               call. = FALSE)
+        }
+      )
+
+      available_arms <- fit$arm
+
+      if(!is.numeric(D) || length(D) == 0 || any(is.na(D)) ||
+         any(!is.finite(D)) ||
+         !all(is.wholenumber(D)) || any(D <= 0)){
+        stop('D in conditionalPower() must be positive whole number(s): ',
+             'the planned number of events at the final analysis, counted ',
+             'on the two arms of each comparison. ')
+      }
+
+      if(!is.numeric(alpha) || length(alpha) == 0 || any(is.na(alpha)) ||
+         any(alpha <= 0) || any(alpha >= 1)){
+        stop('alpha in conditionalPower() must be one-sided nominal ',
+             'level(s) in (0, 1) corresponding to the planned final ',
+             'critical boundary. ')
+      }
+
+      if(length(D) != length(alpha)){
+        stop('D and alpha in conditionalPower() must be of the same ',
+             'length. You specified <', length(D), '> value(s) in D but <',
+             length(alpha), '> in alpha. ')
+      }
+
+      is_fully_named <- function(x){
+        !is.null(names(x)) && !any(is.na(names(x))) && all(names(x) != '')
+      }
+
+      if(!is_fully_named(D) && !is_fully_named(alpha)){
+        if(length(D) > 1){
+          stop('Unnamed D and alpha in conditionalPower() are only ',
+               'accepted when a single treatment arm is compared with ',
+               'placebo. Name their entries by treatment arms <',
+               paste0(available_arms, collapse = ', '), '>. ')
+        }
+        if(length(available_arms) > 1){
+          stop('Treatment arms <',
+               paste0(available_arms, collapse = ', '),
+               '> are compared with placebo <', placebo, '> at milestone <',
+               milestone, '>, but D and alpha in conditionalPower() are ',
+               'unnamed scalars. Name their entries by treatment arms to ',
+               'specify the comparison(s). ')
+        }
+        names(D) <- available_arms
+        names(alpha) <- available_arms
+      }else{
+        if(!is_fully_named(D) || !is_fully_named(alpha)){
+          stop('D and alpha in conditionalPower() must be both named by ',
+               'treatment arms, or both unnamed scalars when a single ',
+               'treatment arm is compared with placebo. ')
+        }
+        if(any(duplicated(names(D))) || any(duplicated(names(alpha)))){
+          stop('Duplicated arm names are not allowed in D or alpha in ',
+               'conditionalPower(). ')
+        }
+        if(!setequal(names(D), names(alpha))){
+          stop('D and alpha in conditionalPower() must be named by the ',
+               'same set of treatment arms. In D: <',
+               paste0(sort(names(D)), collapse = ', '), '>; in alpha: <',
+               paste0(sort(names(alpha)), collapse = ', '), '>. ')
+        }
+        unknown_arms <- setdiff(names(D), available_arms)
+        if(length(unknown_arms) > 0){
+          stop('Arm(s) <', paste0(unknown_arms, collapse = ', '),
+               '> in D and alpha of conditionalPower() are not among the ',
+               'treatment arms available for comparison at milestone <',
+               milestone, '>: <',
+               paste0(available_arms, collapse = ', '), '>. ')
+        }
+        ## order-free: entries of alpha are matched to D by arm name,
+        ## never positionally
+        alpha <- alpha[names(D)]
+      }
+
+      selected_arms <- names(D)
+      idx <- match(selected_arms, fit$arm)
+      z <- fit$z[idx]
+      d <- fit$info[idx]
+
+      exhausted <- d >= D
+      if(any(exhausted)){
+        stop('Cannot compute conditional power at milestone <', milestone,
+             '> vs placebo <', placebo, '>: ',
+             paste0('arm <', selected_arms[exhausted],
+                    '> observed events d = ', d[exhausted],
+                    ' >= planned final events D = ', D[exhausted],
+                    collapse = '; '),
+             '. Check D, or whether this milestone is triggered too late. ')
+      }
+
+      ## omega = r / (1 + r)^2 converts a hazard ratio into the drift of
+      ## the z statistic; it is needed only when effect is numeric. r comes
+      ## from the sample ratio recorded when the milestone's data was
+      ## locked, so the result depends on the milestone only. An arm
+      ## removed before the milestone has no recorded ratio there.
+      omega <- rep(NA_real_, length(selected_arms))
+      if(is.numeric(effect)){
+        ratio_here <- private$get_sample_ratio_at_milestone(milestone)
+        missing_arms <- setdiff(c(placebo, selected_arms),
+                                names(ratio_here))
+        if(length(missing_arms) > 0){
+          stop('Arm(s) <', paste0(missing_arms, collapse = ', '),
+               '> are not in the sample ratio recorded at milestone <',
+               milestone, '> (e.g., removed from the trial before it). ',
+               'Conditional power at a user-specified hazard ratio ',
+               'requires the allocation ratio of the compared arms at ',
+               'the milestone. Use effect = "trend" or "null", or a ',
+               'milestone at which the arm(s) were still in the trial. ')
+        }
+        r <- unname(ratio_here[selected_arms]) / ratio_here[[placebo]]
+        omega <- r / (1 + r)^2
+      }
+
+      cp <- .conditional_power(z = z, d = d, D = unname(D),
+                               alpha = unname(alpha), effect = effect,
+                               omega = omega, alternative = alternative)
+
+      ret <- data.frame(
+        arm = selected_arms,
+        placebo = placebo,
+        z = z,
+        d = d,
+        D = unname(D),
+        info_fraction = d / unname(D),
+        alpha = unname(alpha),
+        effect = effect,
+        cp = cp,
+        stringsAsFactors = FALSE
+      )
+      rownames(ret) <- NULL
+      ret
+
+    },
+
     ## ---- trial setup --------------------------------------------------------
 
     #' @description
@@ -2008,6 +2280,13 @@ Trials <- R6::R6Class(
       private$locked_data[[milestone_name]] <- locked_data
       private$set_current_time(at_calendar_time)
       private$save_milestone_time(at_calendar_time, milestone_name)
+      ## sample ratio in effect when the data is locked, i.e., before the
+      ## milestone's action can adapt it. Keyed by milestone name, in
+      ## parallel to milestone_time. Consumed by conditionalPower(), whose
+      ## result must depend on the milestone only, not on adaptations
+      ## applied after it.
+      private$sample_ratio_at_milestone[[milestone_name]] <-
+        self$get_sample_ratio()
 
       self$save(value = at_calendar_time, name = paste0('milestone_time_<', milestone_name, '>'))
 
@@ -2453,6 +2732,7 @@ Trials <- R6::R6Class(
       private$reset_regimen()
 
       private$milestone_time <- c()
+      private$sample_ratio_at_milestone <- list()
       private$trial_data <- NULL
       private$enroll_time <- NULL
       private$enroll_time_with_redundant <- NULL
@@ -2579,6 +2859,11 @@ Trials <- R6::R6Class(
     locked_data = list(),
 
     milestone_time = c(),
+
+    ## sample ratio (per-arm numbers) in effect at each triggered
+    ## milestone, keyed by milestone name; recorded by lock_data() before
+    ## the milestone's action executes, and cleared between replicates.
+    sample_ratio_at_milestone = list(),
 
     ## requests queued by Trials$update_milestone() within an action
     ## function; consumed by Listeners$monitor() right after the action
@@ -3578,6 +3863,19 @@ Trials <- R6::R6Class(
       }
 
       private$milestone_time[milestone_name] <- milestone_time
+    },
+
+    ## @description
+    ## return the sample ratio (per-arm numbers) in effect at a triggered
+    ## milestone, as recorded by lock_data() right before the milestone's
+    ## action function executed.
+    ## @param milestone_name character. Name of a triggered milestone.
+    get_sample_ratio_at_milestone = function(milestone_name){
+      if(!(milestone_name %in% names(private$sample_ratio_at_milestone))){
+        stop('No sample ratio is recorded at milestone <', milestone_name,
+             '>. Make sure that the milestone has been triggered. ')
+      }
+      private$sample_ratio_at_milestone[[milestone_name]]
     },
 
     ## @description
