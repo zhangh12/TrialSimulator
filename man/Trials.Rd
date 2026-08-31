@@ -247,7 +247,7 @@ tr$eventNumberReestimationFromConditionalPower(
   alpha = 0.022, target_cp = 0.9, effect = 0.75)
 
 ## with a practical cap: when no event number through the cap reaches
-## the target, the cap is returned and target_reached is FALSE
+## the target, D and achieved_cp are NA and target_reached is FALSE
 tr$eventNumberReestimationFromConditionalPower(
   'interim', Surv(pfs, pfs_event) ~ arm,
   placebo = 'pbo', alternative = 'less',
@@ -1412,7 +1412,7 @@ passed to \code{fitLogrank()}.}
 \item{\code{D_cap}}{\code{NULL} or numeric. Practical upper bound(s) of the
 re-estimated event number, counted on the two arms of each comparison.
 Whole number(s) greater than the observed \code{d}, or \code{Inf} for
-an exact solution. The default \code{NULL} is converted internally to
+an unbounded search. The default \code{NULL} is converted internally to
 scalar \code{Inf} for one comparison or a named vector of \code{Inf}
 for multiple comparisons. An explicit scalar \code{Inf} applies to all
 comparisons; a finite unnamed scalar is accepted when a single
@@ -1443,19 +1443,16 @@ interval that reaches \code{target_cp} therefore returns the earliest
 crossing required by the rule above, even if conditional power later
 falls below the target and recovers.
 
-\code{D_cap} bounds the answer by the largest event number
-considered practical. The complete integer range through the cap is
-searched:
+\code{D_cap} bounds the search by the largest event number considered
+practical. The complete integer range through the cap is searched:
 \itemize{
-\item if any event number through the cap reaches \code{target_cp},
-the smallest such number is
-returned, and \code{target_reached} is \code{TRUE};
-\item if it does not, and \code{D_cap} is finite, the cap itself is
-returned with its achieved conditional power, and
-\code{target_reached} is \code{FALSE};
-\item an infinite \code{D_cap} requests the smallest
-finite solution regardless of size. An error is raised if no finite
-event number can reach \code{target_cp} under the specified effect.
+\item if a finite solution exists in the requested range, the smallest
+such \code{D} is returned with its conditional power and
+\code{target_reached = TRUE};
+\item if no finite solution exists in the requested range,
+\code{D} and \code{achieved_cp} are \code{NA}, while
+\code{target_reached = FALSE}. \code{D_cap} continues to report the
+requested search cap.
 }
 
 \code{effect = 'null'} is not supported; use
@@ -1478,11 +1475,12 @@ a data frame with one row per treatment-vs-placebo
 comparison, with columns \code{arm}, \code{placebo}, \code{z},
 \code{d}, \code{D}, \code{D_cap}, \code{alpha}, \code{effect},
 \code{target_cp}, \code{achieved_cp} and \code{target_reached}.
-\code{D} is the re-estimated event number, \code{achieved_cp} the
-conditional power at that \code{D}, and \code{target_reached}
-indicates whether \code{achieved_cp} reaches \code{target_cp}
-(\code{FALSE} exactly when a finite cap was returned in place of a
-solution).
+\code{D} is the smallest solution found in the requested range and
+\code{achieved_cp} is the conditional power at that \code{D}. Both are
+\code{NA} when no solution is found. \code{target_cp} always records
+the requested target, \code{D_cap} always records the requested search
+cap (with the default \code{NULL} represented as \code{Inf}), and
+\code{target_reached} indicates whether a solution was found.
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
@@ -1516,7 +1514,7 @@ tr$eventNumberReestimationFromConditionalPower(
   alpha = 0.022, target_cp = 0.9, effect = 0.75)
 
 ## with a practical cap: when no event number through the cap reaches
-## the target, the cap is returned and target_reached is FALSE
+## the target, D and achieved_cp are NA and target_reached is FALSE
 tr$eventNumberReestimationFromConditionalPower(
   'interim', Surv(pfs, pfs_event) ~ arm,
   placebo = 'pbo', alternative = 'less',

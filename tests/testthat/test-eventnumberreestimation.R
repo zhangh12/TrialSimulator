@@ -202,35 +202,31 @@ test_that(".event_number_reestimation respects the cap", {
     D0
   )
 
-  ## a cap below the solution is returned as is
-  expect_equal(
+  ## no solution is returned when the cap is below the first crossing
+  expect_true(is.na(
     solver(z, d, alpha, target, D_cap = D0 - 1, effect = 'trend',
-           omega = NA, alternative = 'less'),
-    D0 - 1
-  )
+           omega = NA, alternative = 'less')
+  ))
   expect_lt(cp_internal(z, d, D0 - 1, alpha, 'trend', NA, 'less'), target)
 
   ## The cap also applies when the interim z has already crossed the final
   ## boundary but no future event number through the cap reaches the target.
   crossed_z <- qnorm(alpha) - 0.001
-  expect_equal(
+  expect_true(is.na(
     solver(crossed_z, d, alpha, target, D_cap = 150, effect = 'trend',
-           omega = NA, alternative = 'less'),
-    150
-  )
+           omega = NA, alternative = 'less')
+  ))
 
   ## A non-beneficial drift with no early crossing has no finite solution,
-  ## but a finite search returns its capped answer.
-  expect_error(
+  ## with or without a finite cap.
+  expect_true(is.na(
     solver(z = 0.5, d = d, alpha = alpha, target_cp = target, D_cap = Inf,
-           effect = 'trend', omega = NA, alternative = 'less'),
-    'No finite event number'
-  )
-  expect_equal(
+           effect = 'trend', omega = NA, alternative = 'less')
+  ))
+  expect_true(is.na(
     solver(z = 0.5, d = d, alpha = alpha, target_cp = target, D_cap = 500,
-           effect = 'trend', omega = NA, alternative = 'less'),
-    500
-  )
+           effect = 'trend', omega = NA, alternative = 'less')
+  ))
 
   ## Conversely, an adverse assumed effect may still have an early solution
   ## supported by a strong interim result; the unbounded search must retain it.
@@ -367,7 +363,7 @@ test_that("the method extracts z and d and inverts conditionalPower (two arms)",
 })
 
 
-test_that("a finite cap below the solution is returned with target_reached FALSE", {
+test_that("a finite cap below the solution returns no solution", {
 
   tr <- run_two_arm_trial()
 
@@ -382,24 +378,20 @@ test_that("a finite cap below the solution is returned with target_reached FALSE
     alpha = 0.022, target_cp = 0.9, effect = 'trend',
     D_cap = res0$D - 10)
 
-  expect_equal(res$D, res0$D - 10)
+  expect_true(is.na(res$D))
   expect_equal(res$D_cap, res0$D - 10)
-  expect_lt(res$achieved_cp, 0.9)
+  expect_true(is.na(res$achieved_cp))
+  expect_equal(res$target_cp, 0.9)
   expect_false(res$target_reached)
 
-  expect_equal(
-    res$achieved_cp,
-    tr$conditionalPower('interim', Surv(pfs, pfs_event) ~ arm,
-                        placebo = 'pbo', alternative = 'less',
-                        alpha = 0.022, D = res$D, effect = 'trend')$cp
-  )
-
-  ## a cap at or above the solution does not change the answer
+  ## A cap above the solution remains unchanged in D_cap; D contains the
+  ## solution rather than the cap.
   res2 <- tr$eventNumberReestimationFromConditionalPower(
     'interim', Surv(pfs, pfs_event) ~ arm,
     placebo = 'pbo', alternative = 'less',
-    alpha = 0.022, target_cp = 0.9, effect = 'trend', D_cap = res0$D)
+    alpha = 0.022, target_cp = 0.9, effect = 'trend', D_cap = res0$D + 10)
   expect_equal(res2$D, res0$D)
+  expect_equal(res2$D_cap, res0$D + 10)
   expect_true(res2$target_reached)
 })
 
@@ -487,7 +479,8 @@ test_that("multiple arms follow the named-vector rules of conditionalPower", {
     effect = 'trend',
     D_cap = c(trt2 = 10000, trt1 = res$D[1] - 10))
   expect_equal(res_cap$D_cap, c(res$D[1] - 10, 10000))
-  expect_equal(res_cap$D[1], res$D[1] - 10)
+  expect_true(is.na(res_cap$D[1]))
+  expect_true(is.na(res_cap$achieved_cp[1]))
   expect_false(res_cap$target_reached[1])
   expect_equal(res_cap$D[2], res$D[2])
   expect_true(res_cap$target_reached[2])
@@ -636,28 +629,35 @@ test_that("boundary-crossed and no-solution requests search D > d", {
   expect_gte(crossed$achieved_cp, 0.9)
   expect_true(crossed$target_reached)
 
-  ## an unfavorable trend (the reference is the better arm) cannot reach
-  ## the target for any D: an infinite search errors, a finite one returns
-  ## its capped answer
-  expect_error(
-    tr$eventNumberReestimationFromConditionalPower(
-      'interim', frm, 'trt', 'less',
-      alpha = 0.022, target_cp = 0.9, effect = 'trend'),
-    'No finite event number')
+  ## An unfavorable trend (the reference is the better arm) cannot reach
+  ## the target for any D. The unbounded request reports no finite solution.
+  res_unbounded <- tr$eventNumberReestimationFromConditionalPower(
+    'interim', frm, 'trt', 'less',
+    alpha = 0.022, target_cp = 0.9, effect = 'trend')
+  expect_true(is.na(res_unbounded$D))
+  expect_equal(res_unbounded$D_cap, Inf)
+  expect_true(is.na(res_unbounded$achieved_cp))
+  expect_equal(res_unbounded$target_cp, 0.9)
+  expect_false(res_unbounded$target_reached)
 
   res <- tr$eventNumberReestimationFromConditionalPower(
     'interim', frm, 'trt', 'less',
     alpha = 0.022, target_cp = 0.9, effect = 'trend', D_cap = 500)
-  expect_equal(res$D, 500)
+  expect_true(is.na(res$D))
+  expect_equal(res$D_cap, 500)
+  expect_true(is.na(res$achieved_cp))
+  expect_equal(res$target_cp, 0.9)
   expect_false(res$target_reached)
 
-  ## A non-beneficial hazard ratio with no early crossing is likewise rejected
-  ## when the search is unbounded.
-  expect_error(
-    tr$eventNumberReestimationFromConditionalPower(
-      'interim', frm, 'pbo', 'less',
-      alpha = 0.001, target_cp = 0.9, effect = 1.1),
-    'No finite event number')
+  ## A non-beneficial hazard ratio with no early crossing likewise reports no
+  ## finite solution when the search is unbounded.
+  res_numeric <- tr$eventNumberReestimationFromConditionalPower(
+    'interim', frm, 'pbo', 'less',
+    alpha = 0.001, target_cp = 0.9, effect = 1.1)
+  expect_true(is.na(res_numeric$D))
+  expect_equal(res_numeric$D_cap, Inf)
+  expect_true(is.na(res_numeric$achieved_cp))
+  expect_false(res_numeric$target_reached)
 })
 
 

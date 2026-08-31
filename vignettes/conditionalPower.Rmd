@@ -176,16 +176,17 @@ also applies when the interim z statistic already reaches the final boundary.
 The cap has the following semantics:
 
 -   `D_cap = NULL`, the default, is converted to `Inf` for every comparison
-    and requests the smallest finite solution;
--   if a finite cap contains a solution, the smallest solution is returned
-    with `target_reached = TRUE`;
--   if no integer through a finite cap reaches the target, the cap itself and
-    its actual conditional power are returned with `target_reached = FALSE`;
--   with an infinite cap, an error is raised if no finite solution exists.
+    and requests an unbounded search;
+-   if a finite solution exists in the requested range, the smallest solution
+    is returned in `D`, its conditional power is returned in `achieved_cp`,
+    and `target_reached = TRUE`;
+-   if no finite solution exists in the requested range, `D` and
+    `achieved_cp` are `NA`, and `target_reached = FALSE`. `D_cap` continues to
+    report the requested cap.
 
 Thus, a false `target_reached` does not mean the algorithm failed. It means
 that the requested conditional power cannot be attained within the permitted
-event budget.
+event budget, or at any finite event number when the search is unbounded.
 
 ## Why ordinary bisection is insufficient
 
@@ -405,7 +406,9 @@ data.frame(
 ### Event-number reassessment and the cap
 
 Under the assumed hazard ratio 0.75, request 90% conditional power. Comparing
-two caps illustrates both possible values of `target_reached`.
+two caps illustrates both possible values of `target_reached`; the smaller
+cap remains recorded in `D_cap`, while `D` and `achieved_cp` are `NA` because
+no solution exists through that cap.
 
 ```{r reassess-events}
 reassess_500 <- tr$eventNumberReestimationFromConditionalPower(
@@ -501,11 +504,12 @@ promising_zone_action <- function(trial){
       effect = 0.75, D_cap = D_cap
     )
 
-    selected_D <- reassessment$D
-    decision <- if(reassessment$target_reached){
-      'promising: reassess to target conditional power'
+    if(reassessment$target_reached){
+      selected_D <- reassessment$D
+      decision <- 'promising: reassess to target conditional power'
     }else{
-      'promising: use cap; target conditional power is unattainable'
+      selected_D <- reassessment$D_cap
+      decision <- 'promising: use cap; target conditional power is unattainable'
     }
 
     trial$update_milestone(
@@ -572,8 +576,8 @@ Before using these calculations in a design, check the following.
     overall alpha or final-stage alpha increment.
 3.  The effect assumption should be pre-specified. Report sensitivity to the
     interim trend and clinically relevant fixed hazard ratios when useful.
-4.  `D_cap` should reflect a feasible event budget. Inspect `target_reached`
-    and `achieved_cp`; do not treat a capped answer as achieving the target.
+4.  `D_cap` should reflect a feasible event budget. Inspect `target_reached`;
+    when it is `FALSE`, both `D` and `achieved_cp` are `NA`.
 5.  The operational rule must distinguish a final boundary from a formal
     interim stopping boundary.
 6.  Simulate the **entire adaptive design** under the null and relevant

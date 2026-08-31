@@ -20,10 +20,9 @@
 #' vectors of a common length (scalars are recycled), while \code{effect}
 #' and \code{alternative} are scalars shared by all comparisons.
 #'
-#' A finite \code{D_cap} bounds the search. When no event number up to the cap
-#' reaches the target, the cap itself is returned. An infinite \code{D_cap}
-#' asks for the exact finite solution; an error is raised if no such solution
-#' exists.
+#' A finite \code{D_cap} bounds the search, while an infinite \code{D_cap}
+#' requests an unbounded search. When no finite event number in the requested
+#' search range reaches the target, \code{NA_real_} is returned.
 #' \code{effect = 'null'} is not supported; use \code{.conditional_power()}
 #' to calculate conditional type I error at a chosen event number.
 #'
@@ -37,7 +36,7 @@
 #' \code{.conditional_power()}.
 #' @param target_cp numeric. Target conditional power in (0, 1).
 #' @param D_cap numeric. Upper bound(s) on the returned event number; whole
-#' numbers greater than \code{d}, or \code{Inf} for an exact solution.
+#' numbers greater than \code{d}, or \code{Inf} for an unbounded search.
 #' @param effect \code{'trend'} (extrapolate the interim estimate) or a
 #' single positive numeric value interpreted as a hazard ratio.
 #' @param omega numeric. Schoenfeld per-event information
@@ -45,9 +44,9 @@
 #' Only used when \code{effect} is numeric; may be \code{NA} otherwise.
 #' @param alternative \code{'greater'} or \code{'less'}.
 #'
-#' @return a numeric vector of whole numbers: for each comparison, the
-#' smallest \code{D > d} with conditional power at least \code{target_cp},
-#' or a finite \code{D_cap} when the target cannot be reached under the cap.
+#' @return a numeric vector: for each comparison, the smallest whole number
+#' \code{D > d} with conditional power at least \code{target_cp}, or
+#' \code{NA_real_} when no finite solution exists in the requested range.
 #'
 #' @noRd
 .event_number_reestimation <- function(z, d, alpha, target_cp, D_cap,
@@ -86,7 +85,7 @@
                        alternative = alternative)
   }
 
-  D <- numeric(n)
+  D <- rep(NA_real_, n)
   for(i in seq_len(n)){
 
     ## Re-estimation is restricted to a genuine future final analysis, so the
@@ -180,7 +179,6 @@
 
     if(is.finite(D_cap[i])){
       ## No integer in the permitted range reaches the target.
-      D[i] <- D_cap[i]
       next
     }
 
@@ -196,9 +194,8 @@
       alpha[i]
     }
     if(limit_cp <= target_cp[i]){
-      stop('No finite event number greater than d = ', d[i],
-           ' reaches target_cp = ', target_cp[i],
-           ' under the specified effect. ')
+      ## No finite solution exists on the unbounded final branch.
+      next
     }
 
     ## The final branch must now cross the target. Expand until it is
