@@ -2149,9 +2149,9 @@ Trials <- R6::R6Class(
     #' @description
     #' re-estimate the number of events at the final analysis for each
     #' treatment-vs-placebo comparison of a time-to-event endpoint: the
-    #' smallest whole number of events \code{D}, not below the event number
-    #' observed at the interim, at which the conditional power computed by
-    #' \code{$conditionalPower()} reaches a target, under a group
+    #' smallest whole number of events \code{D}, strictly greater than the
+    #' event number observed at the interim, at which the conditional power
+    #' computed by \code{$conditionalPower()} reaches a target, under a group
     #' sequential design with one interim and one final analysis. Locked
     #' data of the milestone is pulled automatically; \code{fitLogrank()}
     #' is called internally to obtain, for every treatment arm vs
@@ -2160,15 +2160,15 @@ Trials <- R6::R6Class(
     #' subset conditions in \code{...}, if any).
     #'
     #' @details
-    #' Following the EAST event-number re-estimation rule, the method returns
-    #' the smallest whole number \code{D >= d} satisfying
+    #' The method returns the smallest whole number \code{D > d} satisfying
     #' \deqn{CP(D) \ge \gamma,}
     #' where \eqn{\gamma} is \code{target_cp} and \eqn{CP(D)} is the
     #' conditional power of \code{$conditionalPower()} at the same
-    #' \code{milestone}, \code{alpha} and \code{effect}. If the interim z
-    #' statistic already reaches the final boundary, the decision with no
-    #' additional information is deterministic, \eqn{CP(d) = 1}, and
-    #' \code{D = d} is returned.
+    #' \code{milestone}, \code{alpha} and \code{effect}. The strict inequality
+    #' requires a genuine future final analysis. It also applies when the
+    #' interim z statistic already reaches the final boundary, because future
+    #' observations can dilute the interim result and reduce conditional
+    #' power below \code{target_cp}.
     #'
     #' Conditional power need not be monotone in \code{D}, particularly when
     #' a numeric effect differs from the interim trend. The method finds the
@@ -2189,15 +2189,9 @@ Trials <- R6::R6Class(
     #' \item if it does not, and \code{D_cap} is finite, the cap itself is
     #' returned with its achieved conditional power, and
     #' \code{target_reached} is \code{FALSE};
-    #' \item an infinite \code{D_cap} (the default) requests the exact
-    #' solution regardless of size; it is accepted only when conditional
-    #' power can approach 1 as \code{D} grows, i.e., when the interim
-    #' trend favors treatment (\code{effect = 'trend'}) or the specified
-    #' hazard ratio does (numeric \code{effect}). Otherwise conditional
-    #' power does not approach 1 as \code{D} grows, and an error suggests
-    #' specifying a finite \code{D_cap} to obtain the capped answer. This
-    #' restriction does not apply when the final boundary has already been
-    #' reached, because \code{D = d} is then the exact solution.
+    #' \item an infinite \code{D_cap} (the default) requests the smallest
+    #' finite solution regardless of size. An error is raised if no finite
+    #' event number can reach \code{target_cp} under the specified effect.
     #' }
     #'
     #' \code{effect = 'null'} is not supported; use
@@ -2297,9 +2291,8 @@ Trials <- R6::R6Class(
     #'   placebo = 'pbo', alternative = 'less',
     #'   alpha = 0.022, target_cp = 0.9, effect = 0.75)
     #'
-    #' ## with a practical cap: when conditional power cannot reach the
-    #' ## target under the cap, the cap is returned and target_reached
-    #' ## is FALSE
+    #' ## with a practical cap: when no event number through the cap reaches
+    #' ## the target, the cap is returned and target_reached is FALSE
     #' tr$eventNumberReestimationFromConditionalPower(
     #'   'interim', Surv(pfs, pfs_event) ~ arm,
     #'   placebo = 'pbo', alternative = 'less',
@@ -2505,12 +2498,6 @@ Trials <- R6::R6Class(
              'late. ')
       }
 
-      ## Work on the lower-tail scale to identify comparisons whose interim
-      ## statistic already reaches the final boundary. Under the EAST rule,
-      ## these comparisons have the degenerate solution D = d.
-      z_less <- if(alternative == 'greater') -z else z
-      crossed <- z_less <= qnorm(unname(alpha))
-
       ## omega = r / (1 + r)^2 converts a hazard ratio into the drift of
       ## the z statistic; it is needed only when effect is numeric. r
       ## comes from the sample ratio recorded when the milestone's data
@@ -2534,33 +2521,6 @@ Trials <- R6::R6Class(
         omega <- r / (1 + r)^2
       }
 
-      ## an infinite cap requires conditional power to approach 1 as D
-      ## grows, which needs a beneficial drift
-      beneficial <- if(identical(effect, 'trend')){
-        z_less < 0
-      }else{
-        theta_less <- if(alternative == 'greater'){
-          -log(effect)
-        }else{
-          log(effect)
-        }
-        rep(theta_less < 0, length(selected_arms))
-      }
-      unbounded <- !crossed & !beneficial & is.infinite(unname(D_cap))
-      if(any(unbounded)){
-        stop('Cannot re-estimate the event number at milestone <',
-             milestone, '> vs placebo <', placebo, '> for arm(s) <',
-             paste0(selected_arms[unbounded], collapse = ', '), '>: ',
-             if(identical(effect, 'trend')){
-               'the interim trend does not favor treatment, '
-             }else{
-               'the specified hazard ratio does not favor treatment, '
-             },
-             'so conditional power cannot approach 1 for any final ',
-             'event number. Specify a finite D_cap to obtain the capped ',
-             'answer instead. ')
-      }
-
       D <- .event_number_reestimation(z = z, d = d,
                                       alpha = unname(alpha),
                                       target_cp = unname(target_cp),
@@ -2568,14 +2528,10 @@ Trials <- R6::R6Class(
                                       effect = effect, omega = omega,
                                       alternative = alternative)
 
-      achieved <- rep(1, length(D))
-      needs_future <- D > d
-      if(any(needs_future)){
-        achieved[needs_future] <- .conditional_power(
-          z = z[needs_future], d = d[needs_future], D = D[needs_future],
-          alpha = unname(alpha)[needs_future], effect = effect,
-          omega = omega[needs_future], alternative = alternative)
-      }
+      achieved <- .conditional_power(z = z, d = d, D = D,
+                                     alpha = unname(alpha),
+                                     effect = effect, omega = omega,
+                                     alternative = alternative)
 
       ret <- data.frame(
         arm = selected_arms,

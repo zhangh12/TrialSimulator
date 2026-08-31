@@ -6,7 +6,7 @@
 # CP is nonmonotone) and against rpact::getConditionalPower directly; cap
 # semantics; and the method
 # Trials$eventNumberReestimationFromConditionalPower() (wiring to locked
-# data, alpha/target_cp/D_cap shape rules, degenerate and unbounded error
+# data, alpha/target_cp/D_cap shape rules, boundary-crossed and unbounded
 # paths).
 
 solver <- TrialSimulator:::.event_number_reestimation
@@ -61,20 +61,27 @@ test_that(".event_number_reestimation returns the smallest D reaching the target
     }
   }
 
-  ## if the final boundary is already crossed, the EAST rule permits the
-  ## degenerate solution D = d with no additional event
-  expect_equal(
-    solver(z = -3, d = 100, alpha = 0.4, target_cp = 0.05, D_cap = Inf,
-           effect = 'trend', omega = NA, alternative = 'less'),
-    100
-  )
+  ## Crossing the final boundary at interim does not permit D = d. If the
+  ## crossing is slight, CP can fall below the target at d + 1 and the first
+  ## future event number reaching the target can be substantially later.
+  crossed_z <- qnorm(0.025) - 0.001
+  crossed_D <- solver(z = crossed_z, d = 100, alpha = 0.025,
+                      target_cp = 0.9, D_cap = Inf, effect = 'trend',
+                      omega = NA, alternative = 'less')
+  expect_equal(crossed_D, 220)
+  expect_lt(cp_internal(crossed_z, 100, 101, 0.025, 'trend', NA, 'less'),
+            0.9)
+  expect_gte(cp_internal(crossed_z, 100, crossed_D, 0.025, 'trend', NA,
+                         'less'), 0.9)
+  expect_lt(cp_internal(crossed_z, 100, crossed_D - 1, 0.025, 'trend', NA,
+                        'less'), 0.9)
 
   ## Boundary-crossed and ongoing comparisons can be solved together.
-  mixed <- solver(z = c(-3, -1.2), d = c(100, 100),
-                  alpha = c(0.4, 0.025), target_cp = c(0.9, 0.9),
+  mixed <- solver(z = c(crossed_z, -1.2), d = c(100, 100),
+                  alpha = c(0.025, 0.025), target_cp = c(0.9, 0.9),
                   D_cap = c(Inf, Inf), effect = 'trend', omega = NA,
                   alternative = 'less')
-  expect_equal(mixed[1], 100)
+  expect_equal(mixed[1], crossed_D)
   expect_equal(
     mixed[2],
     solver(z = -1.2, d = 100, alpha = 0.025, target_cp = 0.9,
@@ -88,7 +95,7 @@ test_that(".event_number_reestimation finds the first of multiple crossings", {
 
   ## A weak beneficial fixed effect can make CP rise above the target near
   ## the interim, fall below it, and recover much later. The three continuous
-  ## crossings are around D = 107, 183 and 8675; EAST selects the first.
+  ## crossings are around D = 107, 183 and 8675; the rule selects the first.
   z <- -1.8; d <- 100; alpha <- 0.025; target <- 0.2
   effect <- 0.98; omega <- 0.25
 
@@ -116,7 +123,7 @@ test_that(".event_number_reestimation finds the first of multiple crossings", {
   expect_lt(cp_at(first - 1), target)
   expect_gte(cp_at(first), target)
 
-  ## Direction mirroring preserves every crossing and hence the EAST result.
+  ## Direction mirroring preserves every crossing and hence the earliest one.
   expect_equal(
     solver(-z, d, alpha, target, D_cap = Inf, effect = 1 / effect,
            omega = omega, alternative = 'greater'),
@@ -203,17 +210,45 @@ test_that(".event_number_reestimation respects the cap", {
   )
   expect_lt(cp_internal(z, d, D0 - 1, alpha, 'trend', NA, 'less'), target)
 
-  ## a non-beneficial drift is rejected without a finite cap but
-  ## returns the cap with one
+  ## The cap also applies when the interim z has already crossed the final
+  ## boundary but no future event number through the cap reaches the target.
+  crossed_z <- qnorm(alpha) - 0.001
+  expect_equal(
+    solver(crossed_z, d, alpha, target, D_cap = 150, effect = 'trend',
+           omega = NA, alternative = 'less'),
+    150
+  )
+
+  ## A non-beneficial drift with no early crossing has no finite solution,
+  ## but a finite search returns its capped answer.
   expect_error(
     solver(z = 0.5, d = d, alpha = alpha, target_cp = target, D_cap = Inf,
-           effect = 'trend', omega = NA, alternative = 'less')
+           effect = 'trend', omega = NA, alternative = 'less'),
+    'No finite event number'
   )
   expect_equal(
     solver(z = 0.5, d = d, alpha = alpha, target_cp = target, D_cap = 500,
            effect = 'trend', omega = NA, alternative = 'less'),
     500
   )
+
+  ## Conversely, an adverse assumed effect may still have an early solution
+  ## supported by a strong interim result; the unbounded search must retain it.
+  expect_equal(
+    solver(z = -3, d = d, alpha = alpha, target_cp = target, D_cap = Inf,
+           effect = 1.1, omega = 0.25, alternative = 'less'),
+    d + 1
+  )
+
+  ## With zero drift, CP tends to alpha. An unbounded search still has a
+  ## finite solution when the target is below that limit.
+  zero_drift_D <- solver(z = 0.5, d = d, alpha = 0.4, target_cp = 0.3,
+                         D_cap = Inf, effect = 1, omega = 0.25,
+                         alternative = 'less')
+  expect_equal(zero_drift_D, 525)
+  expect_gte(cp_internal(0.5, d, zero_drift_D, 0.4, 1, 0.25, 'less'), 0.3)
+  expect_lt(cp_internal(0.5, d, zero_drift_D - 1, 0.4, 1, 0.25, 'less'),
+            0.3)
 })
 
 
@@ -571,29 +606,31 @@ test_that("the method validates milestone and effect", {
 })
 
 
-test_that("boundary-crossed and unbounded requests follow EAST semantics", {
+test_that("boundary-crossed and no-solution requests search D > d", {
 
   tr <- run_two_arm_trial()
   frm <- Surv(pfs, pfs_event) ~ arm
 
   ## A lenient boundary already crossed at interim: alpha = 0.4 puts the
-  ## final critical value above the observed z. No additional event is needed.
+  ## final critical value above the observed z. The search nevertheless starts
+  ## at the next event number and computes its actual conditional power.
   fit <- fitLogrank(frm, 'pbo', tr$get_locked_data('interim'), 'less',
                     tidy = FALSE)
   crossed <- tr$eventNumberReestimationFromConditionalPower(
     'interim', frm, 'pbo', 'less',
     alpha = 0.4, target_cp = 0.9, effect = 'trend')
-  expect_equal(crossed$D, fit$info)
-  expect_equal(crossed$achieved_cp, 1)
+  expect_gt(crossed$D, fit$info)
+  expect_gte(crossed$achieved_cp, 0.9)
   expect_true(crossed$target_reached)
 
   ## an unfavorable trend (the reference is the better arm) cannot reach
-  ## the target for any D: error without a cap, capped answer with one
+  ## the target for any D: an infinite search errors, a finite one returns
+  ## its capped answer
   expect_error(
     tr$eventNumberReestimationFromConditionalPower(
       'interim', frm, 'trt', 'less',
       alpha = 0.022, target_cp = 0.9, effect = 'trend'),
-    'does not favor treatment')
+    'No finite event number')
 
   res <- tr$eventNumberReestimationFromConditionalPower(
     'interim', frm, 'trt', 'less',
@@ -601,12 +638,13 @@ test_that("boundary-crossed and unbounded requests follow EAST semantics", {
   expect_equal(res$D, 500)
   expect_false(res$target_reached)
 
-  ## a non-beneficial hazard ratio is likewise rejected without a cap
+  ## A non-beneficial hazard ratio with no early crossing is likewise rejected
+  ## when the search is unbounded.
   expect_error(
     tr$eventNumberReestimationFromConditionalPower(
       'interim', frm, 'pbo', 'less',
-      alpha = 0.022, target_cp = 0.9, effect = 1.1),
-    'does not favor treatment')
+      alpha = 0.001, target_cp = 0.9, effect = 1.1),
+    'No finite event number')
 })
 
 

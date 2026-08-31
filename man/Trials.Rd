@@ -246,9 +246,8 @@ tr$eventNumberReestimationFromConditionalPower(
   placebo = 'pbo', alternative = 'less',
   alpha = 0.022, target_cp = 0.9, effect = 0.75)
 
-## with a practical cap: when conditional power cannot reach the
-## target under the cap, the cap is returned and target_reached
-## is FALSE
+## with a practical cap: when no event number through the cap reaches
+## the target, the cap is returned and target_reached is FALSE
 tr$eventNumberReestimationFromConditionalPower(
   'interim', Surv(pfs, pfs_event) ~ arm,
   placebo = 'pbo', alternative = 'less',
@@ -1342,9 +1341,9 @@ tr$conditionalPower('interim', Surv(pfs, pfs_event) ~ arm,
 \subsection{Method \code{eventNumberReestimationFromConditionalPower()}}{
 re-estimate the number of events at the final analysis for each
 treatment-vs-placebo comparison of a time-to-event endpoint: the
-smallest whole number of events \code{D}, not below the event number
-observed at the interim, at which the conditional power computed by
-\code{$conditionalPower()} reaches a target, under a group
+smallest whole number of events \code{D}, strictly greater than the
+event number observed at the interim, at which the conditional power
+computed by \code{$conditionalPower()} reaches a target, under a group
 sequential design with one interim and one final analysis. Locked
 data of the milestone is pulled automatically; \code{fitLogrank()}
 is called internally to obtain, for every treatment arm vs
@@ -1423,15 +1422,15 @@ Placed after \code{...}, so it must always be passed by name.}
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-Following the EAST event-number re-estimation rule, the method returns
-the smallest whole number \code{D >= d} satisfying
+The method returns the smallest whole number \code{D > d} satisfying
 \deqn{CP(D) \ge \gamma,}
 where \eqn{\gamma} is \code{target_cp} and \eqn{CP(D)} is the
 conditional power of \code{$conditionalPower()} at the same
-\code{milestone}, \code{alpha} and \code{effect}. If the interim z
-statistic already reaches the final boundary, the decision with no
-additional information is deterministic, \eqn{CP(d) = 1}, and
-\code{D = d} is returned.
+\code{milestone}, \code{alpha} and \code{effect}. The strict inequality
+requires a genuine future final analysis. It also applies when the
+interim z statistic already reaches the final boundary, because future
+observations can dilute the interim result and reduce conditional
+power below \code{target_cp}.
 
 Conditional power need not be monotone in \code{D}, particularly when
 a numeric effect differs from the interim trend. The method finds the
@@ -1452,15 +1451,9 @@ returned, and \code{target_reached} is \code{TRUE};
 \item if it does not, and \code{D_cap} is finite, the cap itself is
 returned with its achieved conditional power, and
 \code{target_reached} is \code{FALSE};
-\item an infinite \code{D_cap} (the default) requests the exact
-solution regardless of size; it is accepted only when conditional
-power can approach 1 as \code{D} grows, i.e., when the interim
-trend favors treatment (\code{effect = 'trend'}) or the specified
-hazard ratio does (numeric \code{effect}). Otherwise conditional
-power does not approach 1 as \code{D} grows, and an error suggests
-specifying a finite \code{D_cap} to obtain the capped answer. This
-restriction does not apply when the final boundary has already been
-reached, because \code{D = d} is then the exact solution.
+\item an infinite \code{D_cap} (the default) requests the smallest
+finite solution regardless of size. An error is raised if no finite
+event number can reach \code{target_cp} under the specified effect.
 }
 
 \code{effect = 'null'} is not supported; use
@@ -1520,9 +1513,8 @@ tr$eventNumberReestimationFromConditionalPower(
   placebo = 'pbo', alternative = 'less',
   alpha = 0.022, target_cp = 0.9, effect = 0.75)
 
-## with a practical cap: when conditional power cannot reach the
-## target under the cap, the cap is returned and target_reached
-## is FALSE
+## with a practical cap: when no event number through the cap reaches
+## the target, the cap is returned and target_reached is FALSE
 tr$eventNumberReestimationFromConditionalPower(
   'interim', Surv(pfs, pfs_event) ~ arm,
   placebo = 'pbo', alternative = 'less',

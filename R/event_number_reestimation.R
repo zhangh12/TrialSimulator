@@ -7,7 +7,7 @@
 #' \code{D}; this function finds its stationary points from a cubic equation,
 #' partitions the integer search range into monotone intervals, and searches
 #' them from left to right. The returned \code{D} is therefore the smallest
-#' whole number not below the interim event number with
+#' whole number strictly greater than the interim event number with
 #' \code{CP(D) >= target_cp}.
 #' This is an internal function; the user-facing entry point is
 #' \code{Trials$eventNumberReestimationFromConditionalPower()}, which extracts
@@ -22,11 +22,8 @@
 #'
 #' A finite \code{D_cap} bounds the search. When no event number up to the cap
 #' reaches the target, the cap itself is returned. An infinite \code{D_cap}
-#' asks for the exact solution and is only valid when conditional power
-#' approaches 1 as \code{D} grows, i.e.,
-#' under a beneficial drift on the \code{'less'} scale (a negative interim
-#' \code{z} for \code{effect = 'trend'}, or a beneficial hazard ratio for a
-#' numeric \code{effect}); the caller is expected to have checked this.
+#' asks for the exact finite solution; an error is raised if no such solution
+#' exists.
 #' \code{effect = 'null'} is not supported; use \code{.conditional_power()}
 #' to calculate conditional type I error at a chosen event number.
 #'
@@ -48,13 +45,9 @@
 #' Only used when \code{effect} is numeric; may be \code{NA} otherwise.
 #' @param alternative \code{'greater'} or \code{'less'}.
 #'
-#' When the interim statistic already reaches the final boundary, the
-#' degenerate conditional power at \code{D = d} is one and \code{d} is
-#' returned.
-#'
 #' @return a numeric vector of whole numbers: for each comparison, the
-#' smallest \code{D >= d} with conditional power at least \code{target_cp},
-#' or \code{D_cap} when the target cannot be reached under the cap.
+#' smallest \code{D > d} with conditional power at least \code{target_cp},
+#' or a finite \code{D_cap} when the target cannot be reached under the cap.
 #'
 #' @noRd
 .event_number_reestimation <- function(z, d, alpha, target_cp, D_cap,
@@ -87,14 +80,6 @@
     theta_less <- if(alternative == 'greater') -log(effect) else log(effect)
     theta_less * sqrt(omega * d)
   }
-  beneficial <- eta < 0
-  crossed <- z_less <= crit
-
-  ## An infinite search is guaranteed to terminate only on the beneficial
-  ## tail, unless the final boundary has already been reached at D = d. The
-  ## public method checks this with a more informative error.
-  stopifnot(all(is.finite(D_cap) | beneficial | crossed))
-
   cp_at <- function(i, D){
     .conditional_power(z = z[i], d = d[i], D = D, alpha = alpha[i],
                        effect = effect, omega = omega[i],
@@ -104,15 +89,10 @@
   D <- numeric(n)
   for(i in seq_len(n)){
 
-    ## EAST rule: D_new is the smallest D >= the event number observed at the
-    ## interim. With no future information, the decision is deterministic; if
-    ## the final boundary is already reached, CP(d) = 1 and no increase is
-    ## needed.
-    if(crossed[i]){
-      D[i] <- d[i]
-      next
-    }
-
+    ## Re-estimation is restricted to a genuine future final analysis, so the
+    ## integer search starts at the first event number strictly above d. This
+    ## also applies when the interim z already reaches the final boundary:
+    ## continuing the trial can dilute that result.
     D_min <- d[i] + 1
     if(cp_at(i, D_min) >= target_cp[i]){
       D[i] <- D_min
@@ -140,28 +120,24 @@
       stationary_D <- stationary_D[stationary_D <= D_cap[i]]
       D_hi <- D_cap[i]
     }else{
-      ## Start beyond every stationary point, then expand on the final
-      ## increasing branch until the target is bracketed.
+      ## First search every bounded monotone interval. D_hi lies beyond all
+      ## stationary points, at the start of the final monotone branch.
       D_hi <- max(2 * D_min,
                   if(length(stationary_D) > 0){
                     ceiling(max(stationary_D)) + 1
                   }else{
                     0
                   })
-      while(cp_at(i, D_hi) < target_cp[i]){
-        next_hi <- 2 * D_hi
-        if(!is.finite(next_hi) || next_hi <= D_hi){
-          stop('Unable to bracket the target conditional power with a ',
-               'finite event number. Specify a finite D_cap. ')
-        }
-        D_hi <- next_hi
+      if(!is.finite(D_hi)){
+        stop('Unable to search for a finite event number without numeric ',
+             'overflow. ')
       }
     }
 
     ## A continuous stationary point may lie between two integers. Including
     ## both neighboring integers makes every interval below monotone on the
     ## integer grid. Search intervals from left to right so the first upward
-    ## crossing is the EAST solution even when CP later falls and recovers.
+    ## crossing is returned even when CP later falls and recovers.
     knots <- sort(unique(c(D_min,
                            floor(stationary_D), ceiling(stationary_D),
                            D_hi)))
@@ -198,11 +174,54 @@
       }
     }
 
-    if(!found){
-      ## This can occur only with a finite cap: no integer in the permitted
-      ## range reaches the target.
-      D[i] <- D_cap[i]
+    if(found){
+      next
     }
+
+    if(is.finite(D_cap[i])){
+      ## No integer in the permitted range reaches the target.
+      D[i] <- D_cap[i]
+      next
+    }
+
+    ## On the final monotone branch, CP tends to 1 under beneficial drift,
+    ## to alpha under zero drift, and to 0 under adverse drift. If that limit
+    ## is not above the target, all possible earlier crossings have already
+    ## been excluded by the interval search above.
+    limit_cp <- if(eta[i] < 0){
+      1
+    }else if(eta[i] > 0){
+      0
+    }else{
+      alpha[i]
+    }
+    if(limit_cp <= target_cp[i]){
+      stop('No finite event number greater than d = ', d[i],
+           ' reaches target_cp = ', target_cp[i],
+           ' under the specified effect. ')
+    }
+
+    ## The final branch must now cross the target. Expand until it is
+    ## bracketed, then use integer bisection.
+    lo <- D_hi
+    hi <- 2 * lo
+    while(!is.finite(hi) || cp_at(i, hi) < target_cp[i]){
+      if(!is.finite(hi) || hi <= lo){
+        stop('Unable to bracket the target conditional power with a ',
+             'finite event number before numeric overflow. ')
+      }
+      lo <- hi
+      hi <- 2 * hi
+    }
+    while(hi - lo > 1){
+      mid <- floor((lo + hi) / 2)
+      if(cp_at(i, mid) >= target_cp[i]){
+        hi <- mid
+      }else{
+        lo <- mid
+      }
+    }
+    D[i] <- hi
 
   }
 
