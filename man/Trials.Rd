@@ -1141,7 +1141,7 @@ recorded at the milestone.
   alternative,
   alpha,
   D,
-  effect = "trend",
+  effect,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -1191,12 +1191,12 @@ names. An error is raised if the observed number of events \code{d}
 of a comparison already reaches \code{D}.}
 
 \item{\code{effect}}{the treatment effect at which conditional power is
-evaluated. \code{'trend'} (default) extrapolates the effect observed
-at the interim; \code{'null'} assumes no effect for the remaining
-events (conditional type I error); a single positive numeric value
-is interpreted as a hazard ratio (e.g., \code{effect = 0.75}), which
-is converted internally using the allocation ratio of each pair
-recorded at the milestone.}
+evaluated. No default value. \code{'trend'} extrapolates the effect
+observed at the interim; \code{'null'} assumes no effect for the
+remaining events (conditional type I error); a single positive
+numeric value is interpreted as a hazard ratio (e.g.,
+\code{effect = 0.75}), which is converted internally using the
+allocation ratio of each pair recorded at the milestone.}
 
 \item{\code{...}}{subset conditions compatible with \code{dplyr::filter},
 passed to \code{fitLogrank()}.}

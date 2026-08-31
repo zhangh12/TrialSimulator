@@ -355,7 +355,7 @@ test_that("conditionalPower extracts z and d from locked data (two arms)", {
 
   res <- tr$conditionalPower('interim', Surv(pfs, pfs_event) ~ arm,
                              placebo = 'pbo', alternative = 'less',
-                             alpha = 0.025, D = 800)
+                             alpha = 0.025, D = 800, effect = 'trend')
 
   expect_s3_class(res, 'data.frame')
   expect_equal(nrow(res), 1)
@@ -516,7 +516,8 @@ test_that("conditionalPower handles multiple arms with named D and alpha", {
   res <- tr$conditionalPower('interim', Surv(pfs, pfs_event) ~ arm,
                              placebo = 'pbo', alternative = 'less',
                              alpha = c(trt2 = 0.02, trt1 = 0.025),
-                             D = c(trt1 = 600, trt2 = 700))
+                             D = c(trt1 = 600, trt2 = 700),
+                             effect = 'trend')
 
   expect_equal(nrow(res), 2)
   expect_equal(res$arm, c('trt1', 'trt2'))
@@ -535,7 +536,7 @@ test_that("conditionalPower handles multiple arms with named D and alpha", {
   ## a subset of arms restricts the comparisons
   res_sub <- tr$conditionalPower('interim', Surv(pfs, pfs_event) ~ arm,
                                  placebo = 'pbo', alternative = 'less',
-                                 alpha = c(trt2 = 0.02), D = c(trt2 = 700))
+                                 alpha = c(trt2 = 0.02), D = c(trt2 = 700), effect = 'trend')
   expect_equal(nrow(res_sub), 1)
   expect_equal(res_sub$arm, 'trt2')
   expect_equal(res_sub$cp, res$cp[res$arm == 'trt2'])
@@ -595,7 +596,8 @@ test_that("arms removed before the milestone: trend works, hazard ratio errors",
   ## interpretation is users' responsibility
   res <- tr$conditionalPower('interim', frm, 'pbo', 'less',
                              alpha = c(trt1 = 0.025, trt2 = 0.02),
-                             D = c(trt1 = 600, trt2 = 700))
+                             D = c(trt1 = 600, trt2 = 700),
+                             effect = 'trend')
   expect_equal(nrow(res), 2)
   for(i in 1:2){
     fit_i <- fit[fit$arm == res$arm[i], ]
@@ -636,14 +638,14 @@ test_that("conditionalPower validates D and alpha shapes", {
   ## unnamed scalars with more than one available arm
   expect_error(
     tr$conditionalPower('interim', frm, 'pbo', 'less',
-                        alpha = 0.025, D = 600),
+                        alpha = 0.025, D = 600, effect = 'trend'),
     'unnamed scalars'
   )
 
   ## unnamed vectors of length > 1
   expect_error(
     tr$conditionalPower('interim', frm, 'pbo', 'less',
-                        alpha = c(0.025, 0.02), D = c(600, 700)),
+                        alpha = c(0.025, 0.02), D = c(600, 700), effect = 'trend'),
     'Name their entries'
   )
 
@@ -651,7 +653,7 @@ test_that("conditionalPower validates D and alpha shapes", {
   expect_error(
     tr$conditionalPower('interim', frm, 'pbo', 'less',
                         alpha = c(trt1 = 0.025),
-                        D = c(trt1 = 600, trt2 = 700)),
+                        D = c(trt1 = 600, trt2 = 700), effect = 'trend'),
     'same length'
   )
 
@@ -659,7 +661,7 @@ test_that("conditionalPower validates D and alpha shapes", {
   expect_error(
     tr$conditionalPower('interim', frm, 'pbo', 'less',
                         alpha = c(0.025, 0.02),
-                        D = c(trt1 = 600, trt2 = 700)),
+                        D = c(trt1 = 600, trt2 = 700), effect = 'trend'),
     'both named'
   )
 
@@ -667,14 +669,14 @@ test_that("conditionalPower validates D and alpha shapes", {
   expect_error(
     tr$conditionalPower('interim', frm, 'pbo', 'less',
                         alpha = c(trt1 = 0.025, pbo = 0.02),
-                        D = c(trt1 = 600, trt2 = 700)),
+                        D = c(trt1 = 600, trt2 = 700), effect = 'trend'),
     'same set of treatment arms'
   )
 
   ## nonexistent arm
   expect_error(
     tr$conditionalPower('interim', frm, 'pbo', 'less',
-                        alpha = c(trt3 = 0.025), D = c(trt3 = 600)),
+                        alpha = c(trt3 = 0.025), D = c(trt3 = 600), effect = 'trend'),
     'not among the treatment arms available'
   )
 
@@ -682,7 +684,7 @@ test_that("conditionalPower validates D and alpha shapes", {
   expect_error(
     tr$conditionalPower('interim', frm, 'pbo', 'less',
                         alpha = c(trt1 = 0.025, trt1 = 0.02),
-                        D = c(trt1 = 600, trt2 = 700)),
+                        D = c(trt1 = 600, trt2 = 700), effect = 'trend'),
     'Duplicated'
   )
 })
@@ -721,7 +723,7 @@ test_that("conditionalPower reports fitting failures with context", {
   expect_error(
     tr$conditionalPower('interim', Surv(pfs, pfs_event) ~ arm,
                         placebo = 'pbo', alternative = 'less',
-                        alpha = 0.025, D = 800),
+                        alpha = 0.025, D = 800, effect = 'trend'),
     'Unable to fit logrank models'
   )
 
@@ -731,13 +733,13 @@ test_that("conditionalPower reports fitting failures with context", {
   expect_error(
     tr2$conditionalPower('interim', Surv(pfs, pfs_event) ~ arm,
                          placebo = c('pbo', 'trt'), alternative = 'less',
-                         alpha = 0.025, D = 800),
+                         alpha = 0.025, D = 800, effect = 'trend'),
     'single character string'
   )
   expect_error(
     tr2$conditionalPower('interim', 'Surv(pfs, pfs_event) ~ arm',
                          placebo = 'pbo', alternative = 'less',
-                         alpha = 0.025, D = 800),
+                         alpha = 0.025, D = 800, effect = 'trend'),
     'formula'
   )
 })
@@ -754,7 +756,7 @@ test_that("conditionalPower rejects d >= D with an informative message", {
   err <- tryCatch(
     tr$conditionalPower('interim', Surv(pfs, pfs_event) ~ arm,
                         placebo = 'pbo', alternative = 'less',
-                        alpha = 0.025, D = 5),
+                        alpha = 0.025, D = 5, effect = 'trend'),
     error = function(e) conditionMessage(e)
   )
   expect_match(err, 'arm <trt>')
@@ -771,31 +773,31 @@ test_that("conditionalPower validates its remaining arguments", {
   ## untriggered milestone
   expect_error(
     tr$conditionalPower('nonexistent', frm, 'pbo', 'less',
-                        alpha = 0.025, D = 800),
+                        alpha = 0.025, D = 800, effect = 'trend'),
     'cannot be found'
   )
 
   ## milestone must be a single character
   expect_error(
     tr$conditionalPower(c('interim', 'final'), frm, 'pbo', 'less',
-                        alpha = 0.025, D = 800),
+                        alpha = 0.025, D = 800, effect = 'trend'),
     'single character'
   )
 
   ## invalid alpha and D
   expect_error(
     tr$conditionalPower('interim', frm, 'pbo', 'less',
-                        alpha = 1.5, D = 800),
+                        alpha = 1.5, D = 800, effect = 'trend'),
     'in \\(0, 1\\)'
   )
   expect_error(
     tr$conditionalPower('interim', frm, 'pbo', 'less',
-                        alpha = 0.025, D = 800.5),
+                        alpha = 0.025, D = 800.5, effect = 'trend'),
     'whole number'
   )
   expect_error(
     tr$conditionalPower('interim', frm, 'pbo', 'less',
-                        alpha = 0.025, D = Inf),
+                        alpha = 0.025, D = Inf, effect = 'trend'),
     'whole number'
   )
 

@@ -1,3 +1,9 @@
+# TrialSimulator 1.33.1
+
+## Updates
+
+- The `effect` argument of `trial$conditionalPower()` no longer has a default value; it must be specified explicitly as `'trend'`, `'null'`, or a hazard ratio.
+
 # TrialSimulator 1.33.0
 
 ## New features
