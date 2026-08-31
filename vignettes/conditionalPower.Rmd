@@ -1,0 +1,602 @@
+---
+title: "Conditional Power and Event-Number Reassessment"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Conditional Power and Event-Number Reassessment}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+editor_options:
+  markdown:
+    wrap: 72
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = '#>',
+  fig.width = 7,
+  fig.height = 4.5,
+  dpi = 120,
+  out.width = '100%'
+)
+```
+
+```{r setup, message = FALSE}
+library(TrialSimulator)
+```
+
+This vignette explains the statistical model and implementation behind
+`Trials$conditionalPower()` and
+`Trials$eventNumberReestimationFromConditionalPower()`. Both methods apply to
+a time-to-event comparison with one interim analysis and one final analysis.
+They use the interim logrank statistic and event count stored in a triggered
+milestone.
+
+Conditional power is a design calculation, not an automatic adaptation rule.
+In particular, changing a final event target after an unblinded interim can
+affect type I error. A promising-zone design must be pre-specified and its
+complete decision rule must be justified and evaluated, usually by simulation.
+
+## Statistical setting
+
+Consider one treatment arm compared with placebo. Let
+
+-   $d$ be the number of events observed on the two arms at interim;
+-   $D>d$ be the total number of events at a future final analysis;
+-   $z$ be the interim logrank z statistic;
+-   $r$ be the treatment-to-placebo allocation ratio; and
+-   $\omega=r/(1+r)^2$ be the Schoenfeld information per event.
+
+The package uses the sign convention of `fitLogrank()`: $z>0$ corresponds to
+an estimated treatment-to-placebo hazard ratio greater than one. Therefore,
+when a hazard ratio below one is beneficial, use `alternative = "less"`.
+
+It is convenient to map both alternatives to a lower-tail problem. Define
+
+$$
+z_* = \begin{cases}
+z, & \text{alternative = "less"},\\
+-z, & \text{alternative = "greater"},
+\end{cases}
+\qquad
+\theta_* = \begin{cases}
+\log(h), & \text{alternative = "less"},\\
+-\log(h), & \text{alternative = "greater"},
+\end{cases}
+$$
+
+where $h$ is an assumed treatment-to-placebo hazard ratio. On this common
+scale, a negative $z_*$ or $\theta_*$ favors treatment. The final rejection
+region is
+
+$$
+Z_D^* \leq c_\alpha, \qquad c_\alpha=\Phi^{-1}(\alpha).
+$$
+
+For `alternative = "greater"`, this is equivalent to comparing the original
+statistic with the upper boundary $\Phi^{-1}(1-\alpha)$.
+
+### What `alpha` means
+
+The argument `alpha` is the **one-sided nominal level corresponding to the
+planned final critical boundary**. It is not necessarily the total design
+alpha, the cumulative alpha spent by the final look, or the incremental alpha
+spent at that look. For example, if an upper-tail group-sequential design has
+final critical value $c$, pass `alpha = 1 - pnorm(c)`.
+
+## Conditional power
+
+Write $t=d/D$ for the interim information fraction. Under the canonical
+independent-increments model, conditional on the observed interim statistic,
+
+$$
+Z_D^* \mid Z_d^*=z_*
+\sim N\left\{
+\sqrt{t}\,z_* + \theta_*\sqrt{\omega D}(1-t),\;1-t
+\right\}.
+$$
+
+It follows that the lower-tail conditional power is
+
+$$
+CP(D)=\Phi\left[
+\frac{
+c_\alpha-\sqrt{d/D}\,z_*
+-\theta_*\sqrt{\omega D}(1-d/D)
+}{\sqrt{1-d/D}}
+\right].
+$$
+
+The implementation provides three choices for the future effect.
+
+### A specified hazard ratio
+
+For a positive numeric `effect = h`, the method uses
+$\theta_* = \log(h)$ for `"less"` and $-\log(h)$ for `"greater"`. This
+separates the assumed future effect from random variation in the interim
+estimate. It also requires the allocation ratio recorded at the milestone so
+that $\omega$ can be computed.
+
+### The interim trend
+
+For `effect = "trend"`, the interim estimate is extrapolated:
+
+$$
+\widehat\theta_* = \frac{z_*}{\sqrt{\omega d}}.
+$$
+
+Substitution cancels $\omega$ and gives
+
+$$
+CP_{\text{trend}}(D)=\Phi\left[
+\frac{c_\alpha-z_*\sqrt{D/d}}{\sqrt{1-d/D}}
+\right].
+$$
+
+This calculation is often useful as a sensitivity analysis, but it can be
+optimistic after a favorable interim because it treats the noisy interim
+estimate as the true future effect.
+
+### The null effect
+
+For `effect = "null"`, the remaining increment has zero drift:
+
+$$
+CP_{0}(D)=\Phi\left[
+\frac{c_\alpha-\sqrt{d/D}\,z_*}{\sqrt{1-d/D}}
+\right].
+$$
+
+This is the conditional type I error at the specified final event number, not
+power under a beneficial alternative. The event-number reassessment method
+does not accept `effect = "null"`; use `conditionalPower()` directly when this
+quantity is wanted.
+
+### What happens near the interim
+
+`conditionalPower()` requires $D>d$. If the interim statistic has crossed the
+final boundary, $CP(D)$ tends to one as $D$ approaches $d$ from above, but it
+need not remain high as more events accrue. Future independent increments can
+dilute the interim result. Reaching the *final* boundary at interim is also not
+the same as reaching a pre-specified interim efficacy boundary and does not by
+itself authorize stopping a real trial.
+
+## Inverting conditional power to obtain an event number
+
+For target conditional power $\gamma$, the reassessment method searches for
+
+$$
+D_{\text{new}}=
+\min\left\{D\in\mathbb{Z}:d<D\leq D_{\text{cap}},\;CP(D)\geq\gamma\right\}.
+$$
+
+The strict requirement $D>d$ represents a genuine future final analysis. It
+also applies when the interim z statistic already reaches the final boundary.
+
+The cap has the following semantics:
+
+-   `D_cap = NULL`, the default, is converted to `Inf` for every comparison
+    and requests the smallest finite solution;
+-   if a finite cap contains a solution, the smallest solution is returned
+    with `target_reached = TRUE`;
+-   if no integer through a finite cap reaches the target, the cap itself and
+    its actual conditional power are returned with `target_reached = FALSE`;
+-   with an infinite cap, an error is raised if no finite solution exists.
+
+Thus, a false `target_reached` does not mean the algorithm failed. It means
+that the requested conditional power cannot be attained within the permitted
+event budget.
+
+## Why ordinary bisection is insufficient
+
+Conditional power need not be monotone in $D$. This matters particularly when
+a specified effect differs from the observed interim trend. A test based only
+on $CP(D_{\text{cap}})$ can miss an earlier target crossing, and bisection over
+the whole range can converge to a later crossing.
+
+To expose the shape analytically, put
+
+$$
+y=\sqrt{D/d}>1,
+$$
+
+and define the lower-scale accumulated drift
+
+$$
+\eta=\begin{cases}
+z_*, & \text{effect = "trend"},\\
+\theta_*\sqrt{\omega d}, & \text{numeric effect}.
+\end{cases}
+$$
+
+Because $\Phi$ is monotone, it is enough to study its probit argument
+
+$$
+g(y)=\frac{c_\alpha y-\eta y^2+\eta-z_*}{\sqrt{y^2-1}}.
+$$
+
+Its derivative has the sign of
+
+$$
+-\eta y^3+(z_*+\eta)y-c_\alpha.
+$$
+
+Consequently, every stationary point is obtained from a **cubic equation**,
+for both `effect = "trend"` and a numeric effect. There is no need to solve a
+quartic equation for the target crossings themselves.
+
+### Integer search algorithm
+
+For each treatment-placebo comparison, the implementation:
+
+1.  maps `"greater"` to the common lower-tail scale;
+2.  starts at the first admissible integer, $D=d+1$;
+3.  solves the stationary cubic with `polyroot()` and keeps real roots $y>1$;
+4.  maps each retained root to $D=dy^2$ and includes both its floor and
+    ceiling as integer knots;
+5.  searches the resulting monotone integer intervals from left to right;
+6.  uses integer bisection within the first interval whose upper endpoint
+    reaches the target.
+
+For an infinite cap, all bounded stationary intervals are searched first. On
+the final branch,
+
+$$
+\lim_{D\to\infty}CP(D)=
+\begin{cases}
+1, & \eta<0,\\
+\alpha, & \eta=0,\\
+0, & \eta>0.
+\end{cases}
+$$
+
+This limit determines whether a later finite crossing can exist. When it can,
+the implementation expands an upper bracket geometrically and finishes with
+integer bisection. Since a cubic has at most three real roots, only a few
+intervals are inspected; the event-number range is not scanned integer by
+integer.
+
+### An example with three target crossings
+
+The following hypothetical lower-tail example has a weak beneficial assumed
+effect that differs substantially from the favorable interim result.
+
+```{r multiple-crossings}
+cp_formula <- function(D, z, d, alpha, hazard_ratio, omega = 0.25){
+  t <- d / D
+  theta <- log(hazard_ratio)
+  pnorm((qnorm(alpha) - sqrt(t) * z -
+           theta * sqrt(omega * D) * (1 - t)) / sqrt(1 - t))
+}
+
+z_example <- -1.8
+d_example <- 100
+target_example <- 0.2
+D_grid <- 101:10000
+cp_grid <- cp_formula(D_grid, z = z_example, d = d_example,
+                      alpha = 0.025, hazard_ratio = 0.98)
+
+crossing_index <- which(diff(cp_grid >= target_example) != 0) + 1
+D_grid[crossing_index]
+```
+
+The target is crossed near 107, crossed downward near 183, and crossed upward
+again near 8675. The requested answer is 107, including when a finite cap such
+as 5000 has conditional power below the target.
+
+```{r multiple-crossings-table}
+selected_D <- c(106, 107, 182, 183, 5000, 8674, 8675)
+data.frame(
+  D = selected_D,
+  conditional_power = round(
+    cp_formula(selected_D, z = z_example, d = d_example,
+               alpha = 0.025, hazard_ratio = 0.98),
+    4
+  ),
+  reaches_target = cp_formula(selected_D, z = z_example, d = d_example,
+                              alpha = 0.025,
+                              hazard_ratio = 0.98) >= target_example
+)
+```
+
+```{r multiple-crossings-plot}
+plot(D_grid, cp_grid, type = 'l', log = 'x',
+     xlab = 'Final event number D (log scale)',
+     ylab = 'Conditional power', ylim = c(0, 1))
+abline(h = target_example, lty = 2, col = 'firebrick')
+abline(v = c(107, 183, 8675), lty = 3, col = 'grey40')
+```
+
+## Worked `TrialSimulator` example
+
+We now simulate one two-arm trial with an event-driven endpoint. A calendar
+milestone provides the locked interim data used by both methods.
+
+```{r define-trial}
+pbo <- arm(name = 'pbo')
+pbo$add_endpoints(
+  endpoint(name = 'pfs', type = 'tte', generator = rexp,
+           rate = log(2) / 10)
+)
+
+trt <- arm(name = 'trt')
+trt$add_endpoints(
+  endpoint(name = 'pfs', type = 'tte', generator = rexp,
+           rate = log(2) / 14)
+)
+
+accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
+tr <- trial(name = 'cp-example', n_patients = 400, duration = 40,
+            seed = 31416, enroller = StaggeredRecruiter,
+            accrual_rate = accrual, silent = TRUE)
+add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+lstn <- listener(silent = TRUE)
+lstn$add_milestones(
+  milestone(name = 'interim', when = calendarTime(time = 15)),
+  milestone(name = 'final', when = calendarTime(time = 40))
+)
+controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+```
+
+The methods call `fitLogrank()` internally. We show the fit explicitly here to
+make the interim inputs visible.
+
+```{r interim-fit}
+interim_fit <- fitLogrank(
+  Surv(pfs, pfs_event) ~ arm,
+  placebo = 'pbo', data = tr$get_locked_data('interim'),
+  alternative = 'less', tidy = FALSE
+)
+interim_fit[, c('arm', 'placebo', 'z', 'info')]
+```
+
+### Conditional power under different assumptions
+
+Suppose the planned final analysis has 300 events and its one-sided final
+boundary corresponds to nominal `alpha = 0.022`.
+
+```{r compare-effects}
+planned_D <- 300
+final_alpha <- 0.022
+
+cp_at <- function(effect){
+  tr$conditionalPower(
+    'interim', Surv(pfs, pfs_event) ~ arm,
+    placebo = 'pbo', alternative = 'less',
+    alpha = final_alpha, D = planned_D, effect = effect
+  )$cp
+}
+
+data.frame(
+  assumption = c('interim trend', 'null future drift', 'hazard ratio 0.75'),
+  conditional_power = c(cp_at('trend'), cp_at('null'), cp_at(0.75))
+)
+```
+
+The difference between the trend and specified-effect calculations is not a
+software discrepancy: they answer different conditional questions. A robust
+design should examine assumptions chosen before looking at the interim result.
+
+The direction transformation can also be checked directly by swapping the
+reference arm. The treatment-vs-placebo hazard ratio 0.75 becomes the
+placebo-vs-treatment hazard ratio $1/0.75$, and `"less"` becomes `"greater"`.
+
+```{r compare-directions}
+cp_less <- tr$conditionalPower(
+  'interim', Surv(pfs, pfs_event) ~ arm,
+  placebo = 'pbo', alternative = 'less',
+  alpha = final_alpha, D = planned_D, effect = 0.75
+)
+
+cp_greater <- tr$conditionalPower(
+  'interim', Surv(pfs, pfs_event) ~ arm,
+  placebo = 'trt', alternative = 'greater',
+  alpha = final_alpha, D = planned_D, effect = 1 / 0.75
+)
+
+data.frame(
+  formulation = c('trt vs pbo, less', 'pbo vs trt, greater'),
+  z = c(cp_less$z, cp_greater$z),
+  conditional_power = c(cp_less$cp, cp_greater$cp)
+)
+```
+
+### Event-number reassessment and the cap
+
+Under the assumed hazard ratio 0.75, request 90% conditional power. Comparing
+two caps illustrates both possible values of `target_reached`.
+
+```{r reassess-events}
+reassess_500 <- tr$eventNumberReestimationFromConditionalPower(
+  'interim', Surv(pfs, pfs_event) ~ arm,
+  placebo = 'pbo', alternative = 'less',
+  alpha = final_alpha, target_cp = 0.9,
+  effect = 0.75, D_cap = 500
+)
+
+reassess_600 <- tr$eventNumberReestimationFromConditionalPower(
+  'interim', Surv(pfs, pfs_event) ~ arm,
+  placebo = 'pbo', alternative = 'less',
+  alpha = final_alpha, target_cp = 0.9,
+  effect = 0.75, D_cap = 600
+)
+
+rbind(cap_500 = reassess_500, cap_600 = reassess_600)[,
+  c('d', 'D', 'D_cap', 'target_cp', 'achieved_cp', 'target_reached')]
+```
+
+Omitting `D_cap`, or passing `NULL`, requests the unbounded answer and is
+equivalent here to the solution under cap 600.
+
+```{r reassess-unbounded}
+tr$eventNumberReestimationFromConditionalPower(
+  'interim', Surv(pfs, pfs_event) ~ arm,
+  placebo = 'pbo', alternative = 'less',
+  alpha = final_alpha, target_cp = 0.9, effect = 0.75
+)[, c('d', 'D', 'D_cap', 'achieved_cp', 'target_reached')]
+```
+
+## A promising-zone policy
+
+A common design pattern classifies conditional power at the originally
+planned final event number into zones. The following thresholds are purely
+illustrative:
+
+-   **unfavorable:** $CP(D_{\text{planned}})<0.30$;
+-   **promising:** $0.30\leq CP(D_{\text{planned}})<0.90$;
+-   **favorable:** $CP(D_{\text{planned}})\geq0.90$.
+
+For the specified hazard ratio 0.75, the worked example lies in the promising
+zone.
+
+```{r promising-zone}
+lower_cp <- 0.30
+target_cp <- 0.90
+cp_planned <- cp_at(0.75)
+
+zone <- if(cp_planned < lower_cp){
+  'unfavorable'
+}else if(cp_planned < target_cp){
+  'promising'
+}else{
+  'favorable'
+}
+
+data.frame(planned_D, cp_planned, zone,
+           reassessed_D = reassess_600$D,
+           target_reached = reassess_600$target_reached)
+```
+
+One possible pre-specified policy is to consider futility in the unfavorable
+zone, retain the original design in the favorable zone, and increase the event
+target in the promising zone subject to a cap. These choices are properties of
+the trial design, not of the calculator.
+
+The following template shows how such a rule can be placed in an interim
+action. The final milestone must already be registered and must not yet have
+triggered. This code is illustrative and is not executed in the vignette.
+
+```{r promising-zone-action, eval = FALSE}
+promising_zone_action <- function(trial){
+  planned_D <- 300
+  lower_cp <- 0.30
+  target_cp <- 0.90
+  D_cap <- 600
+
+  cp <- trial$conditionalPower(
+    'interim', Surv(pfs, pfs_event) ~ arm,
+    placebo = 'pbo', alternative = 'less',
+    alpha = 0.022, D = planned_D, effect = 0.75
+  )$cp
+
+  if(cp < lower_cp){
+    decision <- 'unfavorable: consider futility'
+    selected_D <- planned_D
+  }else if(cp < target_cp){
+    reassessment <- trial$eventNumberReestimationFromConditionalPower(
+      'interim', Surv(pfs, pfs_event) ~ arm,
+      placebo = 'pbo', alternative = 'less',
+      alpha = 0.022, target_cp = target_cp,
+      effect = 0.75, D_cap = D_cap
+    )
+
+    selected_D <- reassessment$D
+    decision <- if(reassessment$target_reached){
+      'promising: reassess to target conditional power'
+    }else{
+      'promising: use cap; target conditional power is unattainable'
+    }
+
+    trial$update_milestone(
+      'final',
+      when = eventNumber(endpoint = 'pfs', n = selected_D,
+                         arms = c('pbo', 'trt'))
+    )
+  }else{
+    decision <- 'favorable: retain the planned design'
+    selected_D <- planned_D
+  }
+
+  trial$save(cp, 'conditional_power_at_planned_D')
+  trial$save(selected_D, 'selected_final_event_number')
+  trial$save(decision, 'promising_zone_decision')
+}
+```
+
+Many promising-zone designs permit an increase but not a decrease from the
+originally planned event number. The reassessment method itself searches from
+$d+1$, not from `planned_D`. Therefore, an increase-only policy must verify
+that the returned `D` is at least `planned_D`. In a nonmonotone case, simply
+replacing a smaller result by `planned_D` is not guaranteed to preserve the
+target conditional power; the admissible search domain and action should be
+pre-specified explicitly.
+
+## Multiple treatment arms
+
+Both methods support several treatment-placebo comparisons. `D`, `alpha`,
+`target_cp`, and a non-scalar finite `D_cap` are named by treatment arm. Names,
+not vector positions, determine matching. For example:
+
+```{r multiple-arms-syntax, eval = FALSE}
+trial$conditionalPower(
+  'interim', Surv(pfs, pfs_event) ~ arm,
+  placebo = 'pbo', alternative = 'less',
+  D = c(low = 350, high = 400),
+  alpha = c(high = 0.01, low = 0.015),
+  effect = 0.75
+)
+
+trial$eventNumberReestimationFromConditionalPower(
+  'interim', Surv(pfs, pfs_event) ~ arm,
+  placebo = 'pbo', alternative = 'less',
+  alpha = c(low = 0.015, high = 0.01),
+  target_cp = c(high = 0.90, low = 0.85),
+  effect = 'trend',
+  D_cap = c(low = 600, high = 700)
+)
+```
+
+Event counts are pair-specific: each `d` and `D` counts events on placebo plus
+one treatment arm. With a shared placebo, event counts across comparisons need
+not sum to a trial-wide total.
+
+## Assumptions and design checks
+
+Before using these calculations in a design, check the following.
+
+1.  The final statistic and boundary must match the canonical calculation.
+    The allocation ratio should remain constant, and the compared treatment
+    and placebo arms should be concurrently enrolled.
+2.  `alpha` must represent the nominal final boundary, not an arbitrary
+    overall alpha or final-stage alpha increment.
+3.  The effect assumption should be pre-specified. Report sensitivity to the
+    interim trend and clinically relevant fixed hazard ratios when useful.
+4.  `D_cap` should reflect a feasible event budget. Inspect `target_reached`
+    and `achieved_cp`; do not treat a capped answer as achieving the target.
+5.  The operational rule must distinguish a final boundary from a formal
+    interim stopping boundary.
+6.  Simulate the **entire adaptive design** under the null and relevant
+    alternatives. Unblinded sample-size or event-number changes can inflate
+    type I error unless the testing procedure or the restricted adaptation
+    rule has been justified.
+
+`TrialSimulator` computes the stated conditional quantities but cannot verify
+that a data-dependent adaptation is valid for a particular confirmatory trial.
+If adaptation changes the final statistic, information weights, allocation, or
+critical boundary, use an appropriate adaptive or combination-test analysis
+rather than treating the original final test as unchanged.
+
+## References
+
+-   Chen, Y. H. J., DeMets, D. L., and Lan, K. K. G. (2004). Increasing the
+    sample size when the unblinded interim result is promising. *Statistics in
+    Medicine*, 23, 1023--1038.
+    <https://doi.org/10.1002/sim.1688>
+-   Cui, L., Hung, H. M. J., and Wang, S.-J. (1999). Modification of sample
+    size in group sequential clinical trials. *Biometrics*, 55, 853--857.
+    <https://doi.org/10.1111/j.0006-341X.1999.00853.x>
+-   Mehta, C. R., and Pocock, S. J. (2011). Adaptive increase in sample size
+    when interim results are promising: a practical guide with examples.
+    *Statistics in Medicine*, 30, 3267--3284.
+    <https://doi.org/10.1002/sim.4102>
