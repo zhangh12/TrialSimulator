@@ -1,3 +1,13 @@
+# TrialSimulator 1.34.0
+
+## New features
+
+- New method `trial$eventNumberReestimationFromConditionalPower()` re-estimates the number of events at the final analysis for every treatment-vs-placebo comparison of a time-to-event endpoint: the smallest whole number of events at which the conditional power of `trial$conditionalPower()` reaches a target, given the observations at a triggered interim milestone. A practical cap can be set through `D_cap`; when conditional power cannot reach the target under a finite cap, the cap itself is returned with its achieved conditional power, flagged by the logical column `target_reached`. Conditional power can be evaluated at the interim trend or at a user-specified hazard ratio; `effect = 'null'` is not supported since conditional power is then bounded near `alpha`. The solution is found by integer bisection on the conditional power function, adding negligible running time to a simulation.
+
+## Updates
+
+- Executable examples are added to the documentation of `trial$conditionalPower()` and the new method.
+
 # TrialSimulator 1.33.1
 
 ## Updates

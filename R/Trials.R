@@ -103,6 +103,11 @@
 #' interim milestone for each treatment-vs-placebo comparison of a
 #' time-to-event endpoint, under a design with one interim and one final
 #' analysis and a constant allocation ratio.
+#' \item \code{$eventNumberReestimationFromConditionalPower()} re-estimate
+#' the number of events at the final analysis: the smallest whole number of
+#' events at which conditional power reaches a target, given the
+#' observations at a triggered interim milestone, optionally bounded by a
+#' practical cap.
 #' }
 #'
 #' \strong{Trial setup.}
@@ -1928,6 +1933,41 @@ Trials <- R6::R6Class(
     #' comparison, with columns \code{arm}, \code{placebo}, \code{z},
     #' \code{d}, \code{D}, \code{info_fraction}, \code{alpha},
     #' \code{effect} and \code{cp}.
+    #'
+    #' @examples
+    #' \donttest{
+    #' ## a two-arm trial with a calendar-time interim
+    #' pbo <- arm(name = 'pbo')
+    #' pbo$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+    #'                            generator = rexp, rate = log(2) / 10))
+    #' trt <- arm(name = 'trt')
+    #' trt$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+    #'                            generator = rexp, rate = log(2) / 14))
+    #'
+    #' accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
+    #' tr <- trial(name = 'ex', n_patients = 400, duration = 40,
+    #'             seed = 31416, enroller = StaggeredRecruiter,
+    #'             accrual_rate = accrual, silent = TRUE)
+    #' add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+    #'
+    #' lstn <- listener(silent = TRUE)
+    #' lstn$add_milestones(
+    #'   milestone(name = 'interim', when = calendarTime(time = 15)),
+    #'   milestone(name = 'final', when = calendarTime(time = 40))
+    #' )
+    #' controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+    #'
+    #' ## conditional power at the interim trend, with 300 events planned
+    #' ## at the final analysis and a final boundary at nominal level 0.022
+    #' tr$conditionalPower('interim', Surv(pfs, pfs_event) ~ arm,
+    #'                     placebo = 'pbo', alternative = 'less',
+    #'                     alpha = 0.022, D = 300, effect = 'trend')
+    #'
+    #' ## under an assumed hazard ratio instead of the interim trend
+    #' tr$conditionalPower('interim', Surv(pfs, pfs_event) ~ arm,
+    #'                     placebo = 'pbo', alternative = 'less',
+    #'                     alpha = 0.022, D = 300, effect = 0.75)
+    #' }
     conditionalPower = function(milestone, formula, placebo, alternative,
                                 alpha, D, effect, ...){
 
@@ -2099,6 +2139,462 @@ Trials <- R6::R6Class(
         alpha = unname(alpha),
         effect = effect,
         cp = cp,
+        stringsAsFactors = FALSE
+      )
+      rownames(ret) <- NULL
+      ret
+
+    },
+
+    #' @description
+    #' re-estimate the number of events at the final analysis for each
+    #' treatment-vs-placebo comparison of a time-to-event endpoint: the
+    #' smallest whole number of events \code{D} at which the conditional
+    #' power computed by \code{$conditionalPower()} reaches a target, given
+    #' the observations at a triggered interim milestone, under a group
+    #' sequential design with one interim and one final analysis. Locked
+    #' data of the milestone is pulled automatically; \code{fitLogrank()}
+    #' is called internally to obtain, for every treatment arm vs
+    #' \code{placebo}, the observed z statistic and the observed number of
+    #' events \code{d} on the two arms of that comparison (after applying
+    #' subset conditions in \code{...}, if any).
+    #'
+    #' @details
+    #' For each comparison, the method returns the smallest whole number
+    #' \code{D > d} satisfying
+    #' \deqn{CP(D) \ge \gamma,}
+    #' where \eqn{\gamma} is \code{target_cp} and \eqn{CP(D)} is the
+    #' conditional power of \code{$conditionalPower()} at the same
+    #' \code{milestone}, \code{alpha} and \code{effect}. In the settings this method
+    #' supports, \eqn{CP(D)} increases in \code{D}, so the solution is the
+    #' unique crossing point; it is found by a bracketing search followed
+    #' by integer bisection, whose cost is negligible even within a large
+    #' simulation.
+    #'
+    #' \code{D_cap} bounds the answer by the largest event number
+    #' considered practical. Conditional power is first evaluated at the
+    #' cap:
+    #' \itemize{
+    #' \item if it reaches \code{target_cp}, the exact solution is
+    #' returned, and \code{target_reached} is \code{TRUE};
+    #' \item if it does not, and \code{D_cap} is finite, the cap itself is
+    #' returned with its achieved conditional power, and
+    #' \code{target_reached} is \code{FALSE};
+    #' \item an infinite \code{D_cap} (the default) requests the exact
+    #' solution regardless of size; it is accepted only when conditional
+    #' power can approach 1 as \code{D} grows, i.e., when the interim
+    #' trend favors treatment (\code{effect = 'trend'}) or the specified
+    #' hazard ratio does (numeric \code{effect}). Otherwise conditional
+    #' power is bounded near the nominal level \code{alpha} for any
+    #' \code{D}, and an error suggests specifying a finite \code{D_cap}
+    #' to obtain the capped answer.
+    #' }
+    #'
+    #' An error is also raised when the interim z statistic already
+    #' reaches the planned final critical value: conditional power then
+    #' tends to 1 as \code{D} approaches \code{d}, and additional events
+    #' initially dilute the crossing, so the smallest \code{D} reaching
+    #' the target is not a meaningful quantity. \code{effect = 'null'} is
+    #' not supported for the same boundedness reason; use
+    #' \code{$conditionalPower()} to compute the conditional type I error
+    #' at a given \code{D} instead.
+    #'
+    #' Like \code{$conditionalPower()}, the calculation assumes the trial
+    #' continues as designed: constant allocation ratio of the compared
+    #' arms, planned final statistic, and the planned final boundary held
+    #' fixed at nominal level \code{alpha} while \code{D} varies.
+    #' Increasing the event number based on a promising interim while
+    #' keeping the boundary unchanged is the practice studied in the
+    #' sample size re-estimation literature; whether it is legitimate for
+    #' the design at hand is users' responsibility, as
+    #' \code{TrialSimulator} has no way to track this.
+    #' @param milestone character. Name of a triggered milestone at which
+    #' the interim results are observed.
+    #' @param formula an object of class \code{formula} as in
+    #' \code{fitLogrank()}, e.g., \code{Surv(pfs, pfs_event) ~ arm}.
+    #' Stratification via \code{strata(...)} is supported; no covariate is
+    #' allowed.
+    #' @param placebo character. Name of the placebo arm.
+    #' @param alternative a character string specifying the alternative
+    #' hypothesis, must be one of \code{"greater"} or \code{"less"}. No
+    #' default value. \code{"greater"} means superiority of treatment over
+    #' placebo is established by a hazard ratio greater than 1. See
+    #' \code{fitLogrank()}.
+    #' @param alpha numeric. The one-sided nominal significance level(s)
+    #' corresponding to the planned final critical boundary, in (0, 1).
+    #' See \code{$conditionalPower()}. If a single treatment arm is
+    #' compared with placebo, an unnamed scalar is accepted; otherwise
+    #' \code{alpha} must be a named vector using treatment arm names,
+    #' matching the names of \code{target_cp}. A subset of the treatment
+    #' arms can be specified, in which case the event number is
+    #' re-estimated for that subset of comparisons only.
+    #' @param target_cp numeric. Target conditional power(s) in (0, 1).
+    #' \code{alpha} and \code{target_cp} must be of the same length and,
+    #' when named, use the identical set of arm names. Entries are matched
+    #' to \code{alpha} by name, so the order of components does not
+    #' matter.
+    #' @param effect the treatment effect at which conditional power is
+    #' evaluated. No default value. \code{'trend'} extrapolates the effect
+    #' observed at the interim; a single positive numeric value is
+    #' interpreted as a hazard ratio (e.g., \code{effect = 0.75}), which
+    #' is converted internally using the allocation ratio of each pair
+    #' recorded at the milestone. \code{'null'} is not supported (see
+    #' Details).
+    #' @param ... subset conditions compatible with \code{dplyr::filter},
+    #' passed to \code{fitLogrank()}.
+    #' @param D_cap numeric. Practical upper bound(s) of the re-estimated
+    #' event number, counted on the two arms of each comparison. Whole
+    #' number(s) greater than the observed \code{d}, or \code{Inf} for an
+    #' exact solution. A scalar \code{Inf} (the default) applies to all
+    #' comparisons; a finite unnamed scalar is accepted when a single
+    #' treatment arm is compared with placebo; otherwise \code{D_cap} must
+    #' be a named vector over the same treatment arms as \code{alpha} and
+    #' \code{target_cp}, in which individual entries may be \code{Inf}.
+    #' Placed after \code{...}, so it must always be passed by name.
+    #'
+    #' @return a data frame with one row per treatment-vs-placebo
+    #' comparison, with columns \code{arm}, \code{placebo}, \code{z},
+    #' \code{d}, \code{D}, \code{D_cap}, \code{alpha}, \code{effect},
+    #' \code{target_cp}, \code{achieved_cp} and \code{target_reached}.
+    #' \code{D} is the re-estimated event number, \code{achieved_cp} the
+    #' conditional power at that \code{D}, and \code{target_reached}
+    #' indicates whether \code{achieved_cp} reaches \code{target_cp}
+    #' (\code{FALSE} exactly when a finite cap was returned in place of a
+    #' solution).
+    #'
+    #' @examples
+    #' \donttest{
+    #' ## a two-arm trial with a calendar-time interim
+    #' pbo <- arm(name = 'pbo')
+    #' pbo$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+    #'                            generator = rexp, rate = log(2) / 10))
+    #' trt <- arm(name = 'trt')
+    #' trt$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+    #'                            generator = rexp, rate = log(2) / 14))
+    #'
+    #' accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
+    #' tr <- trial(name = 'ex', n_patients = 400, duration = 40,
+    #'             seed = 31416, enroller = StaggeredRecruiter,
+    #'             accrual_rate = accrual, silent = TRUE)
+    #' add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+    #'
+    #' lstn <- listener(silent = TRUE)
+    #' lstn$add_milestones(
+    #'   milestone(name = 'interim', when = calendarTime(time = 15)),
+    #'   milestone(name = 'final', when = calendarTime(time = 40))
+    #' )
+    #' controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+    #'
+    #' ## smallest number of final events reaching conditional power 0.9
+    #' ## under an assumed hazard ratio
+    #' tr$eventNumberReestimationFromConditionalPower(
+    #'   'interim', Surv(pfs, pfs_event) ~ arm,
+    #'   placebo = 'pbo', alternative = 'less',
+    #'   alpha = 0.022, target_cp = 0.9, effect = 0.75)
+    #'
+    #' ## with a practical cap: when conditional power cannot reach the
+    #' ## target under the cap, the cap is returned and target_reached
+    #' ## is FALSE
+    #' tr$eventNumberReestimationFromConditionalPower(
+    #'   'interim', Surv(pfs, pfs_event) ~ arm,
+    #'   placebo = 'pbo', alternative = 'less',
+    #'   alpha = 0.022, target_cp = 0.9, effect = 'trend', D_cap = 500)
+    #' }
+    eventNumberReestimationFromConditionalPower = function(milestone,
+                                                           formula, placebo,
+                                                           alternative,
+                                                           alpha, target_cp,
+                                                           effect, ...,
+                                                           D_cap = Inf){
+
+      if(!is.character(milestone) || length(milestone) != 1){
+        stop('milestone in eventNumberReestimationFromConditionalPower() ',
+             'must be a single character, the name of a triggered ',
+             'milestone. ')
+      }
+
+      alternative <- match.arg(alternative, choices = c('greater', 'less'))
+
+      if(identical(effect, 'null')){
+        stop('effect = "null" is not supported in ',
+             'eventNumberReestimationFromConditionalPower(): under the ',
+             'null, conditional power is bounded and cannot reach a ',
+             'conventional target for any final event number. Use ',
+             'conditionalPower() to compute the conditional type I error ',
+             'at a given D instead. ')
+      }
+      if(is.character(effect)){
+        if(length(effect) != 1 || effect != 'trend'){
+          stop('effect in eventNumberReestimationFromConditionalPower() ',
+               'must be "trend" or a single positive numeric value on ',
+               'the hazard ratio scale. ')
+        }
+      }else if(is.numeric(effect)){
+        if(length(effect) != 1 || is.na(effect) ||
+           !is.finite(effect) || effect <= 0){
+          stop('A numeric effect in ',
+               'eventNumberReestimationFromConditionalPower() is ',
+               'interpreted as a hazard ratio, thus must be a single ',
+               'positive finite value. ')
+        }
+      }else{
+        stop('effect in eventNumberReestimationFromConditionalPower() ',
+             'must be "trend" or a single positive numeric value on the ',
+             'hazard ratio scale. ')
+      }
+
+      locked_data <- self$get_locked_data(milestone)
+
+      ## fitLogrank() owns validation of formula and placebo, the subset
+      ## conditions in ..., and the model fitting; any error is re-signaled
+      ## with re-estimation context. The most common failure is an arm
+      ## without any observed event at the milestone.
+      fit <- tryCatch(
+        fitLogrank(formula, placebo, locked_data, alternative, ...,
+                   tidy = FALSE),
+        error = function(e){
+          stop('Unable to fit logrank models on the data locked at ',
+               'milestone <', milestone, '> when re-estimating the event ',
+               'number. A common cause is that an arm has no observed ',
+               'event at the milestone (is the milestone triggered too ',
+               'early?). The actual error is:\n', conditionMessage(e),
+               call. = FALSE)
+        }
+      )
+
+      available_arms <- fit$arm
+
+      if(!is.numeric(alpha) || length(alpha) == 0 || any(is.na(alpha)) ||
+         any(alpha <= 0) || any(alpha >= 1)){
+        stop('alpha in eventNumberReestimationFromConditionalPower() must ',
+             'be one-sided nominal level(s) in (0, 1) corresponding to ',
+             'the planned final critical boundary. ')
+      }
+
+      if(!is.numeric(target_cp) || length(target_cp) == 0 ||
+         any(is.na(target_cp)) ||
+         any(target_cp <= 0) || any(target_cp >= 1)){
+        stop('target_cp in eventNumberReestimationFromConditionalPower() ',
+             'must be target conditional power(s) in (0, 1). ')
+      }
+
+      if(length(alpha) != length(target_cp)){
+        stop('alpha and target_cp in ',
+             'eventNumberReestimationFromConditionalPower() must be of ',
+             'the same length. You specified <', length(alpha),
+             '> value(s) in alpha but <', length(target_cp),
+             '> in target_cp. ')
+      }
+
+      is_fully_named <- function(x){
+        !is.null(names(x)) && !any(is.na(names(x))) && all(names(x) != '')
+      }
+
+      if(!is_fully_named(alpha) && !is_fully_named(target_cp)){
+        if(length(alpha) > 1){
+          stop('Unnamed alpha and target_cp in ',
+               'eventNumberReestimationFromConditionalPower() are only ',
+               'accepted when a single treatment arm is compared with ',
+               'placebo. Name their entries by treatment arms <',
+               paste0(available_arms, collapse = ', '), '>. ')
+        }
+        if(length(available_arms) > 1){
+          stop('Treatment arms <',
+               paste0(available_arms, collapse = ', '),
+               '> are compared with placebo <', placebo,
+               '> at milestone <', milestone,
+               '>, but alpha and target_cp in ',
+               'eventNumberReestimationFromConditionalPower() are ',
+               'unnamed scalars. Name their entries by treatment arms ',
+               'to specify the comparison(s). ')
+        }
+        names(alpha) <- available_arms
+        names(target_cp) <- available_arms
+      }else{
+        if(!is_fully_named(alpha) || !is_fully_named(target_cp)){
+          stop('alpha and target_cp in ',
+               'eventNumberReestimationFromConditionalPower() must be ',
+               'both named by treatment arms, or both unnamed scalars ',
+               'when a single treatment arm is compared with placebo. ')
+        }
+        if(any(duplicated(names(alpha))) ||
+           any(duplicated(names(target_cp)))){
+          stop('Duplicated arm names are not allowed in alpha or ',
+               'target_cp in ',
+               'eventNumberReestimationFromConditionalPower(). ')
+        }
+        if(!setequal(names(alpha), names(target_cp))){
+          stop('alpha and target_cp in ',
+               'eventNumberReestimationFromConditionalPower() must be ',
+               'named by the same set of treatment arms. In alpha: <',
+               paste0(sort(names(alpha)), collapse = ', '),
+               '>; in target_cp: <',
+               paste0(sort(names(target_cp)), collapse = ', '), '>. ')
+        }
+        unknown_arms <- setdiff(names(alpha), available_arms)
+        if(length(unknown_arms) > 0){
+          stop('Arm(s) <', paste0(unknown_arms, collapse = ', '),
+               '> in alpha and target_cp of ',
+               'eventNumberReestimationFromConditionalPower() are not ',
+               'among the treatment arms available for comparison at ',
+               'milestone <', milestone, '>: <',
+               paste0(available_arms, collapse = ', '), '>. ')
+        }
+        ## order-free: entries of target_cp are matched to alpha by arm
+        ## name, never positionally
+        target_cp <- target_cp[names(alpha)]
+      }
+
+      selected_arms <- names(alpha)
+
+      if(!is.numeric(D_cap) || length(D_cap) == 0 || any(is.na(D_cap)) ||
+         any(D_cap <= 0) ||
+         !all(is.infinite(D_cap) | is.wholenumber(D_cap))){
+        stop('D_cap in eventNumberReestimationFromConditionalPower() ',
+             'must be positive whole number(s) or Inf: an upper bound of ',
+             'the re-estimated event number of each comparison, counted ',
+             'on its two arms. ')
+      }
+
+      if(length(D_cap) == 1 && !is_fully_named(D_cap) &&
+         is.infinite(D_cap)){
+        ## the default: no cap on any comparison
+        D_cap <- rep(Inf, length(selected_arms))
+        names(D_cap) <- selected_arms
+      }else if(!is_fully_named(D_cap)){
+        if(length(D_cap) > 1 || length(selected_arms) > 1){
+          stop('An unnamed D_cap in ',
+               'eventNumberReestimationFromConditionalPower() is only ',
+               'accepted as a scalar Inf, or as a finite scalar when a ',
+               'single treatment arm is compared with placebo. Name its ',
+               'entries by treatment arms <',
+               paste0(selected_arms, collapse = ', '), '>. ')
+        }
+        names(D_cap) <- selected_arms
+      }else{
+        if(any(duplicated(names(D_cap)))){
+          stop('Duplicated arm names are not allowed in D_cap in ',
+               'eventNumberReestimationFromConditionalPower(). ')
+        }
+        if(!setequal(names(D_cap), selected_arms)){
+          stop('D_cap in eventNumberReestimationFromConditionalPower() ',
+               'must be named by the same set of treatment arms as alpha ',
+               'and target_cp: <',
+               paste0(sort(selected_arms), collapse = ', '),
+               '>. Entries may be Inf for comparisons without a cap. ')
+        }
+        D_cap <- D_cap[selected_arms]
+      }
+
+      idx <- match(selected_arms, fit$arm)
+      z <- fit$z[idx]
+      d <- fit$info[idx]
+
+      exhausted <- d >= D_cap
+      if(any(exhausted)){
+        stop('Cannot re-estimate the event number at milestone <',
+             milestone, '> vs placebo <', placebo, '>: ',
+             paste0('arm <', selected_arms[exhausted],
+                    '> observed events d = ', d[exhausted],
+                    ' >= D_cap = ', unname(D_cap)[exhausted],
+                    collapse = '; '),
+             '. Check D_cap, or whether this milestone is triggered too ',
+             'late. ')
+      }
+
+      ## interim statistic already at or beyond the planned final
+      ## boundary: conditional power tends to 1 as D approaches d, and
+      ## additional events initially dilute the crossing, so the smallest
+      ## D reaching the target is not a meaningful quantity
+      z_less <- if(alternative == 'greater') -z else z
+      crossed <- z_less <= qnorm(unname(alpha))
+      if(any(crossed)){
+        stop('Cannot re-estimate the event number at milestone <',
+             milestone, '> vs placebo <', placebo, '>: ',
+             paste0('arm <', selected_arms[crossed],
+                    '> observed z = ', signif(z[crossed], 4),
+                    ' already reaches the planned final critical value ',
+                    'at nominal level alpha = ', unname(alpha)[crossed],
+                    collapse = '; '),
+             '. Conditional power is high for any final event number ',
+             'and decreases before it recovers; re-estimation is not ',
+             'meaningful. ')
+      }
+
+      ## omega = r / (1 + r)^2 converts a hazard ratio into the drift of
+      ## the z statistic; it is needed only when effect is numeric. r
+      ## comes from the sample ratio recorded when the milestone's data
+      ## was locked, so the result depends on the milestone only. An arm
+      ## removed before the milestone has no recorded ratio there.
+      omega <- rep(NA_real_, length(selected_arms))
+      if(is.numeric(effect)){
+        ratio_here <- private$get_sample_ratio_at_milestone(milestone)
+        missing_arms <- setdiff(c(placebo, selected_arms),
+                                names(ratio_here))
+        if(length(missing_arms) > 0){
+          stop('Arm(s) <', paste0(missing_arms, collapse = ', '),
+               '> are not in the sample ratio recorded at milestone <',
+               milestone, '> (e.g., removed from the trial before it). ',
+               'Event number re-estimation at a user-specified hazard ',
+               'ratio requires the allocation ratio of the compared arms ',
+               'at the milestone. Use effect = "trend", or a milestone ',
+               'at which the arm(s) were still in the trial. ')
+        }
+        r <- unname(ratio_here[selected_arms]) / ratio_here[[placebo]]
+        omega <- r / (1 + r)^2
+      }
+
+      ## an infinite cap requires conditional power to approach 1 as D
+      ## grows, which needs a beneficial drift
+      beneficial <- if(identical(effect, 'trend')){
+        z_less < 0
+      }else{
+        theta_less <- if(alternative == 'greater'){
+          -log(effect)
+        }else{
+          log(effect)
+        }
+        rep(theta_less < 0, length(selected_arms))
+      }
+      unbounded <- !beneficial & is.infinite(unname(D_cap))
+      if(any(unbounded)){
+        stop('Cannot re-estimate the event number at milestone <',
+             milestone, '> vs placebo <', placebo, '> for arm(s) <',
+             paste0(selected_arms[unbounded], collapse = ', '), '>: ',
+             if(identical(effect, 'trend')){
+               'the interim trend does not favor treatment, '
+             }else{
+               'the specified hazard ratio does not favor treatment, '
+             },
+             'so conditional power cannot approach 1 for any final ',
+             'event number. Specify a finite D_cap to obtain the capped ',
+             'answer instead. ')
+      }
+
+      D <- .event_number_reestimation(z = z, d = d,
+                                      alpha = unname(alpha),
+                                      target_cp = unname(target_cp),
+                                      D_cap = unname(D_cap),
+                                      effect = effect, omega = omega,
+                                      alternative = alternative)
+
+      achieved <- .conditional_power(z = z, d = d, D = D,
+                                     alpha = unname(alpha),
+                                     effect = effect, omega = omega,
+                                     alternative = alternative)
+
+      ret <- data.frame(
+        arm = selected_arms,
+        placebo = placebo,
+        z = z,
+        d = d,
+        D = D,
+        D_cap = unname(D_cap),
+        alpha = unname(alpha),
+        effect = effect,
+        target_cp = unname(target_cp),
+        achieved_cp = achieved,
+        target_reached = achieved >= unname(target_cp),
         stringsAsFactors = FALSE
       )
       rownames(ret) <- NULL

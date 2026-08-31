@@ -111,6 +111,11 @@ Statistical testing:
 interim milestone for each treatment-vs-placebo comparison of a
 time-to-event endpoint, under a design with one interim and one final
 analysis and a constant allocation ratio.
+\item \code{$eventNumberReestimationFromConditionalPower()} re-estimate
+the number of events at the final analysis: the smallest whole number of
+events at which conditional power reaches a target, given the
+observations at a triggered interim milestone, optionally bounded by a
+practical cap.
 }
 
 \strong{Trial setup.}
@@ -169,6 +174,86 @@ trial$closedTest(dt, treatments = c('high dose', 'low dose'),
                  alpha = 0.025, alpha_spending = 'asOF')
 }
 
+
+## ------------------------------------------------
+## Method `Trials$conditionalPower`
+## ------------------------------------------------
+
+\donttest{
+## a two-arm trial with a calendar-time interim
+pbo <- arm(name = 'pbo')
+pbo$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+                           generator = rexp, rate = log(2) / 10))
+trt <- arm(name = 'trt')
+trt$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+                           generator = rexp, rate = log(2) / 14))
+
+accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
+tr <- trial(name = 'ex', n_patients = 400, duration = 40,
+            seed = 31416, enroller = StaggeredRecruiter,
+            accrual_rate = accrual, silent = TRUE)
+add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+lstn <- listener(silent = TRUE)
+lstn$add_milestones(
+  milestone(name = 'interim', when = calendarTime(time = 15)),
+  milestone(name = 'final', when = calendarTime(time = 40))
+)
+controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+
+## conditional power at the interim trend, with 300 events planned
+## at the final analysis and a final boundary at nominal level 0.022
+tr$conditionalPower('interim', Surv(pfs, pfs_event) ~ arm,
+                    placebo = 'pbo', alternative = 'less',
+                    alpha = 0.022, D = 300, effect = 'trend')
+
+## under an assumed hazard ratio instead of the interim trend
+tr$conditionalPower('interim', Surv(pfs, pfs_event) ~ arm,
+                    placebo = 'pbo', alternative = 'less',
+                    alpha = 0.022, D = 300, effect = 0.75)
+}
+
+## ------------------------------------------------
+## Method `Trials$eventNumberReestimationFromConditionalPower`
+## ------------------------------------------------
+
+\donttest{
+## a two-arm trial with a calendar-time interim
+pbo <- arm(name = 'pbo')
+pbo$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+                           generator = rexp, rate = log(2) / 10))
+trt <- arm(name = 'trt')
+trt$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+                           generator = rexp, rate = log(2) / 14))
+
+accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
+tr <- trial(name = 'ex', n_patients = 400, duration = 40,
+            seed = 31416, enroller = StaggeredRecruiter,
+            accrual_rate = accrual, silent = TRUE)
+add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+lstn <- listener(silent = TRUE)
+lstn$add_milestones(
+  milestone(name = 'interim', when = calendarTime(time = 15)),
+  milestone(name = 'final', when = calendarTime(time = 40))
+)
+controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+
+## smallest number of final events reaching conditional power 0.9
+## under an assumed hazard ratio
+tr$eventNumberReestimationFromConditionalPower(
+  'interim', Surv(pfs, pfs_event) ~ arm,
+  placebo = 'pbo', alternative = 'less',
+  alpha = 0.022, target_cp = 0.9, effect = 0.75)
+
+## with a practical cap: when conditional power cannot reach the
+## target under the cap, the cap is returned and target_reached
+## is FALSE
+tr$eventNumberReestimationFromConditionalPower(
+  'interim', Surv(pfs, pfs_event) ~ arm,
+  placebo = 'pbo', alternative = 'less',
+  alpha = 0.022, target_cp = 0.9, effect = 'trend', D_cap = 500)
+}
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -198,6 +283,7 @@ trial$closedTest(dt, treatments = c('high dose', 'low dose'),
 \item \href{#method-Trials-dunnettTest}{\code{Trials$dunnettTest()}}
 \item \href{#method-Trials-closedTest}{\code{Trials$closedTest()}}
 \item \href{#method-Trials-conditionalPower}{\code{Trials$conditionalPower()}}
+\item \href{#method-Trials-eventNumberReestimationFromConditionalPower}{\code{Trials$eventNumberReestimationFromConditionalPower()}}
 \item \href{#method-Trials-add_regimen}{\code{Trials$add_regimen()}}
 \item \href{#method-Trials-lock_data}{\code{Trials$lock_data()}}
 \item \href{#method-Trials-get_data_lock_time_by_calendar_time}{\code{Trials$get_data_lock_time_by_calendar_time()}}
@@ -1209,6 +1295,239 @@ comparison, with columns \code{arm}, \code{placebo}, \code{z},
 \code{d}, \code{D}, \code{info_fraction}, \code{alpha},
 \code{effect} and \code{cp}.
 }
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\donttest{
+## a two-arm trial with a calendar-time interim
+pbo <- arm(name = 'pbo')
+pbo$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+                           generator = rexp, rate = log(2) / 10))
+trt <- arm(name = 'trt')
+trt$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+                           generator = rexp, rate = log(2) / 14))
+
+accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
+tr <- trial(name = 'ex', n_patients = 400, duration = 40,
+            seed = 31416, enroller = StaggeredRecruiter,
+            accrual_rate = accrual, silent = TRUE)
+add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+lstn <- listener(silent = TRUE)
+lstn$add_milestones(
+  milestone(name = 'interim', when = calendarTime(time = 15)),
+  milestone(name = 'final', when = calendarTime(time = 40))
+)
+controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+
+## conditional power at the interim trend, with 300 events planned
+## at the final analysis and a final boundary at nominal level 0.022
+tr$conditionalPower('interim', Surv(pfs, pfs_event) ~ arm,
+                    placebo = 'pbo', alternative = 'less',
+                    alpha = 0.022, D = 300, effect = 'trend')
+
+## under an assumed hazard ratio instead of the interim trend
+tr$conditionalPower('interim', Surv(pfs, pfs_event) ~ arm,
+                    placebo = 'pbo', alternative = 'less',
+                    alpha = 0.022, D = 300, effect = 0.75)
+}
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-eventNumberReestimationFromConditionalPower"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-eventNumberReestimationFromConditionalPower}{}}}
+\subsection{Method \code{eventNumberReestimationFromConditionalPower()}}{
+re-estimate the number of events at the final analysis for each
+treatment-vs-placebo comparison of a time-to-event endpoint: the
+smallest whole number of events \code{D} at which the conditional
+power computed by \code{$conditionalPower()} reaches a target, given
+the observations at a triggered interim milestone, under a group
+sequential design with one interim and one final analysis. Locked
+data of the milestone is pulled automatically; \code{fitLogrank()}
+is called internally to obtain, for every treatment arm vs
+\code{placebo}, the observed z statistic and the observed number of
+events \code{d} on the two arms of that comparison (after applying
+subset conditions in \code{...}, if any).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$eventNumberReestimationFromConditionalPower(
+  milestone,
+  formula,
+  placebo,
+  alternative,
+  alpha,
+  target_cp,
+  effect,
+  ...,
+  D_cap = Inf
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{milestone}}{character. Name of a triggered milestone at which
+the interim results are observed.}
+
+\item{\code{formula}}{an object of class \code{formula} as in
+\code{fitLogrank()}, e.g., \code{Surv(pfs, pfs_event) ~ arm}.
+Stratification via \code{strata(...)} is supported; no covariate is
+allowed.}
+
+\item{\code{placebo}}{character. Name of the placebo arm.}
+
+\item{\code{alternative}}{a character string specifying the alternative
+hypothesis, must be one of \code{"greater"} or \code{"less"}. No
+default value. \code{"greater"} means superiority of treatment over
+placebo is established by a hazard ratio greater than 1. See
+\code{fitLogrank()}.}
+
+\item{\code{alpha}}{numeric. The one-sided nominal significance level(s)
+corresponding to the planned final critical boundary, in (0, 1).
+See \code{$conditionalPower()}. If a single treatment arm is
+compared with placebo, an unnamed scalar is accepted; otherwise
+\code{alpha} must be a named vector using treatment arm names,
+matching the names of \code{target_cp}. A subset of the treatment
+arms can be specified, in which case the event number is
+re-estimated for that subset of comparisons only.}
+
+\item{\code{target_cp}}{numeric. Target conditional power(s) in (0, 1).
+\code{alpha} and \code{target_cp} must be of the same length and,
+when named, use the identical set of arm names. Entries are matched
+to \code{alpha} by name, so the order of components does not
+matter.}
+
+\item{\code{effect}}{the treatment effect at which conditional power is
+evaluated. No default value. \code{'trend'} extrapolates the effect
+observed at the interim; a single positive numeric value is
+interpreted as a hazard ratio (e.g., \code{effect = 0.75}), which
+is converted internally using the allocation ratio of each pair
+recorded at the milestone. \code{'null'} is not supported (see
+Details).}
+
+\item{\code{...}}{subset conditions compatible with \code{dplyr::filter},
+passed to \code{fitLogrank()}.}
+
+\item{\code{D_cap}}{numeric. Practical upper bound(s) of the re-estimated
+event number, counted on the two arms of each comparison. Whole
+number(s) greater than the observed \code{d}, or \code{Inf} for an
+exact solution. A scalar \code{Inf} (the default) applies to all
+comparisons; a finite unnamed scalar is accepted when a single
+treatment arm is compared with placebo; otherwise \code{D_cap} must
+be a named vector over the same treatment arms as \code{alpha} and
+\code{target_cp}, in which individual entries may be \code{Inf}.
+Placed after \code{...}, so it must always be passed by name.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+For each comparison, the method returns the smallest whole number
+\code{D > d} satisfying
+\deqn{CP(D) \ge \gamma,}
+where \eqn{\gamma} is \code{target_cp} and \eqn{CP(D)} is the
+conditional power of \code{$conditionalPower()} at the same
+\code{milestone}, \code{alpha} and \code{effect}. In the settings this method
+supports, \eqn{CP(D)} increases in \code{D}, so the solution is the
+unique crossing point; it is found by a bracketing search followed
+by integer bisection, whose cost is negligible even within a large
+simulation.
+
+\code{D_cap} bounds the answer by the largest event number
+considered practical. Conditional power is first evaluated at the
+cap:
+\itemize{
+\item if it reaches \code{target_cp}, the exact solution is
+returned, and \code{target_reached} is \code{TRUE};
+\item if it does not, and \code{D_cap} is finite, the cap itself is
+returned with its achieved conditional power, and
+\code{target_reached} is \code{FALSE};
+\item an infinite \code{D_cap} (the default) requests the exact
+solution regardless of size; it is accepted only when conditional
+power can approach 1 as \code{D} grows, i.e., when the interim
+trend favors treatment (\code{effect = 'trend'}) or the specified
+hazard ratio does (numeric \code{effect}). Otherwise conditional
+power is bounded near the nominal level \code{alpha} for any
+\code{D}, and an error suggests specifying a finite \code{D_cap}
+to obtain the capped answer.
+}
+
+An error is also raised when the interim z statistic already
+reaches the planned final critical value: conditional power then
+tends to 1 as \code{D} approaches \code{d}, and additional events
+initially dilute the crossing, so the smallest \code{D} reaching
+the target is not a meaningful quantity. \code{effect = 'null'} is
+not supported for the same boundedness reason; use
+\code{$conditionalPower()} to compute the conditional type I error
+at a given \code{D} instead.
+
+Like \code{$conditionalPower()}, the calculation assumes the trial
+continues as designed: constant allocation ratio of the compared
+arms, planned final statistic, and the planned final boundary held
+fixed at nominal level \code{alpha} while \code{D} varies.
+Increasing the event number based on a promising interim while
+keeping the boundary unchanged is the practice studied in the
+sample size re-estimation literature; whether it is legitimate for
+the design at hand is users' responsibility, as
+\code{TrialSimulator} has no way to track this.
+}
+
+\subsection{Returns}{
+a data frame with one row per treatment-vs-placebo
+comparison, with columns \code{arm}, \code{placebo}, \code{z},
+\code{d}, \code{D}, \code{D_cap}, \code{alpha}, \code{effect},
+\code{target_cp}, \code{achieved_cp} and \code{target_reached}.
+\code{D} is the re-estimated event number, \code{achieved_cp} the
+conditional power at that \code{D}, and \code{target_reached}
+indicates whether \code{achieved_cp} reaches \code{target_cp}
+(\code{FALSE} exactly when a finite cap was returned in place of a
+solution).
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\donttest{
+## a two-arm trial with a calendar-time interim
+pbo <- arm(name = 'pbo')
+pbo$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+                           generator = rexp, rate = log(2) / 10))
+trt <- arm(name = 'trt')
+trt$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+                           generator = rexp, rate = log(2) / 14))
+
+accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
+tr <- trial(name = 'ex', n_patients = 400, duration = 40,
+            seed = 31416, enroller = StaggeredRecruiter,
+            accrual_rate = accrual, silent = TRUE)
+add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+lstn <- listener(silent = TRUE)
+lstn$add_milestones(
+  milestone(name = 'interim', when = calendarTime(time = 15)),
+  milestone(name = 'final', when = calendarTime(time = 40))
+)
+controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+
+## smallest number of final events reaching conditional power 0.9
+## under an assumed hazard ratio
+tr$eventNumberReestimationFromConditionalPower(
+  'interim', Surv(pfs, pfs_event) ~ arm,
+  placebo = 'pbo', alternative = 'less',
+  alpha = 0.022, target_cp = 0.9, effect = 0.75)
+
+## with a practical cap: when conditional power cannot reach the
+## target under the cap, the cap is returned and target_reached
+## is FALSE
+tr$eventNumberReestimationFromConditionalPower(
+  'interim', Surv(pfs, pfs_event) ~ arm,
+  placebo = 'pbo', alternative = 'less',
+  alpha = 0.022, target_cp = 0.9, effect = 'trend', D_cap = 500)
+}
+}
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Trials-add_regimen"></a>}}
