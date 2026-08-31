@@ -1,5 +1,29 @@
 # Changelog
 
+## TrialSimulator 1.33.0
+
+### New features
+
+- New method `trial$conditionalPower()` computes conditional power at a
+  triggered interim milestone for every treatment-vs-placebo comparison
+  of a time-to-event endpoint, under a group sequential design with one
+  interim and one final analysis. It pulls the milestone’s locked data
+  automatically and calls
+  [`fitLogrank()`](https://zhangh12.github.io/TrialSimulator/reference/fitLogrank.md)
+  internally to obtain the observed z statistic and number of events of
+  each comparison. Conditional power can be evaluated at the interim
+  trend (default), under the null, or at a user-specified hazard ratio,
+  which is converted internally using the allocation ratio in effect at
+  the milestone. Its `alpha` argument is the one-sided nominal
+  significance level corresponding to the planned final critical
+  boundary, not the total design alpha or alpha spent at the final look.
+  The calculation assumes the trial continues as designed (constant
+  allocation ratio of the compared arms, planned final statistic and
+  boundary); it is users’ responsibility to call it only when
+  legitimate, e.g., not after the allocation ratio of the compared arms
+  was adapted, as `TrialSimulator` does not verify this. Results are
+  validated against `rpact` and `gsDesign` in unit tests.
+
 ## TrialSimulator 1.32.0
 
 ### Updates

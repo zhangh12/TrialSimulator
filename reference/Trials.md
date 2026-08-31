@@ -118,6 +118,11 @@ Statistical testing:
 
 - `$closedTest()` perform combination test based on Dunnett's test.
 
+- `$conditionalPower()` compute conditional power at a triggered interim
+  milestone for each treatment-vs-placebo comparison of a time-to-event
+  endpoint, under a design with one interim and one final analysis and a
+  constant allocation ratio.
+
 **Trial setup.**
 
 - `$add_regimen()` register a `regimen` object to a trial. Must be
@@ -194,6 +199,8 @@ to create a trial.
 - [`Trials$dunnettTest()`](#method-Trials-dunnettTest)
 
 - [`Trials$closedTest()`](#method-Trials-closedTest)
+
+- [`Trials$conditionalPower()`](#method-Trials-conditionalPower)
 
 - [`Trials$add_regimen()`](#method-Trials-add_regimen)
 
@@ -1129,6 +1136,137 @@ rejected at all milestones.
                      milestones = c('interim', 'final'),
                      alpha = 0.025, alpha_spending = 'asOF')
     }
+
+------------------------------------------------------------------------
+
+### Method `conditionalPower()`
+
+compute conditional power at a triggered interim milestone for each
+treatment-vs-placebo comparison of a time-to-event endpoint, under a
+group sequential design with one interim and one final analysis. Locked
+data of the milestone is pulled automatically;
+[`fitLogrank()`](https://zhangh12.github.io/TrialSimulator/reference/fitLogrank.md)
+is called internally to obtain, for every treatment arm vs `placebo`,
+the observed z statistic and the observed number of events `d` on the
+two arms of that comparison (after applying subset conditions in `...`,
+if any). Conditional power is then \$\$CP =
+\Phi\left(\frac{\Phi^{-1}(\alpha) - \sqrt{d/D}\\z - \theta\sqrt{\omega
+D}\\(1 - d/D)}{\sqrt{1 - d/D}}\right)\$\$ under `alternative = 'less'`
+(mirrored for `'greater'`), where \\\theta\\ is the log hazard ratio at
+which conditional power is evaluated and \\\omega = r/(1+r)^2\\ with
+\\r\\ the allocation ratio of the pair recorded when the milestone's
+data was locked. Like \\z\\ and \\d\\, \\r\\ is an interim quantity: the
+result depends on the requested milestone only, not on adaptations
+applied after it.
+
+The calculation assumes the trial continues as designed: the allocation
+ratio of the compared arms is constant from the start of enrollment
+through the final analysis, and the final analysis tests the planned
+statistic at the planned boundary. A data-dependent design change (e.g.,
+updating the sample ratio based on interim results) alters both the
+final test statistic and its boundary; such adaptations require a
+combination-test analysis instead (see `$dunnettTest()` and
+`$closedTest()`). It is users' responsibility to call this function only
+when the calculation is legitimate – in particular, the allocation ratio
+of the compared arms has not been updated before the milestone, the
+compared arms are enrolled concurrently with placebo, and subset
+conditions in `...` are independent of randomization – `TrialSimulator`
+has no way to track this.
+
+Conditional power can be requested for an arm that has been removed from
+the trial: its z and `d` are well-defined historical quantities,
+although no further event will accrue on it. With a numeric `effect`,
+however, an error is raised for an arm removed before the milestone, as
+no allocation ratio of the pair is recorded at the milestone.
+
+#### Usage
+
+    Trials$conditionalPower(
+      milestone,
+      formula,
+      placebo,
+      alternative,
+      alpha,
+      D,
+      effect = "trend",
+      ...
+    )
+
+#### Arguments
+
+- `milestone`:
+
+  character. Name of a triggered milestone at which the interim results
+  are observed.
+
+- `formula`:
+
+  an object of class `formula` as in
+  [`fitLogrank()`](https://zhangh12.github.io/TrialSimulator/reference/fitLogrank.md),
+  e.g., `Surv(pfs, pfs_event) ~ arm`. Stratification via `strata(...)`
+  is supported; no covariate is allowed.
+
+- `placebo`:
+
+  character. Name of the placebo arm.
+
+- `alternative`:
+
+  a character string specifying the alternative hypothesis, must be one
+  of `"greater"` or `"less"`. No default value. `"greater"` means
+  superiority of treatment over placebo is established by a hazard ratio
+  greater than 1. See
+  [`fitLogrank()`](https://zhangh12.github.io/TrialSimulator/reference/fitLogrank.md).
+
+- `alpha`:
+
+  numeric. The one-sided nominal significance level(s) corresponding to
+  the planned final critical boundary, in (0, 1): under
+  `alternative = 'less'` the final z statistic is compared with
+  `qnorm(alpha)`. Under a group sequential design it is implied by the
+  alpha spending function, e.g., `1 - pnorm(c)` for a final critical
+  value `c` on the upper scale; in general it differs from both the
+  total design alpha and the alpha spent, cumulatively or incrementally,
+  at the final look. If a single treatment arm is compared with placebo,
+  an unnamed scalar is accepted; otherwise `alpha` must be a named
+  vector using treatment arm names, matching the names of `D`. Entries
+  are matched to `D` by name, so the order of components does not
+  matter.
+
+- `D`:
+
+  numeric. Planned number of events at the final analysis for each
+  comparison, counted on the two arms of that comparison (placebo plus
+  one treatment arm). If a single treatment arm is compared with
+  placebo, an unnamed scalar is accepted; otherwise `D` must be a named
+  vector using treatment arm names. A subset of the treatment arms can
+  be specified, in which case conditional power is computed for that
+  subset of comparisons only. `D` and `alpha` must be of the same length
+  and, when named, use the identical set of arm names. An error is
+  raised if the observed number of events `d` of a comparison already
+  reaches `D`.
+
+- `effect`:
+
+  the treatment effect at which conditional power is evaluated.
+  `'trend'` (default) extrapolates the effect observed at the interim;
+  `'null'` assumes no effect for the remaining events (conditional type
+  I error); a single positive numeric value is interpreted as a hazard
+  ratio (e.g., `effect = 0.75`), which is converted internally using the
+  allocation ratio of each pair recorded at the milestone.
+
+- `...`:
+
+  subset conditions compatible with
+  [`dplyr::filter`](https://dplyr.tidyverse.org/reference/filter.html),
+  passed to
+  [`fitLogrank()`](https://zhangh12.github.io/TrialSimulator/reference/fitLogrank.md).
+
+#### Returns
+
+a data frame with one row per treatment-vs-placebo comparison, with
+columns `arm`, `placebo`, `z`, `d`, `D`, `info_fraction`, `alpha`,
+`effect` and `cp`.
 
 ------------------------------------------------------------------------
 
