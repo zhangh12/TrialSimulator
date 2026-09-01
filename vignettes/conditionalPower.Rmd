@@ -622,9 +622,51 @@ that selected event number reaches the target.
 
 Both methods support several treatment-placebo comparisons. `D`, `alpha`,
 `target_cp`, and a non-scalar finite `D_cap` are named by treatment arm. Names,
-not vector positions, determine matching. For example:
+not vector positions, determine matching.
 
-```{r multiple-arms-syntax, eval = FALSE}
+The setup of the following three-arm toy trial is executed but not printed in
+the rendered vignette. Its complete code remains in the Rmd source. This
+section is intentionally limited to demonstrating the multi-comparison output
+format and name-based argument matching; the detailed design examples remain
+focused on a single treatment-placebo comparison.
+
+```{r multiple-arms-setup, include = FALSE}
+pfs_pbo <- endpoint(name = 'pfs', type = 'tte', generator = rexp,
+                    rate = log(2) / 10)
+pbo <- arm(name = 'pbo')
+pbo$add_endpoints(pfs_pbo)
+
+pfs_low <- endpoint(name = 'pfs', type = 'tte', generator = rexp,
+                    rate = 0.80 * log(2) / 10)
+low <- arm(name = 'low')
+low$add_endpoints(pfs_low)
+
+pfs_high <- endpoint(name = 'pfs', type = 'tte', generator = rexp,
+                     rate = 0.70 * log(2) / 10)
+high <- arm(name = 'high')
+high$add_endpoints(pfs_high)
+
+accrual_rate <- data.frame(end_time = Inf, piecewise_rate = 40)
+trial <- trial(
+  name = 'multiple-arms', n_patients = 1200, duration = 100,
+  seed = 27183, enroller = StaggeredRecruiter,
+  accrual_rate = accrual_rate, silent = TRUE
+)
+trial$add_arms(sample_ratio = c(1, 1, 1), pbo, low, high)
+
+interim <- milestone(
+  name = 'interim',
+  when = eventNumber(endpoint = 'pfs', n = 240,
+                     arms = c('pbo', 'low', 'high'))
+)
+listener <- listener(silent = TRUE)
+listener$add_milestones(interim)
+
+controller <- controller(trial, listener)
+controller$run(n = 1, silent = TRUE, plot_event = FALSE)
+```
+
+```{r multiple-arms-output}
 trial$conditionalPower(
   'interim', Surv(pfs, pfs_event) ~ arm,
   placebo = 'pbo', alternative = 'less',
@@ -755,9 +797,7 @@ single_output[, c(
 ```
 
 For operating characteristics, increase `n` after resetting the controller.
-The 1000-replicate run is not executed while building the vignette. As in
-other simulation vignettes in this package, its reproducible output is stored
-internally and loaded in the next chunk.
+The following code produces the 1000-replicate output summarized below.
 
 ```{r promising-zone-run, eval = FALSE}
 controller$reset()
