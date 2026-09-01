@@ -378,10 +378,14 @@ and the [complete event-driven simulation
 program](#a-complete-promising-zone-simulation) for the recommended
 `TrialSimulator` structure.
 
-The methods call `fitLogrank()` internally. We show the fit explicitly here to
-make the interim inputs visible. Likewise, the direct method calls that follow
-are intentional teaching devices rather than actions that can adapt this
-already completed trial.
+When `'interim'` is supplied as `milestone`, each method retrieves the data
+locked at that milestone and calls `fitLogrank()` internally. The explicit fit
+below reproduces that internal step so that the resulting interim logrank
+statistic `z` and event count `info`---denoted by $z$ and $d$ in the formulas,
+and returned as `z` and `d` by the methods---are visible. `interim_fit` is not
+an input to either method and need not be fitted beforehand. Likewise, the
+direct method calls that follow are intentional teaching devices rather than
+actions that can adapt this already completed trial.
 
 ```{r interim-fit}
 interim_fit <- fitLogrank(
