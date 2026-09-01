@@ -123,6 +123,12 @@ Statistical testing:
   endpoint, under a design with one interim and one final analysis and a
   constant allocation ratio.
 
+- `$eventNumberReestimationFromConditionalPower()` re-estimate the
+  number of events at the final analysis: the smallest whole number of
+  events at which conditional power reaches a target, given the
+  observations at a triggered interim milestone, optionally bounded by a
+  practical cap.
+
 **Trial setup.**
 
 - `$add_regimen()` register a `regimen` object to a trial. Must be
@@ -201,6 +207,8 @@ to create a trial.
 - [`Trials$closedTest()`](#method-Trials-closedTest)
 
 - [`Trials$conditionalPower()`](#method-Trials-conditionalPower)
+
+- [`Trials$eventNumberReestimationFromConditionalPower()`](#method-Trials-eventNumberReestimationFromConditionalPower)
 
 - [`Trials$add_regimen()`](#method-Trials-add_regimen)
 
@@ -1268,6 +1276,239 @@ no allocation ratio of the pair is recorded at the milestone.
 a data frame with one row per treatment-vs-placebo comparison, with
 columns `arm`, `placebo`, `z`, `d`, `D`, `info_fraction`, `alpha`,
 `effect` and `cp`.
+
+#### Examples
+
+    \donttest{
+    ## a two-arm trial with a calendar-time interim
+    pbo <- arm(name = 'pbo')
+    pbo$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+                               generator = rexp, rate = log(2) / 10))
+    trt <- arm(name = 'trt')
+    trt$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+                               generator = rexp, rate = log(2) / 14))
+
+    accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
+    tr <- trial(name = 'ex', n_patients = 400, duration = 40,
+                seed = 31416, enroller = StaggeredRecruiter,
+                accrual_rate = accrual, silent = TRUE)
+    add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+    lstn <- listener(silent = TRUE)
+    lstn$add_milestones(
+      milestone(name = 'interim', when = calendarTime(time = 15)),
+      milestone(name = 'final', when = calendarTime(time = 40))
+    )
+    controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+
+    ## conditional power at the interim trend, with 300 events planned
+    ## at the final analysis and a final boundary at nominal level 0.022
+    tr$conditionalPower('interim', Surv(pfs, pfs_event) ~ arm,
+                        placebo = 'pbo', alternative = 'less',
+                        alpha = 0.022, D = 300, effect = 'trend')
+
+    ## under an assumed hazard ratio instead of the interim trend
+    tr$conditionalPower('interim', Surv(pfs, pfs_event) ~ arm,
+                        placebo = 'pbo', alternative = 'less',
+                        alpha = 0.022, D = 300, effect = 0.75)
+    }
+
+------------------------------------------------------------------------
+
+### Method `eventNumberReestimationFromConditionalPower()`
+
+re-estimate the number of events at the final analysis for each
+treatment-vs-placebo comparison of a time-to-event endpoint: the
+smallest whole number of events `D`, strictly greater than the event
+number observed at the interim, at which the conditional power computed
+by `$conditionalPower()` reaches a target, under a group sequential
+design with one interim and one final analysis. Locked data of the
+milestone is pulled automatically;
+[`fitLogrank()`](https://zhangh12.github.io/TrialSimulator/reference/fitLogrank.md)
+is called internally to obtain, for every treatment arm vs `placebo`,
+the observed z statistic and the observed number of events `d` on the
+two arms of that comparison (after applying subset conditions in `...`,
+if any).
+
+#### Usage
+
+    Trials$eventNumberReestimationFromConditionalPower(
+      milestone,
+      formula,
+      placebo,
+      alternative,
+      alpha,
+      target_cp,
+      effect,
+      ...,
+      D_cap = NULL
+    )
+
+#### Arguments
+
+- `milestone`:
+
+  character. Name of a triggered milestone at which the interim results
+  are observed.
+
+- `formula`:
+
+  an object of class `formula` as in
+  [`fitLogrank()`](https://zhangh12.github.io/TrialSimulator/reference/fitLogrank.md),
+  e.g., `Surv(pfs, pfs_event) ~ arm`. Stratification via `strata(...)`
+  is supported; no covariate is allowed.
+
+- `placebo`:
+
+  character. Name of the placebo arm.
+
+- `alternative`:
+
+  a character string specifying the alternative hypothesis, must be one
+  of `"greater"` or `"less"`. No default value. `"greater"` means
+  superiority of treatment over placebo is established by a hazard ratio
+  greater than 1. See
+  [`fitLogrank()`](https://zhangh12.github.io/TrialSimulator/reference/fitLogrank.md).
+
+- `alpha`:
+
+  numeric. The one-sided nominal significance level(s) corresponding to
+  the planned final critical boundary, in (0, 1). See
+  `$conditionalPower()`. If a single treatment arm is compared with
+  placebo, an unnamed scalar is accepted; otherwise `alpha` must be a
+  named vector using treatment arm names, matching the names of
+  `target_cp`. A subset of the treatment arms can be specified, in which
+  case the event number is re-estimated for that subset of comparisons
+  only.
+
+- `target_cp`:
+
+  numeric. Target conditional power(s) in (0, 1). `alpha` and
+  `target_cp` must be of the same length and, when named, use the
+  identical set of arm names. Entries are matched to `alpha` by name, so
+  the order of components does not matter.
+
+- `effect`:
+
+  the treatment effect at which conditional power is evaluated. No
+  default value. `'trend'` extrapolates the effect observed at the
+  interim; a single positive numeric value is interpreted as a hazard
+  ratio (e.g., `effect = 0.75`), which is converted internally using the
+  allocation ratio of each pair recorded at the milestone. `'null'` is
+  not supported (see Details).
+
+- `...`:
+
+  subset conditions compatible with
+  [`dplyr::filter`](https://dplyr.tidyverse.org/reference/filter.html),
+  passed to
+  [`fitLogrank()`](https://zhangh12.github.io/TrialSimulator/reference/fitLogrank.md).
+
+- `D_cap`:
+
+  `NULL` or numeric. Practical upper bound(s) of the re-estimated event
+  number, counted on the two arms of each comparison. Whole number(s)
+  greater than the observed `d`, or `Inf` for an unbounded search. The
+  default `NULL` is converted internally to scalar `Inf` for one
+  comparison or a named vector of `Inf` for multiple comparisons. An
+  explicit scalar `Inf` applies to all comparisons; a finite unnamed
+  scalar is accepted when a single treatment arm is compared with
+  placebo; otherwise `D_cap` must be a named vector over the same
+  treatment arms as `alpha` and `target_cp`, in which individual entries
+  may be `Inf`. Placed after `...`, so it must always be passed by name.
+
+#### Details
+
+The method returns the smallest whole number `D > d` satisfying
+\$\$CP(D) \ge \gamma,\$\$ where \\\gamma\\ is `target_cp` and \\CP(D)\\
+is the conditional power of `$conditionalPower()` at the same
+`milestone`, `alpha` and `effect`. The strict inequality requires a
+genuine future final analysis. It also applies when the interim z
+statistic already reaches the final boundary, because future
+observations can dilute the interim result and reduce conditional power
+below `target_cp`.
+
+Conditional power need not be monotone in `D`, particularly when a
+numeric effect differs from the interim trend. The method finds the
+stationary points of conditional power by solving a cubic equation,
+partitions the integer search range into monotone intervals, and
+searches them from left to right. Integer bisection within the first
+interval that reaches `target_cp` therefore returns the earliest
+crossing required by the rule above, even if conditional power later
+falls below the target and recovers.
+
+`D_cap` bounds the search by the largest event number considered
+practical. The complete integer range through the cap is searched:
+
+- if a finite solution exists in the requested range, the smallest such
+  `D` is returned with its conditional power and
+  `target_reached = TRUE`;
+
+- if no finite solution exists in the requested range, `D` and
+  `achieved_cp` are `NA`, while `target_reached = FALSE`. `D_cap`
+  continues to report the requested search cap.
+
+`effect = 'null'` is not supported; use `$conditionalPower()` to compute
+the conditional type I error at a given `D` instead.
+
+Like `$conditionalPower()`, the calculation assumes the trial continues
+as designed: constant allocation ratio of the compared arms, planned
+final statistic, and the planned final boundary held fixed at nominal
+level `alpha` while `D` varies. Increasing the event number based on a
+promising interim while keeping the boundary unchanged is the practice
+studied in the sample size re-estimation literature; whether it is
+legitimate for the design at hand is users' responsibility, as
+`TrialSimulator` has no way to track this.
+
+#### Returns
+
+a data frame with one row per treatment-vs-placebo comparison, with
+columns `arm`, `placebo`, `z`, `d`, `D`, `D_cap`, `alpha`, `effect`,
+`target_cp`, `achieved_cp` and `target_reached`. `D` is the smallest
+solution found in the requested range and `achieved_cp` is the
+conditional power at that `D`. Both are `NA` when no solution is found.
+`target_cp` always records the requested target, `D_cap` always records
+the requested search cap (with the default `NULL` represented as `Inf`),
+and `target_reached` indicates whether a solution was found.
+
+#### Examples
+
+    \donttest{
+    ## a two-arm trial with a calendar-time interim
+    pbo <- arm(name = 'pbo')
+    pbo$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+                               generator = rexp, rate = log(2) / 10))
+    trt <- arm(name = 'trt')
+    trt$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+                               generator = rexp, rate = log(2) / 14))
+
+    accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
+    tr <- trial(name = 'ex', n_patients = 400, duration = 40,
+                seed = 31416, enroller = StaggeredRecruiter,
+                accrual_rate = accrual, silent = TRUE)
+    add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+    lstn <- listener(silent = TRUE)
+    lstn$add_milestones(
+      milestone(name = 'interim', when = calendarTime(time = 15)),
+      milestone(name = 'final', when = calendarTime(time = 40))
+    )
+    controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+
+    ## smallest number of final events reaching conditional power 0.9
+    ## under an assumed hazard ratio
+    tr$eventNumberReestimationFromConditionalPower(
+      'interim', Surv(pfs, pfs_event) ~ arm,
+      placebo = 'pbo', alternative = 'less',
+      alpha = 0.022, target_cp = 0.9, effect = 0.75)
+
+    ## with a practical cap: when no event number through the cap reaches
+    ## the target, D and achieved_cp are NA and target_reached is FALSE
+    tr$eventNumberReestimationFromConditionalPower(
+      'interim', Surv(pfs, pfs_event) ~ arm,
+      placebo = 'pbo', alternative = 'less',
+      alpha = 0.022, target_cp = 0.9, effect = 'trend', D_cap = 500)
+    }
 
 ------------------------------------------------------------------------
 

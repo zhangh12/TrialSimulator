@@ -95,6 +95,11 @@ $conditionalPower() compute conditional power at a triggered
 interim milestone for each treatment-vs-placebo comparison of a
 time-to-event endpoint, under a design with one interim and one final
 analysis and a constant allocation ratio.
+$eventNumberReestimationFromConditionalPower() re-estimate
+the number of events at the final analysis: the smallest whole number of
+events at which conditional power reaches a target, given the
+observations at a triggered interim milestone, optionally bounded by a
+practical cap.
 
 
 Trial setup.
@@ -211,6 +216,11 @@ $conditionalPower() compute conditional power at a triggered
 interim milestone for each treatment-vs-placebo comparison of a
 time-to-event endpoint, under a design with one interim and one final
 analysis and a constant allocation ratio.
+$eventNumberReestimationFromConditionalPower() re-estimate
+the number of events at the final analysis: the smallest whole number of
+events at which conditional power reaches a target, given the
+observations at a triggered interim milestone, optionally bounded by a
+practical cap.
 
 
 Trial setup.
@@ -239,7 +249,7 @@ too, but they are part of the user-facing API above at the same time."><meta pro
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.33.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.34.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -252,6 +262,7 @@ too, but they are part of the user-facing API above at the same time."><meta pro
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/actionFunctions.html">Specify Actions to Execute at Trial Milestones</a></li>
     <li><a class="dropdown-item" href="../articles/adaptiveDesign.html">An Example of Simulating a Trial with Adaptive Design</a></li>
+    <li><a class="dropdown-item" href="../articles/conditionalPower.html">Conditional Power and Event-Number Reassessment</a></li>
     <li><a class="dropdown-item" href="../articles/conditionSystem.html">Condition System for Triggering Milestones in a Trial</a></li>
     <li><a class="dropdown-item" href="../articles/crossoverAtMilestone.html">Crossover at a Milestone</a></li>
     <li><a class="dropdown-item" href="../articles/crossoverWashout.html">Crossover Design with Wash-out Periods</a></li>
@@ -370,6 +381,11 @@ the time of removal).</p></li>
 interim milestone for each treatment-vs-placebo comparison of a
 time-to-event endpoint, under a design with one interim and one final
 analysis and a constant allocation ratio.</p></li>
+<li><p><code>$eventNumberReestimationFromConditionalPower()</code> re-estimate
+the number of events at the final analysis: the smallest whole number of
+events at which conditional power reaches a target, given the
+observations at a triggered interim milestone, optionally bounded by a
+practical cap.</p></li>
 </ul><p><strong>Trial setup.</strong></p><ul><li><p><code>$add_regimen()</code> register a <code>regimen</code> object to a trial.
 Must be called before <code>$add_arms()</code>. Applied at enrollment. Unlike
 the adaptation methods above, it belongs to the setup stage of a trial
@@ -424,6 +440,7 @@ too, but they are part of the user-facing API above at the same time.</p>
 <li><p><a href="#method-Trials-dunnettTest"><code>Trials$dunnettTest()</code></a></p></li>
 <li><p><a href="#method-Trials-closedTest"><code>Trials$closedTest()</code></a></p></li>
 <li><p><a href="#method-Trials-conditionalPower"><code>Trials$conditionalPower()</code></a></p></li>
+<li><p><a href="#method-Trials-eventNumberReestimationFromConditionalPower"><code>Trials$eventNumberReestimationFromConditionalPower()</code></a></p></li>
 <li><p><a href="#method-Trials-add_regimen"><code>Trials$add_regimen()</code></a></p></li>
 <li><p><a href="#method-Trials-lock_data"><code>Trials$lock_data()</code></a></p></li>
 <li><p><a href="#method-Trials-get_data_lock_time_by_calendar_time"><code>Trials$get_data_lock_time_by_calendar_time()</code></a></p></li>
@@ -1480,6 +1497,243 @@ comparison, with columns <code>arm</code>, <code>placebo</code>, <code>z</code>,
 <code>d</code>, <code>D</code>, <code>info_fraction</code>, <code>alpha</code>,
 <code>effect</code> and <code>cp</code>.</p>
 </div>
+<div class="section">
+<h4 id="examples-2">Examples<a class="anchor" aria-label="anchor" href="#examples-2"></a></h4>
+<p></p><div class="r example copy"><div class="sourceCode"><pre><code>\donttest{
+## a two-arm trial with a calendar-time interim
+pbo &lt;- arm(name = 'pbo')
+pbo$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+                           generator = rexp, rate = log(2) / 10))
+trt &lt;- arm(name = 'trt')
+trt$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+                           generator = rexp, rate = log(2) / 14))
+
+accrual &lt;- data.frame(end_time = Inf, piecewise_rate = 30)
+tr &lt;- trial(name = 'ex', n_patients = 400, duration = 40,
+            seed = 31416, enroller = StaggeredRecruiter,
+            accrual_rate = accrual, silent = TRUE)
+add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+lstn &lt;- listener(silent = TRUE)
+lstn$add_milestones(
+  milestone(name = 'interim', when = calendarTime(time = 15)),
+  milestone(name = 'final', when = calendarTime(time = 40))
+)
+controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+
+## conditional power at the interim trend, with 300 events planned
+## at the final analysis and a final boundary at nominal level 0.022
+tr$conditionalPower('interim', Surv(pfs, pfs_event) ~ arm,
+                    placebo = 'pbo', alternative = 'less',
+                    alpha = 0.022, D = 300, effect = 'trend')
+
+## under an assumed hazard ratio instead of the interim trend
+tr$conditionalPower('interim', Surv(pfs, pfs_event) ~ arm,
+                    placebo = 'pbo', alternative = 'less',
+                    alpha = 0.022, D = 300, effect = 0.75)
+}
+</code></pre></div><p></p></div>
+</div>
+
+
+</div><p></p><hr><a id="method-Trials-eventNumberReestimationFromConditionalPower"></a><div class="section">
+<h3 id="method-eventnumberreestimationfromconditionalpower-">Method <code>eventNumberReestimationFromConditionalPower()</code><a class="anchor" aria-label="anchor" href="#method-eventnumberreestimationfromconditionalpower-"></a></h3>
+<p>re-estimate the number of events at the final analysis for each
+treatment-vs-placebo comparison of a time-to-event endpoint: the
+smallest whole number of events <code>D</code>, strictly greater than the
+event number observed at the interim, at which the conditional power
+computed by <code>$conditionalPower()</code> reaches a target, under a group
+sequential design with one interim and one final analysis. Locked
+data of the milestone is pulled automatically; <code><a href="fitLogrank.html">fitLogrank()</a></code>
+is called internally to obtain, for every treatment arm vs
+<code>placebo</code>, the observed z statistic and the observed number of
+events <code>d</code> on the two arms of that comparison (after applying
+subset conditions in <code>...</code>, if any).</p><div class="section">
+<h4 id="usage-25">Usage<a class="anchor" aria-label="anchor" href="#usage-25"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">eventNumberReestimationFromConditionalPower</span><span class="op">(</span></span>
+<span>  <span class="va">milestone</span>,</span>
+<span>  <span class="va">formula</span>,</span>
+<span>  <span class="va">placebo</span>,</span>
+<span>  <span class="va">alternative</span>,</span>
+<span>  <span class="va">alpha</span>,</span>
+<span>  <span class="va">target_cp</span>,</span>
+<span>  <span class="va">effect</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  D_cap <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-23">Arguments<a class="anchor" aria-label="anchor" href="#arguments-23"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>milestone</code></dt>
+<dd><p>character. Name of a triggered milestone at which
+the interim results are observed.</p></dd>
+
+
+<dt><code>formula</code></dt>
+<dd><p>an object of class <code>formula</code> as in
+<code><a href="fitLogrank.html">fitLogrank()</a></code>, e.g., <code>Surv(pfs, pfs_event) ~ arm</code>.
+Stratification via <code>strata(...)</code> is supported; no covariate is
+allowed.</p></dd>
+
+
+<dt><code>placebo</code></dt>
+<dd><p>character. Name of the placebo arm.</p></dd>
+
+
+<dt><code>alternative</code></dt>
+<dd><p>a character string specifying the alternative
+hypothesis, must be one of <code>"greater"</code> or <code>"less"</code>. No
+default value. <code>"greater"</code> means superiority of treatment over
+placebo is established by a hazard ratio greater than 1. See
+<code><a href="fitLogrank.html">fitLogrank()</a></code>.</p></dd>
+
+
+<dt><code>alpha</code></dt>
+<dd><p>numeric. The one-sided nominal significance level(s)
+corresponding to the planned final critical boundary, in (0, 1).
+See <code>$conditionalPower()</code>. If a single treatment arm is
+compared with placebo, an unnamed scalar is accepted; otherwise
+<code>alpha</code> must be a named vector using treatment arm names,
+matching the names of <code>target_cp</code>. A subset of the treatment
+arms can be specified, in which case the event number is
+re-estimated for that subset of comparisons only.</p></dd>
+
+
+<dt><code>target_cp</code></dt>
+<dd><p>numeric. Target conditional power(s) in (0, 1).
+<code>alpha</code> and <code>target_cp</code> must be of the same length and,
+when named, use the identical set of arm names. Entries are matched
+to <code>alpha</code> by name, so the order of components does not
+matter.</p></dd>
+
+
+<dt><code>effect</code></dt>
+<dd><p>the treatment effect at which conditional power is
+evaluated. No default value. <code>'trend'</code> extrapolates the effect
+observed at the interim; a single positive numeric value is
+interpreted as a hazard ratio (e.g., <code>effect = 0.75</code>), which
+is converted internally using the allocation ratio of each pair
+recorded at the milestone. <code>'null'</code> is not supported (see
+Details).</p></dd>
+
+
+<dt><code>...</code></dt>
+<dd><p>subset conditions compatible with <code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter</a></code>,
+passed to <code><a href="fitLogrank.html">fitLogrank()</a></code>.</p></dd>
+
+
+<dt><code>D_cap</code></dt>
+<dd><p><code>NULL</code> or numeric. Practical upper bound(s) of the
+re-estimated event number, counted on the two arms of each comparison.
+Whole number(s) greater than the observed <code>d</code>, or <code>Inf</code> for
+an unbounded search. The default <code>NULL</code> is converted internally to
+scalar <code>Inf</code> for one comparison or a named vector of <code>Inf</code>
+for multiple comparisons. An explicit scalar <code>Inf</code> applies to all
+comparisons; a finite unnamed scalar is accepted when a single
+treatment arm is compared with placebo; otherwise <code>D_cap</code> must
+be a named vector over the same treatment arms as <code>alpha</code> and
+<code>target_cp</code>, in which individual entries may be <code>Inf</code>.
+Placed after <code>...</code>, so it must always be passed by name.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="details-1">Details<a class="anchor" aria-label="anchor" href="#details-1"></a></h4>
+<p>The method returns the smallest whole number <code>D &gt; d</code> satisfying
+$$CP(D) \ge \gamma,$$
+where \(\gamma\) is <code>target_cp</code> and \(CP(D)\) is the
+conditional power of <code>$conditionalPower()</code> at the same
+<code>milestone</code>, <code>alpha</code> and <code>effect</code>. The strict inequality
+requires a genuine future final analysis. It also applies when the
+interim z statistic already reaches the final boundary, because future
+observations can dilute the interim result and reduce conditional
+power below <code>target_cp</code>.</p>
+<p>Conditional power need not be monotone in <code>D</code>, particularly when
+a numeric effect differs from the interim trend. The method finds the
+stationary points of conditional power by solving a cubic equation,
+partitions the integer search range into monotone intervals, and
+searches them from left to right. Integer bisection within the first
+interval that reaches <code>target_cp</code> therefore returns the earliest
+crossing required by the rule above, even if conditional power later
+falls below the target and recovers.</p>
+<p><code>D_cap</code> bounds the search by the largest event number considered
+practical. The complete integer range through the cap is searched:</p><ul><li><p>if a finite solution exists in the requested range, the smallest
+such <code>D</code> is returned with its conditional power and
+<code>target_reached = TRUE</code>;</p></li>
+<li><p>if no finite solution exists in the requested range,
+<code>D</code> and <code>achieved_cp</code> are <code>NA</code>, while
+<code>target_reached = FALSE</code>. <code>D_cap</code> continues to report the
+requested search cap.</p></li>
+</ul><p><code>effect = 'null'</code> is not supported; use
+<code>$conditionalPower()</code> to compute the conditional type I error
+at a given <code>D</code> instead.</p>
+<p>Like <code>$conditionalPower()</code>, the calculation assumes the trial
+continues as designed: constant allocation ratio of the compared
+arms, planned final statistic, and the planned final boundary held
+fixed at nominal level <code>alpha</code> while <code>D</code> varies.
+Increasing the event number based on a promising interim while
+keeping the boundary unchanged is the practice studied in the
+sample size re-estimation literature; whether it is legitimate for
+the design at hand is users' responsibility, as
+<code>TrialSimulator</code> has no way to track this.</p>
+</div>
+
+<div class="section">
+<h4 id="returns-3">Returns<a class="anchor" aria-label="anchor" href="#returns-3"></a></h4>
+<p>a data frame with one row per treatment-vs-placebo
+comparison, with columns <code>arm</code>, <code>placebo</code>, <code>z</code>,
+<code>d</code>, <code>D</code>, <code>D_cap</code>, <code>alpha</code>, <code>effect</code>,
+<code>target_cp</code>, <code>achieved_cp</code> and <code>target_reached</code>.
+<code>D</code> is the smallest solution found in the requested range and
+<code>achieved_cp</code> is the conditional power at that <code>D</code>. Both are
+<code>NA</code> when no solution is found. <code>target_cp</code> always records
+the requested target, <code>D_cap</code> always records the requested search
+cap (with the default <code>NULL</code> represented as <code>Inf</code>), and
+<code>target_reached</code> indicates whether a solution was found.</p>
+</div>
+<div class="section">
+<h4 id="examples-3">Examples<a class="anchor" aria-label="anchor" href="#examples-3"></a></h4>
+<p></p><div class="r example copy"><div class="sourceCode"><pre><code>\donttest{
+## a two-arm trial with a calendar-time interim
+pbo &lt;- arm(name = 'pbo')
+pbo$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+                           generator = rexp, rate = log(2) / 10))
+trt &lt;- arm(name = 'trt')
+trt$add_endpoints(endpoint(name = 'pfs', type = 'tte',
+                           generator = rexp, rate = log(2) / 14))
+
+accrual &lt;- data.frame(end_time = Inf, piecewise_rate = 30)
+tr &lt;- trial(name = 'ex', n_patients = 400, duration = 40,
+            seed = 31416, enroller = StaggeredRecruiter,
+            accrual_rate = accrual, silent = TRUE)
+add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+lstn &lt;- listener(silent = TRUE)
+lstn$add_milestones(
+  milestone(name = 'interim', when = calendarTime(time = 15)),
+  milestone(name = 'final', when = calendarTime(time = 40))
+)
+controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+
+## smallest number of final events reaching conditional power 0.9
+## under an assumed hazard ratio
+tr$eventNumberReestimationFromConditionalPower(
+  'interim', Surv(pfs, pfs_event) ~ arm,
+  placebo = 'pbo', alternative = 'less',
+  alpha = 0.022, target_cp = 0.9, effect = 0.75)
+
+## with a practical cap: when no event number through the cap reaches
+## the target, D and achieved_cp are NA and target_reached is FALSE
+tr$eventNumberReestimationFromConditionalPower(
+  'interim', Surv(pfs, pfs_event) ~ arm,
+  placebo = 'pbo', alternative = 'less',
+  alpha = 0.022, target_cp = 0.9, effect = 'trend', D_cap = 500)
+}
+</code></pre></div><p></p></div>
+</div>
+
 
 </div><p></p><hr><a id="method-Trials-add_regimen"></a><div class="section">
 <h3 id="method-add-regimen-">Method <code>add_regimen()</code><a class="anchor" aria-label="anchor" href="#method-add-regimen-"></a></h3>
@@ -1487,12 +1741,12 @@ comparison, with columns <code>arm</code>, <code>placebo</code>, <code>z</code>,
 to determine the patients who may switch to other treatment during a
 a trial, to determine the switching time and how to update patients'
 endpoint data accordingly.</p><div class="section">
-<h4 id="usage-25">Usage<a class="anchor" aria-label="anchor" href="#usage-25"></a></h4>
+<h4 id="usage-26">Usage<a class="anchor" aria-label="anchor" href="#usage-26"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">add_regimen</span><span class="op">(</span><span class="va">regimen</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-23">Arguments<a class="anchor" aria-label="anchor" href="#arguments-23"></a></h4>
+<h4 id="arguments-24">Arguments<a class="anchor" aria-label="anchor" href="#arguments-24"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>regimen</code></dt>
 <dd><p>an object created by <code><a href="regimen.html">regimen()</a></code>.</p></dd>
 
@@ -1510,12 +1764,12 @@ DO NOT OVERWRITE/UPDATE private$trial_data! which can lose actual
 time-to-event information. For example, a patient may be censored at
 the first data lock. However, he may have event being observed in a
 later data lock.</p><div class="section">
-<h4 id="usage-26">Usage<a class="anchor" aria-label="anchor" href="#usage-26"></a></h4>
+<h4 id="usage-27">Usage<a class="anchor" aria-label="anchor" href="#usage-27"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">lock_data</span><span class="op">(</span><span class="va">at_calendar_time</span>, <span class="va">milestone_name</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-24">Arguments<a class="anchor" aria-label="anchor" href="#arguments-24"></a></h4>
+<h4 id="arguments-25">Arguments<a class="anchor" aria-label="anchor" href="#arguments-25"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>at_calendar_time</code></dt>
 <dd><p>time point to lock trial data</p></dd>
 
@@ -1533,12 +1787,12 @@ future reference.</p></dd>
 <p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>given the calendar time to lock the data, return it with event counts of
 each of the endpoints.</p><div class="section">
-<h4 id="usage-27">Usage<a class="anchor" aria-label="anchor" href="#usage-27"></a></h4>
+<h4 id="usage-28">Usage<a class="anchor" aria-label="anchor" href="#usage-28"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">get_data_lock_time_by_calendar_time</span><span class="op">(</span><span class="va">calendar_time</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-25">Arguments<a class="anchor" aria-label="anchor" href="#arguments-25"></a></h4>
+<h4 id="arguments-26">Arguments<a class="anchor" aria-label="anchor" href="#arguments-26"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>calendar_time</code></dt>
 <dd><p>numeric. Calendar time to lock the data</p></dd>
 
@@ -1546,7 +1800,7 @@ each of the endpoints.</p><div class="section">
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-3">Returns<a class="anchor" aria-label="anchor" href="#returns-3"></a></h4>
+<h4 id="returns-4">Returns<a class="anchor" aria-label="anchor" href="#returns-4"></a></h4>
 <p>data lock time</p>
 </div>
 
@@ -1557,7 +1811,7 @@ each of the endpoints.</p><div class="section">
 lock time for a milestone (futility, interim, final, etc.). This function does
 not change trial object (e.g. rolling back not yet randomized patients after
 the found data lock time).</p><div class="section">
-<h4 id="usage-28">Usage<a class="anchor" aria-label="anchor" href="#usage-28"></a></h4>
+<h4 id="usage-29">Usage<a class="anchor" aria-label="anchor" href="#usage-29"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">get_data_lock_time_by_event_number</span><span class="op">(</span></span>
 <span>  <span class="va">endpoints</span>,</span>
 <span>  <span class="va">arms</span>,</span>
@@ -1568,7 +1822,7 @@ the found data lock time).</p><div class="section">
 </div>
 
 <div class="section">
-<h4 id="arguments-26">Arguments<a class="anchor" aria-label="anchor" href="#arguments-26"></a></h4>
+<h4 id="arguments-27">Arguments<a class="anchor" aria-label="anchor" href="#arguments-27"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>endpoints</code></dt>
 <dd><p>character vector. Data lock time is determined by a set
 of endpoints.</p></dd>
@@ -1597,7 +1851,7 @@ Time of milestone is based on event counts on the subset of trial data.</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-4">Returns<a class="anchor" aria-label="anchor" href="#returns-4"></a></h4>
+<h4 id="returns-5">Returns<a class="anchor" aria-label="anchor" href="#returns-5"></a></h4>
 <p>data lock time</p>
 </div>
 
@@ -1609,7 +1863,7 @@ lock time for a milestone (futility, interim, final, etc.). This function does
 not change trial object (e.g. rolling back not yet randomized patients after
 the found data lock time). It is similar to get_data_lock_time_by_event_number
 but only focus on patient_id.</p><div class="section">
-<h4 id="usage-29">Usage<a class="anchor" aria-label="anchor" href="#usage-29"></a></h4>
+<h4 id="usage-30">Usage<a class="anchor" aria-label="anchor" href="#usage-30"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">get_data_lock_time_by_enrollment</span><span class="op">(</span></span>
 <span>  <span class="va">arms</span>,</span>
 <span>  <span class="va">target_n_patients</span>,</span>
@@ -1619,7 +1873,7 @@ but only focus on patient_id.</p><div class="section">
 </div>
 
 <div class="section">
-<h4 id="arguments-27">Arguments<a class="anchor" aria-label="anchor" href="#arguments-27"></a></h4>
+<h4 id="arguments-28">Arguments<a class="anchor" aria-label="anchor" href="#arguments-28"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>arms</code></dt>
 <dd><p>a vector of arms' name on which number of events will be
 counted.</p></dd>
@@ -1649,7 +1903,7 @@ Time of milestone is based on event counts on the subset of trial data.</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-5">Returns<a class="anchor" aria-label="anchor" href="#returns-5"></a></h4>
+<h4 id="returns-6">Returns<a class="anchor" aria-label="anchor" href="#returns-6"></a></h4>
 <p>data lock time</p>
 </div>
 
@@ -1657,7 +1911,7 @@ Time of milestone is based on event counts on the subset of trial data.</p></dd>
 <h3 id="method-has-arm-">Method <code>has_arm()</code><a class="anchor" aria-label="anchor" href="#method-has-arm-"></a></h3>
 <p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>check if the trial has any arm. Return <code>TRUE</code> or <code>FALSE</code>.</p><div class="section">
-<h4 id="usage-30">Usage<a class="anchor" aria-label="anchor" href="#usage-30"></a></h4>
+<h4 id="usage-31">Usage<a class="anchor" aria-label="anchor" href="#usage-31"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">has_arm</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1666,7 +1920,7 @@ Time of milestone is based on event counts on the subset of trial data.</p></dd>
 <h3 id="method-event-plot-">Method <code>event_plot()</code><a class="anchor" aria-label="anchor" href="#method-event-plot-"></a></h3>
 <p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>plot of cumulative number of events/samples over calendar time.</p><div class="section">
-<h4 id="usage-31">Usage<a class="anchor" aria-label="anchor" href="#usage-31"></a></h4>
+<h4 id="usage-32">Usage<a class="anchor" aria-label="anchor" href="#usage-32"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">event_plot</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1675,12 +1929,12 @@ Time of milestone is based on event counts on the subset of trial data.</p></dd>
 <h3 id="method-mute-">Method <code>mute()</code><a class="anchor" aria-label="anchor" href="#method-mute-"></a></h3>
 <p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>mute all messages (not including warnings)</p><div class="section">
-<h4 id="usage-32">Usage<a class="anchor" aria-label="anchor" href="#usage-32"></a></h4>
+<h4 id="usage-33">Usage<a class="anchor" aria-label="anchor" href="#usage-33"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">mute</span><span class="op">(</span><span class="va">silent</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-28">Arguments<a class="anchor" aria-label="anchor" href="#arguments-28"></a></h4>
+<h4 id="arguments-29">Arguments<a class="anchor" aria-label="anchor" href="#arguments-29"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>silent</code></dt>
 <dd><p>logical.</p></dd>
 
@@ -1695,7 +1949,7 @@ Time of milestone is based on event counts on the subset of trial data.</p></dd>
 reassigned with a new one. Enrollment time are re-generated. If the trial
 already have arms when this function is called, they are added back to
 recruit patients again.</p><div class="section">
-<h4 id="usage-33">Usage<a class="anchor" aria-label="anchor" href="#usage-33"></a></h4>
+<h4 id="usage-34">Usage<a class="anchor" aria-label="anchor" href="#usage-34"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1704,7 +1958,7 @@ recruit patients again.</p><div class="section">
 <h3 id="method-make-arms-snapshot-">Method <code>make_arms_snapshot()</code><a class="anchor" aria-label="anchor" href="#method-make-arms-snapshot-"></a></h3>
 <p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>make a snapshot of arms</p><div class="section">
-<h4 id="usage-34">Usage<a class="anchor" aria-label="anchor" href="#usage-34"></a></h4>
+<h4 id="usage-35">Usage<a class="anchor" aria-label="anchor" href="#usage-35"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">make_arms_snapshot</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1716,7 +1970,7 @@ recruit patients again.</p><div class="section">
 <code><a href="update_milestone.html">update_milestone()</a></code> within the current action function. It is
 called by the listener right after each action function returns, to
 apply the requested updates to its registered milestones.</p><div class="section">
-<h4 id="usage-35">Usage<a class="anchor" aria-label="anchor" href="#usage-35"></a></h4>
+<h4 id="usage-36">Usage<a class="anchor" aria-label="anchor" href="#usage-36"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">pop_milestone_updates</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1724,7 +1978,7 @@ apply the requested updates to its registered milestones.</p><div class="section
 </div><p></p><hr><a id="method-Trials-print"></a><div class="section">
 <h3 id="method-print-">Method <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code><a class="anchor" aria-label="anchor" href="#method-print-"></a></h3>
 <p>print a trial</p><div class="section">
-<h4 id="usage-36">Usage<a class="anchor" aria-label="anchor" href="#usage-36"></a></h4>
+<h4 id="usage-37">Usage<a class="anchor" aria-label="anchor" href="#usage-37"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">print</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1732,12 +1986,12 @@ apply the requested updates to its registered milestones.</p><div class="section
 </div><p></p><hr><a id="method-Trials-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-37">Usage<a class="anchor" aria-label="anchor" href="#usage-37"></a></h4>
+<h4 id="usage-38">Usage<a class="anchor" aria-label="anchor" href="#usage-38"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-29">Arguments<a class="anchor" aria-label="anchor" href="#arguments-29"></a></h4>
+<h4 id="arguments-30">Arguments<a class="anchor" aria-label="anchor" href="#arguments-30"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

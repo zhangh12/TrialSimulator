@@ -531,4 +531,9 @@ accumulating evidence. At the time of writing, the vignette dedicated to
 trial adaptation is still under development. Detailed examples will be
 provided in that vignette.
 
+For a detailed treatment of conditional power, nonmonotone event-number
+reassessment, and a promising-zone action template, see [Conditional
+Power and Event-Number
+Reassessment](https://zhangh12.github.io/TrialSimulator/articles/conditionalPower.md).
+
 [^1]: experimental

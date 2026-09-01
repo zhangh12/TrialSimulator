@@ -6,6 +6,8 @@
   Milestones](https://zhangh12.github.io/TrialSimulator/articles/actionFunctions.md):
 - [An Example of Simulating a Trial with Adaptive
   Design](https://zhangh12.github.io/TrialSimulator/articles/adaptiveDesign.md):
+- [Conditional Power and Event-Number
+  Reassessment](https://zhangh12.github.io/TrialSimulator/articles/conditionalPower.md):
 - [Condition System for Triggering Milestones in a
   Trial](https://zhangh12.github.io/TrialSimulator/articles/conditionSystem.md):
 - [Crossover at a

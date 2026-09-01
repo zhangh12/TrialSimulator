@@ -1,5 +1,39 @@
 # Changelog
 
+## TrialSimulator 1.34.0
+
+### New features
+
+- New method `trial$eventNumberReestimationFromConditionalPower()`
+  re-estimates the number of events at the final analysis for every
+  treatment-vs-placebo comparison of a time-to-event endpoint. It
+  returns the smallest whole number strictly greater than the interim
+  event number at which the conditional power of
+  `trial$conditionalPower()` reaches a target, including when the
+  interim statistic already reaches the final boundary. A practical cap
+  can be set through `D_cap`; its default `NULL` is expanded internally
+  to `Inf` for every comparison. When no finite solution exists in the
+  requested range, `D` and `achieved_cp` are `NA`, `D_cap` continues to
+  report the requested cap, and `target_reached` is `FALSE`. Conditional
+  power can be evaluated at the interim trend or at a user-specified
+  hazard ratio; `effect = 'null'` is not supported. Because conditional
+  power need not be monotone in the final event number, stationary
+  points are obtained from a cubic equation and the resulting monotone
+  integer intervals are searched from left to right. This retains the
+  earliest target crossing even when conditional power later falls and
+  recovers, with negligible running time in a simulation.
+
+### Updates
+
+- Executable examples are added to the documentation of
+  `trial$conditionalPower()` and the new method.
+- A new vignette, “Conditional Power and Event-Number Reassessment”,
+  describes the canonical conditional-power calculation, effect
+  assumptions, alternative directions, nonmonotone event-number search,
+  practical caps, and promising-zone usage in detail, including a
+  complete action-based simulation program and precomputed
+  operating-characteristic summaries.
+
 ## TrialSimulator 1.33.1
 
 ### Updates
