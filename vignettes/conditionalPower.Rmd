@@ -22,6 +22,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, message = FALSE}
+library(kableExtra)
 library(TrialSimulator)
 ```
 
@@ -715,14 +716,31 @@ controller$run(n = 1, silent = TRUE, plot_event = FALSE)
 The saved columns show the complete path from the interim zone and selected
 event target to the final test for this replicate.
 
-```{r promising-zone-single-output}
+```{r promising-zone-single-output, class.source = 'fold-hide'}
 single_output <- controller$get_output(tidy = TRUE)
-single_output[, c(
+single_output_table <- single_output[, c(
   'promising_zone', 'conditional_power_at_planned_D',
   'selected_final_event_number', 'conditional_power_at_final_D',
   'target_reached_at_selected_D', 'observed_final_event_number',
   'final_p', 'reject_final'
 )]
+single_output_table$final_p <- format.pval(
+  single_output_table$final_p, digits = 3, eps = 0.001
+)
+
+single_output_table |>
+  kable(
+    col.names = c(
+      'Zone', 'CP at planned D', 'Selected final D', 'CP at final D',
+      'Target reached', 'Observed final D', 'Final p-value', 'Reject'
+    ),
+    digits = 3, align = c('l', 'r', 'r', 'r', 'c', 'r', 'r', 'c'),
+    caption = 'Decision path and final analysis for one replicate'
+  ) |>
+  kable_styling(
+    bootstrap_options = 'striped', full_width = FALSE, position = 'left'
+  ) |>
+  scroll_box(width = '100%')
 ```
 
 For operating characteristics, increase `n` after resetting the controller.
@@ -742,21 +760,39 @@ conditional_power_output <-
 Here are the first five replicates, restricted to the main decision and final
 analysis columns.
 
-```{r promising-zone-output-head}
+```{r promising-zone-output-head, class.source = 'fold-hide'}
 output_columns <- c(
   'promising_zone', 'conditional_power_at_planned_D',
   'selected_final_event_number', 'conditional_power_at_final_D',
   'target_reached_at_selected_D', 'observed_final_event_number',
   'final_p', 'reject_final'
 )
-conditional_power_output[seq_len(5), output_columns]
+
+output_preview <- conditional_power_output[seq_len(5), output_columns]
+output_preview$final_p <- format.pval(
+  output_preview$final_p, digits = 3, eps = 0.001
+)
+
+output_preview |>
+  kable(
+    col.names = c(
+      'Zone', 'CP at planned D', 'Selected final D', 'CP at final D',
+      'Target reached', 'Observed final D', 'Final p-value', 'Reject'
+    ),
+    digits = 3, align = c('l', 'r', 'r', 'r', 'c', 'r', 'r', 'c'),
+    caption = 'Decision and final-analysis results for the first five replicates'
+  ) |>
+  kable_styling(
+    bootstrap_options = 'striped', full_width = FALSE, position = 'left'
+  ) |>
+  scroll_box(width = '100%')
 ```
 
 The zone frequencies and mean selected event number summarize how often the
 rule adapts the final milestone when both the data-generating and
 conditional-power hazard ratios are 0.75.
 
-```{r promising-zone-zone-summary}
+```{r promising-zone-zone-summary, class.source = 'fold-hide'}
 zone_levels <- c('unfavorable', 'promising', 'favorable')
 zone <- factor(conditional_power_output$promising_zone,
                levels = zone_levels)
@@ -766,12 +802,22 @@ mean_D_by_zone <- tapply(
   zone, mean
 )
 
-data.frame(
+zone_summary <- data.frame(
   zone = zone_levels,
   replicates = as.integer(zone_count),
   percent = round(100 * as.numeric(prop.table(zone_count)), 1),
   mean_selected_D = round(as.numeric(mean_D_by_zone), 1)
 )
+
+zone_summary |>
+  kable(
+    col.names = c('Zone', 'Replicates', 'Percent (%)', 'Mean selected D'),
+    digits = 1,
+    caption = 'Promising-zone frequency and selected event number'
+  ) |>
+  kable_styling(
+    bootstrap_options = 'striped', full_width = FALSE, position = 'left'
+  )
 ```
 
 Finally, the overall summary connects adaptation frequency, attainment of the
@@ -779,8 +825,8 @@ conditional-power target at the selected event number, and the final testing
 result. These values describe this illustrative data-generating scenario;
 they do not establish type I error control for the adaptation rule.
 
-```{r promising-zone-overall-summary}
-data.frame(
+```{r promising-zone-overall-summary, class.source = 'fold-hide'}
+overall_summary <- data.frame(
   metric = c(
     'final event target increased',
     'target CP reached at selected D',
@@ -792,6 +838,15 @@ data.frame(
     mean(conditional_power_output$reject_final)
   ), 1)
 )
+
+overall_summary |>
+  kable(
+    col.names = c('Operating characteristic', 'Percent (%)'), digits = 1,
+    caption = 'Operating characteristics of the promising-zone design'
+  ) |>
+  kable_styling(
+    bootstrap_options = 'striped', full_width = FALSE, position = 'left'
+  )
 ```
 
 ## Multiple treatment arms
