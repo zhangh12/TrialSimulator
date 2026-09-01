@@ -331,30 +331,30 @@ We now simulate one two-arm trial with an event-driven endpoint. A calendar
 milestone provides the locked interim data used by both methods.
 
 ```{r define-trial}
+pfs_pbo <- endpoint(name = 'pfs', type = 'tte', generator = rexp,
+                    rate = log(2) / 10)
 pbo <- arm(name = 'pbo')
-pbo$add_endpoints(
-  endpoint(name = 'pfs', type = 'tte', generator = rexp,
-           rate = log(2) / 10)
-)
+pbo$add_endpoints(pfs_pbo)
 
+pfs_trt <- endpoint(name = 'pfs', type = 'tte', generator = rexp,
+                    rate = log(2) / 14)
 trt <- arm(name = 'trt')
-trt$add_endpoints(
-  endpoint(name = 'pfs', type = 'tte', generator = rexp,
-           rate = log(2) / 14)
-)
+trt$add_endpoints(pfs_trt)
 
-accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
-tr <- trial(name = 'cp-example', n_patients = 400, duration = 40,
-            seed = 31416, enroller = StaggeredRecruiter,
-            accrual_rate = accrual, silent = TRUE)
-add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+accrual_rate <- data.frame(end_time = Inf, piecewise_rate = 30)
+trial <- trial(name = 'cp-example', n_patients = 400, duration = 40,
+               seed = 31416, enroller = StaggeredRecruiter,
+               accrual_rate = accrual_rate, silent = TRUE)
+trial$add_arms(sample_ratio = c(1, 1), pbo, trt)
 
-lstn <- listener(silent = TRUE)
-lstn$add_milestones(
-  milestone(name = 'interim', when = calendarTime(time = 15)),
-  milestone(name = 'final', when = calendarTime(time = 40))
-)
-controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+interim <- milestone(name = 'interim', when = calendarTime(time = 15))
+final <- milestone(name = 'final', when = calendarTime(time = 40))
+
+listener <- listener(silent = TRUE)
+listener$add_milestones(interim, final)
+
+controller <- controller(trial, listener)
+controller$run(n = 1, silent = TRUE, plot_event = FALSE)
 ```
 
 The next subsections deliberately analyze this completed replicate directly,
@@ -374,7 +374,7 @@ already completed trial.
 ```{r interim-fit}
 interim_fit <- fitLogrank(
   Surv(pfs, pfs_event) ~ arm,
-  placebo = 'pbo', data = tr$get_locked_data('interim'),
+  placebo = 'pbo', data = trial$get_locked_data('interim'),
   alternative = 'less', tidy = FALSE
 )
 interim_fit[, c('arm', 'placebo', 'z', 'info')]
@@ -390,7 +390,7 @@ planned_D <- 300
 final_alpha <- 0.022
 
 cp_at <- function(effect){
-  tr$conditionalPower(
+  trial$conditionalPower(
     'interim', Surv(pfs, pfs_event) ~ arm,
     placebo = 'pbo', alternative = 'less',
     alpha = final_alpha, D = planned_D, effect = effect
@@ -412,13 +412,13 @@ reference arm. The treatment-vs-placebo hazard ratio 0.75 becomes the
 placebo-vs-treatment hazard ratio $1/0.75$, and `"less"` becomes `"greater"`.
 
 ```{r compare-directions}
-cp_less <- tr$conditionalPower(
+cp_less <- trial$conditionalPower(
   'interim', Surv(pfs, pfs_event) ~ arm,
   placebo = 'pbo', alternative = 'less',
   alpha = final_alpha, D = planned_D, effect = 0.75
 )
 
-cp_greater <- tr$conditionalPower(
+cp_greater <- trial$conditionalPower(
   'interim', Surv(pfs, pfs_event) ~ arm,
   placebo = 'trt', alternative = 'greater',
   alpha = final_alpha, D = planned_D, effect = 1 / 0.75
@@ -439,14 +439,14 @@ cap remains recorded in `D_cap`, while `D` and `achieved_cp` are `NA` because
 no solution exists through that cap.
 
 ```{r reassess-events}
-reassess_500 <- tr$eventNumberReestimationFromConditionalPower(
+reassess_500 <- trial$eventNumberReestimationFromConditionalPower(
   'interim', Surv(pfs, pfs_event) ~ arm,
   placebo = 'pbo', alternative = 'less',
   alpha = final_alpha, target_cp = 0.9,
   effect = 0.75, D_cap = 500
 )
 
-reassess_600 <- tr$eventNumberReestimationFromConditionalPower(
+reassess_600 <- trial$eventNumberReestimationFromConditionalPower(
   'interim', Surv(pfs, pfs_event) ~ arm,
   placebo = 'pbo', alternative = 'less',
   alpha = final_alpha, target_cp = 0.9,
@@ -461,7 +461,7 @@ Omitting `D_cap`, or passing `NULL`, requests the unbounded answer and is
 equivalent here to the solution under cap 600.
 
 ```{r reassess-unbounded}
-tr$eventNumberReestimationFromConditionalPower(
+trial$eventNumberReestimationFromConditionalPower(
   'interim', Surv(pfs, pfs_event) ~ arm,
   placebo = 'pbo', alternative = 'less',
   alpha = final_alpha, target_cp = 0.9, effect = 0.75
@@ -644,8 +644,8 @@ rather than treating the original final test as unchanged.
 
 ## A complete promising-zone simulation
 
-The earlier object `tr` was deliberately small and was used only to inspect a
-single locked dataset. We now define a separate trial with enough patients and
+The earlier `trial` object was deliberately small and was used only to inspect
+a single locked dataset. We now redefine it with enough patients and
 follow-up to make every event target through `D_cap = 600` feasible. The
 interim and final analyses are event driven. The interim action is
 `promising_zone_action()` defined above; the final action performs the planned
@@ -674,49 +674,47 @@ replicate only; the listener restores the original 300-event trigger before
 the next replicate.
 
 ```{r promising-zone-program}
-sim_pbo <- arm(name = 'pbo')
-sim_pbo$add_endpoints(
-  endpoint(name = 'pfs', type = 'tte', generator = rexp,
-           rate = log(2) / 10)
-)
+pfs_pbo <- endpoint(name = 'pfs', type = 'tte', generator = rexp,
+                    rate = log(2) / 10)
+pbo <- arm(name = 'pbo')
+pbo$add_endpoints(pfs_pbo)
 
-sim_trt <- arm(name = 'trt')
-sim_trt$add_endpoints(
-  endpoint(name = 'pfs', type = 'tte', generator = rexp,
-           rate = 0.75 * log(2) / 10)
-)
+pfs_trt <- endpoint(name = 'pfs', type = 'tte', generator = rexp,
+                    rate = 0.75 * log(2) / 10)
+trt <- arm(name = 'trt')
+trt$add_endpoints(pfs_trt)
 
-sim_accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
-sim_trial <- trial(
+accrual_rate <- data.frame(end_time = Inf, piecewise_rate = 30)
+trial <- trial(
   name = 'promising-zone', n_patients = 700, duration = 120,
   seed = 20260831, enroller = StaggeredRecruiter,
-  accrual_rate = sim_accrual, silent = TRUE
+  accrual_rate = accrual_rate, silent = TRUE
 )
-sim_trial$add_arms(sample_ratio = c(1, 1), sim_pbo, sim_trt)
+trial$add_arms(sample_ratio = c(1, 1), pbo, trt)
 
-sim_listener <- listener(silent = TRUE)
-sim_listener$add_milestones(
-  milestone(
-    name = 'interim', action = promising_zone_action,
-    when = eventNumber(endpoint = 'pfs', n = 150,
-                       arms = c('pbo', 'trt'))
-  ),
-  milestone(
-    name = 'final', action = promising_zone_final_action,
-    when = eventNumber(endpoint = 'pfs', n = 300,
-                       arms = c('pbo', 'trt'))
-  )
+interim <- milestone(
+  name = 'interim', action = promising_zone_action,
+  when = eventNumber(endpoint = 'pfs', n = 150,
+                     arms = c('pbo', 'trt'))
+)
+final <- milestone(
+  name = 'final', action = promising_zone_final_action,
+  when = eventNumber(endpoint = 'pfs', n = 300,
+                     arms = c('pbo', 'trt'))
 )
 
-sim_controller <- controller(sim_trial, sim_listener)
-sim_controller$run(n = 1, silent = TRUE, plot_event = FALSE)
+listener <- listener(silent = TRUE)
+listener$add_milestones(interim, final)
+
+controller <- controller(trial, listener)
+controller$run(n = 1, silent = TRUE, plot_event = FALSE)
 ```
 
 The saved columns show the complete path from the interim zone and selected
 event target to the final test for this replicate.
 
 ```{r promising-zone-single-output}
-single_output <- sim_controller$get_output(tidy = TRUE)
+single_output <- controller$get_output(tidy = TRUE)
 single_output[, c(
   'promising_zone', 'conditional_power_at_planned_D',
   'selected_final_event_number', 'conditional_power_at_selected_D',
@@ -731,9 +729,9 @@ other simulation vignettes in this package, its reproducible output is stored
 internally and loaded in the next chunk.
 
 ```{r promising-zone-run, eval = FALSE}
-sim_controller$reset()
-sim_controller$run(n = 1000, silent = TRUE, plot_event = FALSE)
-conditional_power_output <- sim_controller$get_output()
+controller$reset()
+controller$run(n = 1000, silent = TRUE, plot_event = FALSE)
+conditional_power_output <- controller$get_output()
 ```
 
 ```{r promising-zone-load-output, echo = FALSE}
