@@ -7,7 +7,7 @@
 ## Updates
 
 - Executable examples are added to the documentation of `trial$conditionalPower()` and the new method.
-- A new vignette, "Conditional Power and Event-Number Reassessment", describes the canonical conditional-power calculation, effect assumptions, alternative directions, nonmonotone event-number search, practical caps, and promising-zone usage in detail.
+- A new vignette, "Conditional Power and Event-Number Reassessment", describes the canonical conditional-power calculation, effect assumptions, alternative directions, nonmonotone event-number search, practical caps, and promising-zone usage in detail, including a complete action-based simulation program and precomputed operating-characteristic summaries.
 
 # TrialSimulator 1.33.1
 

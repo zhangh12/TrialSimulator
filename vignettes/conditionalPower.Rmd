@@ -27,10 +27,18 @@ library(TrialSimulator)
 
 This vignette explains the statistical model and implementation behind
 `Trials$conditionalPower()` and
-`Trials$eventNumberReestimationFromConditionalPower()`. Both methods apply to
-a time-to-event comparison with one interim analysis and one final analysis.
-They use the interim logrank statistic and event count stored in a triggered
-milestone.
+`Trials$eventNumberReestimationFromConditionalPower()` in detail, including
+the canonical distribution, alternative-direction mapping, effect
+assumptions, nonmonotone root search, and integer algorithm. Both methods
+apply to a time-to-event comparison with one interim analysis and one final
+analysis. They use the interim logrank statistic and event count stored in a
+triggered milestone.
+
+The mathematical and diagnostic examples first isolate particular features
+of the two methods. The final worked program then places the calculation in a
+milestone action function and runs it through the standard `TrialSimulator`
+framework, following the same action-based pattern used for other adaptive
+and enrichment designs.
 
 Conditional power is a design calculation, not an automatic adaptation rule.
 In particular, changing a final event target after an unblinded interim can
@@ -162,6 +170,15 @@ the same as reaching a pre-specified interim efficacy boundary and does not by
 itself authorize stopping a real trial.
 
 ## Inverting conditional power to obtain an event number
+
+The member method has the following signature:
+
+```r
+trial$eventNumberReestimationFromConditionalPower(
+  milestone, formula, placebo, alternative, alpha, target_cp,
+  effect, ..., D_cap = NULL
+)
+```
 
 For target conditional power $\gamma$, the reassessment method searches for
 
@@ -303,7 +320,7 @@ data.frame(
 ```{r multiple-crossings-plot}
 plot(D_grid, cp_grid, type = 'l', log = 'x',
      xlab = 'Final event number D (log scale)',
-     ylab = 'Conditional power', ylim = c(0, 1))
+     ylab = 'Conditional power', ylim = c(0, 0.3))
 abline(h = target_example, lty = 2, col = 'firebrick')
 abline(v = c(107, 183, 8675), lty = 3, col = 'grey40')
 ```
@@ -340,8 +357,19 @@ lstn$add_milestones(
 controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
 ```
 
+The next subsections deliberately analyze this completed replicate directly,
+outside a milestone action function. This is diagnostic code: it makes the
+inputs and outputs easy to compare while demonstrating effect assumptions,
+alternative directions, caps, and return values one feature at a time. It is
+not the recommended structure for a simulation study. After these focused
+examples, `promising_zone_action()` and a complete event-driven simulation
+program show how the same methods are used inside the `TrialSimulator`
+framework.
+
 The methods call `fitLogrank()` internally. We show the fit explicitly here to
-make the interim inputs visible.
+make the interim inputs visible. Likewise, the direct method calls that follow
+are intentional teaching devices rather than actions that can adapt this
+already completed trial.
 
 ```{r interim-fit}
 interim_fit <- fitLogrank(
@@ -471,16 +499,18 @@ data.frame(planned_D, cp_planned, zone,
            target_reached = reassess_600$target_reached)
 ```
 
-One possible pre-specified policy is to consider futility in the unfavorable
-zone, retain the original design in the favorable zone, and increase the event
-target in the promising zone subject to a cap. These choices are properties of
-the trial design, not of the calculator.
+One possible pre-specified policy is to retain the original design in the
+unfavorable and favorable zones, and increase the event target in the
+promising zone subject to a cap. A different design could stop for futility in
+the unfavorable zone. These choices are properties of the trial design, not
+of the calculator.
 
-The following template shows how such a rule can be placed in an interim
-action. The final milestone must already be registered and must not yet have
-triggered. This code is illustrative and is not executed in the vignette.
+The following function implements the increase-only rule at an interim
+milestone. The final milestone must already be registered and must not yet
+have triggered. The complete program near the end of this vignette registers
+this action and executes the simulation.
 
-```{r promising-zone-action, eval = FALSE}
+```{r promising-zone-action}
 promising_zone_action <- function(trial){
   planned_D <- 300
   lower_cp <- 0.30
@@ -494,9 +524,11 @@ promising_zone_action <- function(trial){
   )$cp
 
   if(cp < lower_cp){
-    decision <- 'unfavorable: consider futility'
+    zone <- 'unfavorable'
+    decision <- 'unfavorable: retain planned event number'
     selected_D <- planned_D
   }else if(cp < target_cp){
+    zone <- 'promising'
     reassessment <- trial$eventNumberReestimationFromConditionalPower(
       'interim', Surv(pfs, pfs_event) ~ arm,
       placebo = 'pbo', alternative = 'less',
@@ -504,26 +536,43 @@ promising_zone_action <- function(trial){
       effect = 0.75, D_cap = D_cap
     )
 
-    if(reassessment$target_reached){
+    if(reassessment$target_reached && reassessment$D > planned_D){
       selected_D <- reassessment$D
       decision <- 'promising: reassess to target conditional power'
     }else{
       selected_D <- reassessment$D_cap
-      decision <- 'promising: use cap; target conditional power is unattainable'
+      decision <- if(reassessment$target_reached){
+        'promising: use cap because the earliest solution is not an increase'
+      }else{
+        'promising: use cap because no solution was found through the cap'
+      }
     }
 
+  }else{
+    zone <- 'favorable'
+    decision <- 'favorable: retain the planned design'
+    selected_D <- planned_D
+  }
+
+  if(selected_D > planned_D){
     trial$update_milestone(
       'final',
       when = eventNumber(endpoint = 'pfs', n = selected_D,
                          arms = c('pbo', 'trt'))
     )
-  }else{
-    decision <- 'favorable: retain the planned design'
-    selected_D <- planned_D
   }
 
+  selected_cp <- trial$conditionalPower(
+    'interim', Surv(pfs, pfs_event) ~ arm,
+    placebo = 'pbo', alternative = 'less',
+    alpha = 0.022, D = selected_D, effect = 0.75
+  )$cp
+
+  trial$save(zone, 'promising_zone')
   trial$save(cp, 'conditional_power_at_planned_D')
   trial$save(selected_D, 'selected_final_event_number')
+  trial$save(selected_cp, 'conditional_power_at_selected_D')
+  trial$save(selected_cp >= target_cp, 'target_reached_at_selected_D')
   trial$save(decision, 'promising_zone_decision')
 }
 ```
@@ -534,7 +583,9 @@ $d+1$, not from `planned_D`. Therefore, an increase-only policy must verify
 that the returned `D` is at least `planned_D`. In a nonmonotone case, simply
 replacing a smaller result by `planned_D` is not guaranteed to preserve the
 target conditional power; the admissible search domain and action should be
-pre-specified explicitly.
+pre-specified explicitly. The action above uses `D_cap` as its pre-specified
+increase-only fallback and separately records whether conditional power at
+that selected event number reaches the target.
 
 ## Multiple treatment arms
 
@@ -590,6 +641,160 @@ that a data-dependent adaptation is valid for a particular confirmatory trial.
 If adaptation changes the final statistic, information weights, allocation, or
 critical boundary, use an appropriate adaptive or combination-test analysis
 rather than treating the original final test as unchanged.
+
+## A complete promising-zone simulation
+
+The earlier object `tr` was deliberately small and was used only to inspect a
+single locked dataset. We now define a separate trial with enough patients and
+follow-up to make every event target through `D_cap = 600` feasible. The
+interim and final analyses are event driven. The interim action is
+`promising_zone_action()` defined above; the final action performs the planned
+logrank test and saves the result.
+
+```{r promising-zone-final-action}
+promising_zone_final_action <- function(trial){
+  fit <- fitLogrank(
+    Surv(pfs, pfs_event) ~ arm,
+    placebo = 'pbo', data = trial$get_locked_data('final'),
+    alternative = 'less', tidy = FALSE
+  )
+
+  trial$save(fit$info, 'observed_final_event_number')
+  trial$save(fit$z, 'final_z')
+  trial$save(fit$p, 'final_p')
+  trial$save(fit$p <= 0.022, 'reject_final')
+}
+```
+
+The following is a complete simulation program: arms, trial, milestone
+actions, listener, and controller are all connected before execution. The
+initial final milestone requests 300 events. When the interim action selects
+a larger target, `update_milestone()` replaces that trigger for the current
+replicate only; the listener restores the original 300-event trigger before
+the next replicate.
+
+```{r promising-zone-program}
+sim_pbo <- arm(name = 'pbo')
+sim_pbo$add_endpoints(
+  endpoint(name = 'pfs', type = 'tte', generator = rexp,
+           rate = log(2) / 10)
+)
+
+sim_trt <- arm(name = 'trt')
+sim_trt$add_endpoints(
+  endpoint(name = 'pfs', type = 'tte', generator = rexp,
+           rate = 0.75 * log(2) / 10)
+)
+
+sim_accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
+sim_trial <- trial(
+  name = 'promising-zone', n_patients = 700, duration = 120,
+  seed = 20260831, enroller = StaggeredRecruiter,
+  accrual_rate = sim_accrual, silent = TRUE
+)
+sim_trial$add_arms(sample_ratio = c(1, 1), sim_pbo, sim_trt)
+
+sim_listener <- listener(silent = TRUE)
+sim_listener$add_milestones(
+  milestone(
+    name = 'interim', action = promising_zone_action,
+    when = eventNumber(endpoint = 'pfs', n = 150,
+                       arms = c('pbo', 'trt'))
+  ),
+  milestone(
+    name = 'final', action = promising_zone_final_action,
+    when = eventNumber(endpoint = 'pfs', n = 300,
+                       arms = c('pbo', 'trt'))
+  )
+)
+
+sim_controller <- controller(sim_trial, sim_listener)
+sim_controller$run(n = 1, silent = TRUE, plot_event = FALSE)
+```
+
+The saved columns show the complete path from the interim zone and selected
+event target to the final test for this replicate.
+
+```{r promising-zone-single-output}
+single_output <- sim_controller$get_output(tidy = TRUE)
+single_output[, c(
+  'promising_zone', 'conditional_power_at_planned_D',
+  'selected_final_event_number', 'conditional_power_at_selected_D',
+  'target_reached_at_selected_D', 'observed_final_event_number',
+  'final_p', 'reject_final'
+)]
+```
+
+For operating characteristics, increase `n` after resetting the controller.
+The 1000-replicate run is not executed while building the vignette. As in
+other simulation vignettes in this package, its reproducible output is stored
+internally and loaded in the next chunk.
+
+```{r promising-zone-run, eval = FALSE}
+sim_controller$reset()
+sim_controller$run(n = 1000, silent = TRUE, plot_event = FALSE)
+conditional_power_output <- sim_controller$get_output()
+```
+
+```{r promising-zone-load-output, echo = FALSE}
+conditional_power_output <-
+  TrialSimulator:::getConditionalPowerOutput()
+```
+
+Here are the first five replicates, restricted to the main decision and final
+analysis columns.
+
+```{r promising-zone-output-head}
+output_columns <- c(
+  'promising_zone', 'conditional_power_at_planned_D',
+  'selected_final_event_number', 'conditional_power_at_selected_D',
+  'target_reached_at_selected_D', 'observed_final_event_number',
+  'final_p', 'reject_final'
+)
+conditional_power_output[seq_len(5), output_columns]
+```
+
+The zone frequencies and mean selected event number summarize how often the
+rule adapts the final milestone when both the data-generating and
+conditional-power hazard ratios are 0.75.
+
+```{r promising-zone-zone-summary}
+zone_levels <- c('unfavorable', 'promising', 'favorable')
+zone <- factor(conditional_power_output$promising_zone,
+               levels = zone_levels)
+zone_count <- table(zone)
+mean_D_by_zone <- tapply(
+  conditional_power_output$selected_final_event_number,
+  zone, mean
+)
+
+data.frame(
+  zone = zone_levels,
+  replicates = as.integer(zone_count),
+  percent = round(100 * as.numeric(prop.table(zone_count)), 1),
+  mean_selected_D = round(as.numeric(mean_D_by_zone), 1)
+)
+```
+
+Finally, the overall summary connects adaptation frequency, attainment of the
+conditional-power target at the selected event number, and the final testing
+result. These values describe this illustrative data-generating scenario;
+they do not establish type I error control for the adaptation rule.
+
+```{r promising-zone-overall-summary}
+data.frame(
+  metric = c(
+    'final event target increased',
+    'target CP reached at selected D',
+    'final null hypothesis rejected'
+  ),
+  percent = round(100 * c(
+    mean(conditional_power_output$selected_final_event_number > 300),
+    mean(conditional_power_output$target_reached_at_selected_D),
+    mean(conditional_power_output$reject_final)
+  ), 1)
+)
+```
 
 ## References
 
