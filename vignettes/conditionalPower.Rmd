@@ -96,6 +96,14 @@ final critical value $c$, pass `alpha = 1 - pnorm(c)`.
 
 ## Conditional power
 
+The member method has the following signature:
+
+```r
+trial$conditionalPower(
+  milestone, formula, placebo, alternative, alpha, D, effect, ...
+)
+```
+
 Write $t=d/D$ for the interim information fraction. Under the canonical
 independent-increments model, conditional on the observed interim statistic,
 
