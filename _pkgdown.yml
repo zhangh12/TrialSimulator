@@ -78,5 +78,6 @@ reference:
   contents:
   - reexports
   - getAdaptiveDesignOutput
+  - getConditionalPowerOutput
   - getDoseRangingOutput
   - getFixedDesignOutput
