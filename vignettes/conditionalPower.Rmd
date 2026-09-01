@@ -576,7 +576,7 @@ promising_zone_action <- function(trial){
   trial$save(zone, 'promising_zone')
   trial$save(cp, 'conditional_power_at_planned_D')
   trial$save(selected_D, 'selected_final_event_number')
-  trial$save(selected_cp, 'conditional_power_at_selected_D')
+  trial$save(selected_cp, 'conditional_power_at_final_D')
   trial$save(selected_cp >= target_cp, 'target_reached_at_selected_D')
   trial$save(decision, 'promising_zone_decision')
 }
@@ -722,7 +722,7 @@ event target to the final test for this replicate.
 single_output <- controller$get_output(tidy = TRUE)
 single_output[, c(
   'promising_zone', 'conditional_power_at_planned_D',
-  'selected_final_event_number', 'conditional_power_at_selected_D',
+  'selected_final_event_number', 'conditional_power_at_final_D',
   'target_reached_at_selected_D', 'observed_final_event_number',
   'final_p', 'reject_final'
 )]
@@ -750,7 +750,7 @@ analysis columns.
 ```{r promising-zone-output-head}
 output_columns <- c(
   'promising_zone', 'conditional_power_at_planned_D',
-  'selected_final_event_number', 'conditional_power_at_selected_D',
+  'selected_final_event_number', 'conditional_power_at_final_D',
   'target_reached_at_selected_D', 'observed_final_event_number',
   'final_p', 'reject_final'
 )
