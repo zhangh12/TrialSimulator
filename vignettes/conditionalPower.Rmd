@@ -618,77 +618,6 @@ pre-specified explicitly. The action above uses `D_cap` as its pre-specified
 increase-only fallback and separately records whether conditional power at
 that selected event number reaches the target.
 
-## Multiple treatment arms
-
-Both methods support several treatment-placebo comparisons. `D`, `alpha`,
-`target_cp`, and a non-scalar finite `D_cap` are named by treatment arm. Names,
-not vector positions, determine matching.
-
-The setup of the following three-arm toy trial is executed but not printed in
-the rendered vignette. Its complete code remains in the Rmd source. This
-section is intentionally limited to demonstrating the multi-comparison output
-format and name-based argument matching; the detailed design examples remain
-focused on a single treatment-placebo comparison.
-
-```{r multiple-arms-setup, include = FALSE}
-pfs_pbo <- endpoint(name = 'pfs', type = 'tte', generator = rexp,
-                    rate = log(2) / 10)
-pbo <- arm(name = 'pbo')
-pbo$add_endpoints(pfs_pbo)
-
-pfs_low <- endpoint(name = 'pfs', type = 'tte', generator = rexp,
-                    rate = 0.80 * log(2) / 10)
-low <- arm(name = 'low')
-low$add_endpoints(pfs_low)
-
-pfs_high <- endpoint(name = 'pfs', type = 'tte', generator = rexp,
-                     rate = 0.70 * log(2) / 10)
-high <- arm(name = 'high')
-high$add_endpoints(pfs_high)
-
-accrual_rate <- data.frame(end_time = Inf, piecewise_rate = 40)
-trial <- trial(
-  name = 'multiple-arms', n_patients = 1200, duration = 100,
-  seed = 27183, enroller = StaggeredRecruiter,
-  accrual_rate = accrual_rate, silent = TRUE
-)
-trial$add_arms(sample_ratio = c(1, 1, 1), pbo, low, high)
-
-interim <- milestone(
-  name = 'interim',
-  when = eventNumber(endpoint = 'pfs', n = 240,
-                     arms = c('pbo', 'low', 'high'))
-)
-listener <- listener(silent = TRUE)
-listener$add_milestones(interim)
-
-controller <- controller(trial, listener)
-controller$run(n = 1, silent = TRUE, plot_event = FALSE)
-```
-
-```{r multiple-arms-output}
-trial$conditionalPower(
-  'interim', Surv(pfs, pfs_event) ~ arm,
-  placebo = 'pbo', alternative = 'less',
-  D = c(low = 350, high = 400),
-  alpha = c(high = 0.01, low = 0.015),
-  effect = 0.75
-)
-
-trial$eventNumberReestimationFromConditionalPower(
-  'interim', Surv(pfs, pfs_event) ~ arm,
-  placebo = 'pbo', alternative = 'less',
-  alpha = c(low = 0.015, high = 0.01),
-  target_cp = c(high = 0.90, low = 0.85),
-  effect = 'trend',
-  D_cap = c(low = 600, high = 700)
-)
-```
-
-Event counts are pair-specific: each `d` and `D` counts events on placebo plus
-one treatment arm. With a shared placebo, event counts across comparisons need
-not sum to a trial-wide total.
-
 ## Assumptions and design checks
 
 Before using these calculations in a design, check the following.
@@ -864,6 +793,83 @@ data.frame(
   ), 1)
 )
 ```
+
+## Multiple treatment arms
+
+Both methods support several treatment-placebo comparisons. `D`, `alpha`,
+`target_cp`, and a non-scalar finite `D_cap` are named by treatment arm. Names,
+not vector positions, determine matching.
+
+The setup of the following three-arm toy trial is executed but not printed in
+the rendered vignette. Its complete code remains in the Rmd source. This
+section is intentionally limited to demonstrating the multi-comparison output
+format and name-based argument matching; the detailed design examples remain
+focused on a single treatment-placebo comparison. To isolate the example, it
+is the vignette's last executable section, and its construction occurs inside
+`local()`: only the `trial` object needed by the two displayed calls leaves the
+setup scope.
+
+```{r multiple-arms-setup, include = FALSE}
+trial <- local({
+  pfs_pbo <- endpoint(name = 'pfs', type = 'tte', generator = rexp,
+                      rate = log(2) / 10)
+  pbo <- arm(name = 'pbo')
+  pbo$add_endpoints(pfs_pbo)
+
+  pfs_low <- endpoint(name = 'pfs', type = 'tte', generator = rexp,
+                      rate = 0.80 * log(2) / 10)
+  low <- arm(name = 'low')
+  low$add_endpoints(pfs_low)
+
+  pfs_high <- endpoint(name = 'pfs', type = 'tte', generator = rexp,
+                       rate = 0.70 * log(2) / 10)
+  high <- arm(name = 'high')
+  high$add_endpoints(pfs_high)
+
+  accrual_rate <- data.frame(end_time = Inf, piecewise_rate = 40)
+  trial <- trial(
+    name = 'multiple-arms', n_patients = 1200, duration = 100,
+    seed = 27183, enroller = StaggeredRecruiter,
+    accrual_rate = accrual_rate, silent = TRUE
+  )
+  trial$add_arms(sample_ratio = c(1, 1, 1), pbo, low, high)
+
+  interim <- milestone(
+    name = 'interim',
+    when = eventNumber(endpoint = 'pfs', n = 240,
+                       arms = c('pbo', 'low', 'high'))
+  )
+  listener <- listener(silent = TRUE)
+  listener$add_milestones(interim)
+
+  controller <- controller(trial, listener)
+  controller$run(n = 1, silent = TRUE, plot_event = FALSE)
+  trial
+})
+```
+
+```{r multiple-arms-output}
+trial$conditionalPower(
+  'interim', Surv(pfs, pfs_event) ~ arm,
+  placebo = 'pbo', alternative = 'less',
+  D = c(low = 350, high = 400),
+  alpha = c(high = 0.01, low = 0.015),
+  effect = 0.75
+)
+
+trial$eventNumberReestimationFromConditionalPower(
+  'interim', Surv(pfs, pfs_event) ~ arm,
+  placebo = 'pbo', alternative = 'less',
+  alpha = c(low = 0.015, high = 0.01),
+  target_cp = c(high = 0.90, low = 0.85),
+  effect = 'trend',
+  D_cap = c(low = 600, high = 700)
+)
+```
+
+Event counts are pair-specific: each `d` and `D` counts events on placebo plus
+one treatment arm. With a shared placebo, event counts across comparisons need
+not sum to a trial-wide total.
 
 ## References
 
