@@ -517,11 +517,15 @@ this action and executes the simulation.
 
 ```{r promising-zone-action}
 promising_zone_action <- function(trial){
+  ## Pre-specified design parameters. The promising zone is defined using
+  ## conditional power at the originally planned final analysis.
   planned_D <- 300
   lower_cp <- 0.30
   target_cp <- 0.90
   D_cap <- 600
 
+  ## conditionalPower() obtains the data locked at the interim milestone
+  ## and fits the treatment-vs-placebo logrank comparison internally.
   cp <- trial$conditionalPower(
     'interim', Surv(pfs, pfs_event) ~ arm,
     placebo = 'pbo', alternative = 'less',
@@ -534,6 +538,9 @@ promising_zone_action <- function(trial){
     selected_D <- planned_D
   }else if(cp < target_cp){
     zone <- 'promising'
+
+    ## Only a promising result invokes event-number reassessment. The solver
+    ## searches for the earliest solution after the observed interim events.
     reassessment <- trial$eventNumberReestimationFromConditionalPower(
       'interim', Surv(pfs, pfs_event) ~ arm,
       placebo = 'pbo', alternative = 'less',
@@ -541,6 +548,8 @@ promising_zone_action <- function(trial){
       effect = 0.75, D_cap = D_cap
     )
 
+    ## This policy permits increases only. Use the exact solution when it is
+    ## above planned_D; otherwise use the pre-specified cap as the fallback.
     if(reassessment$target_reached && reassessment$D > planned_D){
       selected_D <- reassessment$D
       decision <- 'promising: reassess to target conditional power'
@@ -559,6 +568,11 @@ promising_zone_action <- function(trial){
     selected_D <- planned_D
   }
 
+  ## update_milestone() must be called from a milestone action. It queues a
+  ## replacement for the registered, not-yet-triggered final milestone. The
+  ## new event target takes effect after this action returns and applies only
+  ## to the current replicate; the original trigger is restored before the
+  ## next replicate. No update is needed when planned_D is retained.
   if(selected_D > planned_D){
     trial$update_milestone(
       'final',
@@ -567,12 +581,15 @@ promising_zone_action <- function(trial){
     )
   }
 
+  ## Re-evaluate conditional power at the event number that will actually be
+  ## used as the final target, including a cap selected as a fallback.
   selected_cp <- trial$conditionalPower(
     'interim', Surv(pfs, pfs_event) ~ arm,
     placebo = 'pbo', alternative = 'less',
     alpha = 0.022, D = selected_D, effect = 0.75
   )$cp
 
+  ## Values saved in an action function become simulation-output columns.
   trial$save(zone, 'promising_zone')
   trial$save(cp, 'conditional_power_at_planned_D')
   trial$save(selected_D, 'selected_final_event_number')
@@ -581,6 +598,15 @@ promising_zone_action <- function(trial){
   trial$save(decision, 'promising_zone_decision')
 }
 ```
+
+The queued update replaces the complete trigger condition of the registered
+`final` milestone; it does not trigger the final analysis immediately. Here,
+`eventNumber(..., arms = c('pbo', 'trt'))` makes the new condition count PFS
+events on the two comparison arms. After the action returns, the listener
+applies this condition before checking subsequent milestones. The automatic
+reset between replicates is important: each simulated trial starts from the
+same as-designed 300-event final milestone rather than inheriting the previous
+replicate's reassessment.
 
 Many promising-zone designs permit an increase but not a decrease from the
 originally planned event number. The reassessment method itself searches from
