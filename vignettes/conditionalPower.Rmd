@@ -35,10 +35,11 @@ analysis. They use the interim logrank statistic and event count stored in a
 triggered milestone.
 
 The mathematical and diagnostic examples first isolate particular features
-of the two methods. The final worked program then places the calculation in a
-milestone action function and runs it through the standard `TrialSimulator`
-framework, following the same action-based pattern used for other adaptive
-and enrichment designs.
+of the two methods. The later sections then [implement the promising-zone
+policy in a milestone action](#implementing-the-policy-in-an-action-function)
+and use it in a [complete `TrialSimulator` simulation
+program](#a-complete-promising-zone-simulation), following the same
+action-based pattern used for other adaptive and enrichment designs.
 
 Conditional power is a design calculation, not an automatic adaptation rule.
 In particular, changing a final event target after an unblinded interim can
@@ -362,9 +363,11 @@ outside a milestone action function. This is diagnostic code: it makes the
 inputs and outputs easy to compare while demonstrating effect assumptions,
 alternative directions, caps, and return values one feature at a time. It is
 not the recommended structure for a simulation study. After these focused
-examples, `promising_zone_action()` and a complete event-driven simulation
-program show how the same methods are used inside the `TrialSimulator`
-framework.
+examples, see [the implementation of
+`promising_zone_action()`](#implementing-the-policy-in-an-action-function)
+and the [complete event-driven simulation
+program](#a-complete-promising-zone-simulation) for the recommended
+`TrialSimulator` structure.
 
 The methods call `fitLogrank()` internally. We show the fit explicitly here to
 make the interim inputs visible. Likewise, the direct method calls that follow
@@ -504,6 +507,8 @@ unfavorable and favorable zones, and increase the event target in the
 promising zone subject to a cap. A different design could stop for futility in
 the unfavorable zone. These choices are properties of the trial design, not
 of the calculator.
+
+### Implementing the policy in an action function
 
 The following function implements the increase-only rule at an interim
 milestone. The final milestone must already be registered and must not yet
