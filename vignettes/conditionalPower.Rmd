@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup, message = FALSE}
+```{r setup, echo = FALSE, message = FALSE}
 library(kableExtra)
 library(TrialSimulator)
 ```
@@ -716,7 +716,7 @@ controller$run(n = 1, silent = TRUE, plot_event = FALSE)
 The saved columns show the complete path from the interim zone and selected
 event target to the final test for this replicate.
 
-```{r promising-zone-single-output, class.source = 'fold-hide'}
+```{r promising-zone-single-output, echo = FALSE}
 single_output <- controller$get_output(tidy = TRUE)
 single_output_table <- single_output[, c(
   'promising_zone', 'conditional_power_at_planned_D',
@@ -760,7 +760,7 @@ conditional_power_output <-
 Here are the first five replicates, restricted to the main decision and final
 analysis columns.
 
-```{r promising-zone-output-head, class.source = 'fold-hide'}
+```{r promising-zone-output-head, echo = FALSE}
 output_columns <- c(
   'promising_zone', 'conditional_power_at_planned_D',
   'selected_final_event_number', 'conditional_power_at_final_D',
@@ -792,7 +792,7 @@ The zone frequencies and mean selected event number summarize how often the
 rule adapts the final milestone when both the data-generating and
 conditional-power hazard ratios are 0.75.
 
-```{r promising-zone-zone-summary, class.source = 'fold-hide'}
+```{r promising-zone-zone-summary, echo = FALSE}
 zone_levels <- c('unfavorable', 'promising', 'favorable')
 zone <- factor(conditional_power_output$promising_zone,
                levels = zone_levels)
@@ -825,7 +825,7 @@ conditional-power target at the selected event number, and the final testing
 result. These values describe this illustrative data-generating scenario;
 they do not establish type I error control for the adaptation rule.
 
-```{r promising-zone-overall-summary, class.source = 'fold-hide'}
+```{r promising-zone-overall-summary, echo = FALSE}
 overall_summary <- data.frame(
   metric = c(
     'final event target increased',
