@@ -135,7 +135,9 @@ Arms <- R6::R6Class(
     #' @param ... optional arguments for \code{generator}.
     update_endpoint_generator = function(endpoint_name, generator, ...){
 
-      private$endpoints[[paste0(endpoint_name, collapse = '/')]]$update_generator(generator, ...)
+      ## radix sort mirrors the canonical uid built in Endpoints$initialize()
+      uid <- paste0(sort(endpoint_name, method = 'radix'), collapse = '/')
+      private$endpoints[[uid]]$update_generator(generator, ...)
 
     },
 
@@ -254,6 +256,21 @@ Arms <- R6::R6Class(
     name = NULL,
     inclusion_filters = NULL,
     endpoints = list(),
+
+    ## @description
+    ## R6's default deep clone does not clone R6 objects nested in a list,
+    ## so without this hook a cloned arm would share its Endpoints objects
+    ## with the original, and update_endpoint_generator() on one would
+    ## mutate the other (e.g., corrupting the arms snapshot taken by
+    ## Trials$make_arms_snapshot(), leaking generator updates across
+    ## simulation replicates).
+    deep_clone = function(name, value){
+      if(name == 'endpoints'){
+        lapply(value, function(ep) ep$clone(deep = TRUE))
+      }else{
+        value
+      }
+    },
 
     ## @description
     ## return number of endpoints in the arm.

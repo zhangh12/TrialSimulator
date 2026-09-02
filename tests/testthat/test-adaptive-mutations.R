@@ -136,6 +136,156 @@ test_that("update_generator wrapper swaps generator for an endpoint", {
 })
 
 
+test_that("update_generator matches endpoint_name regardless of order", {
+
+  rng <- function(n, prev) {
+    data.frame(biomarker = rbinom(n, 1, prev),
+               pfs = rexp(n, log(2) / 10), pfs_event = 1)
+  }
+  ## registered as biomarker/pfs; updated below as pfs/biomarker
+  make_biomarker_arm <- function(name) {
+    ep <- endpoint(name = c("biomarker", "pfs"), type = c("baseline", "tte"),
+                   generator = rng, prev = .5)
+    a <- arm(name = name)
+    a$add_endpoints(ep)
+    a
+  }
+  trt <- make_biomarker_arm("trt")
+  pbo <- make_biomarker_arm("pbo")
+  tr <- make_trial()
+  add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+  swap <- milestone(name = "swap",
+                    when = calendarTime(time = 5),
+                    action = function(trial) {
+                      update_generator(trial,
+                                       arm_name = "trt",
+                                       endpoint_name = c("pfs", "biomarker"),
+                                       generator = rng,
+                                       prev = 1)
+                    })
+  final <- milestone(name = "final", when = calendarTime(time = 30))
+  lstn <- listener(silent = TRUE)
+  lstn$add_milestones(swap, final)
+  expect_no_error(
+    controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+  )
+})
+
+
+test_that("update_generator does not leak across replicates", {
+
+  rng <- function(n, prev) {
+    data.frame(biomarker = rbinom(n, 1, prev),
+               pfs = rexp(n, log(2) / 10), pfs_event = 1)
+  }
+  make_biomarker_arm <- function(name) {
+    a <- arm(name = name)
+    a$add_endpoints(
+      endpoint(name = c("biomarker", "pfs"), type = c("baseline", "tte"),
+               generator = rng, prev = .5)
+    )
+    a
+  }
+
+  ## a deep-cloned arm owns its endpoints: mutating the original must not
+  ## reach the clone (this is what protects the arms snapshot of run())
+  a <- make_biomarker_arm("a")
+  b <- a$clone(deep = TRUE)
+  expect_false(identical(a$get_endpoints()[[1]], b$get_endpoints()[[1]]))
+  a$update_endpoint_generator(c("biomarker", "pfs"), rng, prev = 1)
+  set.seed(1)
+  expect_lt(mean(b$get_endpoints()[[1]]$get_generator()(500)$biomarker), .7)
+
+  ## replicate 1 pushes prev to 1 in both arms; replicate 2 must still
+  ## start from the as-designed prev = .5
+  tr <- make_trial()
+  add_arms(tr, sample_ratio = c(1, 1),
+           make_biomarker_arm("pbo"), make_biomarker_arm("trt"))
+  mk_listener <- function() {
+    swap <- milestone(
+      name = "swap",
+      when = calendarTime(time = 5),
+      action = function(trial) {
+        locked <- trial$get_locked_data("swap")
+        trial$save(mean(locked$biomarker), "prev_at_swap")
+        for (arm_ in c("pbo", "trt")) {
+          trial$update_generator(arm_, c("biomarker", "pfs"), rng, prev = 1)
+        }
+      })
+    lstn <- listener(silent = TRUE)
+    lstn$add_milestones(swap,
+                        milestone(name = "final", when = calendarTime(time = 30)))
+    lstn
+  }
+  ctrl <- controller(tr, mk_listener())
+  ctrl$run(n = 2, silent = TRUE, plot_event = FALSE)
+  out <- ctrl$get_output()
+  expect_lt(out$prev_at_swap[1], .7)
+  expect_lt(out$prev_at_swap[2], .7) ## ~1 when the update leaks
+
+  ## a replicate is exactly reproducible from its reported seed. Arms must
+  ## be created before trial(): endpoint() validates its generator by
+  ## calling it, and those draws must not land after set.seed(seed).
+  pbo2 <- make_biomarker_arm("pbo")
+  trt2 <- make_biomarker_arm("trt")
+  tr2 <- make_trial(seed = out$seed[2])
+  add_arms(tr2, sample_ratio = c(1, 1), pbo2, trt2)
+  ctrl2 <- controller(tr2, mk_listener())
+  ctrl2$run(n = 1, silent = TRUE, plot_event = FALSE)
+  expect_identical(ctrl2$get_output()$prev_at_swap, out$prev_at_swap[2])
+})
+
+
+test_that("update_generator names the candidate endpoint_name on a mismatch", {
+
+  rng2 <- function(n, prev) {
+    data.frame(biomarker = rbinom(n, 1, prev),
+               pfs = rexp(n, log(2) / 10), pfs_event = 1)
+  }
+  rng1 <- function(n) data.frame(os = rexp(n, log(2) / 20), os_event = 1)
+  make_two_ep_arm <- function(name) {
+    a <- arm(name = name)
+    a$add_endpoints(
+      endpoint(name = c("biomarker", "pfs"), type = c("baseline", "tte"),
+               generator = rng2, prev = .5),
+      endpoint(name = "os", type = "tte", generator = rng1)
+    )
+    a
+  }
+  tr <- make_trial()
+  add_arms(tr, sample_ratio = c(1, 1),
+           make_two_ep_arm("pbo"), make_two_ep_arm("trt"))
+
+  probe <- milestone(
+    name = "probe",
+    when = calendarTime(time = 5),
+    action = function(trial) {
+      ## a proper subset of one endpoint() registration
+      expect_error(
+        trial$update_generator("trt", "pfs", rng2, prev = 1),
+        "endpoint_name = c('biomarker', 'pfs')",
+        fixed = TRUE
+      )
+      ## names spanning two endpoint() registrations
+      expect_error(
+        trial$update_generator("trt", c("pfs", "os"), rng2, prev = 1),
+        "endpoint_name = c('biomarker', 'pfs') or c('os')",
+        fixed = TRUE
+      )
+      ## a name absent from the arm keeps its own error
+      expect_error(
+        trial$update_generator("trt", "orr", rng2, prev = 1),
+        "not in the arm"
+      )
+    })
+  final <- milestone(name = "final", when = calendarTime(time = 30))
+  lstn <- listener(silent = TRUE)
+  lstn$add_milestones(probe, final)
+  controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+})
+
+
 test_that("update_sample_ratio wrapper changes randomization ratio", {
 
   pbo <- make_arm("pbo", 10)

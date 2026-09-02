@@ -100,7 +100,9 @@ Endpoints <- R6::R6Class(
 
       private$validate_arguments(name, type, readout, generator, ...)
       private$name <- name
-      private$uid <- paste0(name, collapse = '/')
+      ## sort with radix (locale-independent) so that the uid is canonical:
+      ## lookups elsewhere can match a name set regardless of its order.
+      private$uid <- paste0(sort(name, method = 'radix'), collapse = '/')
 
       if(length(type) == 1 && length(name) > 1){
         type <- rep(type, length(name))

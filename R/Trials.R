@@ -467,7 +467,9 @@ Trials <- R6::R6Class(
     #'
     #' @param arm_name character. Name of an arm.
     #' @param endpoint_name character. A vector of endpoint names whose
-    #' generator is updated.
+    #' generator is updated. It must cover all names registered together in
+    #' the corresponding \code{endpoint()} call, but their order does not
+    #' matter.
     #' @param generator a random number generation (RNG) function.
     #' See \code{generator} of \code{endpoint()}.
     #' @param ... optional arguments for \code{generator}.
@@ -502,11 +504,40 @@ Trials <- R6::R6Class(
              '> are not in the arm <', selected_arm$get_name(), '>. ')
       }
 
-      endpoint_name_ <- paste0(endpoint_name, collapse = '/')
+      ## radix sort mirrors the canonical uid built in Endpoints$initialize(),
+      ## so endpoint_name can be given in any order.
+      endpoint_name_ <- paste0(sort(endpoint_name, method = 'radix'), collapse = '/')
       if(!(endpoint_name_ %in% names(selected_arm$get_endpoints()))){
-        stop('Some more endpoint(s) are needed to define the arm <',
-             selected_arm$get_name(), '> with <',
-             paste0(endpoint_name, collapse = ', '), '>. ')
+        ## every name in endpoint_name is in the arm (checked above) and
+        ## names are unique within an arm, so each name belongs to exactly
+        ## one endpoint() registration. Either endpoint_name is a proper
+        ## subset of one registration, or it spans several; print the
+        ## registration(s) so users know what to pass.
+        registrations <- lapply(selected_arm$get_endpoints(),
+                                function(ep) ep$get_name())
+        as_code <- function(names_){
+          paste0('c(', paste0("'", names_, "'", collapse = ', '), ')')
+        }
+        covering <- Filter(function(x) all(endpoint_name %in% x), registrations)
+        if(length(covering) == 1){
+          stop('Endpoint(s) <', paste0(endpoint_name, collapse = ', '),
+               '> are registered to the arm <', selected_arm$get_name(),
+               '> together with <',
+               paste0(setdiff(covering[[1]], endpoint_name), collapse = ', '),
+               '> through a single call of endpoint(), thus sharing a ',
+               'generator that can only be updated as a whole. ',
+               'Please call update_generator() with endpoint_name = ',
+               as_code(covering[[1]]), '. ')
+        }else{
+          involved <- Filter(function(x) any(endpoint_name %in% x), registrations)
+          stop('Endpoint(s) <', paste0(endpoint_name, collapse = ', '),
+               '> are not registered to the arm <', selected_arm$get_name(),
+               '> through a single call of endpoint(), thus not sharing a ',
+               'generator. Please update their generators one at a time, ',
+               'calling update_generator() with endpoint_name = ',
+               paste0(vapply(involved, as_code, character(1)),
+                      collapse = ' or '), '. ')
+        }
       }
 
       stopifnot(is.function(generator))
@@ -3212,7 +3243,12 @@ Trials <- R6::R6Class(
       private$enroll_time <- head(private$enroll_time_with_redundant, private$n_patients)
       private$enroll_time_with_redundant <- private$enroll_time_with_redundant[-c(1:private$n_patients)]
 
-      arms <- private$.snapshot[['arms']]
+      ## re-clone so the snapshot stays pristine (same reasoning as for
+      ## regimen above): add_arms() below would otherwise install the
+      ## snapshot arm objects themselves into the trial, and an in-run
+      ## update_generator() in a later replicate would mutate the snapshot.
+      arms <- lapply(private$.snapshot[['arms']],
+                     function(a) a$clone(deep = TRUE))
       sample_ratio <- private$.snapshot[['sample_ratio']]
 
       if(length(arms) > 0){

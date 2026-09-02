@@ -481,7 +481,9 @@ update endpoint generator in an arm
 \item{\code{arm_name}}{character. Name of an arm.}
 
 \item{\code{endpoint_name}}{character. A vector of endpoint names whose
-generator is updated.}
+generator is updated. It must cover all names registered together in
+the corresponding \code{endpoint()} call, but their order does not
+matter.}
 
 \item{\code{generator}}{a random number generation (RNG) function.
 See \code{generator} of \code{endpoint()}.}
