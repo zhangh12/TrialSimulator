@@ -434,7 +434,10 @@ update endpoint generator in an arm
 
 - `endpoint_name`:
 
-  character. A vector of endpoint names whose generator is updated.
+  character. A vector of endpoint names whose generator is updated. It
+  must cover all names registered together in the corresponding
+  [`endpoint()`](https://zhangh12.github.io/TrialSimulator/reference/endpoint.md)
+  call, but their order does not matter.
 
 - `generator`:
 

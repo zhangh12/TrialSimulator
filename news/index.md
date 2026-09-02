@@ -1,5 +1,31 @@
 # Changelog
 
+## TrialSimulator 1.34.1
+
+### Bug fixes
+
+- Generator updates no longer leak across simulation replicates.
+  Previously, the arms snapshot taken at the beginning of
+  `controller$run()` shared its endpoint objects with the live arms, so
+  a `trial$update_generator()` call in one replicate silently altered
+  the data-generating process of all later replicates, and a failing
+  replicate could not be reproduced from the seed reported in its error
+  message. The snapshot now deep-clones endpoints, and every replicate
+  starts from freshly cloned, as-designed arms.
+
+### Updates
+
+- `trial$update_generator()` now accepts `endpoint_name` in any order.
+  Endpoint names registered together in one
+  [`endpoint()`](https://zhangh12.github.io/TrialSimulator/reference/endpoint.md)
+  call are matched as a set, so, e.g., `c('pfs', 'biomarker')` and
+  `c('biomarker', 'pfs')` are equivalent. Previously the names had to be
+  given in registration order, and a reordered vector was rejected with
+  a misleading error message. In addition, when `endpoint_name` covers
+  only part of a registration, or mixes names from different
+  registrations, the error message now spells out the exact
+  `endpoint_name` vector(s) to use.
+
 ## TrialSimulator 1.34.0
 
 ### New features

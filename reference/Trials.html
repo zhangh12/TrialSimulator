@@ -249,7 +249,7 @@ too, but they are part of the user-facing API above at the same time."><meta pro
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.34.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.34.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -651,7 +651,9 @@ simulation.</p></dd>
 
 <dt><code>endpoint_name</code></dt>
 <dd><p>character. A vector of endpoint names whose
-generator is updated.</p></dd>
+generator is updated. It must cover all names registered together in
+the corresponding <code><a href="endpoint.html">endpoint()</a></code> call, but their order does not
+matter.</p></dd>
 
 
 <dt><code>generator</code></dt>
