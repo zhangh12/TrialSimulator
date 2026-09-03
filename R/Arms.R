@@ -52,6 +52,15 @@ Arms <- R6::R6Class(
       private$name <- name
       private$endpoints <- list()
       private$inclusion_filters <- enquos(...)
+      ## Cache the deparsed criteria string for error messages. Building it
+      ## on every generate_data() call would negate the gain of applying
+      ## the criteria as a logical mask instead of dplyr::filter(), because
+      ## deparsing quosures with rlang::as_label() is not free (~1 ms per
+      ## call). Since inclusion_filters never change after construction,
+      ## deparsing once here is sufficient.
+      private$inclusion_criteria <- paste0(
+        "(", vapply(private$inclusion_filters, rlang::as_label, character(1)), ")",
+        collapse = " & ")
     },
 
     #' @description
@@ -159,27 +168,26 @@ Arms <- R6::R6Class(
           }
         }
 
-        filter_str <- paste0("(", sapply(private$inclusion_filters, expr_text), ")", collapse = " & ")
-
-        dat <- if(length(private$inclusion_filters) == 0){
-          dat
-        }else{
-          tryCatch({
-            dat %>% dplyr::filter(!!!private$inclusion_filters)
+        ## inclusion criteria: a logical mask with dplyr::filter() semantics
+        ## (conditions combined with &, NA rows dropped), which avoids the
+        ## fixed per-call overhead of dplyr::filter() in this loop
+        if(length(private$inclusion_filters) > 0){
+          mask <- tryCatch({
+            filter_conditions_mask(dat, private$inclusion_filters)
           }, error = function(e){
             stop(
               'Error in filtering data for arm <', self$get_name(), '>: \n',
-              'Inclusion criteria: \n', filter_str, '\n',
+              'Inclusion criteria: \n', private$inclusion_criteria, '\n',
               'Error message: \n', e$message
             )
           })
+          dat <- dat[mask, , drop = FALSE]
+          rownames(dat) <- NULL
         }
 
         if(nrow(dat) == 0){
           stop('No data meets inclusion criteria of arm <',
-               self$get_name(), '>: \n',
-               filter_str
-          )
+               self$get_name(), '>: \n', private$inclusion_criteria)
         }
 
         arm_data <- rbind(arm_data, dat)
@@ -255,6 +263,8 @@ Arms <- R6::R6Class(
   private = list(
     name = NULL,
     inclusion_filters = NULL,
+    ## deparsed inclusion criteria for error messages; see initialize()
+    inclusion_criteria = NULL,
     endpoints = list(),
 
     ## @description

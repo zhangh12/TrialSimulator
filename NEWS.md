@@ -1,3 +1,9 @@
+# TrialSimulator 1.35.3
+
+## Performance
+
+- Patient generation is faster for arms with inclusion criteria (subset conditions in `arm(name, ...)`). The criteria are now applied as a logical row mask with the semantics of `dplyr::filter()` (conditions combined with `&`, rows with `NA` dropped, `.data`/`.env` pronouns supported), instead of calling `dplyr::filter()` in every round of the rejection-sampling loop. The mask evaluation is shared with the lock-time fast path of 1.35.2 (internal `filter_conditions_mask()`). The human-readable criteria string used in error messages is also built once, when the arm is created, instead of on every generator call (deparsing quosures is not free). Results are unchanged; on a 1000-patient three-arm design with `pfs <= os` as inclusion criterion this removes roughly 9% of the per-replicate time.
+
 # TrialSimulator 1.35.2
 
 ## Performance

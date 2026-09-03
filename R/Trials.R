@@ -4292,16 +4292,7 @@ Trials <- R6::R6Class(
     ## @param conditions a list of quosures.
     filter_mask = function(data, conditions){
       tryCatch({
-        mask <- rep(TRUE, nrow(data))
-        for(q in conditions){
-          v <- rlang::eval_tidy(q, data = data)
-          if(!is.logical(v) || !(length(v) %in% c(1L, nrow(data)))){
-            stop('condition does not evaluate to a logical vector of ',
-                 'length 1 or nrow(data)')
-          }
-          mask <- mask & !is.na(v) & v
-        }
-        mask
+        filter_conditions_mask(data, conditions)
       },
       error = function(e){
         self$save(e$message, 'error_message', overwrite = TRUE)
