@@ -1,5 +1,74 @@
 # Changelog
 
+## TrialSimulator 1.35.4
+
+### Performance
+
+- Patient enrollment is faster for trials without stratification factors
+  (the common case). Internally, `enroll_patients()` now assembles the
+  patient data of each arm directly from one generated pool, skipping
+  the per-stratum bookkeeping
+  ([`table()`](https://rdrr.io/r/base/table.html),
+  [`merge()`](https://rdrr.io/r/base/merge.html),
+  [`split()`](https://rdrr.io/r/base/split.html),
+  [`bind_rows()`](https://dplyr.tidyverse.org/reference/bind_rows.html))
+  that stratified randomization requires. Generator and dropout
+  functions are called in exactly the same order and with the same sizes
+  as before, so the random number stream and therefore all results are
+  unchanged for a given seed (a regression test pins the patient data of
+  a fixed-seed trial to reference values). On a small two-arm design
+  with trivial actions this removes roughly 19% of the per-replicate
+  time; the relative gain shrinks as the statistical work per milestone
+  grows.
+
+## TrialSimulator 1.35.3
+
+### Performance
+
+- Patient generation is faster for arms with inclusion criteria (subset
+  conditions in `arm(name, ...)`). The criteria are now applied as a
+  logical row mask with the semantics of
+  [`dplyr::filter()`](https://dplyr.tidyverse.org/reference/filter.html)
+  (conditions combined with `&`, rows with `NA` dropped, `.data`/`.env`
+  pronouns supported), instead of calling
+  [`dplyr::filter()`](https://dplyr.tidyverse.org/reference/filter.html)
+  in every round of the rejection-sampling loop. The mask evaluation is
+  shared with the lock-time fast path of 1.35.2 (internal
+  `filter_conditions_mask()`). The human-readable criteria string used
+  in error messages is also built once, when the arm is created, instead
+  of on every generator call (deparsing quosures is not free). Results
+  are unchanged; on a 1000-patient three-arm design with `pfs <= os` as
+  inclusion criterion this removes roughly 9% of the per-replicate time.
+
+## TrialSimulator 1.35.2
+
+### Performance
+
+- Milestone conditions with subset conditions, e.g.,
+  `eventNumber(endpoint = 'pfs', n = 40, patient_id <= 70)` or
+  `enrollment(n = 100, biomarker == 1)`, now take the C++ lock-time fast
+  path. The subset conditions are reduced to a logical row mask with the
+  semantics of
+  [`dplyr::filter()`](https://dplyr.tidyverse.org/reference/filter.html)
+  (conditions combined with `&`, rows with `NA` dropped, `.data`/`.env`
+  pronouns supported) and the existing C++ helpers are applied to the
+  subset, instead of building per-endpoint event tables with `dplyr` for
+  every endpoint in the trial. Results are unchanged; the pure-R path
+  remains available through `options(trialsimulator.use_cpp = FALSE)`.
+  On an enrichment design whose milestones are all subgroup-filtered
+  this removes roughly 11% of the per-replicate time.
+
+## TrialSimulator 1.35.1
+
+### Performance
+
+- Data locking is faster for trials with a regimen. The `n_switches`
+  column of locked data is now computed on the subset of patients who
+  switched treatment, instead of running a regular expression over the
+  `regimen_trajectory` of every enrolled patient at every milestone.
+  Results are unchanged; for a 1000-patient three-arm design with
+  crossover this removes roughly 9% of the per-replicate time.
+
 ## TrialSimulator 1.35.0
 
 ### Updates

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,6 +51,34 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.35.4" id="trialsimulator-1354">TrialSimulator 1.35.4<a class="anchor" aria-label="anchor" href="#trialsimulator-1354"></a></h2>
+<div class="section level3">
+<h3 id="performance-1-35-4">Performance<a class="anchor" aria-label="anchor" href="#performance-1-35-4"></a></h3>
+<ul><li>Patient enrollment is faster for trials without stratification factors (the common case). Internally, <code>enroll_patients()</code> now assembles the patient data of each arm directly from one generated pool, skipping the per-stratum bookkeeping (<code><a href="https://rdrr.io/r/base/table.html" class="external-link">table()</a></code>, <code><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge()</a></code>, <code><a href="https://rdrr.io/r/base/split.html" class="external-link">split()</a></code>, <code><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows()</a></code>) that stratified randomization requires. Generator and dropout functions are called in exactly the same order and with the same sizes as before, so the random number stream and therefore all results are unchanged for a given seed (a regression test pins the patient data of a fixed-seed trial to reference values). On a small two-arm design with trivial actions this removes roughly 19% of the per-replicate time; the relative gain shrinks as the statistical work per milestone grows.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.35.3" id="trialsimulator-1353">TrialSimulator 1.35.3<a class="anchor" aria-label="anchor" href="#trialsimulator-1353"></a></h2>
+<div class="section level3">
+<h3 id="performance-1-35-3">Performance<a class="anchor" aria-label="anchor" href="#performance-1-35-3"></a></h3>
+<ul><li>Patient generation is faster for arms with inclusion criteria (subset conditions in <code>arm(name, ...)</code>). The criteria are now applied as a logical row mask with the semantics of <code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter()</a></code> (conditions combined with <code>&amp;</code>, rows with <code>NA</code> dropped, <code>.data</code>/<code>.env</code> pronouns supported), instead of calling <code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter()</a></code> in every round of the rejection-sampling loop. The mask evaluation is shared with the lock-time fast path of 1.35.2 (internal <code>filter_conditions_mask()</code>). The human-readable criteria string used in error messages is also built once, when the arm is created, instead of on every generator call (deparsing quosures is not free). Results are unchanged; on a 1000-patient three-arm design with <code>pfs &lt;= os</code> as inclusion criterion this removes roughly 9% of the per-replicate time.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.35.2" id="trialsimulator-1352">TrialSimulator 1.35.2<a class="anchor" aria-label="anchor" href="#trialsimulator-1352"></a></h2>
+<div class="section level3">
+<h3 id="performance-1-35-2">Performance<a class="anchor" aria-label="anchor" href="#performance-1-35-2"></a></h3>
+<ul><li>Milestone conditions with subset conditions, e.g., <code>eventNumber(endpoint = 'pfs', n = 40, patient_id &lt;= 70)</code> or <code>enrollment(n = 100, biomarker == 1)</code>, now take the C++ lock-time fast path. The subset conditions are reduced to a logical row mask with the semantics of <code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter()</a></code> (conditions combined with <code>&amp;</code>, rows with <code>NA</code> dropped, <code>.data</code>/<code>.env</code> pronouns supported) and the existing C++ helpers are applied to the subset, instead of building per-endpoint event tables with <code>dplyr</code> for every endpoint in the trial. Results are unchanged; the pure-R path remains available through <code>options(trialsimulator.use_cpp = FALSE)</code>. On an enrichment design whose milestones are all subgroup-filtered this removes roughly 11% of the per-replicate time.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.35.1" id="trialsimulator-1351">TrialSimulator 1.35.1<a class="anchor" aria-label="anchor" href="#trialsimulator-1351"></a></h2>
+<div class="section level3">
+<h3 id="performance-1-35-1">Performance<a class="anchor" aria-label="anchor" href="#performance-1-35-1"></a></h3>
+<ul><li>Data locking is faster for trials with a regimen. The <code>n_switches</code> column of locked data is now computed on the subset of patients who switched treatment, instead of running a regular expression over the <code>regimen_trajectory</code> of every enrolled patient at every milestone. Results are unchanged; for a 1000-patient three-arm design with crossover this removes roughly 9% of the per-replicate time.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.35.0" id="trialsimulator-1350">TrialSimulator 1.35.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1350"></a></h2>
 <div class="section level3">
