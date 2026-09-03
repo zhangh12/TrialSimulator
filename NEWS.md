@@ -1,3 +1,9 @@
+# TrialSimulator 1.35.4
+
+## Performance
+
+- Patient enrollment is faster for trials without stratification factors (the common case). Internally, `enroll_patients()` now assembles the patient data of each arm directly from one generated pool, skipping the per-stratum bookkeeping (`table()`, `merge()`, `split()`, `bind_rows()`) that stratified randomization requires. Generator and dropout functions are called in exactly the same order and with the same sizes as before, so the random number stream and therefore all results are unchanged for a given seed (a regression test pins the patient data of a fixed-seed trial to reference values). On a small two-arm design with trivial actions this removes roughly 19% of the per-replicate time; the relative gain shrinks as the statistical work per milestone grows.
+
 # TrialSimulator 1.35.3
 
 ## Performance

@@ -4157,76 +4157,113 @@ Trials <- R6::R6Class(
         }
       }
 
-      for(i in seq_along(arms_in_trial)){
-        arm <- arms_in_trial[i]
-        n_patients_in_arm <- sum(next_enroll_arms %in% arm)
-        tbl <- table(next_enroll_stratums[next_enroll_arms %in% arm])
-        target_size_per_stratum <- data.frame(
-          stratum     = names(tbl),
-          target_size = as.integer(tbl),
-          stringsAsFactors = FALSE
-        )
+      ## Fast path without stratification (the common case): one pool per
+      ## arm is always sufficient (generate_data() returns at least 1.1x the
+      ## target), so the per-stratum bookkeeping of the general path below
+      ## (table/merge/split/bind_rows) is skipped. Generator and dropout
+      ## calls are made in exactly the same order and with the same sizes as
+      ## on the general path, so the random number stream is unchanged.
+      no_stratification <- !private$has_stratification_factors() ||
+        identical(stratums_in_trial, 'all')
 
-        patient_pool <- NULL
-        prop <- 1.1
-        min_sample_size <- 20
-        while(TRUE){
-          new_sets <- private$get_an_arm(arm)$generate_data(max(ceiling(n_patients_in_arm * prop), min_sample_size))
-          new_sets$stratum <- make_stratum(new_sets)
-          patient_pool <- rbind(patient_pool, new_sets)
-
-          tbl1 <- table(patient_pool$stratum)
-          size_per_stratum <- data.frame(
-            stratum      = names(tbl1),
-            current_size = as.integer(tbl1),
+      if(no_stratification){
+        n_enrolled <- private$get_number_enrolled_patients()
+        for(i in seq_along(arms_in_trial)){
+          arm <- arms_in_trial[i]
+          patients_index <- which(next_enroll_arms == arm)
+          n_patients_in_arm <- length(patients_index)
+          ## The pool size max(ceiling(n * 1.1), 20) matches the request
+          ## made by the general path's stratified sampling loop, so the
+          ## generator's random draws (and therefore the trial output for
+          ## a given seed) are identical to those produced by 1.35.0 and
+          ## earlier. The over-sampling and the floor of 20 are otherwise
+          ## unnecessary on this path: generate_data() always returns the
+          ## requested number of rows, and there is no outer loop whose
+          ## iterations they would reduce.
+          patient_pool <- private$get_an_arm(arm)$generate_data(
+            max(ceiling(n_patients_in_arm * 1.1), 20))
+          arms_stratums_data[[arm]] <- cbind(
+            data.frame(
+              patient_id = n_enrolled + patients_index,
+              arm = arm,
+              enroll_time = next_enroll_time[patients_index],
+              dropout_time = private$get_dropout()(n = n_patients_in_arm)
+            ),
+            patient_pool[seq_len(n_patients_in_arm), , drop = FALSE]
+          )
+        }
+      }else{
+        for(i in seq_along(arms_in_trial)){
+          arm <- arms_in_trial[i]
+          n_patients_in_arm <- sum(next_enroll_arms %in% arm)
+          tbl <- table(next_enroll_stratums[next_enroll_arms %in% arm])
+          target_size_per_stratum <- data.frame(
+            stratum     = names(tbl),
+            target_size = as.integer(tbl),
             stringsAsFactors = FALSE
           )
 
-          tmp <- merge(size_per_stratum, target_size_per_stratum, by = 'stratum', all.y = TRUE)
-          tmp$current_size[is.na(tmp$current_size)] <- 0
-          if(with(tmp, all(current_size >= target_size))){
-            break
-          }
-          prop <- ifelse(any(tmp$current_size <= 10), 1, .2)
-          min_sample_size <- with(tmp, max((target_size - current_size) * 3, 10))
-        }
+          patient_pool <- NULL
+          prop <- 1.1
+          min_sample_size <- 20
+          while(TRUE){
+            new_sets <- private$get_an_arm(arm)$generate_data(max(ceiling(n_patients_in_arm * prop), min_sample_size))
+            new_sets$stratum <- make_stratum(new_sets)
+            patient_pool <- rbind(patient_pool, new_sets)
 
-        col_idx <- which(names(patient_pool) == 'stratum')
-        patient_pool <- split(
-          patient_pool[, -col_idx, drop = FALSE],
-          patient_pool$stratum
-        )
-
-        arms_stratums_data[[arm]] <- list()
-        for(j in seq_along(stratums_in_trial)){
-          stratum <- stratums_in_trial[j]
-          patients_index <- which(next_enroll_arms %in% arm &
-                                    next_enroll_stratums %in% stratum)
-
-          n_patients_in_arm_stratum <- length(patients_index)
-          if(n_patients_in_arm_stratum == 0){
-            next
-          }
-
-          stopifnot(target_size_per_stratum$target_size[target_size_per_stratum$stratum == stratum] == n_patients_in_arm_stratum)
-
-          arms_stratums_data[[arm]][[stratum]] <-
-            data.frame(
-              patient_id = private$get_number_enrolled_patients() + patients_index,
-              arm = arm,
-              enroll_time = next_enroll_time[patients_index],
-              dropout_time = private$get_dropout()(n = n_patients_in_arm_stratum)
+            tbl1 <- table(patient_pool$stratum)
+            size_per_stratum <- data.frame(
+              stratum      = names(tbl1),
+              current_size = as.integer(tbl1),
+              stringsAsFactors = FALSE
             )
 
-          arms_stratums_data[[arm]][[stratum]] <-
-            cbind(
-              arms_stratums_data[[arm]][[stratum]],
-              patient_pool[[stratum]][1:n_patients_in_arm_stratum, ]
-            )
+            tmp <- merge(size_per_stratum, target_size_per_stratum, by = 'stratum', all.y = TRUE)
+            tmp$current_size[is.na(tmp$current_size)] <- 0
+            if(with(tmp, all(current_size >= target_size))){
+              break
+            }
+            prop <- ifelse(any(tmp$current_size <= 10), 1, .2)
+            min_sample_size <- with(tmp, max((target_size - current_size) * 3, 10))
+          }
 
+          col_idx <- which(names(patient_pool) == 'stratum')
+          patient_pool <- split(
+            patient_pool[, -col_idx, drop = FALSE],
+            patient_pool$stratum
+          )
+
+          arms_stratums_data[[arm]] <- list()
+          for(j in seq_along(stratums_in_trial)){
+            stratum <- stratums_in_trial[j]
+            patients_index <- which(next_enroll_arms %in% arm &
+                                      next_enroll_stratums %in% stratum)
+
+            n_patients_in_arm_stratum <- length(patients_index)
+            if(n_patients_in_arm_stratum == 0){
+              next
+            }
+
+            stopifnot(target_size_per_stratum$target_size[target_size_per_stratum$stratum == stratum] == n_patients_in_arm_stratum)
+
+            arms_stratums_data[[arm]][[stratum]] <-
+              data.frame(
+                patient_id = private$get_number_enrolled_patients() + patients_index,
+                arm = arm,
+                enroll_time = next_enroll_time[patients_index],
+                dropout_time = private$get_dropout()(n = n_patients_in_arm_stratum)
+              )
+
+            arms_stratums_data[[arm]][[stratum]] <-
+              cbind(
+                arms_stratums_data[[arm]][[stratum]],
+                patient_pool[[stratum]][1:n_patients_in_arm_stratum, ]
+              )
+
+          }
+
+          arms_stratums_data[[arm]] <- bind_rows(arms_stratums_data[[arm]])
         }
-
-        arms_stratums_data[[arm]] <- bind_rows(arms_stratums_data[[arm]])
       }
 
       patient_data <- do.call(rbind, arms_stratums_data)
