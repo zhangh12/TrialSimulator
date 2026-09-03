@@ -38,4 +38,10 @@ This is a user-friendly wrapper of the member function of trial, i.e.,
 \code{Trials$add_arms()}, which is used in vignettes. Users who are not
 familiar with the concept of classes may consider using this wrapper
 directly.
+
+The trial captures an independent deep copy of every arm it registers.
+Subsequent changes to the original arm object do not affect the trial,
+and adaptations within the trial (e.g., \code{update_generator()}) do
+not modify the original arm. Complete the configuration of an arm before
+registering it.
 }

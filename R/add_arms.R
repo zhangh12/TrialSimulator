@@ -13,6 +13,12 @@
 #' familiar with the concept of classes may consider using this wrapper
 #' directly.
 #'
+#' The trial captures an independent deep copy of every arm it registers.
+#' Subsequent changes to the original arm object do not affect the trial,
+#' and adaptations within the trial (e.g., \code{update_generator()}) do
+#' not modify the original arm. Complete the configuration of an arm before
+#' registering it.
+#'
 #' @param trial a trial object returned by \code{trial()}.
 #' @param sample_ratio integer vector. Sample ratio for permuted block
 #' randomization. It will be appended to existing sample ratio in the trial.

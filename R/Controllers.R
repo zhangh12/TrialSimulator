@@ -345,6 +345,12 @@ Controllers <- R6::R6Class(
       ## run_sequential_() clears the flag while the run is still going.
       on.exit(private$has_run <- TRUE, add = TRUE)
 
+      ## a listener may be reused from an earlier controller in the same
+      ## session; restore its milestones to the as-designed state (triggered
+      ## flag cleared, original condition/action) so stale state cannot
+      ## silently suppress milestones. A no-op for a fresh listener.
+      private$get_listener()$reset()
+
       private$get_trial()$make_arms_snapshot()
       private$output <- NULL
 

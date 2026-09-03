@@ -573,6 +573,13 @@ Trials <- R6::R6Class(
     #' It is users' responsibility to ensure it and \code{TrialSimulator} has
     #' no way to track this.
     #'
+    #' The trial captures an independent deep copy of every arm it registers.
+    #' Subsequent changes to the original arm object or its endpoint objects
+    #' do not affect the trial, and adaptations within the trial (e.g.,
+    #' \code{update_generator()}) do not modify the original arm. Complete
+    #' the configuration of an arm before registering it; after registration,
+    #' change it only through the trial's adaptation methods.
+    #'
     #' @param sample_ratio integer vector. Sample ratio for permuted block
     #' randomization. It will be appended to existing sample ratio in the trial.
     #' @param ... one or more objects returned from \code{arm()}.
@@ -609,6 +616,9 @@ Trials <- R6::R6Class(
       arm_list$enforce <- NULL
       stopifnot(length(arm_list) == length(sample_ratio))
 
+      ## transactional registration: validate every incoming arm and clone
+      ## them all before any trial state is mutated, so a failure in the
+      ## middle of a batch cannot leave the trial partially modified.
       arm_names <- NULL
       for(arm in arm_list){
         stopifnot(inherits(arm, 'Arms'))
@@ -618,34 +628,18 @@ Trials <- R6::R6Class(
                'Make sure that Arm$add_endpoints() has been executed before adding this arm into the trial. ')
         }
 
-        if(arm$get_name() %in% self$get_arms_name()){
+        if(arm$get_name() %in% c(self$get_arms_name(), arm_names)){
           stop('Arm <', arm$get_name(), '> already exists in the trial. ',
                'Do you want to update it instead? \n',
                'If so you need to revise your code, ',
                'currently updating an arm is not yet supported. ')
         }
 
-        private$arms[[arm$get_name()]] <- arm
         arm_names <- c(arm_names, arm$get_name())
-
-        ## I have to assume that the function Trials$add_arms() can only be called in an action function.
-        ## Thus, the time an arm is added to the trial is the triggering time of the most recent milestone
-        ## This assumption can be problematic but for now I do not have other solution.
-        ## In Trials$dunnettTest(), I need to know at a given milestone whether an arm is still in the trial.
-        ##
-        existing_milestone_time <- self$get_milestone_time()
-        if(is.null(existing_milestone_time)){
-          latest_milestone_time <- 0
-        }else{
-          latest_milestone_time <- max(existing_milestone_time)
-        }
-        private$set_arm_added_time(arm = arm$get_name(),
-                                time = latest_milestone_time)
-
       }
 
       endpoint_names <- NULL
-      for(arm in private$get_arms()){
+      for(arm in c(private$get_arms(), arm_list)){
         if(is.null(endpoint_names)){
           endpoint_names <- arm$get_endpoints_name()
         }else{
@@ -658,6 +652,31 @@ Trials <- R6::R6Class(
                  'You may have typo when naming the endpoints in function endpoint(). ')
           }
         }
+      }
+
+      ## the trial takes ownership of every registered arm by capturing an
+      ## independent deep copy: later changes to the caller's arm objects do
+      ## not affect the trial, and adaptations within the trial (e.g.,
+      ## update_generator()) do not modify the caller's objects. reset()
+      ## relies on this to pass the snapshot arms in directly.
+      owned <- lapply(arm_list, function(arm) arm$clone(deep = TRUE))
+
+      ## I have to assume that the function Trials$add_arms() can only be called in an action function.
+      ## Thus, the time an arm is added to the trial is the triggering time of the most recent milestone
+      ## This assumption can be problematic but for now I do not have other solution.
+      ## In Trials$dunnettTest(), I need to know at a given milestone whether an arm is still in the trial.
+      ##
+      existing_milestone_time <- self$get_milestone_time()
+      if(is.null(existing_milestone_time)){
+        latest_milestone_time <- 0
+      }else{
+        latest_milestone_time <- max(existing_milestone_time)
+      }
+
+      for(arm in owned){
+        private$arms[[arm$get_name()]] <- arm
+        private$set_arm_added_time(arm = arm$get_name(),
+                                time = latest_milestone_time)
       }
 
       if(!private$silent){
@@ -2605,6 +2624,10 @@ Trials <- R6::R6Class(
     #' to determine the patients who may switch to other treatment during a
     #' a trial, to determine the switching time and how to update patients'
     #' endpoint data accordingly.
+    #'
+    #' The trial captures an independent deep copy of the regimen: triplets
+    #' appended in-run by \code{crossover()} do not modify the caller's
+    #' regimen object.
     #' @param regimen an object created by \code{regimen()}.
     add_regimen = function(regimen){
       if(self$has_arm()){
@@ -2613,7 +2636,10 @@ Trials <- R6::R6Class(
       }
 
       stopifnot(inherits(regimen, 'Regimens'))
-      private$regimen <- regimen
+      ## the trial owns an independent copy: crossover() appends triplets to
+      ## the active regimen in-run, and that must not modify the caller's
+      ## regimen object (which may be reused for another trial).
+      private$regimen <- regimen$clone(deep = TRUE)
       ## keep a pristine clone so reset() can restore it between replicates,
       ## undoing any triplets appended in-run by crossover(). The init-time
       ## make_snapshot() ran before any regimen existed, so it is captured here.
@@ -3243,12 +3269,11 @@ Trials <- R6::R6Class(
       private$enroll_time <- head(private$enroll_time_with_redundant, private$n_patients)
       private$enroll_time_with_redundant <- private$enroll_time_with_redundant[-c(1:private$n_patients)]
 
-      ## re-clone so the snapshot stays pristine (same reasoning as for
-      ## regimen above): add_arms() below would otherwise install the
-      ## snapshot arm objects themselves into the trial, and an in-run
-      ## update_generator() in a later replicate would mutate the snapshot.
-      arms <- lapply(private$.snapshot[['arms']],
-                     function(a) a$clone(deep = TRUE))
+      ## add_arms() deep-clones every arm it registers, so the snapshot arms
+      ## can be passed in directly: each replicate starts from fresh
+      ## trial-owned clones and the snapshot stays pristine, with a single
+      ## clone per arm per reset.
+      arms <- private$.snapshot[['arms']]
       sample_ratio <- private$.snapshot[['sample_ratio']]
 
       if(length(arms) > 0){
