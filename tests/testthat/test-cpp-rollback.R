@@ -90,6 +90,15 @@ test_that('updateMilestone: R-fallback and C++ produce identical output', {
     list(setup_file = test_path('fixtures', 'setup_updateMilestone.R'), n = 10))
 })
 
+test_that('filteredConditions: R-fallback and C++ produce identical output', {
+  ## milestone conditions with subset conditions in ... (cohort, subgroup,
+  ## .data pronoun, NA-producing covariate) take the C++ fast path via
+  ## filter_mask(); the dplyr-backed R path is the reference
+  skip_on_cran()
+  check_identical_paths('filteredConditions', run_setup_form,
+    list(setup_file = test_path('fixtures', 'setup_filteredConditions.R'), n = 10))
+})
+
 ## ---- TrialSimulatorDocuments examples (function-form) -----------------
 
 test_that('doc_example1: R-fallback and C++ produce identical output', {

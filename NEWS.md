@@ -1,3 +1,9 @@
+# TrialSimulator 1.35.2
+
+## Performance
+
+- Milestone conditions with subset conditions, e.g., `eventNumber(endpoint = 'pfs', n = 40, patient_id <= 70)` or `enrollment(n = 100, biomarker == 1)`, now take the C++ lock-time fast path. The subset conditions are reduced to a logical row mask with the semantics of `dplyr::filter()` (conditions combined with `&`, rows with `NA` dropped, `.data`/`.env` pronouns supported) and the existing C++ helpers are applied to the subset, instead of building per-endpoint event tables with `dplyr` for every endpoint in the trial. Results are unchanged; the pure-R path remains available through `options(trialsimulator.use_cpp = FALSE)`. On an enrichment design whose milestones are all subgroup-filtered this removes roughly 11% of the per-replicate time.
+
 # TrialSimulator 1.35.1
 
 ## Performance

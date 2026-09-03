@@ -2928,15 +2928,19 @@ Trials <- R6::R6Class(
         arms <- self$get_arms_name()
       }
 
-      ## Fast path: when no filter expressions are passed AND the C++ toggle
-      ## is enabled (the default), use C++ helpers that compute the lock time
-      ## directly without building intermediate event-count data.frames.
-      ## The R fallback is used when callers pass filter conditions via ...
-      ## (which require dplyr) OR when the user has set
-      ## options(trialsimulator.use_cpp = FALSE).
-      if(.use_cpp_lock_time() && length(rlang::enquos(...)) == 0L){
+      ## Fast path (the default): C++ helpers compute the lock time directly
+      ## without building the per-endpoint event-count data frames of
+      ## get_event_tables(). Subset conditions in ... are reduced to a
+      ## logical mask by filter_mask(), with dplyr::filter() semantics, so
+      ## filtered conditions take the fast path too. The pure-R fallback is
+      ## kept for options(trialsimulator.use_cpp = FALSE).
+      if(.use_cpp_lock_time()){
         td <- private$get_trial_data()
         td <- td[td$arm %in% arms, , drop = FALSE]
+        conditions <- rlang::enquos(...)
+        if(length(conditions) > 0L){
+          td <- td[private$filter_mask(td, conditions), , drop = FALSE]
+        }
         milestone_times <- vapply(seq_along(endpoints), function(i){
           ep <- endpoints[i]
           n  <- as.integer(target_n_events[i])
@@ -3033,13 +3037,18 @@ Trials <- R6::R6Class(
         arms <- self$get_arms_name()
       }
 
-      ## Fast path: when no filter expressions are passed AND the C++ toggle
-      ## is enabled, use the C++ helper that computes the enrollment lock
-      ## time directly. Filter expressions or options(trialsimulator.use_cpp=FALSE)
-      ## route through the dplyr-backed R path.
-      if(.use_cpp_lock_time() && length(rlang::enquos(...)) == 0L){
+      ## Fast path (the default): the C++ helper computes the enrollment lock
+      ## time directly; subset conditions in ... are reduced to a logical
+      ## mask by filter_mask() (dplyr::filter() semantics). The pure-R
+      ## fallback is kept for options(trialsimulator.use_cpp = FALSE).
+      if(.use_cpp_lock_time()){
         td <- private$get_trial_data()
-        et <- td$enroll_time[td$arm %in% arms]
+        td <- td[td$arm %in% arms, , drop = FALSE]
+        conditions <- rlang::enquos(...)
+        if(length(conditions) > 0L){
+          td <- td[private$filter_mask(td, conditions), , drop = FALSE]
+        }
+        et <- td$enroll_time
         milestone_time <- find_enrollment_lock_time_cpp(
           et, as.integer(target_n_patients))
         if(!private$silent && is.infinite(milestone_time)){
@@ -4268,6 +4277,38 @@ Trials <- R6::R6Class(
       }
       attributes(time) <- NULL
       private$now <- time
+    },
+
+    ## @description
+    ## reduce subset conditions (a list of quosures captured from ... of a
+    ## milestone condition) to a logical row mask on a data frame, with the
+    ## semantics of dplyr::filter(): conditions are combined with & and a row
+    ## is dropped when any condition is NA. Used by the lock-time fast paths
+    ## so that filtered conditions reuse the C++ helpers instead of building
+    ## the per-endpoint event tables of get_event_tables(). Errors are
+    ## re-signaled with the same message as the R path.
+    ##
+    ## @param data a data frame (trial data).
+    ## @param conditions a list of quosures.
+    filter_mask = function(data, conditions){
+      tryCatch({
+        mask <- rep(TRUE, nrow(data))
+        for(q in conditions){
+          v <- rlang::eval_tidy(q, data = data)
+          if(!is.logical(v) || !(length(v) %in% c(1L, nrow(data)))){
+            stop('condition does not evaluate to a logical vector of ',
+                 'length 1 or nrow(data)')
+          }
+          mask <- mask & !is.na(v) & v
+        }
+        mask
+      },
+      error = function(e){
+        self$save(e$message, 'error_message', overwrite = TRUE)
+        stop('Error in filtering data for table of event count. ',
+             'Please check condition in ..., ',
+             'which should be compatible with dplyr::filter. ')
+      })
     },
 
     ## @description
