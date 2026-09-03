@@ -168,6 +168,134 @@ test_that("add_regimen captures an independent copy of the regimen", {
 })
 
 
+test_that("crossover() leaves the externally supplied regimen unchanged", {
+
+  cross_arm <- function(name) {
+    a <- arm(name = name)
+    a$add_endpoints(endpoint(name = "pfs", type = "tte",
+                             generator = rexp, rate = log(2) / 8),
+                    endpoint(name = "os", type = "tte",
+                             generator = rexp, rate = log(2) / 16))
+    a
+  }
+  what_setup <- function(patient_data) {
+    data.frame(patient_id = patient_data$patient_id,
+               new_treatment = NA_character_)
+  }
+  when_setup <- function(patient_data) {
+    data.frame(patient_id = patient_data$patient_id,
+               switch_time = patient_data$pfs)
+  }
+  how_id <- function(patient_data) data.frame(patient_id = patient_data$patient_id)
+  what_switch <- function(patient_data) {
+    data.frame(patient_id = patient_data$patient_id,
+               new_treatment = ifelse(patient_data$arm == "pbo",
+                                      "trt", NA_character_))
+  }
+
+  rg <- regimen(what_setup, when_setup, how_id)
+  pbo <- cross_arm("pbo")
+  trt <- cross_arm("trt")
+  tr <- own_trial()
+  tr$add_regimen(rg)
+  add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+  m <- milestone(name = "m", when = calendarTime(time = 5),
+                 action = function(trial) {
+                   trial$crossover(what = what_switch, how = how_id)
+                 })
+  lstn <- listener(silent = TRUE)
+  lstn$add_milestones(m, milestone(name = "final", when = calendarTime(time = 10)))
+  controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+
+  ## the in-run triplet reached only the trial-owned regimen
+  expect_identical(rg$get_number_treatment_allocator(), 1L)
+  expect_identical(
+    tr$.__enclos_env__$private$regimen$get_number_treatment_allocator(), 2L)
+})
+
+
+test_that("re-adding the name of a removed arm fails atomically", {
+
+  pbo <- own_arm("pbo")
+  trt <- own_arm("trt")
+  tr <- own_trial()
+  add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+  m <- milestone(
+    name = "m",
+    when = calendarTime(time = 5),
+    action = function(trial) {
+      trial$remove_arms("trt")
+      expect_error(trial$add_arms(1, own_arm("trt")),
+                   "Re-adding an arm of the same name is not supported")
+      ## the failed call must not have touched any trial state
+      expect_identical(trial$get_arms_name(), "pbo")
+      expect_identical(names(trial$get_sample_ratio()), "pbo")
+    })
+  lstn <- listener(silent = TRUE)
+  lstn$add_milestones(m, milestone(name = "final", when = calendarTime(time = 10)))
+  expect_no_error(
+    controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
+  )
+})
+
+
+test_that("arms named after add_arms() arguments survive reset", {
+
+  ## the snapshot list is keyed by arm name; reset() must not let these
+  ## names be matched to the enforce/sample_ratio arguments of add_arms()
+  a1 <- own_arm("enforce")
+  a2 <- own_arm("sample_ratio")
+  tr <- own_trial()
+  add_arms(tr, sample_ratio = c(1, 1), a1, a2)
+
+  lstn <- listener(silent = TRUE)
+  lstn$add_milestones(milestone(name = "final", when = calendarTime(time = 10)))
+  ctrl <- controller(tr, lstn)
+  expect_no_error(ctrl$run(n = 2, silent = TRUE, plot_event = FALSE))
+  expect_identical(nrow(ctrl$get_output()), 2L)
+  expect_setequal(tr$get_arms_name(), c("enforce", "sample_ratio"))
+})
+
+
+test_that("a replicate re-adding a pre-created arm reproduces from its seed", {
+
+  mk_setup <- function(seed) {
+    ext_exp <- own_arm("exp")
+    pbo <- own_arm("pbo")
+    trt <- own_arm("trt")
+    tr <- own_trial(seed = seed)
+    add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
+
+    add_exp <- milestone(name = "add_exp", when = calendarTime(time = 5),
+                         action = function(trial) {
+                           trial$add_arms(1, ext_exp)
+                         })
+    bump <- milestone(name = "bump", when = calendarTime(time = 15),
+                      action = function(trial) {
+                        locked <- trial$get_locked_data("bump")
+                        exp_rows <- locked[locked$arm == "exp", ]
+                        trial$save(mean(exp_rows$biomarker), "exp_prev")
+                        trial$update_generator("exp", c("biomarker", "pfs"),
+                                               own_rng, prev = 1)
+                      })
+    lstn <- listener(silent = TRUE)
+    lstn$add_milestones(add_exp, bump,
+                        milestone(name = "final", when = calendarTime(time = 30)))
+    controller(tr, lstn)
+  }
+
+  ctrl <- mk_setup(seed = 1)
+  ctrl$run(n = 2, silent = TRUE, plot_event = FALSE)
+  out <- ctrl$get_output()
+
+  ctrl2 <- mk_setup(seed = out$seed[2])
+  ctrl2$run(n = 1, silent = TRUE, plot_event = FALSE)
+  expect_identical(ctrl2$get_output()$exp_prev, out$exp_prev[2])
+})
+
+
 test_that("run() restores a listener reused from an earlier controller", {
 
   mk_trial_pair <- function(seed) {

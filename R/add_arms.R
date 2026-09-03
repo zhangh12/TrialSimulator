@@ -17,7 +17,9 @@
 #' Subsequent changes to the original arm object do not affect the trial,
 #' and adaptations within the trial (e.g., \code{update_generator()}) do
 #' not modify the original arm. Complete the configuration of an arm before
-#' registering it.
+#' registering it. The copy covers the arm and endpoint objects themselves;
+#' a mutable environment or R6 object captured by a generator function is
+#' shared by design of R closures and is not isolated.
 #'
 #' @param trial a trial object returned by \code{trial()}.
 #' @param sample_ratio integer vector. Sample ratio for permuted block

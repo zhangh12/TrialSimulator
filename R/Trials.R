@@ -578,7 +578,11 @@ Trials <- R6::R6Class(
     #' do not affect the trial, and adaptations within the trial (e.g.,
     #' \code{update_generator()}) do not modify the original arm. Complete
     #' the configuration of an arm before registering it; after registration,
-    #' change it only through the trial's adaptation methods.
+    #' change it only through the trial's adaptation methods. The copy covers
+    #' the arm and endpoint objects themselves; a mutable environment or R6
+    #' object captured by a generator function is shared by design of R
+    #' closures and is not isolated, so generators should not carry external
+    #' mutable state.
     #'
     #' @param sample_ratio integer vector. Sample ratio for permuted block
     #' randomization. It will be appended to existing sample ratio in the trial.
@@ -633,6 +637,18 @@ Trials <- R6::R6Class(
                'Do you want to update it instead? \n',
                'If so you need to revise your code, ',
                'currently updating an arm is not yet supported. ')
+        }
+
+        ## an arm that was added and later removed leaves its history in
+        ## arm_time; re-adding the same name would corrupt that history, so
+        ## reject it here, before any state is touched, to keep this
+        ## function transactional. Use a different name for the new arm.
+        if(!is.null(private$arm_time[[arm$get_name()]][['time_added']])){
+          stop('Arm <', arm$get_name(), '> was added to the trial at time <',
+               private$arm_time[[arm$get_name()]][['time_added']],
+               '> and has been removed since then. ',
+               'Re-adding an arm of the same name is not supported; ',
+               'give the new arm a different name. ')
         }
 
         arm_names <- c(arm_names, arm$get_name())
@@ -2627,7 +2643,9 @@ Trials <- R6::R6Class(
     #'
     #' The trial captures an independent deep copy of the regimen: triplets
     #' appended in-run by \code{crossover()} do not modify the caller's
-    #' regimen object.
+    #' regimen object. The copy covers the regimen object itself; a mutable
+    #' environment or R6 object captured by a \code{what}/\code{when}/\code{how}
+    #' function is shared by design of R closures and is not isolated.
     #' @param regimen an object created by \code{regimen()}.
     add_regimen = function(regimen){
       if(self$has_arm()){
@@ -3281,8 +3299,12 @@ Trials <- R6::R6Class(
         ## must call add_arms to add arms back to the trial
         ## because this will generate some data as well.
         ## set self$arms <- ... does not fulfill the purpose of
-        ## resetting a trial
-        do.call(self$add_arms, c(list(sample_ratio), arms))
+        ## resetting a trial.
+        ## unname() is required: the snapshot list is keyed by arm name, and
+        ## an arm named "enforce" or "sample_ratio" would otherwise be
+        ## matched to the function argument of that name by do.call().
+        do.call(self$add_arms,
+                c(list(sample_ratio = sample_ratio), unname(arms)))
       }
 
     },

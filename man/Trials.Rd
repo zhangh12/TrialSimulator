@@ -515,7 +515,11 @@ Subsequent changes to the original arm object or its endpoint objects
 do not affect the trial, and adaptations within the trial (e.g.,
 \code{update_generator()}) do not modify the original arm. Complete
 the configuration of an arm before registering it; after registration,
-change it only through the trial's adaptation methods.
+change it only through the trial's adaptation methods. The copy covers
+the arm and endpoint objects themselves; a mutable environment or R6
+object captured by a generator function is shared by design of R
+closures and is not isolated, so generators should not carry external
+mutable state.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$add_arms(sample_ratio, ...)}\if{html}{\out{</div>}}
 }
@@ -1546,7 +1550,9 @@ endpoint data accordingly.
 
 The trial captures an independent deep copy of the regimen: triplets
 appended in-run by \code{crossover()} do not modify the caller's
-regimen object.
+regimen object. The copy covers the regimen object itself; a mutable
+environment or R6 object captured by a \code{what}/\code{when}/\code{how}
+function is shared by design of R closures and is not isolated.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$add_regimen(regimen)}\if{html}{\out{</div>}}
 }
