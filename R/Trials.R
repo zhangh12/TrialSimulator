@@ -2756,8 +2756,16 @@ Trials <- R6::R6Class(
             SIMPLIFY = TRUE, USE.NAMES = FALSE
           )
         }
-        ## number of switches = number of '@' minus 1 (the initial arm@0 entry)
-        locked_data$n_switches <- lengths(gregexpr('@', locked_data$regimen_trajectory, fixed = TRUE)) - 1L
+        ## number of switches = number of '@' minus 1 (the initial arm@0 entry).
+        ## Non-switchers are exactly "arm@0", i.e. 0 switches, so the regex
+        ## count is only needed on the (usually small) switcher subset; on a
+        ## large locked data set this is the dominant cost of lock_data().
+        n_switches <- integer(nrow(locked_data))
+        if(length(switchers) > 0){
+          n_switches[switchers] <- lengths(
+            gregexpr('@', locked_data$regimen_trajectory[switchers], fixed = TRUE)) - 1L
+        }
+        locked_data$n_switches <- n_switches
       }
 
       n_events_or_readouts <- NULL

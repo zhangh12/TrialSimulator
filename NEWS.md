@@ -1,3 +1,9 @@
+# TrialSimulator 1.35.1
+
+## Performance
+
+- Data locking is faster for trials with a regimen. The `n_switches` column of locked data is now computed on the subset of patients who switched treatment, instead of running a regular expression over the `regimen_trajectory` of every enrolled patient at every milestone. Results are unchanged; for a 1000-patient three-arm design with crossover this removes roughly 9% of the per-replicate time.
+
 # TrialSimulator 1.35.0
 
 ## Updates
