@@ -1,5 +1,29 @@
 # Changelog
 
+## TrialSimulator 1.35.0
+
+### Updates
+
+- The trial now takes ownership of registered objects by capturing
+  independent deep copies. `trial$add_arms()` deep-clones every arm it
+  registers, and `trial$add_regimen()` deep-clones the regimen.
+  Consequently, changes made to the caller’s arm or regimen objects
+  after registration no longer affect the trial, and adaptations within
+  the trial (e.g., `trial$update_generator()`, `trial$crossover()`) no
+  longer modify the caller’s objects, so those objects can be safely
+  reused, e.g., to build another trial. Complete the configuration of an
+  arm before registering it; after registration, change it only through
+  the trial’s adaptation methods.
+- `trial$add_arms()` registration is now transactional: all incoming
+  arms are validated (including endpoint-set consistency) before any of
+  them is installed, so a failing batch no longer leaves the trial
+  partially modified.
+- `controller$run()` now restores the listener’s milestones to their
+  as-designed state before the first replicate. Previously, reusing a
+  listener from an earlier controller in the same session left its
+  milestones in a triggered state, silently suppressing them in the new
+  run.
+
 ## TrialSimulator 1.34.1
 
 ### Bug fixes

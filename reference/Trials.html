@@ -249,7 +249,7 @@ too, but they are part of the user-facing API above at the same time."><meta pro
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.34.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -680,7 +680,13 @@ length;
 (2) add arms to a trial already with arm(s).</p>
 <p>Note that this function should only be called within action functions.
 It is users' responsibility to ensure it and <code>TrialSimulator</code> has
-no way to track this.</p><div class="section">
+no way to track this.</p>
+<p>The trial captures an independent deep copy of every arm it registers.
+Subsequent changes to the original arm object or its endpoint objects
+do not affect the trial, and adaptations within the trial (e.g.,
+<code><a href="update_generator.html">update_generator()</a></code>) do not modify the original arm. Complete
+the configuration of an arm before registering it; after registration,
+change it only through the trial's adaptation methods.</p><div class="section">
 <h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span><span class="va">sample_ratio</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -1742,7 +1748,10 @@ tr$eventNumberReestimationFromConditionalPower(
 <p>register regimen to a trial. The regimen consists of three functions
 to determine the patients who may switch to other treatment during a
 a trial, to determine the switching time and how to update patients'
-endpoint data accordingly.</p><div class="section">
+endpoint data accordingly.</p>
+<p>The trial captures an independent deep copy of the regimen: triplets
+appended in-run by <code><a href="crossover.html">crossover()</a></code> do not modify the caller's
+regimen object.</p><div class="section">
 <h4 id="usage-26">Usage<a class="anchor" aria-label="anchor" href="#usage-26"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">add_regimen</span><span class="op">(</span><span class="va">regimen</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>

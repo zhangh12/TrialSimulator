@@ -463,6 +463,14 @@ Note that this function should only be called within action functions.
 It is users' responsibility to ensure it and `TrialSimulator` has no way
 to track this.
 
+The trial captures an independent deep copy of every arm it registers.
+Subsequent changes to the original arm object or its endpoint objects do
+not affect the trial, and adaptations within the trial (e.g.,
+[`update_generator()`](https://zhangh12.github.io/TrialSimulator/reference/update_generator.md))
+do not modify the original arm. Complete the configuration of an arm
+before registering it; after registration, change it only through the
+trial's adaptation methods.
+
 #### Usage
 
     Trials$add_arms(sample_ratio, ...)
@@ -1521,6 +1529,11 @@ register regimen to a trial. The regimen consists of three functions to
 determine the patients who may switch to other treatment during a a
 trial, to determine the switching time and how to update patients'
 endpoint data accordingly.
+
+The trial captures an independent deep copy of the regimen: triplets
+appended in-run by
+[`crossover()`](https://zhangh12.github.io/TrialSimulator/reference/crossover.md)
+do not modify the caller's regimen object.
 
 #### Usage
 

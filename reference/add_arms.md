@@ -11,6 +11,13 @@ This is a user-friendly wrapper of the member function of trial, i.e.,
 familiar with the concept of classes may consider using this wrapper
 directly.
 
+The trial captures an independent deep copy of every arm it registers.
+Subsequent changes to the original arm object do not affect the trial,
+and adaptations within the trial (e.g.,
+[`update_generator()`](https://zhangh12.github.io/TrialSimulator/reference/update_generator.md))
+do not modify the original arm. Complete the configuration of an arm
+before registering it.
+
 ## Usage
 
 ``` r
