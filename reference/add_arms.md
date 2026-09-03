@@ -16,7 +16,9 @@ Subsequent changes to the original arm object do not affect the trial,
 and adaptations within the trial (e.g.,
 [`update_generator()`](https://zhangh12.github.io/TrialSimulator/reference/update_generator.md))
 do not modify the original arm. Complete the configuration of an arm
-before registering it.
+before registering it. The copy covers the arm and endpoint objects
+themselves; a mutable environment or R6 object captured by a generator
+function is shared by design of R closures and is not isolated.
 
 ## Usage
 

@@ -686,7 +686,11 @@ Subsequent changes to the original arm object or its endpoint objects
 do not affect the trial, and adaptations within the trial (e.g.,
 <code><a href="update_generator.html">update_generator()</a></code>) do not modify the original arm. Complete
 the configuration of an arm before registering it; after registration,
-change it only through the trial's adaptation methods.</p><div class="section">
+change it only through the trial's adaptation methods. The copy covers
+the arm and endpoint objects themselves; a mutable environment or R6
+object captured by a generator function is shared by design of R
+closures and is not isolated, so generators should not carry external
+mutable state.</p><div class="section">
 <h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span><span class="va">sample_ratio</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -1751,7 +1755,9 @@ a trial, to determine the switching time and how to update patients'
 endpoint data accordingly.</p>
 <p>The trial captures an independent deep copy of the regimen: triplets
 appended in-run by <code><a href="crossover.html">crossover()</a></code> do not modify the caller's
-regimen object.</p><div class="section">
+regimen object. The copy covers the regimen object itself; a mutable
+environment or R6 object captured by a <code>what</code>/<code>when</code>/<code>how</code>
+function is shared by design of R closures and is not isolated.</p><div class="section">
 <h4 id="usage-26">Usage<a class="anchor" aria-label="anchor" href="#usage-26"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">add_regimen</span><span class="op">(</span><span class="va">regimen</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>

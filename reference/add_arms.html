@@ -12,7 +12,9 @@ The trial captures an independent deep copy of every arm it registers.
 Subsequent changes to the original arm object do not affect the trial,
 and adaptations within the trial (e.g., update_generator()) do
 not modify the original arm. Complete the configuration of an arm before
-registering it."><meta property="og:description" content="add one or more arms to a trial. This function can be used in two
+registering it. The copy covers the arm and endpoint objects themselves;
+a mutable environment or R6 object captured by a generator function is
+shared by design of R closures and is not isolated."><meta property="og:description" content="add one or more arms to a trial. This function can be used in two
 scenarios: (1) adding arms right after a trial is created
 (i.e., trial(...)). sample_ratio and arms added through
 ... must be of same length; (2) adding arms to an existing trial in
@@ -25,7 +27,9 @@ The trial captures an independent deep copy of every arm it registers.
 Subsequent changes to the original arm object do not affect the trial,
 and adaptations within the trial (e.g., update_generator()) do
 not modify the original arm. Complete the configuration of an arm before
-registering it."><meta property="og:image" content="https://zhangh12.github.io/TrialSimulator/logo.svg"></head><body>
+registering it. The copy covers the arm and endpoint objects themselves;
+a mutable environment or R6 object captured by a generator function is
+shared by design of R closures and is not isolated."><meta property="og:image" content="https://zhangh12.github.io/TrialSimulator/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -92,7 +96,9 @@ directly.</p>
 Subsequent changes to the original arm object do not affect the trial,
 and adaptations within the trial (e.g., <code><a href="update_generator.html">update_generator()</a></code>) do
 not modify the original arm. Complete the configuration of an arm before
-registering it.</p>
+registering it. The copy covers the arm and endpoint objects themselves;
+a mutable environment or R6 object captured by a generator function is
+shared by design of R closures and is not isolated.</p>
     </div>
 
     <div class="section level2">

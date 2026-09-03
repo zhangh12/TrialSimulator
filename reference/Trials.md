@@ -469,7 +469,10 @@ not affect the trial, and adaptations within the trial (e.g.,
 [`update_generator()`](https://zhangh12.github.io/TrialSimulator/reference/update_generator.md))
 do not modify the original arm. Complete the configuration of an arm
 before registering it; after registration, change it only through the
-trial's adaptation methods.
+trial's adaptation methods. The copy covers the arm and endpoint objects
+themselves; a mutable environment or R6 object captured by a generator
+function is shared by design of R closures and is not isolated, so
+generators should not carry external mutable state.
 
 #### Usage
 
@@ -1533,7 +1536,10 @@ endpoint data accordingly.
 The trial captures an independent deep copy of the regimen: triplets
 appended in-run by
 [`crossover()`](https://zhangh12.github.io/TrialSimulator/reference/crossover.md)
-do not modify the caller's regimen object.
+do not modify the caller's regimen object. The copy covers the regimen
+object itself; a mutable environment or R6 object captured by a
+`what`/`when`/`how` function is shared by design of R closures and is
+not isolated.
 
 #### Usage
 
