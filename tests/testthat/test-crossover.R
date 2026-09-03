@@ -174,6 +174,15 @@ test_that('crossover() records the switch in regimen_trajectory', {
   expect_true(all(d$regimen_trajectory[d$arm == 'trt'] == 'trt@0'))
   expect_true(all(d$n_switches[d$arm == 'trt'] == 0L))
 
+  ## n_switches is computed on the switcher subset only; it must equal the
+  ## full-vector definition (number of '@' minus 1) for every patient, with
+  ## switchers whose switch falls after the lock time counted as 0
+  expect_identical(
+    d$n_switches,
+    lengths(gregexpr('@', d$regimen_trajectory, fixed = TRUE)) - 1L)
+  expect_true(any(d$n_switches > 0L))
+  expect_true(all(d$n_switches[!grepl(';', d$regimen_trajectory, fixed = TRUE)] == 0L))
+
   long     <- expandRegimen(d)
   switched <- long[long$regimen == 'trt' & long$switch_time_from_enrollment > 0, ]
   expect_true(nrow(switched) > 0)

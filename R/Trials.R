@@ -2756,8 +2756,16 @@ Trials <- R6::R6Class(
             SIMPLIFY = TRUE, USE.NAMES = FALSE
           )
         }
-        ## number of switches = number of '@' minus 1 (the initial arm@0 entry)
-        locked_data$n_switches <- lengths(gregexpr('@', locked_data$regimen_trajectory, fixed = TRUE)) - 1L
+        ## number of switches = number of '@' minus 1 (the initial arm@0 entry).
+        ## Non-switchers are exactly "arm@0", i.e. 0 switches, so the regex
+        ## count is only needed on the (usually small) switcher subset; on a
+        ## large locked data set this is the dominant cost of lock_data().
+        n_switches <- integer(nrow(locked_data))
+        if(length(switchers) > 0){
+          n_switches[switchers] <- lengths(
+            gregexpr('@', locked_data$regimen_trajectory[switchers], fixed = TRUE)) - 1L
+        }
+        locked_data$n_switches <- n_switches
       }
 
       n_events_or_readouts <- NULL
@@ -2920,15 +2928,19 @@ Trials <- R6::R6Class(
         arms <- self$get_arms_name()
       }
 
-      ## Fast path: when no filter expressions are passed AND the C++ toggle
-      ## is enabled (the default), use C++ helpers that compute the lock time
-      ## directly without building intermediate event-count data.frames.
-      ## The R fallback is used when callers pass filter conditions via ...
-      ## (which require dplyr) OR when the user has set
-      ## options(trialsimulator.use_cpp = FALSE).
-      if(.use_cpp_lock_time() && length(rlang::enquos(...)) == 0L){
+      ## Fast path (the default): C++ helpers compute the lock time directly
+      ## without building the per-endpoint event-count data frames of
+      ## get_event_tables(). Subset conditions in ... are reduced to a
+      ## logical mask by filter_mask(), with dplyr::filter() semantics, so
+      ## filtered conditions take the fast path too. The pure-R fallback is
+      ## kept for options(trialsimulator.use_cpp = FALSE).
+      if(.use_cpp_lock_time()){
         td <- private$get_trial_data()
         td <- td[td$arm %in% arms, , drop = FALSE]
+        conditions <- rlang::enquos(...)
+        if(length(conditions) > 0L){
+          td <- td[private$filter_mask(td, conditions), , drop = FALSE]
+        }
         milestone_times <- vapply(seq_along(endpoints), function(i){
           ep <- endpoints[i]
           n  <- as.integer(target_n_events[i])
@@ -3025,13 +3037,18 @@ Trials <- R6::R6Class(
         arms <- self$get_arms_name()
       }
 
-      ## Fast path: when no filter expressions are passed AND the C++ toggle
-      ## is enabled, use the C++ helper that computes the enrollment lock
-      ## time directly. Filter expressions or options(trialsimulator.use_cpp=FALSE)
-      ## route through the dplyr-backed R path.
-      if(.use_cpp_lock_time() && length(rlang::enquos(...)) == 0L){
+      ## Fast path (the default): the C++ helper computes the enrollment lock
+      ## time directly; subset conditions in ... are reduced to a logical
+      ## mask by filter_mask() (dplyr::filter() semantics). The pure-R
+      ## fallback is kept for options(trialsimulator.use_cpp = FALSE).
+      if(.use_cpp_lock_time()){
         td <- private$get_trial_data()
-        et <- td$enroll_time[td$arm %in% arms]
+        td <- td[td$arm %in% arms, , drop = FALSE]
+        conditions <- rlang::enquos(...)
+        if(length(conditions) > 0L){
+          td <- td[private$filter_mask(td, conditions), , drop = FALSE]
+        }
+        et <- td$enroll_time
         milestone_time <- find_enrollment_lock_time_cpp(
           et, as.integer(target_n_patients))
         if(!private$silent && is.infinite(milestone_time)){
@@ -4140,76 +4157,113 @@ Trials <- R6::R6Class(
         }
       }
 
-      for(i in seq_along(arms_in_trial)){
-        arm <- arms_in_trial[i]
-        n_patients_in_arm <- sum(next_enroll_arms %in% arm)
-        tbl <- table(next_enroll_stratums[next_enroll_arms %in% arm])
-        target_size_per_stratum <- data.frame(
-          stratum     = names(tbl),
-          target_size = as.integer(tbl),
-          stringsAsFactors = FALSE
-        )
+      ## Fast path without stratification (the common case): one pool per
+      ## arm is always sufficient (generate_data() returns at least 1.1x the
+      ## target), so the per-stratum bookkeeping of the general path below
+      ## (table/merge/split/bind_rows) is skipped. Generator and dropout
+      ## calls are made in exactly the same order and with the same sizes as
+      ## on the general path, so the random number stream is unchanged.
+      no_stratification <- !private$has_stratification_factors() ||
+        identical(stratums_in_trial, 'all')
 
-        patient_pool <- NULL
-        prop <- 1.1
-        min_sample_size <- 20
-        while(TRUE){
-          new_sets <- private$get_an_arm(arm)$generate_data(max(ceiling(n_patients_in_arm * prop), min_sample_size))
-          new_sets$stratum <- make_stratum(new_sets)
-          patient_pool <- rbind(patient_pool, new_sets)
-
-          tbl1 <- table(patient_pool$stratum)
-          size_per_stratum <- data.frame(
-            stratum      = names(tbl1),
-            current_size = as.integer(tbl1),
+      if(no_stratification){
+        n_enrolled <- private$get_number_enrolled_patients()
+        for(i in seq_along(arms_in_trial)){
+          arm <- arms_in_trial[i]
+          patients_index <- which(next_enroll_arms == arm)
+          n_patients_in_arm <- length(patients_index)
+          ## The pool size max(ceiling(n * 1.1), 20) matches the request
+          ## made by the general path's stratified sampling loop, so the
+          ## generator's random draws (and therefore the trial output for
+          ## a given seed) are identical to those produced by 1.35.0 and
+          ## earlier. The over-sampling and the floor of 20 are otherwise
+          ## unnecessary on this path: generate_data() always returns the
+          ## requested number of rows, and there is no outer loop whose
+          ## iterations they would reduce.
+          patient_pool <- private$get_an_arm(arm)$generate_data(
+            max(ceiling(n_patients_in_arm * 1.1), 20))
+          arms_stratums_data[[arm]] <- cbind(
+            data.frame(
+              patient_id = n_enrolled + patients_index,
+              arm = arm,
+              enroll_time = next_enroll_time[patients_index],
+              dropout_time = private$get_dropout()(n = n_patients_in_arm)
+            ),
+            patient_pool[seq_len(n_patients_in_arm), , drop = FALSE]
+          )
+        }
+      }else{
+        for(i in seq_along(arms_in_trial)){
+          arm <- arms_in_trial[i]
+          n_patients_in_arm <- sum(next_enroll_arms %in% arm)
+          tbl <- table(next_enroll_stratums[next_enroll_arms %in% arm])
+          target_size_per_stratum <- data.frame(
+            stratum     = names(tbl),
+            target_size = as.integer(tbl),
             stringsAsFactors = FALSE
           )
 
-          tmp <- merge(size_per_stratum, target_size_per_stratum, by = 'stratum', all.y = TRUE)
-          tmp$current_size[is.na(tmp$current_size)] <- 0
-          if(with(tmp, all(current_size >= target_size))){
-            break
-          }
-          prop <- ifelse(any(tmp$current_size <= 10), 1, .2)
-          min_sample_size <- with(tmp, max((target_size - current_size) * 3, 10))
-        }
+          patient_pool <- NULL
+          prop <- 1.1
+          min_sample_size <- 20
+          while(TRUE){
+            new_sets <- private$get_an_arm(arm)$generate_data(max(ceiling(n_patients_in_arm * prop), min_sample_size))
+            new_sets$stratum <- make_stratum(new_sets)
+            patient_pool <- rbind(patient_pool, new_sets)
 
-        col_idx <- which(names(patient_pool) == 'stratum')
-        patient_pool <- split(
-          patient_pool[, -col_idx, drop = FALSE],
-          patient_pool$stratum
-        )
-
-        arms_stratums_data[[arm]] <- list()
-        for(j in seq_along(stratums_in_trial)){
-          stratum <- stratums_in_trial[j]
-          patients_index <- which(next_enroll_arms %in% arm &
-                                    next_enroll_stratums %in% stratum)
-
-          n_patients_in_arm_stratum <- length(patients_index)
-          if(n_patients_in_arm_stratum == 0){
-            next
-          }
-
-          stopifnot(target_size_per_stratum$target_size[target_size_per_stratum$stratum == stratum] == n_patients_in_arm_stratum)
-
-          arms_stratums_data[[arm]][[stratum]] <-
-            data.frame(
-              patient_id = private$get_number_enrolled_patients() + patients_index,
-              arm = arm,
-              enroll_time = next_enroll_time[patients_index],
-              dropout_time = private$get_dropout()(n = n_patients_in_arm_stratum)
+            tbl1 <- table(patient_pool$stratum)
+            size_per_stratum <- data.frame(
+              stratum      = names(tbl1),
+              current_size = as.integer(tbl1),
+              stringsAsFactors = FALSE
             )
 
-          arms_stratums_data[[arm]][[stratum]] <-
-            cbind(
-              arms_stratums_data[[arm]][[stratum]],
-              patient_pool[[stratum]][1:n_patients_in_arm_stratum, ]
-            )
+            tmp <- merge(size_per_stratum, target_size_per_stratum, by = 'stratum', all.y = TRUE)
+            tmp$current_size[is.na(tmp$current_size)] <- 0
+            if(with(tmp, all(current_size >= target_size))){
+              break
+            }
+            prop <- ifelse(any(tmp$current_size <= 10), 1, .2)
+            min_sample_size <- with(tmp, max((target_size - current_size) * 3, 10))
+          }
 
+          col_idx <- which(names(patient_pool) == 'stratum')
+          patient_pool <- split(
+            patient_pool[, -col_idx, drop = FALSE],
+            patient_pool$stratum
+          )
+
+          arms_stratums_data[[arm]] <- list()
+          for(j in seq_along(stratums_in_trial)){
+            stratum <- stratums_in_trial[j]
+            patients_index <- which(next_enroll_arms %in% arm &
+                                      next_enroll_stratums %in% stratum)
+
+            n_patients_in_arm_stratum <- length(patients_index)
+            if(n_patients_in_arm_stratum == 0){
+              next
+            }
+
+            stopifnot(target_size_per_stratum$target_size[target_size_per_stratum$stratum == stratum] == n_patients_in_arm_stratum)
+
+            arms_stratums_data[[arm]][[stratum]] <-
+              data.frame(
+                patient_id = private$get_number_enrolled_patients() + patients_index,
+                arm = arm,
+                enroll_time = next_enroll_time[patients_index],
+                dropout_time = private$get_dropout()(n = n_patients_in_arm_stratum)
+              )
+
+            arms_stratums_data[[arm]][[stratum]] <-
+              cbind(
+                arms_stratums_data[[arm]][[stratum]],
+                patient_pool[[stratum]][1:n_patients_in_arm_stratum, ]
+              )
+
+          }
+
+          arms_stratums_data[[arm]] <- bind_rows(arms_stratums_data[[arm]])
         }
-
-        arms_stratums_data[[arm]] <- bind_rows(arms_stratums_data[[arm]])
       }
 
       patient_data <- do.call(rbind, arms_stratums_data)
@@ -4260,6 +4314,29 @@ Trials <- R6::R6Class(
       }
       attributes(time) <- NULL
       private$now <- time
+    },
+
+    ## @description
+    ## reduce subset conditions (a list of quosures captured from ... of a
+    ## milestone condition) to a logical row mask on a data frame, with the
+    ## semantics of dplyr::filter(): conditions are combined with & and a row
+    ## is dropped when any condition is NA. Used by the lock-time fast paths
+    ## so that filtered conditions reuse the C++ helpers instead of building
+    ## the per-endpoint event tables of get_event_tables(). Errors are
+    ## re-signaled with the same message as the R path.
+    ##
+    ## @param data a data frame (trial data).
+    ## @param conditions a list of quosures.
+    filter_mask = function(data, conditions){
+      tryCatch({
+        filter_conditions_mask(data, conditions)
+      },
+      error = function(e){
+        self$save(e$message, 'error_message', overwrite = TRUE)
+        stop('Error in filtering data for table of event count. ',
+             'Please check condition in ..., ',
+             'which should be compatible with dplyr::filter. ')
+      })
     },
 
     ## @description
