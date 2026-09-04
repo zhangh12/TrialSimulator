@@ -1,3 +1,9 @@
+# TrialSimulator 1.35.8
+
+## Performance
+
+- `fitLogrank()` is faster. It now computes the (stratified) log rank statistic directly from `survival::survdiff()` as observed-minus-expected events over its standard error, instead of fitting two Cox models per treatment arm (one for the sign of the effect and one with `ties = "exact"` for the score test). Its magnitude agrees with the previous exact-score statistic up to floating point rounding, while its sign now consistently follows the treatment log-rank score; with tied event times this can correct the previous sign when the Efron Cox coefficient pointed in the opposite direction. `info` and the `tidy = FALSE` columns are unchanged. When the statistic is undefined because its variance is zero (e.g., no event in the subset), a warning is issued and a simulation placeholder `z = 0` with the corresponding `p = 0.5` is returned instead of an error. On a three-arm dose-selection design with log rank tests at two milestones this removes roughly 40% of the per-replicate time, and roughly a third on an enrichment design driven by conditional power.
+
 # TrialSimulator 1.35.7
 
 ## Performance

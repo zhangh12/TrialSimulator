@@ -2066,17 +2066,26 @@ Trials <- R6::R6Class(
 
       ## fitLogrank() owns validation of formula and placebo, the subset
       ## conditions in ..., and the model fitting; any error is re-signaled
-      ## with conditional power context. The most common failure is an arm
-      ## without any observed event at the milestone.
+      ## with conditional power context. The most common failure is a
+      ## comparison without informative risk-set variation at the milestone,
+      ## which fitLogrank() reports as a zero-variance warning; conditional
+      ## power is undefined then, so that warning is escalated to an error.
       fit <- tryCatch(
-        fitLogrank(formula, placebo, locked_data, alternative, ...,
-                   tidy = FALSE),
+        withCallingHandlers(
+          fitLogrank(formula, placebo, locked_data, alternative, ...,
+                     tidy = FALSE),
+          warning = function(w){
+            if(grepl('variance is zero', conditionMessage(w), fixed = TRUE)){
+              stop(conditionMessage(w), call. = FALSE)
+            }
+          }
+        ),
         error = function(e){
           stop('Unable to fit logrank models on the data locked at ',
                'milestone <', milestone, '> when computing conditional ',
-               'power. A common cause is that an arm has no observed ',
-               'event at the milestone (is the milestone triggered too ',
-               'early?). The actual error is:\n', conditionMessage(e),
+               'power. A common cause is that the milestone has no ',
+               'informative event comparison (is it triggered too early?). ',
+               'The actual error is:\n', conditionMessage(e),
                call. = FALSE)
         }
       )
@@ -2411,17 +2420,26 @@ Trials <- R6::R6Class(
 
       ## fitLogrank() owns validation of formula and placebo, the subset
       ## conditions in ..., and the model fitting; any error is re-signaled
-      ## with re-estimation context. The most common failure is an arm
-      ## without any observed event at the milestone.
+      ## with re-estimation context. The most common failure is a
+      ## comparison without informative risk-set variation at the milestone,
+      ## which fitLogrank() reports as a zero-variance warning; re-estimation
+      ## is undefined then, so that warning is escalated to an error.
       fit <- tryCatch(
-        fitLogrank(formula, placebo, locked_data, alternative, ...,
-                   tidy = FALSE),
+        withCallingHandlers(
+          fitLogrank(formula, placebo, locked_data, alternative, ...,
+                     tidy = FALSE),
+          warning = function(w){
+            if(grepl('variance is zero', conditionMessage(w), fixed = TRUE)){
+              stop(conditionMessage(w), call. = FALSE)
+            }
+          }
+        ),
         error = function(e){
           stop('Unable to fit logrank models on the data locked at ',
                'milestone <', milestone, '> when re-estimating the event ',
-               'number. A common cause is that an arm has no observed ',
-               'event at the milestone (is the milestone triggered too ',
-               'early?). The actual error is:\n', conditionMessage(e),
+               'number. A common cause is that the milestone has no ',
+               'informative event comparison (is it triggered too early?). ',
+               'The actual error is:\n', conditionMessage(e),
                call. = FALSE)
         }
       )
@@ -4771,6 +4789,7 @@ Trials <- R6::R6Class(
 
       info <- c() ## observed accumulated events
       lr <- c() ## one-sided log rank statistics
+      lr_p <- c() ## one-sided log rank p-values (including zero-variance policy)
       info_pbo <- c()
       info_trt <- c()
       plan_best_info <- ifelse(identical(planned_info, 'oracle'), TRUE, FALSE)
@@ -4834,6 +4853,7 @@ Trials <- R6::R6Class(
 
         info[i] <- lr_fit$info
         lr[i] <- lr_fit$z
+        lr_p[i] <- lr_fit$p
         info_pbo[i] <- lr_fit$info_pbo
         info_trt[i] <- lr_fit$info_trt
 
@@ -4903,23 +4923,23 @@ Trials <- R6::R6Class(
         inverse_normal[i] <- sum(wt * ii) / sqrt(sum(wt^2))
       }
 
+      p_inverse_normal <-
+        if(alternative == 'greater'){
+          pnorm(inverse_normal, lower.tail = FALSE)
+        }else{
+          pnorm(inverse_normal)
+        }
+      ## A zero z paired with p = 1 is fitLogrank()'s explicit marker for an
+      ## undefined zero-variance statistic, rather than an observed z of zero.
+      p_inverse_normal[lr == 0 & lr_p == 1] <- 1
+
       ret <-
         data.frame(
           milestone = milestone_name,
           milestone_time = unname(milestone_time),
-          p_inverse_normal =
-            if(alternative == 'greater'){
-              1 - pnorm(inverse_normal)
-            }else{
-              pnorm(inverse_normal)
-            },
+          p_inverse_normal = p_inverse_normal,
           z_inverse_normal = inverse_normal,
-          p_logrank =
-            if(alternative == 'greater'){
-              1 - pnorm(lr)
-            }else{
-              pnorm(lr)
-            },
+          p_logrank = lr_p,
           z_logrank = lr,
           info = info,
           planned_info = planned_info,
