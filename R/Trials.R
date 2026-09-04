@@ -122,7 +122,7 @@
 #' (\code{$lock_data()}, \code{$get_data_lock_time_by_calendar_time()},
 #' \code{$get_data_lock_time_by_event_number()},
 #' \code{$get_data_lock_time_by_enrollment()}, \code{$has_arm()},
-#' \code{$event_plot()}, \code{$mute()}, \code{$reset()},
+#' \code{$event_plot()}, \code{$mute()}, \code{$tidy_output()}, \code{$reset()},
 #' \code{$make_arms_snapshot()} and \code{$pop_milestone_updates()}) are
 #' public only because they are invoked on
 #' a trial object by other components of the package (milestones, listeners,
@@ -2834,7 +2834,15 @@ Trials <- R6::R6Class(
 
       self$save(value = at_calendar_time, name = paste0('milestone_time_<', milestone_name, '>'))
 
-      self$save(value = attr(at_calendar_time, 'n_events'),
+      ## the per-arm table (list column `arms`) is by far the most expensive
+      ## part of the output to save and bind; it is skipped when the
+      ## controller runs with tidy = TRUE. The attribute on locked data
+      ## keeps the full table either way.
+      n_events_to_save <- attr(at_calendar_time, 'n_events')
+      if(!private$save_event_count_per_arm){
+        n_events_to_save[['arms']] <- NULL
+      }
+      self$save(value = n_events_to_save,
                 name = paste0('n_events_<', milestone_name, '>'))
 
       if(!private$silent){
@@ -3261,6 +3269,22 @@ Trials <- R6::R6Class(
     #' @description
     #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
     #'
+    #' control whether the per-arm event count table is saved in trial
+    #' output at every milestone. It is set by \code{controller$run()}
+    #' through its argument \code{tidy}.
+    #' @param tidy logical. If \code{TRUE}, the per-arm event count table
+    #' (output column \code{n_events_<milestone>_<arms>}) is not saved in
+    #' trial output; the per-endpoint totals and milestone times are still
+    #' saved. The table remains available in the attributes of locked data,
+    #' so \code{event_plot()} is unaffected.
+    tidy_output = function(tidy){
+      stopifnot(is.logical(tidy) && length(tidy) == 1 && !is.na(tidy))
+      private$save_event_count_per_arm <- !tidy
+    },
+
+    #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' reset a trial to its snapshot taken before it was executed. Seed will be
     #' reassigned with a new one. Enrollment time are re-generated. If the trial
     #' already have arms when this function is called, they are added back to
@@ -3436,6 +3460,12 @@ Trials <- R6::R6Class(
     regimen = NULL,
 
     silent = FALSE,
+
+    ## whether lock_data() saves the per-arm event count table
+    ## (output column n_events_<milestone>_<arms>) in addition to the
+    ## per-endpoint totals. Set by tidy_output(); the controller re-applies
+    ## it at every replicate because reset() restores the snapshot value.
+    save_event_count_per_arm = TRUE,
 
     output = NULL,
 
@@ -4609,15 +4639,6 @@ Trials <- R6::R6Class(
       ## sort once at the end (dplyr version re-sorted inside every loop iteration)
       private$trial_data <- trial_data[order(trial_data$enroll_time), , drop = FALSE]
       rownames(private$trial_data) <- NULL
-    },
-
-    ## @description
-    ## save less information in trial output if no intent to use it in summary
-    ## @param tidy logical. If \code{TRUE}, event count per arm per endpoint is
-    ## not computed and saved in trial output. This can speed up simulation by
-    ## up to 40\% under some circumstances.
-    tidy_output = function(tidy){
-      private$save_event_count_per_arm <- !tidy
     },
 
     ## @description

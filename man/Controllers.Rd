@@ -113,7 +113,13 @@ custom outputs in \code{save()}. Default \code{FALSE}.}
 run trial simulation. It cannot be called again on the same
 controller unless \code{reset()} is called first.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Controllers$run(n = 1, n_workers = 1, plot_event = TRUE, silent = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Controllers$run(
+  n = 1,
+  n_workers = 1,
+  plot_event = TRUE,
+  silent = FALSE,
+  tidy = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -148,6 +154,16 @@ trial. Note that warning messages are still displayed. When
 \code{silent = TRUE} and replicates are run sequentially
 (\code{n_workers = 1}), a progress bar is displayed automatically
 if the simulation is expected to take more than 1 minute.}
+
+\item{\code{tidy}}{logical. If \code{TRUE}, the per-arm event count table
+(output column \code{n_events_<milestone>_<arms>}) is not saved at
+milestones; the per-endpoint totals and milestone times are still
+saved. Saving that table is the most expensive part of the standard
+outputs, so \code{tidy = TRUE} is recommended for a large number of
+replicates unless the per-arm counts are needed in the summary. This
+differs from \code{tidy} in \code{$get_output()}, which removes all
+standard columns from the returned data frame after the fact.
+Default \code{FALSE}.}
 }
 \if{html}{\out{</div>}}
 }

@@ -1,3 +1,9 @@
+# TrialSimulator 1.35.6
+
+## Performance
+
+- New argument `tidy` in `controller$run()` (default `FALSE`). With `tidy = TRUE`, the per-arm event count table (output column `n_events_<milestone>_<arms>`) is not saved at milestones; per-endpoint totals and milestone times are still saved, and the table remains available in the attributes of locked data, so `event_plot()` is unaffected. Saving that table is the most expensive part of the standard outputs: skipping it removes roughly 15% of the per-replicate time on a small two-arm design with trivial actions (on top of 1.35.5) and about 3% on a three-arm dose-selection design with log-rank tests at milestones. Unlike `tidy` in `get_output()`, which removes columns after the fact, this avoids the cost entirely.
+
 # TrialSimulator 1.35.5
 
 ## Performance
