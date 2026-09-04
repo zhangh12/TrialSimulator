@@ -30,7 +30,9 @@ Regimens <- R6::R6Class(
     #' \code{patient_id} and \code{new_treatment}, with one row per switching
     #' patient. The number of rows in the returned data frame may be smaller
     #' than the number of patients in the input data frame; patients that are
-    #' left out are simply not switched.
+    #' left out are simply not switched. Values of \code{new_treatment} must
+    #' not contain \code{'@'} or \code{';'}, which are reserved for encoding
+    #' \code{regimen_trajectory}.
     #' Note that the returned object will be passed into function `how()`, which
     #' is also provide by users. This argument can also be a
     #' list of functions that will be executed sequentially. No default value.

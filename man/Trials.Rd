@@ -582,7 +582,9 @@ functions: \code{earliest_crossover_calendar_time} (= \code{T}) and
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{what}}{a function selecting which eligible patients crossover and to
-what \code{new_treatment} (\code{NA} = no crossover). See \code{regimen()}.}
+what \code{new_treatment} (\code{NA} = no crossover). See \code{regimen()}.
+Values of \code{new_treatment} must not contain \code{'@'} or
+\code{';'}, which are reserved for encoding \code{regimen_trajectory}.}
 
 \item{\code{how}}{a function returning the modified post-switch endpoint values.}
 

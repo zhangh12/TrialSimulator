@@ -36,8 +36,9 @@
 #'
 #' @param trial a trial object returned by \code{trial()}.
 #' @param what a function selecting which eligible patients crossover, returning
-#' one row per crossing-over patient with their \code{new_treatment}. See
-#' \code{regimen()}.
+#' one row per crossing-over patient with their \code{new_treatment}. Values of
+#' \code{new_treatment} must not contain \code{'@'} or \code{';'}, which are
+#' reserved for encoding \code{regimen_trajectory}. See \code{regimen()}.
 #' @param how a function returning the modified post-switch endpoint values for
 #' crossing-over patients. See \code{regimen()}.
 #' @param when (optional) a function returning \code{switch_time} from

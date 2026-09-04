@@ -738,6 +738,8 @@ Trials <- R6::R6Class(
     #'
     #' @param what a function selecting which eligible patients crossover and to
     #' what \code{new_treatment} (\code{NA} = no crossover). See \code{regimen()}.
+    #' Values of \code{new_treatment} must not contain \code{'@'} or
+    #' \code{';'}, which are reserved for encoding \code{regimen_trajectory}.
     #' @param how a function returning the modified post-switch endpoint values.
     #' @param when (optional) a function returning \code{switch_time} from
     #' enrollment. If \code{NULL} (default), patients switch at \code{T}
@@ -2741,31 +2743,12 @@ Trials <- R6::R6Class(
       rownames(locked_data) <- NULL
 
       if(!is.null(locked_data$regimen_trajectory)){
-        ## only patients with switching events need filtering; non-switchers
-        ## have a single "arm@0" segment that always survives the lock window
-        switchers <- grep(';', locked_data$regimen_trajectory, fixed = TRUE)
-        if(length(switchers) > 0){
-          locked_data$regimen_trajectory[switchers] <- mapply(
-            function(traj_str, enroll_time){
-              entries <- strsplit(traj_str, ';', fixed = TRUE)[[1]]
-              times <- as.numeric(sub('.*@', '', entries))
-              paste(entries[enroll_time + times <= at_calendar_time], collapse = ';')
-            },
-            locked_data$regimen_trajectory[switchers],
-            locked_data$enroll_time[switchers],
-            SIMPLIFY = TRUE, USE.NAMES = FALSE
-          )
-        }
-        ## number of switches = number of '@' minus 1 (the initial arm@0 entry).
-        ## Non-switchers are exactly "arm@0", i.e. 0 switches, so the regex
-        ## count is only needed on the (usually small) switcher subset; on a
-        ## large locked data set this is the dominant cost of lock_data().
-        n_switches <- integer(nrow(locked_data))
-        if(length(switchers) > 0){
-          n_switches[switchers] <- lengths(
-            gregexpr('@', locked_data$regimen_trajectory[switchers], fixed = TRUE)) - 1L
-        }
-        locked_data$n_switches <- n_switches
+        ## keep only the switches that have happened by the lock time, and
+        ## count them
+        truncated <- private$truncate_regimen_trajectory(
+          locked_data$regimen_trajectory, locked_data$enroll_time, at_calendar_time)
+        locked_data$regimen_trajectory <- truncated$trajectory
+        locked_data$n_switches <- truncated$n_switches
       }
 
       n_events_or_readouts <- NULL
@@ -3559,6 +3542,15 @@ Trials <- R6::R6Class(
         }
         new_treatment <- new_treatment[!is.na(new_treatment$new_treatment),
                                        c('patient_id', 'new_treatment'), drop = FALSE]
+        ## '@' and ';' encode the switching history in regimen_trajectory
+        reserved <- grepl('[@;]', new_treatment$new_treatment)
+        if(any(reserved)){
+          stop('new_treatment returned from user-defined function what() ',
+               'must not contain \'@\' or \';\', which are reserved for ',
+               'encoding regimen_trajectory: <',
+               paste0(unique(head(new_treatment$new_treatment[reserved], 5)),
+                      collapse = ', '), '>. ')
+        }
         illegal <- setdiff(new_treatment$patient_id, cand$patient_id)
         if(length(illegal) > 0){
           stop('what() selected patient(s) not in the eligible pool: <',
@@ -4344,6 +4336,74 @@ Trials <- R6::R6Class(
       }
       attributes(time) <- NULL
       private$now <- time
+    },
+
+    ## @description
+    ## truncate regimen trajectories to the switches that have happened by a
+    ## calendar lock time, and count those switches. Used by lock_data().
+    ##
+    ## A trajectory is a string "arm@0;trt1@t1;trt2@t2;...", one entry per
+    ## treatment segment, where t is the switch time from enrollment (see
+    ## apply_regimens()). '@' and ';' are reserved for this encoding: arm()
+    ## rejects names containing either, and apply_regimens() rejects such
+    ## values of new_treatment, so the text after the '@' of an entry is
+    ## always its time.
+    ##
+    ## Non-switchers have the single entry "arm@0", which always survives,
+    ## so only the (usually small) switcher subset is processed, and all
+    ## switchers at once: their trajectories are split into one long vector
+    ## of entries, `owner` records which switcher each entry belongs to, and
+    ## `happened` marks entries whose switch time is before the lock time.
+    ## The first entry "arm@0" is always kept, so n_switches is the number
+    ## of kept entries minus 1.
+    ##
+    ## @param trajectory character vector, one trajectory per patient.
+    ## @param enroll_time numeric vector, enrollment time of the same patients.
+    ## @param lock_time numeric. Calendar time at which data is locked.
+    ## @return a list with `trajectory`, the truncated trajectories, and
+    ## `n_switches`, an integer vector.
+    truncate_regimen_trajectory = function(trajectory, enroll_time, lock_time){
+
+      stopifnot(length(trajectory) == length(enroll_time))
+      n_switches <- integer(length(trajectory))
+
+      switchers <- grep(';', trajectory, fixed = TRUE)
+      if(length(switchers) > 0){
+        entries_per_patient <- strsplit(trajectory[switchers], ';', fixed = TRUE)
+        entries  <- unlist(entries_per_patient, use.names = FALSE)
+        owner    <- rep.int(seq_along(entries_per_patient), lengths(entries_per_patient))
+        ## an entry is "name@time": a non-empty name, exactly one '@', a
+        ## numeric time. at < 2 catches a missing '@' or an empty name; a
+        ## second '@' or a non-numeric time makes as.numeric() return NA.
+        at    <- regexpr('@', entries, fixed = TRUE)
+        times <- suppressWarnings(as.numeric(substring(entries, at + 1L)))
+        malformed <- at < 2L | is.na(times)
+        if(any(malformed)){
+          stop('Internal error: malformed regimen_trajectory entries <',
+               paste0(head(entries[malformed], 5), collapse = ', '),
+               '>. Please report it at https://github.com/zhangh12/TrialSimulator/issues. ')
+        }
+        happened <- enroll_time[switchers][owner] + times <= lock_time
+
+        ## the first entry of every switcher must survive; it is "arm@0",
+        ## and locked data only holds patients enrolled by the lock time
+        first_entry <- c(1L, head(cumsum(lengths(entries_per_patient)), -1) + 1L)
+        if(!all(happened[first_entry])){
+          stop('Internal error: the initial segment of a regimen_trajectory ',
+               'was dropped when locking data. ',
+               'Please report it at https://github.com/zhangh12/TrialSimulator/issues. ')
+        }
+
+        n_switches[switchers] <- tabulate(owner[happened], nbins = length(switchers)) - 1L
+        ## factor levels keep a group for a switcher whose switches all
+        ## happen after the lock time, so vapply() returns one string per
+        ## switcher in the original order
+        trajectory[switchers] <- vapply(
+          split(entries[happened], factor(owner[happened], levels = seq_along(switchers))),
+          paste, character(1), collapse = ';')
+      }
+
+      list(trajectory = trajectory, n_switches = n_switches)
     },
 
     ## @description

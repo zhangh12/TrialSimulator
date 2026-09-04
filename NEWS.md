@@ -1,3 +1,13 @@
+# TrialSimulator 1.35.7
+
+## Performance
+
+- Data locking is faster for trials with a regimen. The truncation of `regimen_trajectory` to the switches that have happened by the lock time, and the `n_switches` count, are now computed for all switching patients at once (one `strsplit()` plus `tabulate()`), instead of a per-patient `mapply()` followed by a per-patient regular expression. Both columns are unchanged for names without the reserved characters below; on a 1000-patient three-arm design with crossover this removes roughly 14% of the per-replicate time.
+
+## Updates
+
+- `'@'` and `';'` are now reserved characters of the `regimen_trajectory` encoding: `arm()` rejects a name containing either, whether or not the trial uses a regimen (e.g., `arm(name = 'dose@5mg')` used to be accepted and now is an error), and `what()` of a regimen or of `crossover()` must not return a `new_treatment` containing either. Previously such names silently corrupted the trajectory and `n_switches`. Data locking also asserts that every trajectory with a switch parses cleanly and keeps its initial segment.
+
 # TrialSimulator 1.35.6
 
 ## Performance
