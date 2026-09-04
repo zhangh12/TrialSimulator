@@ -122,7 +122,7 @@
 #' (\code{$lock_data()}, \code{$get_data_lock_time_by_calendar_time()},
 #' \code{$get_data_lock_time_by_event_number()},
 #' \code{$get_data_lock_time_by_enrollment()}, \code{$has_arm()},
-#' \code{$event_plot()}, \code{$mute()}, \code{$reset()},
+#' \code{$event_plot()}, \code{$mute()}, \code{$tidy_output()}, \code{$reset()},
 #' \code{$make_arms_snapshot()} and \code{$pop_milestone_updates()}) are
 #' public only because they are invoked on
 #' a trial object by other components of the package (milestones, listeners,
@@ -738,6 +738,8 @@ Trials <- R6::R6Class(
     #'
     #' @param what a function selecting which eligible patients crossover and to
     #' what \code{new_treatment} (\code{NA} = no crossover). See \code{regimen()}.
+    #' Values of \code{new_treatment} must not contain \code{'@'} or
+    #' \code{';'}, which are reserved for encoding \code{regimen_trajectory}.
     #' @param how a function returning the modified post-switch endpoint values.
     #' @param when (optional) a function returning \code{switch_time} from
     #' enrollment. If \code{NULL} (default), patients switch at \code{T}
@@ -2064,17 +2066,26 @@ Trials <- R6::R6Class(
 
       ## fitLogrank() owns validation of formula and placebo, the subset
       ## conditions in ..., and the model fitting; any error is re-signaled
-      ## with conditional power context. The most common failure is an arm
-      ## without any observed event at the milestone.
+      ## with conditional power context. The most common failure is a
+      ## comparison without informative risk-set variation at the milestone,
+      ## which fitLogrank() reports as a zero-variance warning; conditional
+      ## power is undefined then, so that warning is escalated to an error.
       fit <- tryCatch(
-        fitLogrank(formula, placebo, locked_data, alternative, ...,
-                   tidy = FALSE),
+        withCallingHandlers(
+          fitLogrank(formula, placebo, locked_data, alternative, ...,
+                     tidy = FALSE),
+          warning = function(w){
+            if(grepl('variance is zero', conditionMessage(w), fixed = TRUE)){
+              stop(conditionMessage(w), call. = FALSE)
+            }
+          }
+        ),
         error = function(e){
           stop('Unable to fit logrank models on the data locked at ',
                'milestone <', milestone, '> when computing conditional ',
-               'power. A common cause is that an arm has no observed ',
-               'event at the milestone (is the milestone triggered too ',
-               'early?). The actual error is:\n', conditionMessage(e),
+               'power. A common cause is that the milestone has no ',
+               'informative event comparison (is it triggered too early?). ',
+               'The actual error is:\n', conditionMessage(e),
                call. = FALSE)
         }
       )
@@ -2409,17 +2420,26 @@ Trials <- R6::R6Class(
 
       ## fitLogrank() owns validation of formula and placebo, the subset
       ## conditions in ..., and the model fitting; any error is re-signaled
-      ## with re-estimation context. The most common failure is an arm
-      ## without any observed event at the milestone.
+      ## with re-estimation context. The most common failure is a
+      ## comparison without informative risk-set variation at the milestone,
+      ## which fitLogrank() reports as a zero-variance warning; re-estimation
+      ## is undefined then, so that warning is escalated to an error.
       fit <- tryCatch(
-        fitLogrank(formula, placebo, locked_data, alternative, ...,
-                   tidy = FALSE),
+        withCallingHandlers(
+          fitLogrank(formula, placebo, locked_data, alternative, ...,
+                     tidy = FALSE),
+          warning = function(w){
+            if(grepl('variance is zero', conditionMessage(w), fixed = TRUE)){
+              stop(conditionMessage(w), call. = FALSE)
+            }
+          }
+        ),
         error = function(e){
           stop('Unable to fit logrank models on the data locked at ',
                'milestone <', milestone, '> when re-estimating the event ',
-               'number. A common cause is that an arm has no observed ',
-               'event at the milestone (is the milestone triggered too ',
-               'early?). The actual error is:\n', conditionMessage(e),
+               'number. A common cause is that the milestone has no ',
+               'informative event comparison (is it triggered too early?). ',
+               'The actual error is:\n', conditionMessage(e),
                call. = FALSE)
         }
       )
@@ -2741,31 +2761,12 @@ Trials <- R6::R6Class(
       rownames(locked_data) <- NULL
 
       if(!is.null(locked_data$regimen_trajectory)){
-        ## only patients with switching events need filtering; non-switchers
-        ## have a single "arm@0" segment that always survives the lock window
-        switchers <- grep(';', locked_data$regimen_trajectory, fixed = TRUE)
-        if(length(switchers) > 0){
-          locked_data$regimen_trajectory[switchers] <- mapply(
-            function(traj_str, enroll_time){
-              entries <- strsplit(traj_str, ';', fixed = TRUE)[[1]]
-              times <- as.numeric(sub('.*@', '', entries))
-              paste(entries[enroll_time + times <= at_calendar_time], collapse = ';')
-            },
-            locked_data$regimen_trajectory[switchers],
-            locked_data$enroll_time[switchers],
-            SIMPLIFY = TRUE, USE.NAMES = FALSE
-          )
-        }
-        ## number of switches = number of '@' minus 1 (the initial arm@0 entry).
-        ## Non-switchers are exactly "arm@0", i.e. 0 switches, so the regex
-        ## count is only needed on the (usually small) switcher subset; on a
-        ## large locked data set this is the dominant cost of lock_data().
-        n_switches <- integer(nrow(locked_data))
-        if(length(switchers) > 0){
-          n_switches[switchers] <- lengths(
-            gregexpr('@', locked_data$regimen_trajectory[switchers], fixed = TRUE)) - 1L
-        }
-        locked_data$n_switches <- n_switches
+        ## keep only the switches that have happened by the lock time, and
+        ## count them
+        truncated <- private$truncate_regimen_trajectory(
+          locked_data$regimen_trajectory, locked_data$enroll_time, at_calendar_time)
+        locked_data$regimen_trajectory <- truncated$trajectory
+        locked_data$n_switches <- truncated$n_switches
       }
 
       n_events_or_readouts <- NULL
@@ -2834,7 +2835,15 @@ Trials <- R6::R6Class(
 
       self$save(value = at_calendar_time, name = paste0('milestone_time_<', milestone_name, '>'))
 
-      self$save(value = attr(at_calendar_time, 'n_events'),
+      ## the per-arm table (list column `arms`) is by far the most expensive
+      ## part of the output to save and bind; it is skipped when the
+      ## controller runs with tidy = TRUE. The attribute on locked data
+      ## keeps the full table either way.
+      n_events_to_save <- attr(at_calendar_time, 'n_events')
+      if(!private$save_event_count_per_arm){
+        n_events_to_save[['arms']] <- NULL
+      }
+      self$save(value = n_events_to_save,
                 name = paste0('n_events_<', milestone_name, '>'))
 
       if(!private$silent){
@@ -3261,6 +3270,22 @@ Trials <- R6::R6Class(
     #' @description
     #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
     #'
+    #' control whether the per-arm event count table is saved in trial
+    #' output at every milestone. It is set by \code{controller$run()}
+    #' through its argument \code{tidy}.
+    #' @param tidy logical. If \code{TRUE}, the per-arm event count table
+    #' (output column \code{n_events_<milestone>_<arms>}) is not saved in
+    #' trial output; the per-endpoint totals and milestone times are still
+    #' saved. The table remains available in the attributes of locked data,
+    #' so \code{event_plot()} is unaffected.
+    tidy_output = function(tidy){
+      stopifnot(is.logical(tidy) && length(tidy) == 1 && !is.na(tidy))
+      private$save_event_count_per_arm <- !tidy
+    },
+
+    #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
     #' reset a trial to its snapshot taken before it was executed. Seed will be
     #' reassigned with a new one. Enrollment time are re-generated. If the trial
     #' already have arms when this function is called, they are added back to
@@ -3437,6 +3462,12 @@ Trials <- R6::R6Class(
 
     silent = FALSE,
 
+    ## whether lock_data() saves the per-arm event count table
+    ## (output column n_events_<milestone>_<arms>) in addition to the
+    ## per-endpoint totals. Set by tidy_output(); the controller re-applies
+    ## it at every replicate because reset() restores the snapshot value.
+    save_event_count_per_arm = TRUE,
+
     output = NULL,
 
     ## User can save whatever they want in an unstructured way (list)
@@ -3529,6 +3560,15 @@ Trials <- R6::R6Class(
         }
         new_treatment <- new_treatment[!is.na(new_treatment$new_treatment),
                                        c('patient_id', 'new_treatment'), drop = FALSE]
+        ## '@' and ';' encode the switching history in regimen_trajectory
+        reserved <- grepl('[@;]', new_treatment$new_treatment)
+        if(any(reserved)){
+          stop('new_treatment returned from user-defined function what() ',
+               'must not contain \'@\' or \';\', which are reserved for ',
+               'encoding regimen_trajectory: <',
+               paste0(unique(head(new_treatment$new_treatment[reserved], 5)),
+                      collapse = ', '), '>. ')
+        }
         illegal <- setdiff(new_treatment$patient_id, cand$patient_id)
         if(length(illegal) > 0){
           stop('what() selected patient(s) not in the eligible pool: <',
@@ -4317,6 +4357,74 @@ Trials <- R6::R6Class(
     },
 
     ## @description
+    ## truncate regimen trajectories to the switches that have happened by a
+    ## calendar lock time, and count those switches. Used by lock_data().
+    ##
+    ## A trajectory is a string "arm@0;trt1@t1;trt2@t2;...", one entry per
+    ## treatment segment, where t is the switch time from enrollment (see
+    ## apply_regimens()). '@' and ';' are reserved for this encoding: arm()
+    ## rejects names containing either, and apply_regimens() rejects such
+    ## values of new_treatment, so the text after the '@' of an entry is
+    ## always its time.
+    ##
+    ## Non-switchers have the single entry "arm@0", which always survives,
+    ## so only the (usually small) switcher subset is processed, and all
+    ## switchers at once: their trajectories are split into one long vector
+    ## of entries, `owner` records which switcher each entry belongs to, and
+    ## `happened` marks entries whose switch time is before the lock time.
+    ## The first entry "arm@0" is always kept, so n_switches is the number
+    ## of kept entries minus 1.
+    ##
+    ## @param trajectory character vector, one trajectory per patient.
+    ## @param enroll_time numeric vector, enrollment time of the same patients.
+    ## @param lock_time numeric. Calendar time at which data is locked.
+    ## @return a list with `trajectory`, the truncated trajectories, and
+    ## `n_switches`, an integer vector.
+    truncate_regimen_trajectory = function(trajectory, enroll_time, lock_time){
+
+      stopifnot(length(trajectory) == length(enroll_time))
+      n_switches <- integer(length(trajectory))
+
+      switchers <- grep(';', trajectory, fixed = TRUE)
+      if(length(switchers) > 0){
+        entries_per_patient <- strsplit(trajectory[switchers], ';', fixed = TRUE)
+        entries  <- unlist(entries_per_patient, use.names = FALSE)
+        owner    <- rep.int(seq_along(entries_per_patient), lengths(entries_per_patient))
+        ## an entry is "name@time": a non-empty name, exactly one '@', a
+        ## numeric time. at < 2 catches a missing '@' or an empty name; a
+        ## second '@' or a non-numeric time makes as.numeric() return NA.
+        at    <- regexpr('@', entries, fixed = TRUE)
+        times <- suppressWarnings(as.numeric(substring(entries, at + 1L)))
+        malformed <- at < 2L | is.na(times)
+        if(any(malformed)){
+          stop('Internal error: malformed regimen_trajectory entries <',
+               paste0(head(entries[malformed], 5), collapse = ', '),
+               '>. Please report it at https://github.com/zhangh12/TrialSimulator/issues. ')
+        }
+        happened <- enroll_time[switchers][owner] + times <= lock_time
+
+        ## the first entry of every switcher must survive; it is "arm@0",
+        ## and locked data only holds patients enrolled by the lock time
+        first_entry <- c(1L, head(cumsum(lengths(entries_per_patient)), -1) + 1L)
+        if(!all(happened[first_entry])){
+          stop('Internal error: the initial segment of a regimen_trajectory ',
+               'was dropped when locking data. ',
+               'Please report it at https://github.com/zhangh12/TrialSimulator/issues. ')
+        }
+
+        n_switches[switchers] <- tabulate(owner[happened], nbins = length(switchers)) - 1L
+        ## factor levels keep a group for a switcher whose switches all
+        ## happen after the lock time, so vapply() returns one string per
+        ## switcher in the original order
+        trajectory[switchers] <- vapply(
+          split(entries[happened], factor(owner[happened], levels = seq_along(switchers))),
+          paste, character(1), collapse = ';')
+      }
+
+      list(trajectory = trajectory, n_switches = n_switches)
+    },
+
+    ## @description
     ## reduce subset conditions (a list of quosures captured from ... of a
     ## milestone condition) to a logical row mask on a data frame, with the
     ## semantics of dplyr::filter(): conditions are combined with & and a row
@@ -4612,15 +4720,6 @@ Trials <- R6::R6Class(
     },
 
     ## @description
-    ## save less information in trial output if no intent to use it in summary
-    ## @param tidy logical. If \code{TRUE}, event count per arm per endpoint is
-    ## not computed and saved in trial output. This can speed up simulation by
-    ## up to 40\% under some circumstances.
-    tidy_output = function(tidy){
-      private$save_event_count_per_arm <- !tidy
-    },
-
-    ## @description
     ## calculate independent increments from a given set of milestones
     ## @param formula An object of class \code{formula} that can be used with
     ## \code{survival::coxph}. Must consist \code{arm} and endpoint in \code{data}.
@@ -4690,6 +4789,7 @@ Trials <- R6::R6Class(
 
       info <- c() ## observed accumulated events
       lr <- c() ## one-sided log rank statistics
+      lr_p <- c() ## one-sided log rank p-values (including zero-variance policy)
       info_pbo <- c()
       info_trt <- c()
       plan_best_info <- ifelse(identical(planned_info, 'oracle'), TRUE, FALSE)
@@ -4753,6 +4853,7 @@ Trials <- R6::R6Class(
 
         info[i] <- lr_fit$info
         lr[i] <- lr_fit$z
+        lr_p[i] <- lr_fit$p
         info_pbo[i] <- lr_fit$info_pbo
         info_trt[i] <- lr_fit$info_trt
 
@@ -4822,23 +4923,23 @@ Trials <- R6::R6Class(
         inverse_normal[i] <- sum(wt * ii) / sqrt(sum(wt^2))
       }
 
+      p_inverse_normal <-
+        if(alternative == 'greater'){
+          pnorm(inverse_normal, lower.tail = FALSE)
+        }else{
+          pnorm(inverse_normal)
+        }
+      ## A zero z paired with p = 1 is fitLogrank()'s explicit marker for an
+      ## undefined zero-variance statistic, rather than an observed z of zero.
+      p_inverse_normal[lr == 0 & lr_p == 1] <- 1
+
       ret <-
         data.frame(
           milestone = milestone_name,
           milestone_time = unname(milestone_time),
-          p_inverse_normal =
-            if(alternative == 'greater'){
-              1 - pnorm(inverse_normal)
-            }else{
-              pnorm(inverse_normal)
-            },
+          p_inverse_normal = p_inverse_normal,
           z_inverse_normal = inverse_normal,
-          p_logrank =
-            if(alternative == 'greater'){
-              1 - pnorm(lr)
-            }else{
-              pnorm(lr)
-            },
+          p_logrank = lr_p,
           z_logrank = lr,
           info = info,
           planned_info = planned_info,

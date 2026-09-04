@@ -1,3 +1,31 @@
+# TrialSimulator 1.35.8
+
+## Performance
+
+- `fitLogrank()` is faster. It now computes the (stratified) log rank statistic directly from `survival::survdiff()` as observed-minus-expected events over its standard error, instead of fitting two Cox models per treatment arm (one for the sign of the effect and one with `ties = "exact"` for the score test). Its magnitude agrees with the previous exact-score statistic up to floating point rounding, while its sign now consistently follows the treatment log-rank score; with tied event times this can correct the previous sign when the Efron Cox coefficient pointed in the opposite direction. `info` and the `tidy = FALSE` columns are unchanged. When the statistic is undefined because its variance is zero (e.g., no event in the subset), a warning is issued and a simulation placeholder `z = 0` with the corresponding `p = 0.5` is returned instead of an error. On a three-arm dose-selection design with log rank tests at two milestones this removes roughly 40% of the per-replicate time, and roughly a third on an enrichment design driven by conditional power.
+
+# TrialSimulator 1.35.7
+
+## Performance
+
+- Data locking is faster for trials with a regimen. The truncation of `regimen_trajectory` to the switches that have happened by the lock time, and the `n_switches` count, are now computed for all switching patients at once (one `strsplit()` plus `tabulate()`), instead of a per-patient `mapply()` followed by a per-patient regular expression. Both columns are unchanged for names without the reserved characters below; on a 1000-patient three-arm design with crossover this removes roughly 14% of the per-replicate time.
+
+## Updates
+
+- `'@'` and `';'` are now reserved characters of the `regimen_trajectory` encoding: `arm()` rejects a name containing either, whether or not the trial uses a regimen (e.g., `arm(name = 'dose@5mg')` used to be accepted and now is an error), and `what()` of a regimen or of `crossover()` must not return a `new_treatment` containing either. Previously such names silently corrupted the trajectory and `n_switches`. Data locking also asserts that every trajectory with a switch parses cleanly and keeps its initial segment.
+
+# TrialSimulator 1.35.6
+
+## Performance
+
+- New argument `tidy` in `controller$run()` (default `FALSE`). With `tidy = TRUE`, the per-arm event count table (output column `n_events_<milestone>_<arms>`) is not saved at milestones; per-endpoint totals and milestone times are still saved, and the table remains available in the attributes of locked data, so `event_plot()` is unaffected. Saving that table is the most expensive part of the standard outputs: skipping it removes roughly 15% of the per-replicate time on a small two-arm design with trivial actions (on top of 1.35.5) and about 3% on a three-arm dose-selection design with log-rank tests at milestones. Unlike `tidy` in `get_output()`, which removes columns after the fact, this avoids the cost entirely.
+
+# TrialSimulator 1.35.5
+
+## Performance
+
+- `controller$run()` collects the output of each replicate in a list and row-binds once at the end, instead of calling `bind_rows()` after every replicate (a fixed cost of roughly 1 ms per call). The same applies to the parallel path. Outputs are unchanged, including the partial output kept when a replicate fails. Removes roughly 10% of the per-replicate time on a small two-arm design with trivial actions and 3-5% on heavier designs.
+
 # TrialSimulator 1.35.4
 
 ## Performance

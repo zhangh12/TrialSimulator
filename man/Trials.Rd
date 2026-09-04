@@ -130,7 +130,7 @@ and must not be called within action functions.
 (\code{$lock_data()}, \code{$get_data_lock_time_by_calendar_time()},
 \code{$get_data_lock_time_by_event_number()},
 \code{$get_data_lock_time_by_enrollment()}, \code{$has_arm()},
-\code{$event_plot()}, \code{$mute()}, \code{$reset()},
+\code{$event_plot()}, \code{$mute()}, \code{$tidy_output()}, \code{$reset()},
 \code{$make_arms_snapshot()} and \code{$pop_milestone_updates()}) are
 public only because they are invoked on
 a trial object by other components of the package (milestones, listeners,
@@ -291,6 +291,7 @@ tr$eventNumberReestimationFromConditionalPower(
 \item \href{#method-Trials-has_arm}{\code{Trials$has_arm()}}
 \item \href{#method-Trials-event_plot}{\code{Trials$event_plot()}}
 \item \href{#method-Trials-mute}{\code{Trials$mute()}}
+\item \href{#method-Trials-tidy_output}{\code{Trials$tidy_output()}}
 \item \href{#method-Trials-reset}{\code{Trials$reset()}}
 \item \href{#method-Trials-make_arms_snapshot}{\code{Trials$make_arms_snapshot()}}
 \item \href{#method-Trials-pop_milestone_updates}{\code{Trials$pop_milestone_updates()}}
@@ -581,7 +582,9 @@ functions: \code{earliest_crossover_calendar_time} (= \code{T}) and
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{what}}{a function selecting which eligible patients crossover and to
-what \code{new_treatment} (\code{NA} = no crossover). See \code{regimen()}.}
+what \code{new_treatment} (\code{NA} = no crossover). See \code{regimen()}.
+Values of \code{new_treatment} must not contain \code{'@'} or
+\code{';'}, which are reserved for encoding \code{regimen_trajectory}.}
 
 \item{\code{how}}{a function returning the modified post-switch endpoint values.}
 
@@ -1746,6 +1749,31 @@ mute all messages (not including warnings)
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{silent}}{logical.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-tidy_output"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-tidy_output}{}}}
+\subsection{Method \code{tidy_output()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
+control whether the per-arm event count table is saved in trial
+output at every milestone. It is set by \code{controller$run()}
+through its argument \code{tidy}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$tidy_output(tidy)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{tidy}}{logical. If \code{TRUE}, the per-arm event count table
+(output column \code{n_events_<milestone>_<arms>}) is not saved in
+trial output; the per-endpoint totals and milestone times are still
+saved. The table remains available in the attributes of locked data,
+so \code{event_plot()} is unaffected.}
 }
 \if{html}{\out{</div>}}
 }

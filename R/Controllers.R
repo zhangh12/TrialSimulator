@@ -30,6 +30,7 @@ Controllers <- R6::R6Class(
     trial = NULL,
     listener = NULL,
     silent = FALSE,
+    tidy = FALSE,
     output = NULL,
 
     ## TRUE once run() has been called (successfully or not); cleared by
@@ -60,6 +61,9 @@ Controllers <- R6::R6Class(
 
       private$silent <- silent
       private$mute()
+      ## re-applied at every replicate, like mute(): trial$reset() restores
+      ## the snapshot value of the underlying field between replicates.
+      private$get_trial()$tidy_output(private$tidy)
 
       private$get_listener()$monitor(private$get_trial())
       if(plot_event){
@@ -83,6 +87,12 @@ Controllers <- R6::R6Class(
       t0 <- Sys.time()
       t1 <- NULL ## completion time of replicate 1
 
+      ## Per-replicate outputs are collected in a list and row-bound once
+      ## at the end (or on error). Calling bind_rows() after every
+      ## replicate costs a fixed ~1 ms per call, which is a sizable share of
+      ## a light replicate; binding once amortizes it.
+      outputs <- vector('list', n)
+
       for(idx in 1:n){
         tryCatch(
           expr = {
@@ -91,12 +101,13 @@ Controllers <- R6::R6Class(
 
           error = function(e){
             private$get_trial()$save(e$message, 'error_message', overwrite = TRUE)
-            private$output <- bind_rows(private$output, private$get_trial()$get_output())
+            outputs[[idx]] <<- private$get_trial()$get_output()
+            private$output <- bind_rows(private$output, bind_rows(outputs))
             stop(e$message)
           }
         )
 
-        private$output <- bind_rows(private$output, private$get_trial()$get_output())
+        outputs[[idx]] <- private$get_trial()$get_output()
 
         if(silent && is.null(bar_id) && idx < n){
           now <- Sys.time()
@@ -121,6 +132,8 @@ Controllers <- R6::R6Class(
           self$reset()
         }
       }
+
+      private$output <- bind_rows(private$output, bind_rows(outputs))
 
       if(!is.null(bar_id)){
         cli_progress_done(id = bar_id)
@@ -161,7 +174,7 @@ Controllers <- R6::R6Class(
                 trial <- unserialize(trial_raw)
                 listener <- unserialize(listener_raw)
 
-                output <- NULL
+                outputs <- vector('list', reps)
                 error_msg <- NULL
 
                 ## R uses Mersenne-Twister streams by default to generate
@@ -178,6 +191,7 @@ Controllers <- R6::R6Class(
 
                   trial$mute(silent)
                   listener$mute(silent)
+                  trial$tidy_output(tidy)
 
                   run_ok <- tryCatch(
                     {
@@ -191,18 +205,19 @@ Controllers <- R6::R6Class(
                     }
                   )
 
-                  output <- dplyr::bind_rows(output, trial$get_output())
+                  outputs[[j]] <- trial$get_output()
 
                   if(!run_ok) break
                 }
 
-                list(output = output, error = error_msg)
+                list(output = dplyr::bind_rows(outputs), error = error_msg)
               },
               trial_raw = trial_raw,
               listener_raw = listener_raw,
               #worker_seed = worker_seeds[i],
               reps = reps_per_worker[i],
-              silent = silent
+              silent = silent,
+              tidy = private$tidy
             )
           }
 
@@ -332,12 +347,25 @@ Controllers <- R6::R6Class(
     #' \code{silent = TRUE} and replicates are run sequentially
     #' (\code{n_workers = 1}), a progress bar is displayed automatically
     #' if the simulation is expected to take more than 1 minute.
-    run = function(n = 1, n_workers = 1, plot_event = TRUE, silent = FALSE){
+    #' @param tidy logical. If \code{TRUE}, the per-arm event count table
+    #' (output column \code{n_events_<milestone>_<arms>}) is not saved at
+    #' milestones; the per-endpoint totals and milestone times are still
+    #' saved. Saving that table is the most expensive part of the standard
+    #' outputs, so \code{tidy = TRUE} is recommended for a large number of
+    #' replicates unless the per-arm counts are needed in the summary. This
+    #' differs from \code{tidy} in \code{$get_output()}, which removes all
+    #' standard columns from the returned data frame after the fact.
+    #' Default \code{FALSE}.
+    run = function(n = 1, n_workers = 1, plot_event = TRUE, silent = FALSE,
+                   tidy = FALSE){
 
       if(private$has_run){
         stop('run() has already been called on this controller. ',
              'Call reset() before running a new simulation. ')
       }
+
+      stopifnot(is.logical(tidy) && length(tidy) == 1 && !is.na(tidy))
+      private$tidy <- tidy
 
       ## stamp on exit so that a failed run also counts: the trial is no
       ## longer in its as-designed state and must be reset() before another

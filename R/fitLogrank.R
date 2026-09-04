@@ -6,7 +6,7 @@
 #' for more information and examples.
 #'
 #' @param formula An object of class \code{formula} that can be used with
-#' \code{survival::coxph}. Must consist \code{arm} and endpoint in \code{data}.
+#' \code{survival::survdiff}. Must consist \code{arm} and endpoint in \code{data}.
 #' No covariate is allowed. Stratification variables are supported and can be
 #' added using \code{strata(...)}.
 #' @param placebo character. String of placebo in \code{data$arm}.
@@ -19,7 +19,7 @@
 #' @param tidy logical. \code{FALSE} if more information are returned.
 #' Default \code{TRUE}.
 #' @param ... subset condition that is compatible with \code{dplyr::filter}.
-#' \code{survival::coxph} with \code{ties = "exact"} will be fitted on this
+#' The log rank test (\code{survival::survdiff}) is carried out on this
 #' subset only. This argument could be useful to create a subset of data for
 #' analysis when a trial consists of more than two arms. By default it is not
 #' specified, all data will be used to fit the model. More than one conditions
@@ -37,8 +37,16 @@
 #' \item{\code{placebo}}{name of the placebo arm. }
 #' \item{\code{p}}{one-sided p-value for log-rank test (treated vs placebo). }
 #' \item{\code{info}}{the number of events of the endpoint in the subset. }
-#' \item{\code{z}}{the z statistics of log hazard ratios. }
+#' \item{\code{z}}{the z statistic of the log rank test, with the sign of
+#' the log hazard ratio of treatment vs placebo. }
 #' }
+#' If the statistic is undefined because its variance is zero (e.g., no
+#' informative event comparison in the subset), a simulation placeholder
+#' \code{z = 0} with the corresponding \code{p = 0.5} is returned with a
+#' warning rather than an error, so that a few such replicates in a large
+#' simulation do not require error handling in action functions. The
+#' placeholder carries no evidence either way and is not a standardized
+#' normal statistic.
 #'
 #'
 #' @export
@@ -61,8 +69,9 @@ fitLogrank <- function(formula, placebo, data, alternative, ..., tidy = TRUE) {
     stop('formula should be in the format of Surv(time, event) ~ arm or Surv(time, event) ~ arm + strata(...) + ... + strata(...). ')
   }
 
-  if(!is.character(placebo) || length(placebo) != 1){
-    stop("placebo must be a single character string")
+  if(!is.character(placebo) || length(placebo) != 1 ||
+     is.na(placebo) || !nzchar(placebo)){
+    stop("placebo must be a single character string and cannot be missing or empty")
   }
 
   if(!is.data.frame(data)){
@@ -101,39 +110,103 @@ fitLogrank <- function(formula, placebo, data, alternative, ..., tidy = TRUE) {
     stop("No data remaining after applying subset condition. ")
   }
 
-  treatment_arms <- setdiff(unique(filtered_data$arm), placebo) %>% sort()
+  available_arms <- unique(as.character(filtered_data$arm[!is.na(filtered_data$arm)]))
+  if(!(placebo %in% available_arms)){
+    stop('placebo arm <', placebo,
+         '> is not present after applying the subset condition. ')
+  }
+
+  treatment_arms <- sort(setdiff(available_arms, placebo))
+  if(length(treatment_arms) == 0){
+    stop('No treatment arm is present after applying the subset condition. ')
+  }
 
   ret <- NULL
 
   for(trt_arm in treatment_arms){
-    sub_data <- filtered_data %>% dplyr::filter(.data$arm %in% c(placebo, trt_arm))
+    sub_data <- filtered_data[filtered_data$arm %in% c(placebo, trt_arm), , drop = FALSE]
 
     # Ensure arm is a factor with placebo and treatment
     sub_data$arm <- factor(sub_data$arm, levels = c(placebo, trt_arm))
 
-    fit_cox <- fitCoxph(formula, placebo, sub_data, alternative,
-                        scale = 'log hazard ratio', tidy = tidy) ## ... is not needed
-
-    # Fit the Cox model
+    # (stratified) logrank test. survdiff() returns observed and expected
+    # event counts per arm (per arm and stratum when strata() is in the
+    # formula) and the variance of the signed score. For two arms the signed
+    # logrank statistic is U / sqrt(V), where U is observed minus expected
+    # events in the treatment arm; its sign is the sign of the log hazard
+    # ratio of treatment vs placebo, and U^2 / V is the chi-square of
+    # survdiff(), i.e., the score test of coxph(ties = 'exact').
+    lr_error <- NULL
     lr <- tryCatch({
-      coxph(formula, data = sub_data, ties = 'exact')
+      withCallingHandlers(
+        survdiff(formula, data = sub_data),
+        warning = function(w){
+          # survdiff() warns "NaNs produced" when its variance is zero (e.g.,
+          # no event); that case is reported below with a specific warning
+          if(grepl('NaNs produced', conditionMessage(w), fixed = TRUE)){
+            invokeRestart('muffleWarning')
+          }
+        })
     }, error = function(e){
-      stop('coxph model fitting failed in fitLogrank: ', e$message)
+      lr_error <<- e
+      NULL
     })
 
-    # calculate log rank statistic
-    z <- sqrt(summary(lr)$sctest['test']) * ifelse(fit_cox$z > 0, 1, -1)
-    p <- ifelse(alternative == 'greater', 1 - pnorm(z), pnorm(z))
-    info <- fit_cox$info
+    ## With two groups, survdiff() can fail while inverting its variance
+    ## before returning, when that scalar variance is zero (for example,
+    ## when all subjects fail at one common time). Recover the counts in
+    ## that degenerate case, recognized by the "singular" in the message of
+    ## solve(); all other fitting errors remain errors.
+    singular_variance <- FALSE
+    if(is.null(lr)){
+      singular_variance <- grepl('singular', conditionMessage(lr_error),
+                                 ignore.case = TRUE)
 
+      if(!singular_variance){
+        stop('survdiff() failed in fitLogrank: ', conditionMessage(lr_error))
+      }
+
+      model_data <- model.frame(formula, data = sub_data)
+      surv_obj <- model.response(model_data)
+      event <- surv_obj[, ncol(surv_obj)] == 1
+      model_arm <- as.character(model_data$arm)
+      obs <- c(sum(event & model_arm == placebo),
+               sum(event & model_arm == trt_arm))
+      n <- c(sum(model_arm == placebo), sum(model_arm == trt_arm))
+      U <- 0
+      V <- 0
+    }else{
+      obs <- if(is.matrix(lr$obs)) rowSums(lr$obs) else lr$obs
+      exp <- if(is.matrix(lr$exp)) rowSums(lr$exp) else lr$exp
+      n   <- if(is.matrix(lr$n))   rowSums(lr$n)   else lr$n
+      U <- obs[2] - exp[2]
+      V <- lr$var[2, 2]
+    }
+
+    if(singular_variance || !is.finite(V) || V <= 0){
+      # the statistic is undefined when V = 0. In a large simulation a few
+      # such replicates are expected; report z = 0 (no evidence either way,
+      # hence p = 0.5 under either alternative, consistent with z) with a
+      # warning rather than an error, so that action functions need no
+      # error handling for this case.
+      warning('Logrank statistic of arm <', trt_arm, '> vs <', placebo,
+              '> is undefined because its variance is zero; ',
+              'the simulation placeholder z = 0 (p = 0.5) is returned. ', immediate. = TRUE)
+      z <- 0
+    }else{
+      z <- unname(U / sqrt(V))
+    }
+    p <- if(alternative == 'greater') pnorm(z, lower.tail = FALSE) else pnorm(z)
+
+    ## counts are integer, as they were when derived from the Cox model frame
     res <- data.frame(arm = trt_arm, placebo = placebo,
-                      p = p, info = info, z = z
+                      p = p, info = as.integer(round(sum(obs))), z = z
                     )
     if(!tidy){
-      res$info_pbo <- fit_cox$info_pbo
-      res$info_trt <- fit_cox$info_trt
-      res$n_pbo <- fit_cox$n_pbo
-      res$n_trt <- fit_cox$n_trt
+      res$info_pbo <- as.integer(round(obs[1]))
+      res$info_trt <- as.integer(round(obs[2]))
+      res$n_pbo <- as.integer(round(n[1]))
+      res$n_trt <- as.integer(round(n[2]))
     }
 
     ret <- rbind(ret, res)

@@ -84,7 +84,10 @@ initialize an arm
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{name}}{name of arm, which is the arm's label in generated data}
+\item{\code{name}}{name of arm, which is the arm's label in generated data.
+It must not contain \code{'@'} or \code{';'}, which are reserved for
+encoding the treatment switching history (\code{regimen_trajectory})
+of trials with a regimen.}
 
 \item{\code{...}}{subset condition that is compatible with \code{dplyr::filter}.
 This can be used to specify inclusion criteria of an arm.

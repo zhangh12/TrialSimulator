@@ -9,7 +9,9 @@ arm(name, ...)
 \arguments{
 \item{name}{character. Name of arm, which is the arm's label in generated
 trial data, i.e., the one retrieved by calling \code{Trials$get_locked_data()}
-in action functions.}
+in action functions. It must not contain \code{'@'} or \code{';'}, which
+are reserved for encoding the treatment switching history
+(\code{regimen_trajectory}) of trials with a regimen.}
 
 \item{...}{subset condition that is compatible with \code{dplyr::filter}.
 This can be used to specify inclusion criteria of an arm.
