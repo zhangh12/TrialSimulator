@@ -78,6 +78,10 @@ test_that('tidy is validated', {
 
 test_that('run(tidy = TRUE) is honored on the parallel path', {
   skip_if_not_installed('mirai')
+  # as in test-parallel.R: covr cannot trace the worker R processes spawned
+  # by n_workers > 1, and the truncated trace breaks its merge step
+  skip_if(Sys.getenv("R_COVR") == "true",
+          "n_workers > 1 spawns R processes that covr cannot trace")
   x <- tidy_trial()
   ctrl <- controller(x$trial, x$listener)
   ctrl$run(n = 4, n_workers = 2, silent = TRUE, plot_event = FALSE, tidy = TRUE)
