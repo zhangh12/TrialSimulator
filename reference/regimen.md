@@ -23,10 +23,11 @@ regimen(what, when, how, ...)
   `new_treatment`, with one row per switching patient. The number of
   rows in the returned data frame may be smaller than the number of
   patients in the input data frame; patients that are left out are
-  simply not switched. Note that the returned object will be passed into
-  function \`how()\`, which is also provide by users. This argument can
-  also be a list of functions that will be executed sequentially. No
-  default value.
+  simply not switched. Values of `new_treatment` must not contain `'@'`
+  or `';'`, which are reserved for encoding `regimen_trajectory`. Note
+  that the returned object will be passed into function \`how()\`, which
+  is also provide by users. This argument can also be a list of
+  functions that will be executed sequentially. No default value.
 
 - when:
 

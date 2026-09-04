@@ -140,7 +140,7 @@ Statistical testing:
 `$get_data_lock_time_by_calendar_time()`,
 `$get_data_lock_time_by_event_number()`,
 `$get_data_lock_time_by_enrollment()`, `$has_arm()`, `$event_plot()`,
-`$mute()`, `$reset()`, `$make_arms_snapshot()` and
+`$mute()`, `$tidy_output()`, `$reset()`, `$make_arms_snapshot()` and
 `$pop_milestone_updates()`) are public only because they are invoked on
 a trial object by other components of the package (milestones,
 listeners, controllers and triggering conditions), which R6 cannot grant
@@ -225,6 +225,8 @@ to create a trial.
 - [`Trials$event_plot()`](#method-Trials-event_plot)
 
 - [`Trials$mute()`](#method-Trials-mute)
+
+- [`Trials$tidy_output()`](#method-Trials-tidy_output)
 
 - [`Trials$reset()`](#method-Trials-reset)
 
@@ -541,6 +543,8 @@ functions: `earliest_crossover_calendar_time` (= `T`) and
   a function selecting which eligible patients crossover and to what
   `new_treatment` (`NA` = no crossover). See
   [`regimen()`](https://zhangh12.github.io/TrialSimulator/reference/regimen.md).
+  Values of `new_treatment` must not contain `'@'` or `';'`, which are
+  reserved for encoding `regimen_trajectory`.
 
 - `how`:
 
@@ -1747,6 +1751,30 @@ mute all messages (not including warnings)
 - `silent`:
 
   logical.
+
+------------------------------------------------------------------------
+
+### Method `tidy_output()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
+control whether the per-arm event count table is saved in trial output
+at every milestone. It is set by `controller$run()` through its argument
+`tidy`.
+
+#### Usage
+
+    Trials$tidy_output(tidy)
+
+#### Arguments
+
+- `tidy`:
+
+  logical. If `TRUE`, the per-arm event count table (output column
+  `n_events_<milestone>_<arms>`) is not saved in trial output; the
+  per-endpoint totals and milestone times are still saved. The table
+  remains available in the attributes of locked data, so `event_plot()`
+  is unaffected.
 
 ------------------------------------------------------------------------
 

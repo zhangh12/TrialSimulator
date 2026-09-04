@@ -68,7 +68,9 @@ initialize an arm
 
 - `name`:
 
-  name of arm, which is the arm's label in generated data
+  name of arm, which is the arm's label in generated data. It must not
+  contain `'@'` or `';'`, which are reserved for encoding the treatment
+  switching history (`regimen_trajectory`) of trials with a regimen.
 
 - `...`:
 

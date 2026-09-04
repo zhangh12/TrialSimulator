@@ -11,7 +11,7 @@ the concept of classes may consider using this wrapper directly."><meta property
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -74,7 +74,9 @@ the concept of classes may consider using this wrapper directly.</p>
 <dl><dt id="arg-name">name<a class="anchor" aria-label="anchor" href="#arg-name"></a></dt>
 <dd><p>character. Name of arm, which is the arm's label in generated
 trial data, i.e., the one retrieved by calling <code>Trials$get_locked_data()</code>
-in action functions.</p></dd>
+in action functions. It must not contain <code>'@'</code> or <code>';'</code>, which
+are reserved for encoding the treatment switching history
+(<code>regimen_trajectory</code>) of trials with a regimen.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

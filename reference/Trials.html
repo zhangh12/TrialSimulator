@@ -113,7 +113,7 @@ Internal machinery. The remaining public methods
 ($lock_data(), $get_data_lock_time_by_calendar_time(),
 $get_data_lock_time_by_event_number(),
 $get_data_lock_time_by_enrollment(), $has_arm(),
-$event_plot(), $mute(), $reset(),
+$event_plot(), $mute(), $tidy_output(), $reset(),
 $make_arms_snapshot() and $pop_milestone_updates()) are
 public only because they are invoked on
 a trial object by other components of the package (milestones, listeners,
@@ -234,7 +234,7 @@ Internal machinery. The remaining public methods
 ($lock_data(), $get_data_lock_time_by_calendar_time(),
 $get_data_lock_time_by_event_number(),
 $get_data_lock_time_by_enrollment(), $has_arm(),
-$event_plot(), $mute(), $reset(),
+$event_plot(), $mute(), $tidy_output(), $reset(),
 $make_arms_snapshot() and $pop_milestone_updates()) are
 public only because they are invoked on
 a trial object by other components of the package (milestones, listeners,
@@ -249,7 +249,7 @@ too, but they are part of the user-facing API above at the same time."><meta pro
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -394,7 +394,7 @@ and must not be called within action functions.</p></li>
 (<code>$lock_data()</code>, <code>$get_data_lock_time_by_calendar_time()</code>,
 <code>$get_data_lock_time_by_event_number()</code>,
 <code>$get_data_lock_time_by_enrollment()</code>, <code>$has_arm()</code>,
-<code>$event_plot()</code>, <code>$mute()</code>, <code>$reset()</code>,
+<code>$event_plot()</code>, <code>$mute()</code>, <code>$tidy_output()</code>, <code>$reset()</code>,
 <code>$make_arms_snapshot()</code> and <code>$pop_milestone_updates()</code>) are
 public only because they are invoked on
 a trial object by other components of the package (milestones, listeners,
@@ -449,6 +449,7 @@ too, but they are part of the user-facing API above at the same time.</p>
 <li><p><a href="#method-Trials-has_arm"><code>Trials$has_arm()</code></a></p></li>
 <li><p><a href="#method-Trials-event_plot"><code>Trials$event_plot()</code></a></p></li>
 <li><p><a href="#method-Trials-mute"><code>Trials$mute()</code></a></p></li>
+<li><p><a href="#method-Trials-tidy_output"><code>Trials$tidy_output()</code></a></p></li>
 <li><p><a href="#method-Trials-reset"><code>Trials$reset()</code></a></p></li>
 <li><p><a href="#method-Trials-make_arms_snapshot"><code>Trials$make_arms_snapshot()</code></a></p></li>
 <li><p><a href="#method-Trials-pop_milestone_updates"><code>Trials$pop_milestone_updates()</code></a></p></li>
@@ -750,7 +751,9 @@ functions: <code>earliest_crossover_calendar_time</code> (= <code>T</code>) and
 <h4 id="arguments-7">Arguments<a class="anchor" aria-label="anchor" href="#arguments-7"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>what</code></dt>
 <dd><p>a function selecting which eligible patients crossover and to
-what <code>new_treatment</code> (<code>NA</code> = no crossover). See <code><a href="regimen.html">regimen()</a></code>.</p></dd>
+what <code>new_treatment</code> (<code>NA</code> = no crossover). See <code><a href="regimen.html">regimen()</a></code>.
+Values of <code>new_treatment</code> must not contain <code>'@'</code> or
+<code>';'</code>, which are reserved for encoding <code>regimen_trajectory</code>.</p></dd>
 
 
 <dt><code>how</code></dt>
@@ -1959,6 +1962,29 @@ Time of milestone is based on event counts on the subset of trial data.</p></dd>
 </dl><p></p></div>
 </div>
 
+</div><p></p><hr><a id="method-Trials-tidy_output"></a><div class="section">
+<h3 id="method-tidy-output-">Method <code>tidy_output()</code><a class="anchor" aria-label="anchor" href="#method-tidy-output-"></a></h3>
+<p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
+<p>control whether the per-arm event count table is saved in trial
+output at every milestone. It is set by <code>controller$run()</code>
+through its argument <code>tidy</code>.</p><div class="section">
+<h4 id="usage-34">Usage<a class="anchor" aria-label="anchor" href="#usage-34"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">tidy_output</span><span class="op">(</span><span class="va">tidy</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-30">Arguments<a class="anchor" aria-label="anchor" href="#arguments-30"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>tidy</code></dt>
+<dd><p>logical. If <code>TRUE</code>, the per-arm event count table
+(output column <code>n_events_&lt;milestone&gt;_&lt;arms&gt;</code>) is not saved in
+trial output; the per-endpoint totals and milestone times are still
+saved. The table remains available in the attributes of locked data,
+so <code>event_plot()</code> is unaffected.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
 </div><p></p><hr><a id="method-Trials-reset"></a><div class="section">
 <h3 id="method-reset-">Method <code>reset()</code><a class="anchor" aria-label="anchor" href="#method-reset-"></a></h3>
 <p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
@@ -1966,7 +1992,7 @@ Time of milestone is based on event counts on the subset of trial data.</p></dd>
 reassigned with a new one. Enrollment time are re-generated. If the trial
 already have arms when this function is called, they are added back to
 recruit patients again.</p><div class="section">
-<h4 id="usage-34">Usage<a class="anchor" aria-label="anchor" href="#usage-34"></a></h4>
+<h4 id="usage-35">Usage<a class="anchor" aria-label="anchor" href="#usage-35"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1975,7 +2001,7 @@ recruit patients again.</p><div class="section">
 <h3 id="method-make-arms-snapshot-">Method <code>make_arms_snapshot()</code><a class="anchor" aria-label="anchor" href="#method-make-arms-snapshot-"></a></h3>
 <p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>make a snapshot of arms</p><div class="section">
-<h4 id="usage-35">Usage<a class="anchor" aria-label="anchor" href="#usage-35"></a></h4>
+<h4 id="usage-36">Usage<a class="anchor" aria-label="anchor" href="#usage-36"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">make_arms_snapshot</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1987,7 +2013,7 @@ recruit patients again.</p><div class="section">
 <code><a href="update_milestone.html">update_milestone()</a></code> within the current action function. It is
 called by the listener right after each action function returns, to
 apply the requested updates to its registered milestones.</p><div class="section">
-<h4 id="usage-36">Usage<a class="anchor" aria-label="anchor" href="#usage-36"></a></h4>
+<h4 id="usage-37">Usage<a class="anchor" aria-label="anchor" href="#usage-37"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">pop_milestone_updates</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1995,7 +2021,7 @@ apply the requested updates to its registered milestones.</p><div class="section
 </div><p></p><hr><a id="method-Trials-print"></a><div class="section">
 <h3 id="method-print-">Method <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code><a class="anchor" aria-label="anchor" href="#method-print-"></a></h3>
 <p>print a trial</p><div class="section">
-<h4 id="usage-37">Usage<a class="anchor" aria-label="anchor" href="#usage-37"></a></h4>
+<h4 id="usage-38">Usage<a class="anchor" aria-label="anchor" href="#usage-38"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">print</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -2003,12 +2029,12 @@ apply the requested updates to its registered milestones.</p><div class="section
 </div><p></p><hr><a id="method-Trials-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-38">Usage<a class="anchor" aria-label="anchor" href="#usage-38"></a></h4>
+<h4 id="usage-39">Usage<a class="anchor" aria-label="anchor" href="#usage-39"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-30">Arguments<a class="anchor" aria-label="anchor" href="#arguments-30"></a></h4>
+<h4 id="arguments-31">Arguments<a class="anchor" aria-label="anchor" href="#arguments-31"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

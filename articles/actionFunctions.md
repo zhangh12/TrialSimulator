@@ -77,8 +77,13 @@ Note that these automatically saved columns can be eliminated from
 outputs by setting `tidy = TRUE` in `controller$get_output()`.
 Currently, we use regex `"^n_events_<.*?>_<.*?>$"` and
 `"^milestone_time_<.*?>$"` to match columns to be eliminated. If users
-plan to use `tidy = TRUE`, caution is needed when naming \#’ custom
-outputs in [`save()`](https://rdrr.io/r/base/save.html).
+plan to use `tidy = TRUE`, caution is needed when naming custom outputs
+in [`save()`](https://rdrr.io/r/base/save.html). Among these columns,
+the per-arm table `n_events_<...>_<arms>` is by far the most expensive
+one to save. If it is not needed in the summary, set `tidy = TRUE` in
+`controller$run()` instead, which skips saving that table at every
+milestone (the other standard columns are still saved) and noticeably
+reduces the time per replicate for light designs.
 
 We can define arbitrary number of milestones in a trial. For example,
 the final analysis might be triggered when both `PFS` and `OS` events

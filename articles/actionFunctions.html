@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -213,7 +213,14 @@ outputs by setting <code>tidy = TRUE</code> in
 <code>"^n_events_&lt;.*?&gt;_&lt;.*?&gt;$"</code> and
 <code>"^milestone_time_&lt;.*?&gt;$"</code> to match columns to be
 eliminated. If users plan to use <code>tidy = TRUE</code>, caution is
-needed when naming #’ custom outputs in <code><a href="https://rdrr.io/r/base/save.html" class="external-link">save()</a></code>.</p>
+needed when naming custom outputs in <code><a href="https://rdrr.io/r/base/save.html" class="external-link">save()</a></code>. Among these
+columns, the per-arm table
+<code>n_events_&lt;...&gt;_&lt;arms&gt;</code> is by far the most
+expensive one to save. If it is not needed in the summary, set
+<code>tidy = TRUE</code> in <code>controller$run()</code> instead, which
+skips saving that table at every milestone (the other standard columns
+are still saved) and noticeably reduces the time per replicate for light
+designs.</p>
 <p>We can define arbitrary number of milestones in a trial. For example,
 the final analysis might be triggered when both <code>PFS</code> and
 <code>OS</code> events reach their required numbers:</p>

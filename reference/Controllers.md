@@ -121,7 +121,13 @@ unless `reset()` is called first.
 
 #### Usage
 
-    Controllers$run(n = 1, n_workers = 1, plot_event = TRUE, silent = FALSE)
+    Controllers$run(
+      n = 1,
+      n_workers = 1,
+      plot_event = TRUE,
+      silent = FALSE,
+      tidy = FALSE
+    )
 
 #### Arguments
 
@@ -161,6 +167,17 @@ unless `reset()` is called first.
   replicates are run sequentially (`n_workers = 1`), a progress bar is
   displayed automatically if the simulation is expected to take more
   than 1 minute.
+
+- `tidy`:
+
+  logical. If `TRUE`, the per-arm event count table (output column
+  `n_events_<milestone>_<arms>`) is not saved at milestones; the
+  per-endpoint totals and milestone times are still saved. Saving that
+  table is the most expensive part of the standard outputs, so
+  `tidy = TRUE` is recommended for a large number of replicates unless
+  the per-arm counts are needed in the summary. This differs from `tidy`
+  in `$get_output()`, which removes all standard columns from the
+  returned data frame after the fact. Default `FALSE`.
 
 ------------------------------------------------------------------------
 

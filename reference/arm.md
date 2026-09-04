@@ -16,7 +16,9 @@ arm(name, ...)
 
   character. Name of arm, which is the arm's label in generated trial
   data, i.e., the one retrieved by calling `Trials$get_locked_data()` in
-  action functions.
+  action functions. It must not contain `'@'` or `';'`, which are
+  reserved for encoding the treatment switching history
+  (`regimen_trajectory`) of trials with a regimen.
 
 - ...:
 

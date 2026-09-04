@@ -11,7 +11,7 @@ for more information and examples."><meta property="og:image" content="https://z
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,7 +73,7 @@ for more information and examples.</p>
 
 <dl><dt id="arg-formula">formula<a class="anchor" aria-label="anchor" href="#arg-formula"></a></dt>
 <dd><p>An object of class <code>formula</code> that can be used with
-<code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code>. Must consist <code>arm</code> and endpoint in <code>data</code>.
+<code><a href="https://rdrr.io/pkg/survival/man/survdiff.html" class="external-link">survival::survdiff</a></code>. Must consist <code>arm</code> and endpoint in <code>data</code>.
 No covariate is allowed. Stratification variables are supported and can be
 added using <code>strata(...)</code>.</p></dd>
 
@@ -96,7 +96,7 @@ by an hazard ratio greater than 1.</p></dd>
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>subset condition that is compatible with <code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter</a></code>.
-<code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code> with <code>ties = "exact"</code> will be fitted on this
+The log rank test (<code><a href="https://rdrr.io/pkg/survival/man/survdiff.html" class="external-link">survival::survdiff</a></code>) is carried out on this
 subset only. This argument could be useful to create a subset of data for
 analysis when a trial consists of more than two arms. By default it is not
 specified, all data will be used to fit the model. More than one conditions
@@ -129,10 +129,18 @@ Default <code>TRUE</code>.</p></dd>
 <dd><p>the number of events of the endpoint in the subset.</p></dd>
 
 <dt><code>z</code></dt>
-<dd><p>the z statistics of log hazard ratios.</p></dd>
+<dd><p>the z statistic of the log rank test, with the sign of
+the log hazard ratio of treatment vs placebo.</p></dd>
 
 
-</dl></div>
+</dl><p>If the statistic is undefined because its variance is zero (e.g., no
+informative event comparison in the subset), a simulation placeholder
+<code>z = 0</code> with the corresponding <code>p = 0.5</code> is returned with a
+warning rather than an error, so that a few such replicates in a large
+simulation do not require error handling in action functions. The
+placeholder carries no evidence either way and is not a standardized
+normal statistic.</p>
+    </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

@@ -57,7 +57,7 @@ classes may consider using this wrapper directly."><meta property="og:image" con
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -146,8 +146,9 @@ classes may consider using this wrapper directly.</p>
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
 <dd><p>a function selecting which eligible patients crossover, returning
-one row per crossing-over patient with their <code>new_treatment</code>. See
-<code><a href="regimen.html">regimen()</a></code>.</p></dd>
+one row per crossing-over patient with their <code>new_treatment</code>. Values of
+<code>new_treatment</code> must not contain <code>'@'</code> or <code>';'</code>, which are
+reserved for encoding <code>regimen_trajectory</code>. See <code><a href="regimen.html">regimen()</a></code>.</p></dd>
 
 
 <dt id="arg-how">how<a class="anchor" aria-label="anchor" href="#arg-how"></a></dt>
