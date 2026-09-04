@@ -57,7 +57,8 @@ if(!requireNamespace("remotes", quietly = TRUE)){
 }
 remotes::install_github(
   "zhangh12/TrialSimulator", 
-  dependencies = TRUE
+  dependencies = TRUE, 
+  upgrade = "never"
 )
 ```
 
