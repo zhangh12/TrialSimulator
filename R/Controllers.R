@@ -83,6 +83,12 @@ Controllers <- R6::R6Class(
       t0 <- Sys.time()
       t1 <- NULL ## completion time of replicate 1
 
+      ## Per-replicate outputs are collected in a list and row-bound once
+      ## at the end (or on error). Calling bind_rows() after every
+      ## replicate costs a fixed ~1 ms per call, which is a sizable share of
+      ## a light replicate; binding once amortizes it.
+      outputs <- vector('list', n)
+
       for(idx in 1:n){
         tryCatch(
           expr = {
@@ -91,12 +97,13 @@ Controllers <- R6::R6Class(
 
           error = function(e){
             private$get_trial()$save(e$message, 'error_message', overwrite = TRUE)
-            private$output <- bind_rows(private$output, private$get_trial()$get_output())
+            outputs[[idx]] <<- private$get_trial()$get_output()
+            private$output <- bind_rows(private$output, bind_rows(outputs))
             stop(e$message)
           }
         )
 
-        private$output <- bind_rows(private$output, private$get_trial()$get_output())
+        outputs[[idx]] <- private$get_trial()$get_output()
 
         if(silent && is.null(bar_id) && idx < n){
           now <- Sys.time()
@@ -121,6 +128,8 @@ Controllers <- R6::R6Class(
           self$reset()
         }
       }
+
+      private$output <- bind_rows(private$output, bind_rows(outputs))
 
       if(!is.null(bar_id)){
         cli_progress_done(id = bar_id)
@@ -161,7 +170,7 @@ Controllers <- R6::R6Class(
                 trial <- unserialize(trial_raw)
                 listener <- unserialize(listener_raw)
 
-                output <- NULL
+                outputs <- vector('list', reps)
                 error_msg <- NULL
 
                 ## R uses Mersenne-Twister streams by default to generate
@@ -191,12 +200,12 @@ Controllers <- R6::R6Class(
                     }
                   )
 
-                  output <- dplyr::bind_rows(output, trial$get_output())
+                  outputs[[j]] <- trial$get_output()
 
                   if(!run_ok) break
                 }
 
-                list(output = output, error = error_msg)
+                list(output = dplyr::bind_rows(outputs), error = error_msg)
               },
               trial_raw = trial_raw,
               listener_raw = listener_raw,

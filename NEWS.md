@@ -1,3 +1,9 @@
+# TrialSimulator 1.35.5
+
+## Performance
+
+- `controller$run()` collects the output of each replicate in a list and row-binds once at the end, instead of calling `bind_rows()` after every replicate (a fixed cost of roughly 1 ms per call). The same applies to the parallel path. Outputs are unchanged, including the partial output kept when a replicate fails. Removes roughly 10% of the per-replicate time on a small two-arm design with trivial actions and 3-5% on heavier designs.
+
 # TrialSimulator 1.35.4
 
 ## Performance
