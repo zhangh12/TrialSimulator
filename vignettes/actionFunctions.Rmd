@@ -36,7 +36,7 @@ In `TrialSimulator`, we can define custom action functions that will be executed
 
 -   Resizing based on sample size reassessment
 
--   extending trial duration
+-   extending a trial
 
 -   Updating the accrual rate
 
@@ -408,7 +408,7 @@ This ensures smooth information flow between milestones and avoids ad-hoc workar
 
 Beyond analyzing data and saving results, one of the most powerful uses of action functions is the ability to adapt the ongoing trial.
 
-Adaptation means that trial features—such as randomization ratios, sample size, trial duration, or active arms—can be modified in response to accumulated data. This reflects how many modern clinical trials are designed in practice, aiming to increase efficiency, ethical and cost balance.
+Adaptation means that trial features—such as randomization ratios, sample size, timing of the final analysis, or active arms—can be modified in response to accumulated data. This reflects how many modern clinical trials are designed in practice, aiming to increase efficiency, ethical and cost balance.
 
 In `TrialSimulator`, such adaptations are implemented directly within action functions. At a milestone, after retrieving the locked data and performing statistical analyses, the action function can call methods of the `trial` object to alter its internal state. These changes will then influence the subsequent course of the trial simulation.
 
@@ -423,7 +423,7 @@ Adaptations that are currently supported are summarized below:
 +--------------------------+--------------------------------------------------------+---------------------------------------------------------+
 | Update sample ratio      | `trial$update_sample_ratio()`                          | response-adaptive design                                |
 +--------------------------+--------------------------------------------------------+---------------------------------------------------------+
-| Extend trial duration    | `trial$set_duration()` or `trial$update_milestone()`   | actual patient or event accrual is slower than expected |
+| Extend a trial           | `trial$update_milestone()` + `trial$stop_followup()`   | actual patient or event accrual is slower than expected |
 +--------------------------+--------------------------------------------------------+---------------------------------------------------------+
 | Increase sample size[^1] | `trial$resize()`                                       | sample size reassessment                                |
 +--------------------------+--------------------------------------------------------+---------------------------------------------------------+

@@ -54,7 +54,7 @@ accrual_rate <- data.frame(end_time = c(24, Inf),
                            piecewise_rate = c(100/24, 100/12))
 trial <- trial(
   name = 'Trial-3415', n_patients = 200,
-  seed = 1727811904, duration = 40,
+  seed = 1727811904,
   enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
   silent = TRUE
 )

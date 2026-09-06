@@ -37,7 +37,7 @@ pbo <- make_arm('pbo', 6, .5, .20)
 trt <- make_arm('trt', 9, .5, .35)
 
 trial <- trial(
-  name = 'filteredConditions', n_patients = 240, duration = 40,
+  name = 'filteredConditions', n_patients = 240,
   seed = 20260903,
   enroller = StaggeredRecruiter,
   accrual_rate = data.frame(end_time = Inf, piecewise_rate = 15),

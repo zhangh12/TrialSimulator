@@ -16,7 +16,7 @@ trt <- arm(name = 'trt')
 trt$add_endpoints(pfs)
 
 trial <- trial(
-  name = 'updateMilestone', n_patients = 250, duration = 30,
+  name = 'updateMilestone', n_patients = 250,
   seed = 20260724,
   enroller = StaggeredRecruiter,
   accrual_rate = data.frame(end_time = Inf, piecewise_rate = 25),

@@ -19,11 +19,9 @@ and should not be called directly (see the last section).
 
 \strong{Adaptation methods.} The following methods adapt an ongoing trial
 and should be called within action functions of milestones. Each of them
-has a user-friendly wrapper of the same name, e.g., \code{set_duration(trial, ...)}
-for \code{trial$set_duration(...)}.
+has a user-friendly wrapper of the same name, e.g., \code{resize(trial, ...)}
+for \code{trial$resize(...)}.
 \itemize{
-\item \code{$set_duration()} set duration of a trial. This function can be
-used to extend duration under adaptive designs.
 \item \code{$resize()} set maximum sample size of a trial. This function can
 be used to increase sample size under adaptive designs (e.g., sample size
 reassessment).
@@ -189,7 +187,7 @@ trt$add_endpoints(endpoint(name = 'pfs', type = 'tte',
                            generator = rexp, rate = log(2) / 14))
 
 accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
-tr <- trial(name = 'ex', n_patients = 400, duration = 40,
+tr <- trial(name = 'ex', n_patients = 400,
             seed = 31416, enroller = StaggeredRecruiter,
             accrual_rate = accrual, silent = TRUE)
 add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
@@ -227,7 +225,7 @@ trt$add_endpoints(endpoint(name = 'pfs', type = 'tte',
                            generator = rexp, rate = log(2) / 14))
 
 accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
-tr <- trial(name = 'ex', n_patients = 400, duration = 40,
+tr <- trial(name = 'ex', n_patients = 400,
             seed = 31416, enroller = StaggeredRecruiter,
             accrual_rate = accrual, silent = TRUE)
 add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
@@ -258,7 +256,6 @@ tr$eventNumberReestimationFromConditionalPower(
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Trials-new}{\code{Trials$new()}}
-\item \href{#method-Trials-set_duration}{\code{Trials$set_duration()}}
 \item \href{#method-Trials-resize}{\code{Trials$resize()}}
 \item \href{#method-Trials-remove_arms}{\code{Trials$remove_arms()}}
 \item \href{#method-Trials-update_sample_ratio}{\code{Trials$update_sample_ratio()}}
@@ -308,7 +305,6 @@ initialize a trial
 \if{html}{\out{<div class="r">}}\preformatted{Trials$new(
   name,
   n_patients,
-  duration,
   description = name,
   seed = NULL,
   enroller = StaggeredRecruiter,
@@ -326,9 +322,6 @@ initialize a trial
 
 \item{\code{n_patients}}{integer. Maximum (and initial) number of patients
 could be enrolled when planning the trial. It can be altered adaptively
-during a trial.}
-
-\item{\code{duration}}{Numeric. Trial duration. It can be altered adaptively
 during a trial.}
 
 \item{\code{description}}{character. Optional for description of the trial. By
@@ -366,27 +359,6 @@ executed.}
 message is still displayed.}
 
 \item{\code{...}}{(optional) arguments of \code{enroller} and \code{dropout}.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Trials-set_duration"></a>}}
-\if{latex}{\out{\hypertarget{method-Trials-set_duration}{}}}
-\subsection{Method \code{set_duration()}}{
-set trial duration in an adaptive designed trial. All patients enrolled
-before resetting the duration are truncated (non-tte endpoints) or
-censored (tte endpoints) at the original duration. Remaining patients
-are re-randomized. New duration must be longer than the old one.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$set_duration(duration)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{duration}}{new duration of a trial. It must be greater than the
-current duration.}
 }
 \if{html}{\out{</div>}}
 }
@@ -564,7 +536,7 @@ re-applied to patients enrolled later), and applied immediately, in place,
 to all currently-eligible patients.
 
 Eligibility (the pool passed to \code{what()}) = patients with at least
-one endpoint still "open" (unobserved, dropout-/duration-aware) at
+one endpoint still "open" (unobserved, dropout-aware) at
 \code{T}; fully-observed patients are excluded. \code{when()} must return
 a switch time with \code{enroll_time + switch_time >= T} (a crossover
 cannot predate its opening), otherwise an error is raised. \code{how()}
@@ -1322,7 +1294,7 @@ trt$add_endpoints(endpoint(name = 'pfs', type = 'tte',
                            generator = rexp, rate = log(2) / 14))
 
 accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
-tr <- trial(name = 'ex', n_patients = 400, duration = 40,
+tr <- trial(name = 'ex', n_patients = 400,
             seed = 31416, enroller = StaggeredRecruiter,
             accrual_rate = accrual, silent = TRUE)
 add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
@@ -1510,7 +1482,7 @@ trt$add_endpoints(endpoint(name = 'pfs', type = 'tte',
                            generator = rexp, rate = log(2) / 14))
 
 accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
-tr <- trial(name = 'ex', n_patients = 400, duration = 40,
+tr <- trial(name = 'ex', n_patients = 400,
             seed = 31416, enroller = StaggeredRecruiter,
             accrual_rate = accrual, silent = TRUE)
 add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
@@ -1699,7 +1671,7 @@ it means that milestone is triggered when a specific number of enrolled
 patients have received treatment for at least \code{min_treatment_duration}
 duration. It is users' responsibility to assure that the unit of
 \code{min_treatment_duration} are consistent with
-readout of non-tte endpoints, dropout time, and trial duration.}
+readout of non-tte endpoints, dropout time, and calendar time of milestones.}
 
 \item{\code{...}}{subset conditions compatible with \code{dplyr::filter}. Number
 Time of milestone is based on event counts on the subset of trial data.}

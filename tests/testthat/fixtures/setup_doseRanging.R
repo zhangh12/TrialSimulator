@@ -36,7 +36,7 @@ trt4$add_endpoints(ep)
 accrual_rate <- data.frame(end_time = c(7, Inf),
                            piecewise_rate = c(5, 20))
 
-trial <- trial(seed = 789L, name = '123', n_patients = 150, duration = 14,
+trial <- trial(seed = 789L, name = '123', n_patients = 150,
                enroller = StaggeredRecruiter, accrual_rate = accrual_rate, 
                silent = TRUE)
 

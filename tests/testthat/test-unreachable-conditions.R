@@ -1,5 +1,5 @@
 # Regression tests for milestone triggering conditions where one or more
-# branches cannot be reached within the trial duration.
+# branches cannot be reached at all (e.g., more events than patients).
 #
 # Bug fixed in 1.18.1: a composite triggering condition combined with 'or'
 # previously errored out as soon as any single branch could not reach its
@@ -16,7 +16,7 @@ make_simple_trial <- function(silent = TRUE){
   accrual_rate <- data.frame(end_time = c(2, Inf), piecewise_rate = c(10, 20))
 
   tr <- trial(
-    name = 'unreachable', n_patients = 60, duration = 30,
+    name = 'unreachable', n_patients = 60,
     enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
     dropout = rweibull, shape = 1.32, scale = 114.4,
     seed = 42,

@@ -2,13 +2,13 @@
 
 # Two-arm OS trial; an interim milestone action crosses control patients over to
 # trt, extending only their post-switch OS. Returns the trial after running.
-run_os_crossover <- function(action, milestone_time = 20, duration = 60,
+run_os_crossover <- function(action, milestone_time = 20, final_time = 60,
                              seed = 42, n = 200){
   os_e <- endpoint(name = 'os', type = 'tte', generator = rexp, rate = log(2)/10)
   ctrl <- arm(name = 'control'); ctrl$add_endpoints(os_e)
   trt  <- arm(name = 'trt');     trt$add_endpoints(os_e)
 
-  tr <- trial(name = 'x', n_patients = n, seed = seed, duration = duration,
+  tr <- trial(name = 'x', n_patients = n, seed = seed,
               enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 10),
               silent = TRUE)
@@ -18,17 +18,17 @@ run_os_crossover <- function(action, milestone_time = 20, duration = 60,
   lst$add_milestones(milestone(name = 'interim',
                                when = calendarTime(time = milestone_time),
                                action = action))
-  lst$add_milestones(milestone(name = 'final', when = calendarTime(time = duration)))
+  lst$add_milestones(milestone(name = 'final', when = calendarTime(time = final_time)))
   controller(tr, lst)$run(n = 1, silent = TRUE, plot_event = FALSE)
   tr
 }
 
 # OS values from an identical trial WITHOUT crossover (same seed → same latent).
-baseline_os <- function(milestone_time = 20, duration = 60, seed = 42, n = 200){
+baseline_os <- function(milestone_time = 20, seed = 42, n = 200){
   os_e <- endpoint(name = 'os', type = 'tte', generator = rexp, rate = log(2)/10)
   ctrl <- arm(name = 'control'); ctrl$add_endpoints(os_e)
   trt  <- arm(name = 'trt');     trt$add_endpoints(os_e)
-  tr <- trial(name = 'x', n_patients = n, seed = seed, duration = duration,
+  tr <- trial(name = 'x', n_patients = n, seed = seed,
               enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 10),
               silent = TRUE)
@@ -130,7 +130,7 @@ test_that('crossover() errors when how() changes a pre-switch (observed) cell', 
     os_e  <- endpoint(name = 'os',  type = 'tte', generator = rexp, rate = log(2)/20)
     ctrl  <- arm(name = 'control'); ctrl$add_endpoints(pfs_e, os_e)
     trt   <- arm(name = 'trt');     trt$add_endpoints(pfs_e, os_e)
-    tr <- trial(name = 'x', n_patients = 200, seed = 7, duration = 60,
+    tr <- trial(name = 'x', n_patients = 200, seed = 7,
                 enroller = StaggeredRecruiter,
                 accrual_rate = data.frame(end_time = Inf, piecewise_rate = 10),
                 silent = TRUE)
@@ -208,7 +208,7 @@ test_that('crossover() rejects an earliest crossover time of 0 (setup + delay 0)
 
   os_e <- endpoint(name = 'os', type = 'tte', generator = rexp, rate = log(2)/10)
   ctrl <- arm(name = 'control'); ctrl$add_endpoints(os_e)
-  tr <- trial(name = 'x', n_patients = 40, seed = 5, duration = 60,
+  tr <- trial(name = 'x', n_patients = 40, seed = 5,
               enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 10), silent = TRUE)
   tr$add_arms(sample_ratio = 1, ctrl)
@@ -237,7 +237,7 @@ test_that('crossover() does not accumulate triplets across replicates', {
   os_e <- endpoint(name = 'os', type = 'tte', generator = rexp, rate = log(2)/10)
   ctrl <- arm(name = 'control'); ctrl$add_endpoints(os_e)
   trt  <- arm(name = 'trt');     trt$add_endpoints(os_e)
-  tr <- trial(name = 'x', n_patients = 120, seed = 11, duration = 60,
+  tr <- trial(name = 'x', n_patients = 120, seed = 11,
               enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 10),
               silent = TRUE)

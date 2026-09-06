@@ -133,7 +133,7 @@ accrual_rate <- data.frame(end_time = c(10, Inf),
                            piecewise_rate = c(30, 50))
 trial <- trial(
   name = 'Trial-3415', n_patients = 300,
-  seed = 1727811904, duration = 1000,
+  seed = 1727811904,
   enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
   dropout = rexp, rate = -log(1 - 0.1)/18, ## 10% by month 18
   silent = TRUE

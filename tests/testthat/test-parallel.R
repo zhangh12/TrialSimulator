@@ -43,7 +43,7 @@ test_that('package behaves the same under single- and multi-process modes with s
                                piecewise_rate = c(2, 8, 20, 25, 50))
 
     trial <- trial(
-      name = 'test', n_patients = 1000, duration = 40,
+      name = 'test', n_patients = 1000,
       enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
       dropout = rweibull, shape = 1.32, scale = 114.4,
       seed = seed,
@@ -144,7 +144,7 @@ test_that('stop_followup and update_accrual_rate reproduce across worker modes',
     trt <- arm(name = 'trt'); trt$add_endpoints(pfs)
 
     trial <- trial(
-      name = 'test', n_patients = 300, duration = 30,
+      name = 'test', n_patients = 300,
       enroller = StaggeredRecruiter,
       accrual_rate = data.frame(end_time = Inf, piecewise_rate = 30),
       dropout = rweibull, shape = 1.32, scale = 114.4,
@@ -201,7 +201,7 @@ test_that('update_milestone reproduces across worker modes', {
     trt <- arm(name = 'trt'); trt$add_endpoints(pfs)
 
     trial <- trial(
-      name = 'test', n_patients = 300, duration = 40,
+      name = 'test', n_patients = 300,
       enroller = StaggeredRecruiter,
       accrual_rate = data.frame(end_time = Inf, piecewise_rate = 30),
       dropout = rweibull, shape = 1.32, scale = 114.4,

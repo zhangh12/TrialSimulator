@@ -62,7 +62,7 @@ test_that("censor_trial_data: dropout censoring sets event=0 and clips tte", {
   a$add_endpoints(pfs_ep)
 
   tr <- trial(name = "t", n_patients = 200, seed = 1,
-              duration = 100, enroller = StaggeredRecruiter,
+              enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 10),
               dropout = rexp, rate = 0.5,   # heavy dropout
               silent = TRUE)
@@ -93,7 +93,6 @@ test_that("censor_trial_data: no event time exceeds calendar lock time", {
 
   lock_time <- 30
   tr <- trial(name = "t", n_patients = 300, seed = 2,
-              duration = lock_time,
               enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 20),
               dropout = rweibull, shape = 1, scale = 1e6,  # essentially no dropout
@@ -129,7 +128,6 @@ test_that("censor_trial_data: selected_arms leaves other arms untouched", {
 
   lock_time <- 20
   tr <- trial(name = "t", n_patients = 200, seed = 3,
-              duration = lock_time,
               enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 15),
               dropout = rweibull, shape = 1, scale = 1e6,
@@ -167,7 +165,6 @@ test_that("stratified randomization produces balanced strata", {
   trt$add_endpoints(strat_ep, pfs_ep)
 
   tr <- trial(name = "t", n_patients = 400, seed = 10,
-              duration = 100,
               enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 30),
               dropout = rweibull, shape = 1, scale = 1e6,
@@ -208,7 +205,6 @@ test_that("fractional sample ratio with stratification factors warns", {
     pbo$add_endpoints(strat_ep, pfs_ep)
     trt$add_endpoints(strat_ep, pfs_ep)
     tr <- trial(name = "t", n_patients = 100, seed = 11,
-                duration = 100,
                 enroller = StaggeredRecruiter,
                 accrual_rate = data.frame(end_time = Inf, piecewise_rate = 30),
                 dropout = rweibull, shape = 1, scale = 1e6,
@@ -250,7 +246,6 @@ test_that("enrollment(arms=...) milestone triggers on specified arms only", {
   hi  <- arm(name = "high");    hi$add_endpoints(pfs_ep)
 
   tr <- trial(name = "t", n_patients = 300, seed = 21,
-              duration = 100,
               enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 20),
               dropout = rweibull, shape = 1, scale = 1e6,

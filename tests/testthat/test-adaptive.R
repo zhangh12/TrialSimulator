@@ -39,7 +39,7 @@ test_that('sample ratio can be updated to switch between permuted block and samp
                              piecewise_rate = c(200, 200))
 
   trial <- trial(
-    name = 'test', n_patients = 1e4, duration = 52,
+    name = 'test', n_patients = 1e4,
     enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
     silent = TRUE
   )
@@ -147,7 +147,7 @@ test_that('milestone can be triggerd when all patients have received treatment f
   ## if min treatment duration is 2 months, then triggering time would be 20
 
   trial <- trial(
-    name = 'test', n_patients = 580, duration = 25,
+    name = 'test', n_patients = 580,
     enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
     dropout = rexp, rate = -log(1 - .08)/2,
     silent = TRUE
@@ -186,7 +186,7 @@ test_that('enforce = TRUE is no longer needed in Trials$add_arms()', {
   accrual_rate <- data.frame(end_time = c(7, Inf),
                              piecewise_rate = c(50, 80))
 
-  trial <- trial(name = '123', n_patients = 1000, duration = 20,
+  trial <- trial(name = '123', n_patients = 1000,
                  enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
                  seed = 31415926, silent = TRUE)
 
@@ -233,7 +233,7 @@ test_that('enforce = TRUE is no longer needed in Trials$add_arms()', {
   accrual_rate <- data.frame(end_time = c(7, Inf),
                              piecewise_rate = c(50, 80))
 
-  trial <- trial(name = '123', n_patients = 1000, duration = 20,
+  trial <- trial(name = '123', n_patients = 1000,
                  enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
                  seed = 31415926, silent = TRUE)
 
@@ -299,7 +299,7 @@ test_that('generator of endpoint can be updated in Trials$update_generator()', {
                              piecewise_rate = c(2, 8, 20, 25, 50) * 1000)
 
   trial <- trial(
-    name = 'test', n_patients = 1000000, duration = 100,
+    name = 'test', n_patients = 1000000,
     enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
     seed = 31415926,
     silent = TRUE
@@ -371,7 +371,7 @@ test_that('trial can be resized by Trials$resize()', {
                              piecewise_rate = c(50, 50))
 
   trial <- trial(
-    name = 'test', n_patients = 500, duration = 50,
+    name = 'test', n_patients = 500,
     enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
     silent = TRUE
   )

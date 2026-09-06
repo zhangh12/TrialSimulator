@@ -19,7 +19,7 @@ test_that("non-stratified enrollment reproduces the 1.35.3 patient data", {
     a
   }
   pbo <- mk("pbo", .4); trt <- mk("trt", .6); ctl <- mk("ctl", .5)
-  tr <- trial(name = "g", n_patients = 150, duration = 30, seed = 20260903,
+  tr <- trial(name = "g", n_patients = 150, seed = 20260903,
               enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 20),
               dropout = rweibull, shape = 1.5, scale = 60, silent = TRUE)

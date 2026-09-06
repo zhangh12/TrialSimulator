@@ -1,6 +1,6 @@
 # User-facing wrappers for adaptive trial mutations
 #
-# Covers: add_arms, remove_arms, resize, set_duration, update_generator,
+# Covers: add_arms, remove_arms, resize, stop_followup, update_generator,
 # update_sample_ratio, stop_followup, update_accrual_rate — each invoked
 # inside an action function to verify they forward to the corresponding
 # Trials$... method.
@@ -13,9 +13,9 @@ make_arm <- function(name, rate) {
   a
 }
 
-make_trial <- function(seed = 1, n_patients = 400, duration = 30) {
+make_trial <- function(seed = 1, n_patients = 400) {
   accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
-  trial(name = "t", n_patients = n_patients, duration = duration, seed = seed,
+  trial(name = "t", n_patients = n_patients, seed = seed,
         enroller = StaggeredRecruiter, accrual_rate = accrual,
         dropout = rweibull, shape = 1, scale = 1e6,
         silent = TRUE)
@@ -83,31 +83,53 @@ test_that("resize wrapper increases maximum sample size mid-trial", {
   controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
 
   d <- tr$get_locked_data("final")
-  # With a generous duration and piecewise_rate=30/month, we should comfortably
+  # With piecewise_rate=30/month, we should comfortably
   # exceed the original 200-patient cap once resized.
   expect_gt(nrow(d), 200)
 })
 
 
-test_that("set_duration wrapper extends trial duration", {
+test_that("extending a trial at an interim freezes the enrolled cohort at the planned end", {
 
+  # The final analysis is planned at calendar time 15. At an (unblinded)
+  # interim at time 10 the trial is extended to time 30: patients enrolled by
+  # the interim keep their originally planned follow-up (stopped at 15),
+  # patients enrolled afterwards are followed to the new end. This is the
+  # recipe that replaced set_duration(): stop_followup() for the freeze,
+  # update_milestone() for the new final analysis time.
   pbo <- make_arm("pbo", 10)
   trt <- make_arm("trt", 12)
-  tr <- make_trial(duration = 15)
+  tr <- make_trial()
   add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
 
+  planned_end <- 15
   extend <- milestone(name = "extend",
                       when = calendarTime(time = 10),
-                      action = function(trial) { set_duration(trial, 30) })
-  final <- milestone(name = "final", when = calendarTime(time = 30))
+                      action = function(trial) {
+                        stop_followup(
+                          trial,
+                          additional_followup = planned_end - trial$get_current_time())
+                        update_milestone(trial, "final",
+                                         when = calendarTime(time = 30))
+                      })
+  final <- milestone(name = "final", when = calendarTime(time = planned_end))
   lstn <- listener(silent = TRUE)
   lstn$add_milestones(extend, final)
   controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)
 
-  # If set_duration had failed, the trial would have locked at time 15 and no
-  # final milestone at time 30 would be reachable.
-  t_final <- tr$get_milestone_time("final")
-  expect_gte(t_final, 15)
+  expect_equal(unname(tr$get_milestone_time("final")), 30)
+
+  d <- tr$get_locked_data("final")
+  early <- d[d$enroll_time <= 10, ]
+  late  <- d[d$enroll_time > 10, ]
+  expect_gt(nrow(early), 0)
+  expect_gt(nrow(late), 0)
+  # frozen cohort: no follow-up beyond the planned end
+  expect_true(all(early$enroll_time + early$pfs <= planned_end + 1e-9))
+  expect_true(all(early$pfs_event[early$enroll_time + early$pfs > planned_end - 1e-9] == 0))
+  # later cohort: followed to the new end, with follow-up beyond the old one
+  expect_true(all(late$enroll_time + late$pfs <= 30 + 1e-9))
+  expect_true(any(late$enroll_time + late$pfs > planned_end))
 })
 
 
@@ -444,7 +466,7 @@ test_that("update_accrual_rate slows enrollment after the milestone", {
                tolerance = 1e-9)
   expect_equal(sum(d$enroll_time > 10 & d$enroll_time <= 20), 50)
 
-  # regeneration keeps the duration-censoring invariant for re-planned rows
+  # re-planned rows are censored at the lock time like every other row
   expect_true(all(d$enroll_time + d$pfs <= 30 + 1e-9))
 })
 
@@ -483,7 +505,7 @@ test_that("update_accrual_rate speeding up accrual keeps censoring correct", {
 
   pbo <- make_arm("pbo", 10)
   trt <- make_arm("trt", 12)
-  tr <- make_trial(n_patients = 600, duration = 25)
+  tr <- make_trial(n_patients = 600)
   add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
 
   fast <- milestone(name = "fast",
@@ -501,7 +523,7 @@ test_that("update_accrual_rate speeding up accrual keeps censoring correct", {
   d <- tr$get_locked_data("final")
 
   # patients re-planned to earlier times must be regenerated, not shifted:
-  # every row still satisfies the duration-censoring invariant
+  # every row still satisfies the lock-time censoring invariant
   expect_true(all(d$enroll_time + d$pfs <= 25 + 1e-9))
   # the faster rate really pulls enrollment earlier: 300 patients remain at
   # the milestone, so the last enrolls exactly at 10 + 300/60 = 15
@@ -722,7 +744,7 @@ test_that("crossover registered before update_accrual_rate reaches re-planned pa
   ctrl <- arm(name = 'control'); ctrl$add_endpoints(os_e)
   trt  <- arm(name = 'trt');     trt$add_endpoints(os_e)
 
-  tr <- trial(name = 'x', n_patients = 300, seed = 42, duration = 60,
+  tr <- trial(name = 'x', n_patients = 300, seed = 42,
               enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 10),
               silent = TRUE)
@@ -777,7 +799,6 @@ test_that("adaptation methods reject calls outside action functions", {
 
   # no milestone has been triggered yet, so every guarded adaptation
   # method must refuse to run at setup time
-  expect_error(tr$set_duration(50), "within an action function")
   expect_error(tr$resize(500), "within an action function")
   expect_error(tr$remove_arms("trt"), "within an action function")
   expect_error(tr$update_sample_ratio(c("pbo", "trt"), c(1, 2)),

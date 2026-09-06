@@ -12,7 +12,7 @@ make_controller <- function(action = doNothing) {
   active$add_endpoints(
     endpoint(name = "PFS", type = "tte", generator = rexp, rate = log(2) / 6))
 
-  tr <- trial(name = "t", n_patients = 50, duration = 40,
+  tr <- trial(name = "t", n_patients = 50,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 30),
               silent = TRUE)
   tr$add_arms(sample_ratio = c(1, 1), control, active)

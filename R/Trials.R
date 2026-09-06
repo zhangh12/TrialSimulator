@@ -11,11 +11,9 @@
 #'
 #' \strong{Adaptation methods.} The following methods adapt an ongoing trial
 #' and should be called within action functions of milestones. Each of them
-#' has a user-friendly wrapper of the same name, e.g., \code{set_duration(trial, ...)}
-#' for \code{trial$set_duration(...)}.
+#' has a user-friendly wrapper of the same name, e.g., \code{resize(trial, ...)}
+#' for \code{trial$resize(...)}.
 #' \itemize{
-#' \item \code{$set_duration()} set duration of a trial. This function can be
-#' used to extend duration under adaptive designs.
 #' \item \code{$resize()} set maximum sample size of a trial. This function can
 #' be used to increase sample size under adaptive designs (e.g., sample size
 #' reassessment).
@@ -151,8 +149,6 @@ Trials <- R6::R6Class(
     #' @param n_patients integer. Maximum (and initial) number of patients
     #' could be enrolled when planning the trial. It can be altered adaptively
     #' during a trial.
-    #' @param duration Numeric. Trial duration. It can be altered adaptively
-    #' during a trial.
     #' @param description character. Optional for description of the trial. By
     #' default it is set to be trial's \code{name}. Usually useless.
     #' @param seed random seed. If \code{NULL}, seed is set for each simulated
@@ -186,7 +182,6 @@ Trials <- R6::R6Class(
       function(
         name,
         n_patients,
-        duration,
         description = name,
         seed = NULL,
         enroller = StaggeredRecruiter,
@@ -198,7 +193,7 @@ Trials <- R6::R6Class(
 
         # stratification_factors will be checked again when an arm is added
         private$validate_arguments(
-          name, n_patients, duration, description, seed,
+          name, n_patients, description, seed,
           enroller, dropout, stratification_factors, silent, ...)
 
         private$silent <- silent
@@ -214,7 +209,6 @@ Trials <- R6::R6Class(
         private$name <- name
         private$description <- description
         private$n_patients <- n_patients
-        private$duration <- duration
         private$now <- 0
         private$trial_data <- NULL
         private$locked_data <- list()
@@ -255,50 +249,6 @@ Trials <- R6::R6Class(
       },
 
     ## ---- adaptation methods (call within action functions) ------------------
-
-    #' @description
-    #' set trial duration in an adaptive designed trial. All patients enrolled
-    #' before resetting the duration are truncated (non-tte endpoints) or
-    #' censored (tte endpoints) at the original duration. Remaining patients
-    #' are re-randomized. New duration must be longer than the old one.
-    #' @param duration new duration of a trial. It must be greater than the
-    #' current duration.
-    set_duration = function(duration){
-
-      if(length(self$get_milestone_time()) == 0){
-        stop('set_duration() can only be called within an action ',
-             'function of a milestone, i.e., after at least one milestone ',
-             'has been triggered. ')
-      }
-
-      if(duration <= private$get_duration()){
-        stop('Trial duration can only be set to be longer. <', duration,
-             '> is shorter than <', private$get_duration(), '>. ')
-      }
-
-      old_duration <- private$get_duration()
-
-      ## update the duration
-      private$duration <- duration
-
-      if(!private$silent){
-        message('Trial duration is updated <', old_duration,
-                '> -> <', private$get_duration(), '>. ')
-      }
-
-      ## all patients enrolled before current milestone should be censored
-      ## or truncated at old duration
-      private$censor_trial_data(censor_at = old_duration,
-                             enrolled_before = self$get_current_time())
-
-      ## with trial duration is extended, unenrolled patient at current time
-      ## should be randomized again.
-      private$roll_back()
-
-      ## update data for unrolled patients based on new trial duration
-      private$enroll_patients()
-
-    },
 
     #' @description
     #' resize a trial with a greater sample size. This function is used to
@@ -395,6 +345,16 @@ Trials <- R6::R6Class(
                              selected_arms = arms_name)
       ## with an arm is removed, unenrolled patient at current time should be
       ## randomized again.
+      ##
+      ## roll_back() is indispensable here, and must follow the censoring
+      ## above: censor_trial_data() is not restricted to enrolled patients,
+      ## so rows of the removed arms whose enroll_time is later than the
+      ## current time have just been administratively censored at a calendar
+      ## time before their enrollment. Their event time was clipped to 0 and
+      ## their event indicator set to 0, which is meaningless data. roll_back()
+      ## discards every row with enroll_time later than the current time, so
+      ## none of them survives; enroll_patients() below then regenerates the
+      ## unenrolled patients under the remaining arms.
       private$roll_back()
 
       ## update data for unrolled patients based on new arms and possibly
@@ -725,7 +685,7 @@ Trials <- R6::R6Class(
     #' to all currently-eligible patients.
     #'
     #' Eligibility (the pool passed to \code{what()}) = patients with at least
-    #' one endpoint still "open" (unobserved, dropout-/duration-aware) at
+    #' one endpoint still "open" (unobserved, dropout-aware) at
     #' \code{T}; fully-observed patients are excluded. \code{when()} must return
     #' a switch time with \code{enroll_time + switch_time >= T} (a crossover
     #' cannot predate its opening), otherwise an error is raised. \code{how()}
@@ -791,7 +751,10 @@ Trials <- R6::R6Class(
       if(!is.null(td) && nrow(td) > 0){
         td <- private$apply_regimens(td, new_index)
         private$trial_data <- td
-        private$censor_trial_data()
+        ## what() may have rewritten endpoints past the dropout time; no
+        ## administrative censoring is needed here,
+        ## but need to re-apply dropout
+        private$censor_trial_data(censor_at = Inf)
       }
 
       if(!private$silent){
@@ -883,7 +846,7 @@ Trials <- R6::R6Class(
       }
 
       ## no roll_back()/enroll_patients(): no design parameter (arms, sample
-      ## ratio, generator, duration) changes, so unenrolled patients are
+      ## ratio, generator) changes, so unenrolled patients are
       ## unaffected and the RNG stream must not advance.
 
       invisible(NULL)
@@ -981,10 +944,9 @@ Trials <- R6::R6Class(
       ## discard data of unenrolled patients; roll_back() re-derives the old
       ## planned enroll times from trial data, which are overwritten right
       ## after. Regeneration in enroll_patients() (rather than shifting
-      ## existing rows in place) is required for correctness: rows in trial
-      ## data are already censored at trial duration, so moving a patient to
-      ## an earlier enroll time could not restore follow-up truncated under
-      ## the old, later time.
+      ## existing rows in place) keeps the generation contract simple: a
+      ## patient's data are generated when the patient is enrolled, under
+      ## the randomization plan in effect at that time.
       private$roll_back()
 
       private$enroll_time <- head(new_times, n1)
@@ -2013,7 +1975,7 @@ Trials <- R6::R6Class(
     #'                            generator = rexp, rate = log(2) / 14))
     #'
     #' accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
-    #' tr <- trial(name = 'ex', n_patients = 400, duration = 40,
+    #' tr <- trial(name = 'ex', n_patients = 400,
     #'             seed = 31416, enroller = StaggeredRecruiter,
     #'             accrual_rate = accrual, silent = TRUE)
     #' add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
@@ -2349,7 +2311,7 @@ Trials <- R6::R6Class(
     #'                            generator = rexp, rate = log(2) / 14))
     #'
     #' accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
-    #' tr <- trial(name = 'ex', n_patients = 400, duration = 40,
+    #' tr <- trial(name = 'ex', n_patients = 400,
     #'             seed = 31416, enroller = StaggeredRecruiter,
     #'             accrual_rate = accrual, silent = TRUE)
     #' add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
@@ -2707,7 +2669,7 @@ Trials <- R6::R6Class(
              milestone_name, '>. If it is composite, ',
              'make sure that at least one condition can be reached in a realistic time window. ',
              'If not, you may consider reducing the target number in milestone(), ',
-             'and/or extending trial duration in trial(). ')
+             'increasing the sample size, or lowering the dropout rate. ')
       }
 
       ## validate chronology before any state is touched: a milestone must
@@ -2785,7 +2747,7 @@ Trials <- R6::R6Class(
                 milestone_name, '>. Check: \n',
                 '(1) Is this milestone triggered too early?\n',
                 '(2) Is the dropout rate too high?\n',
-                '(3) Do you use the same unit for readout time, trial duration, and dropout time?')
+                '(3) Do you use the same unit for readout time, calendar time of milestones, and dropout time?')
       }
 
       ## Build per-arm event/readout counts without dplyr group_by+summarise.
@@ -3029,7 +2991,7 @@ Trials <- R6::R6Class(
     #' patients have received treatment for at least \code{min_treatment_duration}
     #' duration. It is users' responsibility to assure that the unit of
     #' \code{min_treatment_duration} are consistent with
-    #' readout of non-tte endpoints, dropout time, and trial duration.
+    #' readout of non-tte endpoints, dropout time, and calendar time of milestones.
     #' @param ... subset conditions compatible with \code{dplyr::filter}. Number
     #' Time of milestone is based on event counts on the subset of trial data.
     #' @return data lock time
@@ -3234,8 +3196,10 @@ Trials <- R6::R6Class(
         hcl(h = seq(0, 360 * (n-1)/n, length.out = n), c = 60, l = 70)
       }
 
+      ## the x axis extends to the latest calendar time in the locked event
+      ## tables, i.e., the time of the last triggered milestone
       p <- ggplot(new_data, aes(x = calendar_time, y = n_events, fill = arm)) +
-        xlim(0, private$get_duration() * 1.05) +
+        xlim(0, max(ct) * 1.05) +
         labs(
           x = 'Calendar Time',
           y = 'Cumulative N'
@@ -3402,7 +3366,6 @@ Trials <- R6::R6Class(
       cat(white_text_blue_bg, logo, '      Sample Ratio: ',
           paste0(self$get_sample_ratio(), collapse = ', '), reset, '\n')
       cat(white_text_blue_bg, logo, 'Number of Patients: ', private$get_number_patients(), reset, '\n')
-      cat(white_text_blue_bg, logo, '  Planned Duration: ', private$get_duration(), reset, '\n')
       cat(white_text_blue_bg, logo, '           Regimen: ', ifelse(is.null(private$get_regimen()), 'not set', 'set'), reset, '\n')
       cat(white_text_blue_bg, logo, '       Random Seed: ', private$get_seed(), reset, '\n')
 
@@ -3417,7 +3380,6 @@ Trials <- R6::R6Class(
     name = NULL,
     description = NULL,
     n_patients = NULL,
-    duration = NULL,
     n_enrolled_patients = NULL,
     sample_ratio = NULL,
 
@@ -3517,7 +3479,6 @@ Trials <- R6::R6Class(
       tte_cols     <- sub('_event$',   '', event_cols)
       readout_cols <- grep('_readout$', names(patient_data), value = TRUE)
       ep_cols      <- sub('_readout$', '', readout_cols)
-      duration     <- private$get_duration()
       tol          <- 1e-8
 
       for(i in indices){
@@ -3544,8 +3505,7 @@ Trials <- R6::R6Class(
           if(rt[1] == 0) next
           open_any <- open_any |
             ((cand$enroll_time + rt) > ref &
-               rt <= cand$dropout_time &
-               (cand$enroll_time + rt) <= duration)
+               rt <= cand$dropout_time)
         }
         cand <- cand[open_any, , drop = FALSE]
         if(nrow(cand) == 0) next
@@ -3663,8 +3623,7 @@ Trials <- R6::R6Class(
             }else{
               rt <- patient_data[[readout_cols[match(col, ep_cols)]]][upd_idx]
               post_switch <- (rt > sw_for_upd) &
-                rt <= patient_data$dropout_time[upd_idx] &
-                (patient_data$enroll_time[upd_idx] + rt) <= duration
+                rt <= patient_data$dropout_time[upd_idx]
             }
             post_switch[is.na(post_switch)] <- FALSE
             if(is.numeric(new_vals) && is.numeric(orig_val)){
@@ -3705,7 +3664,7 @@ Trials <- R6::R6Class(
     },
 
     validate_arguments =
-      function(name, n_patients, duration, description, seed,
+      function(name, n_patients, description, seed,
                enroller, dropout, stratification_factors, silent, ...){
 
       stopifnot(is.null(seed) || is.wholenumber(seed))
@@ -3717,10 +3676,6 @@ Trials <- R6::R6Class(
       stopifnot(is.numeric(n_patients) &&
                   (length(n_patients) == 1) &&
                   is.wholenumber(n_patients))
-
-      stopifnot(is.numeric(duration) &&
-                  (length(duration) == 1) &&
-                  duration > 0)
 
       stopifnot(is.function(enroller))
       stopifnot(is.null(dropout) || is.function(dropout))
@@ -3851,11 +3806,6 @@ Trials <- R6::R6Class(
       private$trial_data
     },
 
-    ## @description
-    ## return maximum duration of a trial
-    get_duration = function(){
-      private$duration
-    },
 
     ## @description
     ## set recruitment curve when initialize a trial.
@@ -4319,10 +4269,12 @@ Trials <- R6::R6Class(
       }
 
       private$trial_data <- bind_rows(private$get_trial_data(), patient_data)
-      ## newly updated trial data should be always censored at trial duration
-      ## also, non-tte endpoints would be NA if readout time is after dropout time,
-      ## and tte endpoints should be censored at dropout time.
-      private$censor_trial_data()
+      ## newly generated trial data are censored at dropout time only:
+      ## non-tte endpoints are NA if readout time is after dropout time,
+      ## and tte endpoints are censored at dropout time. No administrative
+      ## censoring here: it happens in lock_data() at the time of each
+      ## milestone, and through adaptations such as stop_followup().
+      private$censor_trial_data(censor_at = Inf)
 
       if(!private$silent){
         message('Data of ', n_patients,
@@ -4608,7 +4560,8 @@ Trials <- R6::R6Class(
     },
 
     ## @description
-    ## censor trial data at calendar time. Patients to be censored are
+    ## censor trial data at calendar time and dropout time. Patients to be
+    ## censored are
     ## selected by \code{selected_arms}, \code{enrolled_before} and conditions
     ## in \code{...}; all of them are combined with AND. Although
     ## \code{selected_arms} and \code{enrolled_before} can be equally
@@ -4617,7 +4570,7 @@ Trials <- R6::R6Class(
     ## arguments on purpose: they are evaluated in base R, while conditions in
     ## \code{...} go through \code{dplyr::filter}, which is measurably slower.
     ## Internal calls on simulation hot paths (\code{enroll_patients},
-    ## \code{set_duration}, \code{remove_arms}, \code{crossover},
+    ## \code{remove_arms}, \code{crossover},
     ## \code{stop_followup}) therefore use the two dedicated arguments only;
     ## \code{...} is reserved for user-specified conditions, e.g., those
     ## forwarded from \code{stop_followup}.
@@ -4626,8 +4579,15 @@ Trials <- R6::R6Class(
     ## \code{...} in the argument list, they must always be passed by name.
     ## This prevents unnamed filter conditions forwarded through \code{...}
     ## from being positionally matched to them.
-    ## @param censor_at time of censoring. It is set to trial duration if
-    ## \code{NULL}.
+    ## @param censor_at calendar time of administrative censoring. Events
+    ## after it are censored at it and non-tte readouts after it are set to
+    ## \code{NA}. No default: callers must state it. Two kinds of censoring
+    ## are applied by this function: dropout censoring, which is relative to
+    ## each patient's enrollment and is always applied, and administrative
+    ## censoring at the calendar time \code{censor_at}. Set
+    ## \code{censor_at = Inf} to apply dropout censoring only, i.e., no
+    ## administrative censoring (e.g., right after new patients are
+    ## generated); the administrative step is skipped entirely in that case.
     ## @param selected_arms censoring is applied to selected arms (e.g.,
     ## removed arms) only. If \code{NULL}, it will be set to all available arms
     ## in trial data. Otherwise, censoring is applied to user-specified arms only.
@@ -4635,12 +4595,14 @@ Trials <- R6::R6Class(
     ## should be fixed unchanged since corresponding milestone is triggered. In that
     ## case, one can update trial data by something like
     ## \code{censor_trial_data(censor_at = milestone_time, selected_arms = removed_arms)}.
-    ## @param enrolled_before censoring is applied to patients enrolled before
-    ## specific time. This argument would be used when trial duration is
-    ## updated by \code{set_duration}. Adaptation happens when \code{set_duration}
-    ## is called so we fix duration for patients enrolled before adaptation
-    ## to maintain independent increment. This should work when trial duration
-    ## is updated for multiple times.
+    ## @param enrolled_before censoring is applied to patients enrolled at or
+    ## before a specific calendar time, \code{Inf} (no cutoff) by default.
+    ## \code{stop_followup} uses it to freeze the cohort enrolled by the
+    ## current milestone, e.g., to keep their follow-up at the originally
+    ## planned end of the trial after the trial is extended at an unblinded
+    ## interim analysis, so that patients enrolled later are the only ones
+    ## affected by the adaptation. Censoring is monotone, so repeated calls
+    ## with later cutoffs are safe.
     ## @param ... subset conditions compatible with \code{dplyr::filter},
     ## further restricting the patients to be censored in addition to
     ## \code{selected_arms} and \code{enrolled_before}. When
@@ -4650,12 +4612,11 @@ Trials <- R6::R6Class(
     ## addition, no condition is provided in \code{...}, all patients in
     ## trial data are censored. When \code{...} is empty, \code{dplyr} is
     ## not invoked at all.
-    censor_trial_data = function(censor_at = NULL, ...,
+    censor_trial_data = function(censor_at, ...,
                                  selected_arms = NULL, enrolled_before = Inf){
 
-      if(is.null(censor_at)){
-        censor_at <- private$get_duration()
-      }
+      stopifnot(is.numeric(censor_at), length(censor_at) == 1, !is.na(censor_at))
+      calendar_censoring <- is.finite(censor_at)
 
       trial_data <- private$get_trial_data()
 
@@ -4693,14 +4654,16 @@ Trials <- R6::R6Class(
         drop_mask <- sel & (trial_data[[tte_col]] > trial_data$dropout_time)
         trial_data[[event_col]][drop_mask] <- 0L
         trial_data[[tte_col]][drop_mask]   <- trial_data$dropout_time[drop_mask]
-        ## calendar-time censoring: event falls after data lock
-        cal_time  <- trial_data$enroll_time + trial_data[[tte_col]]
-        late_mask <- sel & (cal_time > censor_at)
-        trial_data[[event_col]][late_mask] <- 0L
-        trial_data[[tte_col]][late_mask]   <- censor_at - trial_data$enroll_time[late_mask]
-        ## defensive clip (censor_at - enroll_time can be negative for patients not yet enrolled)
-        neg_mask <- trial_data[[tte_col]] < 0
-        trial_data[[tte_col]][neg_mask] <- 0
+        if(calendar_censoring){
+          ## administrative censoring: event falls after censor_at
+          cal_time  <- trial_data$enroll_time + trial_data[[tte_col]]
+          late_mask <- sel & (cal_time > censor_at)
+          trial_data[[event_col]][late_mask] <- 0L
+          trial_data[[tte_col]][late_mask]   <- censor_at - trial_data$enroll_time[late_mask]
+          ## defensive clip (censor_at - enroll_time can be negative for patients not yet enrolled)
+          neg_mask <- trial_data[[tte_col]] < 0
+          trial_data[[tte_col]][neg_mask] <- 0
+        }
       }
 
       for(readout_col in readout_cols){
@@ -4708,10 +4671,12 @@ Trials <- R6::R6Class(
         ## dropout censoring
         drop_mask <- sel & (trial_data[[readout_col]] > trial_data$dropout_time)
         trial_data[[ep_col]][drop_mask] <- NA
-        ## calendar-time censoring
-        cal_time  <- trial_data$enroll_time + trial_data[[readout_col]]
-        late_mask <- sel & (cal_time > censor_at)
-        trial_data[[ep_col]][late_mask] <- NA
+        if(calendar_censoring){
+          ## administrative censoring: readout falls after censor_at
+          cal_time  <- trial_data$enroll_time + trial_data[[readout_col]]
+          late_mask <- sel & (cal_time > censor_at)
+          trial_data[[ep_col]][late_mask] <- NA
+        }
       }
 
       ## sort once at the end (dplyr version re-sorted inside every loop iteration)

@@ -1,7 +1,7 @@
 ## trial() / Trials enforce StaggeredRecruiter as the only enroller.
 
 make_trial <- function(...) {
-  trial(name = "t", n_patients = 10, duration = 50,
+  trial(name = "t", n_patients = 10,
         accrual_rate = data.frame(end_time = Inf, piecewise_rate = 5),
         silent = TRUE, ...)
 }
@@ -16,13 +16,13 @@ test_that("explicitly passing StaggeredRecruiter is accepted", {
 
 test_that("a non-StaggeredRecruiter enroller is rejected by trial()", {
   expect_error(
-    trial(name = "t", n_patients = 10, duration = 50,
+    trial(name = "t", n_patients = 10,
           enroller = rexp, rate = 0.1, silent = TRUE),
     "must be StaggeredRecruiter")
 
   custom <- function(n, ...) sort(stats::runif(n))
   expect_error(
-    trial(name = "t", n_patients = 10, duration = 50,
+    trial(name = "t", n_patients = 10,
           enroller = custom, silent = TRUE),
     "must be StaggeredRecruiter")
 })

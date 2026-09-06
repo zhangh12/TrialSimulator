@@ -22,7 +22,7 @@ test_that('fitLinear works as expected', {
                              piecewise_rate = c(2, 8, 20, 25, 50))
 
   trial <- trial(
-    name = 'test', n_patients = 1000, duration = 40,
+    name = 'test', n_patients = 1000,
     enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
     silent = TRUE
   )
@@ -82,7 +82,7 @@ test_that('fitLinear can compute ATE as expected in additive model', {
                              piecewise_rate = c(2, 8, 20, 25, 50))
 
   trial <- trial(
-    name = 'test', n_patients = 1000, duration = 40,
+    name = 'test', n_patients = 1000,
     enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
     silent = TRUE
   )
@@ -145,7 +145,7 @@ test_that('fitLogistic can compute ATE as expected in model without covariates',
                              piecewise_rate = c(2, 8, 20, 25, 50))
 
   trial <- trial(
-    name = 'test', n_patients = 1000, duration = 40,
+    name = 'test', n_patients = 1000,
     enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
     silent = TRUE
   )
@@ -266,7 +266,7 @@ test_that('fitLogistic can compute regression coefficient as expected in model w
                              piecewise_rate = c(2, 8, 20, 25, 50))
 
   trial <- trial(
-    name = 'test', n_patients = 1000, duration = 40,
+    name = 'test', n_patients = 1000,
     enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
     silent = TRUE
   )
@@ -339,7 +339,7 @@ test_that('fitLogrank works as expected', {
                              piecewise_rate = c(2, 8, 20, 25, 50))
 
   trial <- trial(
-    name = 'test', n_patients = 1000, duration = 40,
+    name = 'test', n_patients = 1000,
     enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
     silent = TRUE
   )
@@ -394,7 +394,7 @@ test_that('fitCoxph can compute main effect of arm', {
                              piecewise_rate = c(2, 8, 20, 25, 50))
 
   trial <- trial(
-    name = 'test', n_patients = 1000, duration = 40,
+    name = 'test', n_patients = 1000,
     enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
     silent = TRUE
   )

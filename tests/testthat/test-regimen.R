@@ -15,7 +15,7 @@ test_that('regimen_trajectory is "arm@0" when no patient switches', {
   when_fn <- function(patient_data) data.frame(patient_id = patient_data$patient_id, switch_time = patient_data$pfs)
   how_fn  <- function(patient_data) data.frame(patient_id = patient_data$patient_id)
 
-  tr <- trial(name = 't', n_patients = 60, seed = 1, duration = 30,
+  tr <- trial(name = 't', n_patients = 60, seed = 1,
               enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 10),
               silent = TRUE)
@@ -46,7 +46,7 @@ test_that('regimen_trajectory encodes a single switching round correctly', {
   when_fn <- function(patient_data) data.frame(patient_id = patient_data$patient_id, switch_time = patient_data$pfs)
   how_fn  <- function(patient_data) data.frame(patient_id = patient_data$patient_id)
 
-  tr <- trial(name = 't', n_patients = 100, seed = 2, duration = 200,
+  tr <- trial(name = 't', n_patients = 100, seed = 2,
               enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 10),
               silent = TRUE)
@@ -93,7 +93,7 @@ test_that('regimen_trajectory accumulates two switching rounds for the same pati
   when2 <- function(patient_data) data.frame(patient_id = patient_data$patient_id, switch_time = patient_data$os / 2)
   how2  <- function(patient_data) data.frame(patient_id = patient_data$patient_id)
 
-  tr <- trial(name = 't', n_patients = 60, seed = 3, duration = 200,
+  tr <- trial(name = 't', n_patients = 60, seed = 3,
               enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 10),
               silent = TRUE)
@@ -125,7 +125,7 @@ test_that('when() returning rows in shuffled order still assigns correct switch 
   pbo <- arm(name = 'placebo'); pbo$add_endpoints(pfs_e)
   trt <- arm(name = 'trt');     trt$add_endpoints(pfs_e)
 
-  tr <- trial(name = 't', n_patients = 40, seed = 7, duration = 200,
+  tr <- trial(name = 't', n_patients = 40, seed = 7,
               enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 20),
               silent = TRUE)
@@ -167,7 +167,7 @@ test_that('lock_data trims switch entries that fall after the calendar lock time
   how_fn  <- function(patient_data) data.frame(patient_id = patient_data$patient_id)
 
   lock_time <- 5
-  tr <- trial(name = 't', n_patients = 200, seed = 4, duration = lock_time,
+  tr <- trial(name = 't', n_patients = 200, seed = 4,
               enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 100),
               silent = TRUE)
@@ -432,7 +432,7 @@ make_trial_with_regimen <- function(reg){
   pfs_e <- endpoint(name = 'pfs', type = 'tte', generator = rexp, rate = log(2)/8)
   pbo   <- arm(name = 'placebo'); pbo$add_endpoints(pfs_e)
   trt   <- arm(name = 'trt');     trt$add_endpoints(pfs_e)
-  tr <- trial(name = 't', n_patients = 20, seed = 9, duration = 50,
+  tr <- trial(name = 't', n_patients = 20, seed = 9,
               enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 20),
               silent = TRUE)
@@ -604,7 +604,7 @@ test_that('regimen() ... args are passed to what/when/how at execution time', {
 
   accrual_rate <- data.frame(end_time = Inf, piecewise_rate = 10)
   tr <- trial(
-    name = 'test', n_patients = 50, duration = 40,
+    name = 'test', n_patients = 50,
     enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
     silent = TRUE
   )

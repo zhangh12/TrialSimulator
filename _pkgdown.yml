@@ -27,7 +27,6 @@ reference:
   - add_arms
   - remove_arms
   - resize
-  - set_duration
   - update_sample_ratio
   - update_generator
   - crossover

@@ -27,7 +27,7 @@ simulate_example1 <- function(n = 1, seed = NULL){
   #' create a trial
   trial <- trial(
     name = 'Trial-1234', seed = seed, 
-    n_patients = 1200, duration = 100, 
+    n_patients = 1200, 
     enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
     dropout = rexp, rate = -log(1 - .025)/12
   )

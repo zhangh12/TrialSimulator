@@ -12,7 +12,7 @@ tidy_trial <- function(seed = 11){
                              generator = rng))
     a
   }
-  tr <- trial(name = 'tidy', n_patients = 100, duration = 30, seed = seed,
+  tr <- trial(name = 'tidy', n_patients = 100, seed = seed,
               enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 20),
               silent = TRUE)

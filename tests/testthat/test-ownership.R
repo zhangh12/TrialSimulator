@@ -20,7 +20,7 @@ own_arm <- function(name, prev = .5) {
 }
 
 own_trial <- function(seed = 1, n_patients = 400) {
-  trial(name = "t", n_patients = n_patients, duration = 30, seed = seed,
+  trial(name = "t", n_patients = n_patients, seed = seed,
         enroller = StaggeredRecruiter,
         accrual_rate = data.frame(end_time = Inf, piecewise_rate = 30),
         silent = TRUE)

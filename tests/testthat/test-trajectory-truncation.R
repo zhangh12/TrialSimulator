@@ -6,7 +6,7 @@
 ## trajectories here.
 
 truncate <- function(trajectory, enroll_time, lock_time){
-  tr <- trial(name = 't', n_patients = 10, duration = 10, seed = 1,
+  tr <- trial(name = 't', n_patients = 10, seed = 1,
               enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 10),
               silent = TRUE)
@@ -152,7 +152,7 @@ test_that("what() must not return a new_treatment containing '@' or ';'", {
                                                switch_time = 1)
   how_fn  <- function(patient_data) data.frame(patient_id = patient_data$patient_id)
 
-  tr <- trial(name = 't', n_patients = 20, seed = 4, duration = 10,
+  tr <- trial(name = 't', n_patients = 20, seed = 4,
               enroller = StaggeredRecruiter,
               accrual_rate = data.frame(end_time = Inf, piecewise_rate = 10),
               silent = TRUE)

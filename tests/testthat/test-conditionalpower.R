@@ -294,9 +294,9 @@ make_arm <- function(name, median) {
   a
 }
 
-make_trial <- function(seed = 31416, n_patients = 400, duration = 40) {
+make_trial <- function(seed = 31416, n_patients = 400) {
   accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
-  trial(name = "t", n_patients = n_patients, duration = duration, seed = seed,
+  trial(name = "t", n_patients = n_patients, seed = seed,
         enroller = StaggeredRecruiter, accrual_rate = accrual,
         dropout = rweibull, shape = 1, scale = 1e6,
         silent = TRUE)

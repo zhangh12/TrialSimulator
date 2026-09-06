@@ -24,7 +24,7 @@ simulate_example2 <- function(n = 1, seed = NULL){
   
   trial <- trial(
     name = 'Trial-1234', seed = seed, 
-    n_patients = 266, duration = 1000, 
+    n_patients = 266, 
     enroller = StaggeredRecruiter, accrual_rate = accrual_rate, 
     dropout = NULL)
   

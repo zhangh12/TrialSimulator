@@ -145,8 +145,7 @@ handled correctly too):
     event nor dropout has occurred by `ref`;
 -   a non-time-to-event endpoint is open when
     `enroll_time + readout > ref` **and** the reading will actually be
-    taken, that is `readout <= dropout_time` and the reading falls within
-    the trial duration. A baseline endpoint (`readout = 0`) is measured at
+    taken, that is `readout <= dropout_time`. A baseline endpoint (`readout = 0`) is measured at
     enrollment and is therefore never open.
 
 A patient enters the pool passed to `what()` if **any** of their
@@ -383,7 +382,7 @@ pfs_e <- endpoint(name = 'pfs', type = 'tte', generator = rexp, rate = log(2) / 
 control <- arm(name = 'control', pfs <= os); control$add_endpoints(pfs_e, os_e)
 trt     <- arm(name = 'trt',     pfs <= os); trt$add_endpoints(pfs_e, os_e)
 
-trial <- trial(name = 'demo', n_patients = 200, seed = 123, duration = 36,
+trial <- trial(name = 'demo', n_patients = 200, seed = 123,
                enroller = StaggeredRecruiter,
                accrual_rate = data.frame(end_time = Inf, piecewise_rate = 15),
                silent = TRUE)
