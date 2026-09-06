@@ -141,11 +141,11 @@ arm4$add_endpoints(eps)
 As planned, we recruit 10 patients per week until 60 patients are
 randomized. A built-in enroller function `StaggeredRecruiter` is used to
 enroll patients. Note that the last patient would be randomized at the
-6th week and complete all treatments at week 25.5. We can set
-`duration = 25.5` in function
-[`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md),
-however, we set it to a greater number (28) so that we can illustrate
-some nice features of `TrialSimulator` later.
+6th week and complete all treatments at week 25.5, which is therefore
+the end of the trial. The end of a trial is not specified in
+[`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md);
+it is the time of the last milestone, which we define in the next
+section in three equivalent ways.
 
 ``` r
 
@@ -154,7 +154,6 @@ accrual_rate <- data.frame(end_time = c(6, Inf),
 
 trial <- trial(name = 'crossover-trial', 
                n_patients = 60, 
-               duration = 28,
                enroller = StaggeredRecruiter, accrual_rate = accrual_rate, 
                silent = TRUE)
 
@@ -166,7 +165,6 @@ trial
 #>  ⚕⚕    Registered Arms:  ABCD, BDAC, CADB, DCBA  
 #>  ⚕⚕       Sample Ratio:  1, 1, 1, 1  
 #>  ⚕⚕ Number of Patients:  60  
-#>  ⚕⚕   Planned Duration:  28  
 #>  ⚕⚕            Regimen:  not set  
 #>  ⚕⚕        Random Seed:  973100785
 ```
@@ -180,9 +178,7 @@ of the condition system.
 
 The first one uses
 [`calendarTime()`](https://zhangh12.github.io/TrialSimulator/reference/calendarTime.md)
-where we set the 25.5th weeks as the end of trial. Note that the
-simulate will stop at that time even if the duration of trial is set to
-be 28 weeks.
+where we set the 25.5th week as the end of trial.
 
 ``` r
 

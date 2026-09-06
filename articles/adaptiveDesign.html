@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.36.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -239,16 +239,16 @@ generator <code><a href="../reference/CorrelatedPfsAndOs2.html">CorrelatedPfsAnd
 <p>With three arms, we can define a trial of class <code>Trial</code>.
 Recruitment curve are specified through <code>enroller</code> with a
 built-in function <code>StaggeredRecruiter</code> of piecewise constant
-rate. We set <code>duration</code> to be an arbitrary large number (40)
-but controlling the end of trial through pre-defined milestones later.
-Note that if <code>seed = NULL</code>, <code>TrialSimulator</code> will
-pick a seed for the purpose of reproducibility.</p>
+rate. The end of the trial is controlled through pre-defined milestones
+later. Note that if <code>seed = NULL</code>,
+<code>TrialSimulator</code> will pick a seed for the purpose of
+reproducibility.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">accrual_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>end_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="cn">Inf</span><span class="op">)</span>,</span>
 <span>                           piecewise_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">30</span>, <span class="fl">50</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">trial</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trial.html">trial</a></span><span class="op">(</span></span>
 <span>  name <span class="op">=</span> <span class="st">'Trial-3415'</span>, n_patients <span class="op">=</span> <span class="fl">1000</span>,</span>
-<span>  seed <span class="op">=</span> <span class="fl">1727811904</span>, duration <span class="op">=</span> <span class="fl">40</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">1727811904</span>,</span>
 <span>  enroller <span class="op">=</span> <span class="va">StaggeredRecruiter</span>, accrual_rate <span class="op">=</span> <span class="va">accrual_rate</span>,</span>
 <span>  dropout <span class="op">=</span> <span class="va">rweibull</span>, shape <span class="op">=</span> <span class="fl">2.139</span>, scale <span class="op">=</span> <span class="fl">38.343</span></span>
 <span><span class="op">)</span></span>
@@ -310,8 +310,8 @@ in <code>milestone</code>.</p>
 <span>  <span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">z</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fl">.5</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="va">trial</span><span class="op">$</span><span class="fu">save</span><span class="op">(</span>value <span class="op">=</span> <span class="st">'negative'</span>, name <span class="op">=</span> <span class="st">'futility'</span><span class="op">)</span></span>
 <span>    </span>
-<span>    <span class="co">## extend duration</span></span>
-<span>    <span class="co">## trial$set_duration(45)</span></span>
+<span>    <span class="co">## the trial could be extended here, e.g.,</span></span>
+<span>    <span class="co">## trial$update_milestone('final', when = calendarTime(time = 45))</span></span>
 <span>  <span class="op">}</span><span class="kw">else</span><span class="op">{</span></span>
 <span>    <span class="va">trial</span><span class="op">$</span><span class="fu">save</span><span class="op">(</span>value <span class="op">=</span> <span class="st">'positive'</span>, name <span class="op">=</span> <span class="st">'futility'</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>

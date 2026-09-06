@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.36.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -211,9 +211,9 @@ i.e. neither the event nor dropout has occurred by
 <li>a non-time-to-event endpoint is open when
 <code>enroll_time + readout &gt; ref</code> <strong>and</strong> the
 reading will actually be taken, that is
-<code>readout &lt;= dropout_time</code> and the reading falls within the
-trial duration. A baseline endpoint (<code>readout = 0</code>) is
-measured at enrollment and is therefore never open.</li>
+<code>readout &lt;= dropout_time</code>. A baseline endpoint
+(<code>readout = 0</code>) is measured at enrollment and is therefore
+never open.</li>
 </ul>
 <p>A patient enters the pool passed to <code>what()</code> if
 <strong>any</strong> of their endpoints is open. Patients who have died,

@@ -11,11 +11,8 @@ and should not be called directly (see the last section).
 
 **Adaptation methods.** The following methods adapt an ongoing trial and
 should be called within action functions of milestones. Each of them has
-a user-friendly wrapper of the same name, e.g.,
-`set_duration(trial, ...)` for `trial$set_duration(...)`.
-
-- `$set_duration()` set duration of a trial. This function can be used
-  to extend duration under adaptive designs.
+a user-friendly wrapper of the same name, e.g., `resize(trial, ...)` for
+`trial$resize(...)`.
 
 - `$resize()` set maximum sample size of a trial. This function can be
   used to increase sample size under adaptive designs (e.g., sample size
@@ -160,8 +157,6 @@ to create a trial.
 
 - [`Trials$new()`](#method-Trials-new)
 
-- [`Trials$set_duration()`](#method-Trials-set_duration)
-
 - [`Trials$resize()`](#method-Trials-resize)
 
 - [`Trials$remove_arms()`](#method-Trials-remove_arms)
@@ -249,7 +244,6 @@ initialize a trial
     Trials$new(
       name,
       n_patients,
-      duration,
       description = name,
       seed = NULL,
       enroller = StaggeredRecruiter,
@@ -269,10 +263,6 @@ initialize a trial
 
   integer. Maximum (and initial) number of patients could be enrolled
   when planning the trial. It can be altered adaptively during a trial.
-
-- `duration`:
-
-  Numeric. Trial duration. It can be altered adaptively during a trial.
 
 - `description`:
 
@@ -324,25 +314,6 @@ initialize a trial
 - `...`:
 
   (optional) arguments of `enroller` and `dropout`.
-
-------------------------------------------------------------------------
-
-### Method [`set_duration()`](https://zhangh12.github.io/TrialSimulator/reference/set_duration.md)
-
-set trial duration in an adaptive designed trial. All patients enrolled
-before resetting the duration are truncated (non-tte endpoints) or
-censored (tte endpoints) at the original duration. Remaining patients
-are re-randomized. New duration must be longer than the old one.
-
-#### Usage
-
-    Trials$set_duration(duration)
-
-#### Arguments
-
-- `duration`:
-
-  new duration of a trial. It must be greater than the current duration.
 
 ------------------------------------------------------------------------
 
@@ -521,9 +492,9 @@ later), and applied immediately, in place, to all currently-eligible
 patients.
 
 Eligibility (the pool passed to `what()`) = patients with at least one
-endpoint still "open" (unobserved, dropout-/duration-aware) at `T`;
-fully-observed patients are excluded. `when()` must return a switch time
-with `enroll_time + switch_time >= T` (a crossover cannot predate its
+endpoint still "open" (unobserved, dropout-aware) at `T`; fully-observed
+patients are excluded. `when()` must return a switch time with
+`enroll_time + switch_time >= T` (a crossover cannot predate its
 opening), otherwise an error is raised. `how()` may only change
 post-switch outcomes; returning a changed value for a pre-switch/locked
 cell raises an error.
@@ -1307,7 +1278,7 @@ columns `arm`, `placebo`, `z`, `d`, `D`, `info_fraction`, `alpha`,
                                generator = rexp, rate = log(2) / 14))
 
     accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
-    tr <- trial(name = 'ex', n_patients = 400, duration = 40,
+    tr <- trial(name = 'ex', n_patients = 400,
                 seed = 31416, enroller = StaggeredRecruiter,
                 accrual_rate = accrual, silent = TRUE)
     add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
@@ -1501,7 +1472,7 @@ and `target_reached` indicates whether a solution was found.
                                generator = rexp, rate = log(2) / 14))
 
     accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
-    tr <- trial(name = 'ex', n_patients = 400, duration = 40,
+    tr <- trial(name = 'ex', n_patients = 400,
                 seed = 31416, enroller = StaggeredRecruiter,
                 accrual_rate = accrual, silent = TRUE)
     add_arms(tr, sample_ratio = c(1, 1), pbo, trt)
@@ -1697,7 +1668,8 @@ get_data_lock_time_by_event_number but only focus on patient_id.
   of enrolled patients have received treatment for at least
   `min_treatment_duration` duration. It is users' responsibility to
   assure that the unit of `min_treatment_duration` are consistent with
-  readout of non-tte endpoints, dropout time, and trial duration.
+  readout of non-tte endpoints, dropout time, and calendar time of
+  milestones.
 
 - `...`:
 

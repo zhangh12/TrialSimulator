@@ -1,5 +1,47 @@
 # Changelog
 
+## TrialSimulator 1.36.0
+
+### Breaking changes
+
+- `duration` is removed from
+  [`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md).
+  A trial no longer has a pre-specified duration: it ends when its last
+  milestone is triggered, and the timing of a milestone is determined by
+  its triggering condition. Users of event-driven designs no longer need
+  to guess a “sufficiently large” cap whose unit depends on the design.
+  Existing code must drop the argument. For a trial whose milestones
+  were all reachable within the old `duration`, results are unchanged
+  for a given seed; a trial whose calendar-time milestone lay beyond the
+  old `duration` now gets the full follow-up it was designed for instead
+  of follow-up silently truncated at `duration`.
+- `set_duration()` and `Trials$set_duration()` are removed. The design
+  it served, extending a trial at an unblinded interim while patients
+  enrolled by the interim keep their originally planned follow-up, is
+  expressed within the action function of the interim as
+  `trial$stop_followup(additional_followup = planned_end - trial$get_current_time())`
+  for the freeze, and `trial$update_milestone('final', when = ...)` for
+  the new timing of the final analysis. The freeze point `planned_end`
+  is the calendar time in the original triggering condition of the final
+  analysis, which the user knows by design. Unlike `set_duration()`,
+  this recipe does not re-randomize and regenerate patients not yet
+  enrolled at the interim, so the random number stream is no longer
+  advanced by the adaptation; the two are equivalent in distribution.
+- Internal: `Trials$censor_trial_data()` no longer has a default for
+  `censor_at`, the calendar time of administrative censoring; pass
+  `censor_at = Inf` to apply dropout censoring only, without
+  administrative censoring.
+
+### Updates
+
+- Trial data are no longer administratively censored at a trial-level
+  horizon when patients are generated. Administrative censoring happens
+  only at data locks (`lock_data()`) and through adaptations
+  ([`stop_followup()`](https://zhangh12.github.io/TrialSimulator/reference/stop_followup.md),
+  [`remove_arms()`](https://zhangh12.github.io/TrialSimulator/reference/remove_arms.md)).
+  `event_plot()` extends its x axis to the time of the last triggered
+  milestone.
+
 ## TrialSimulator 1.35.8
 
 ### Performance
@@ -842,7 +884,7 @@ CRAN release: 2026-02-15
   [`remove_arms()`](https://zhangh12.github.io/TrialSimulator/reference/remove_arms.md),
   [`add_arms()`](https://zhangh12.github.io/TrialSimulator/reference/add_arms.md),
   [`update_sample_ratio()`](https://zhangh12.github.io/TrialSimulator/reference/update_sample_ratio.md),
-  [`set_duration()`](https://zhangh12.github.io/TrialSimulator/reference/set_duration.md),
+  `set_duration()`,
   [`resize()`](https://zhangh12.github.io/TrialSimulator/reference/resize.md)
   and
   [`update_generator()`](https://zhangh12.github.io/TrialSimulator/reference/update_generator.md).

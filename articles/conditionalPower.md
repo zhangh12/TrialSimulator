@@ -360,7 +360,7 @@ trt <- arm(name = 'trt')
 trt$add_endpoints(pfs_trt)
 
 accrual_rate <- data.frame(end_time = Inf, piecewise_rate = 30)
-trial <- trial(name = 'cp-example', n_patients = 400, duration = 40,
+trial <- trial(name = 'cp-example', n_patients = 400,
                seed = 31416, enroller = StaggeredRecruiter,
                accrual_rate = accrual_rate, silent = TRUE)
 trial$add_arms(sample_ratio = c(1, 1), pbo, trt)
@@ -744,7 +744,7 @@ trt$add_endpoints(pfs_trt)
 
 accrual_rate <- data.frame(end_time = Inf, piecewise_rate = 30)
 trial <- trial(
-  name = 'promising-zone', n_patients = 700, duration = 120,
+  name = 'promising-zone', n_patients = 700,
   seed = 20260831, enroller = StaggeredRecruiter,
   accrual_rate = accrual_rate, silent = TRUE
 )

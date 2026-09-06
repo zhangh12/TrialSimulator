@@ -11,8 +11,8 @@ or removing
 ([`remove_arms()`](https://zhangh12.github.io/TrialSimulator/reference/remove_arms.md))
 arm(s), changing sampling ratio(s)
 ([`update_sample_ratio()`](https://zhangh12.github.io/TrialSimulator/reference/update_sample_ratio.md)),
-modifying trial duration
-([`set_duration()`](https://zhangh12.github.io/TrialSimulator/reference/set_duration.md)),
+stopping follow-up of a cohort
+([`stop_followup()`](https://zhangh12.github.io/TrialSimulator/reference/stop_followup.md)),
 carrying out statistical testing, or saving intermediate results
 ([`save()`](https://rdrr.io/r/base/save.html), etc.), then this function
 can be used to set the argument `action` when creating a new milestone.

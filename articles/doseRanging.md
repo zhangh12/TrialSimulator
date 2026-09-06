@@ -90,7 +90,7 @@ trt4$add_endpoints(ep)
 accrual_rate <- data.frame(end_time = c(7, Inf),
                            piecewise_rate = c(5, 20))
 
-trial <- trial(name = '123', n_patients = 150, duration = 14,
+trial <- trial(name = '123', n_patients = 150,
                enroller = StaggeredRecruiter, accrual_rate = accrual_rate, 
                silent = TRUE)
 
@@ -102,7 +102,6 @@ trial
 #>  ⚕⚕    Registered Arms:  dose = 0.0, dose = 4.0  
 #>  ⚕⚕       Sample Ratio:  1, 1  
 #>  ⚕⚕ Number of Patients:  150  
-#>  ⚕⚕   Planned Duration:  14  
 #>  ⚕⚕            Regimen:  not set  
 #>  ⚕⚕        Random Seed:  1960520344
 ```

@@ -152,9 +152,8 @@ CjwhRE9DVFlQRSBodG1sPgo8aHRtbD4KPGhlYWQ+CiAgICA8bWV0YSBjaGFyc2V0PSJVVEYtOCI+CiAg
 With three arms, we can define a trial using the function
 [`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md).
 Recruitment curve are specified through `enroller` with a built-in
-function `StaggeredRecruiter` of piecewise constant rate. We set
-`duration` to be an arbitrary large number (500) but controlling the end
-of trial through a pre-defined milestone later. Note that if
+function `StaggeredRecruiter` of piecewise constant rate. The end of the
+trial is controlled through a pre-defined milestone later. Note that if
 `seed = NULL`, `TrialSimulator` will pick a seed for the purpose of
 reproducibility.
 
@@ -164,7 +163,7 @@ accrual_rate <- data.frame(end_time = c(10, Inf),
                            piecewise_rate = c(30, 50))
 trial <- trial(
   name = 'Trial-3415', n_patients = 1000,
-  seed = 1727811904, duration = 500,
+  seed = 1727811904,
   enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
   dropout = rexp, rate = -log(1 - 0.1)/18, ## 10% by month 18
   silent = TRUE
@@ -178,7 +177,6 @@ trial
 #>  ⚕⚕    Registered Arms:  soc, low, high  
 #>  ⚕⚕       Sample Ratio:  1, 1, 1  
 #>  ⚕⚕ Number of Patients:  1000  
-#>  ⚕⚕   Planned Duration:  500  
 #>  ⚕⚕            Regimen:  not set  
 #>  ⚕⚕        Random Seed:  1727811904
 ```

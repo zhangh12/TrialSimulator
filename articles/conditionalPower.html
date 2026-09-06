@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.36.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -451,7 +451,7 @@ methods.</p>
 <span><span class="va">trt</span><span class="op">$</span><span class="fu">add_endpoints</span><span class="op">(</span><span class="va">pfs_trt</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">accrual_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>end_time <span class="op">=</span> <span class="cn">Inf</span>, piecewise_rate <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></span>
-<span><span class="va">trial</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trial.html">trial</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'cp-example'</span>, n_patients <span class="op">=</span> <span class="fl">400</span>, duration <span class="op">=</span> <span class="fl">40</span>,</span>
+<span><span class="va">trial</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trial.html">trial</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'cp-example'</span>, n_patients <span class="op">=</span> <span class="fl">400</span>,</span>
 <span>               seed <span class="op">=</span> <span class="fl">31416</span>, enroller <span class="op">=</span> <span class="va">StaggeredRecruiter</span>,</span>
 <span>               accrual_rate <span class="op">=</span> <span class="va">accrual_rate</span>, silent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, <span class="va">pbo</span>, <span class="va">trt</span><span class="op">)</span></span>
@@ -823,7 +823,7 @@ restores the original 300-event trigger before the next replicate.</p>
 <span></span>
 <span><span class="va">accrual_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>end_time <span class="op">=</span> <span class="cn">Inf</span>, piecewise_rate <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></span>
 <span><span class="va">trial</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trial.html">trial</a></span><span class="op">(</span></span>
-<span>  name <span class="op">=</span> <span class="st">'promising-zone'</span>, n_patients <span class="op">=</span> <span class="fl">700</span>, duration <span class="op">=</span> <span class="fl">120</span>,</span>
+<span>  name <span class="op">=</span> <span class="st">'promising-zone'</span>, n_patients <span class="op">=</span> <span class="fl">700</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">20260831</span>, enroller <span class="op">=</span> <span class="va">StaggeredRecruiter</span>,</span>
 <span>  accrual_rate <span class="op">=</span> <span class="va">accrual_rate</span>, silent <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>

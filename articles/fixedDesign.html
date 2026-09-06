@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.36.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -283,17 +283,16 @@ and <code>OS</code> matches to the settings very well.</p>
 <p>With three arms, we can define a trial using the function
 <code><a href="../reference/trial.html">trial()</a></code>. Recruitment curve are specified through
 <code>enroller</code> with a built-in function
-<code>StaggeredRecruiter</code> of piecewise constant rate. We set
-<code>duration</code> to be an arbitrary large number (500) but
-controlling the end of trial through a pre-defined milestone later. Note
-that if <code>seed = NULL</code>, <code>TrialSimulator</code> will pick
-a seed for the purpose of reproducibility.</p>
+<code>StaggeredRecruiter</code> of piecewise constant rate. The end of
+the trial is controlled through a pre-defined milestone later. Note that
+if <code>seed = NULL</code>, <code>TrialSimulator</code> will pick a
+seed for the purpose of reproducibility.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">accrual_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>end_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="cn">Inf</span><span class="op">)</span>,</span>
 <span>                           piecewise_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">30</span>, <span class="fl">50</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">trial</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trial.html">trial</a></span><span class="op">(</span></span>
 <span>  name <span class="op">=</span> <span class="st">'Trial-3415'</span>, n_patients <span class="op">=</span> <span class="fl">1000</span>,</span>
-<span>  seed <span class="op">=</span> <span class="fl">1727811904</span>, duration <span class="op">=</span> <span class="fl">500</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">1727811904</span>,</span>
 <span>  enroller <span class="op">=</span> <span class="va">StaggeredRecruiter</span>, accrual_rate <span class="op">=</span> <span class="va">accrual_rate</span>,</span>
 <span>  dropout <span class="op">=</span> <span class="va">rexp</span>, rate <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="fl">0.1</span><span class="op">)</span><span class="op">/</span><span class="fl">18</span>, <span class="co">## 10% by month 18</span></span>
 <span>  silent <span class="op">=</span> <span class="cn">TRUE</span></span>
@@ -307,7 +306,6 @@ a seed for the purpose of reproducibility.</p>
 <span><span class="co">#&gt;  ⚕⚕    Registered Arms:  soc, low, high  </span></span>
 <span><span class="co">#&gt;  ⚕⚕       Sample Ratio:  1, 1, 1  </span></span>
 <span><span class="co">#&gt;  ⚕⚕ Number of Patients:  1000  </span></span>
-<span><span class="co">#&gt;  ⚕⚕   Planned Duration:  500  </span></span>
 <span><span class="co">#&gt;  ⚕⚕            Regimen:  not set  </span></span>
 <span><span class="co">#&gt;  ⚕⚕        Random Seed:  1727811904</span></span></code></pre></div>
 </div>

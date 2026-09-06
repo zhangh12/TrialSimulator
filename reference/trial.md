@@ -4,13 +4,21 @@ Define a trial. This is a user-friendly wrapper for the class
 constructor `Trial$new()`. Users who are not familiar with the concept
 of classes may consider using this wrapper directly.
 
-Trial's name, planned size/duration, enrollment plan, dropout mechanism
-and seeding are specified in this function. Note that many of these
+Trial's name, planned size, enrollment plan, dropout mechanism and
+seeding are specified in this function. Note that many of these
 parameters can be altered adaptively during a trial.
 
+A trial has no pre-specified duration. It ends when its last milestone
+(usually the final analysis) is triggered, and the timing of a milestone
+is determined by its triggering condition, e.g., a calendar time, a
+number of events, or a number of enrolled patients. In particular, the
+duration of a trial with event-driven milestones is random and varies
+across simulated replicates. It can be read from the milestone time
+columns of `$get_output()`.
+
 Note that it is users' responsibility to assure that the units of
-dropout time, trial duration, and readout of non-tte endpoints are
-consistent.
+dropout time, calendar time in milestones' triggering conditions, and
+readout of non-tte endpoints are consistent.
 
 ## Usage
 
@@ -18,7 +26,6 @@ consistent.
 trial(
   name,
   n_patients,
-  duration,
   description = name,
   seed = NULL,
   enroller = StaggeredRecruiter,
@@ -39,10 +46,6 @@ trial(
 
   integer. Maximum (and initial) number of patients could be enrolled
   when planning the trial. It can be altered adaptively during a trial.
-
-- duration:
-
-  Numeric. Trial duration. It can be altered adaptively during a trial.
 
 - description:
 
@@ -142,7 +145,7 @@ active$add_endpoints(pfs2, orr2)
 ## Enrollment accrues at a constant 10 patients per time unit.
 trial <- trial(
   name = 'Trial-3415', n_patients = 100,
-  seed = 31415926, duration = 100,
+  seed = 31415926,
   enroller = StaggeredRecruiter,
   accrual_rate = data.frame(end_time = Inf, piecewise_rate = 10))
 
@@ -153,7 +156,6 @@ trial
 #>  ⚕⚕    Registered Arms:    
 #>  ⚕⚕       Sample Ratio:    
 #>  ⚕⚕ Number of Patients:  100  
-#>  ⚕⚕   Planned Duration:  100  
 #>  ⚕⚕            Regimen:  not set  
 #>  ⚕⚕        Random Seed:  31415926  
 
@@ -170,7 +172,6 @@ trial
 #>  ⚕⚕    Registered Arms:  pbo, ac  
 #>  ⚕⚕       Sample Ratio:  1, 2  
 #>  ⚕⚕ Number of Patients:  100  
-#>  ⚕⚕   Planned Duration:  100  
 #>  ⚕⚕            Regimen:  not set  
 #>  ⚕⚕        Random Seed:  31415926  
 ```

@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.36.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -208,14 +208,14 @@ specifying the dose and data generator.</p>
 <h2 id="define-a-trial">Define a Trial<a class="anchor" aria-label="anchor" href="#define-a-trial"></a>
 </h2>
 <p>Here we define the trial object with 200 patients and an accrual
-period of 36 months. The total trial duration is extended to 40 months
-to account for a 4-month follow-up after last enrollment.</p>
+period of 36 months. The end of the trial is determined by the
+milestones defined below.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">accrual_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>end_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">24</span>, <span class="cn">Inf</span><span class="op">)</span>,</span>
 <span>                           piecewise_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span><span class="op">/</span><span class="fl">24</span>, <span class="fl">100</span><span class="op">/</span><span class="fl">12</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">trial</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trial.html">trial</a></span><span class="op">(</span></span>
 <span>  name <span class="op">=</span> <span class="st">'Trial-3415'</span>, n_patients <span class="op">=</span> <span class="fl">200</span>,</span>
-<span>  seed <span class="op">=</span> <span class="fl">1727811904</span>, duration <span class="op">=</span> <span class="fl">40</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">1727811904</span>,</span>
 <span>  enroller <span class="op">=</span> <span class="va">StaggeredRecruiter</span>, accrual_rate <span class="op">=</span> <span class="va">accrual_rate</span>,</span>
 <span>  silent <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
@@ -228,7 +228,6 @@ to account for a 4-month follow-up after last enrollment.</p>
 <span><span class="co">#&gt;  ⚕⚕    Registered Arms:  0.0, 20.0, 25.0, 30.0, 35.0  </span></span>
 <span><span class="co">#&gt;  ⚕⚕       Sample Ratio:  1, 1, 1, 1, 1  </span></span>
 <span><span class="co">#&gt;  ⚕⚕ Number of Patients:  200  </span></span>
-<span><span class="co">#&gt;  ⚕⚕   Planned Duration:  40  </span></span>
 <span><span class="co">#&gt;  ⚕⚕            Regimen:  not set  </span></span>
 <span><span class="co">#&gt;  ⚕⚕        Random Seed:  1727811904</span></span></code></pre></div>
 <!-- Hide this helper function and display it in Appendix for better typesetting. -->

@@ -126,8 +126,8 @@ dose4$add_endpoints(fev1)
 ## Define a Trial
 
 Here we define the trial object with 200 patients and an accrual period
-of 36 months. The total trial duration is extended to 40 months to
-account for a 4-month follow-up after last enrollment.
+of 36 months. The end of the trial is determined by the milestones
+defined below.
 
 ``` r
 
@@ -135,7 +135,7 @@ accrual_rate <- data.frame(end_time = c(24, Inf),
                            piecewise_rate = c(100/24, 100/12))
 trial <- trial(
   name = 'Trial-3415', n_patients = 200,
-  seed = 1727811904, duration = 40,
+  seed = 1727811904,
   enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
   silent = TRUE
 )
@@ -148,7 +148,6 @@ trial
 #>  ⚕⚕    Registered Arms:  0.0, 20.0, 25.0, 30.0, 35.0  
 #>  ⚕⚕       Sample Ratio:  1, 1, 1, 1, 1  
 #>  ⚕⚕ Number of Patients:  200  
-#>  ⚕⚕   Planned Duration:  40  
 #>  ⚕⚕            Regimen:  not set  
 #>  ⚕⚕        Random Seed:  1727811904
 ```

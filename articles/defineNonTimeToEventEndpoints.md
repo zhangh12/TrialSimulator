@@ -142,7 +142,7 @@ accrual_rate <- data.frame(end_time = c(6, Inf),
 
 trial <- trial(
   name = 'Trial-31415', description = 'Example Clinical Trial', 
-  n_patients = 420, duration = 30, 
+  n_patients = 420, 
   enroller = StaggeredRecruiter, accrual_rate = accrual_rate, 
   dropout = rweibull, scale = 30.636, shape = 1.939
 )
@@ -160,7 +160,6 @@ trial
 #>  ⚕⚕    Registered Arms:  treatment, placebo  
 #>  ⚕⚕       Sample Ratio:  1, 1  
 #>  ⚕⚕ Number of Patients:  420  
-#>  ⚕⚕   Planned Duration:  30  
 #>  ⚕⚕            Regimen:  not set  
 #>  ⚕⚕        Random Seed:  1680176743
 ```

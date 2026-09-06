@@ -15,7 +15,7 @@ behaviors, such as:
 
 - Resizing based on sample size reassessment
 
-- extending trial duration
+- extending a trial
 
 - Updating the accrual rate
 
@@ -500,10 +500,10 @@ Beyond analyzing data and saving results, one of the most powerful uses
 of action functions is the ability to adapt the ongoing trial.
 
 Adaptation means that trial features—such as randomization ratios,
-sample size, trial duration, or active arms—can be modified in response
-to accumulated data. This reflects how many modern clinical trials are
-designed in practice, aiming to increase efficiency, ethical and cost
-balance.
+sample size, timing of the final analysis, or active arms—can be
+modified in response to accumulated data. This reflects how many modern
+clinical trials are designed in practice, aiming to increase efficiency,
+ethical and cost balance.
 
 In `TrialSimulator`, such adaptations are implemented directly within
 action functions. At a milestone, after retrieving the locked data and
@@ -518,7 +518,7 @@ Adaptations that are currently supported are summarized below:
 | Remove an arm | `trial$remove_arms()` | dose selection; seamless design |
 | Add an arm | `trial$add_arms()` | adaptive platform trials |
 | Update sample ratio | `trial$update_sample_ratio()` | response-adaptive design |
-| Extend trial duration | `trial$set_duration()` or `trial$update_milestone()` | actual patient or event accrual is slower than expected |
+| Extend a trial | `trial$update_milestone()` + `trial$stop_followup()` | actual patient or event accrual is slower than expected |
 | Increase sample size[^1] | `trial$resize()` | sample size reassessment |
 | Eliminate sub-population | `trial$update_generator()` | enrichment design; data model changes over time |
 | Stop follow-up | `trial$stop_followup()` | treatment discontinuation; enrichment design; stop following a sub-population after interim decision; independent cohorts for, e.g., combination test |

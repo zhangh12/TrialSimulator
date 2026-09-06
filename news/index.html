@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.36.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,6 +51,21 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.36.0" id="trialsimulator-1360">TrialSimulator 1.36.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1360"></a></h2>
+<div class="section level3">
+<h3 id="breaking-changes-1-36-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-1-36-0"></a></h3>
+<ul><li>
+<code>duration</code> is removed from <code><a href="../reference/trial.html">trial()</a></code>. A trial no longer has a pre-specified duration: it ends when its last milestone is triggered, and the timing of a milestone is determined by its triggering condition. Users of event-driven designs no longer need to guess a “sufficiently large” cap whose unit depends on the design. Existing code must drop the argument. For a trial whose milestones were all reachable within the old <code>duration</code>, results are unchanged for a given seed; a trial whose calendar-time milestone lay beyond the old <code>duration</code> now gets the full follow-up it was designed for instead of follow-up silently truncated at <code>duration</code>.</li>
+<li>
+<code>set_duration()</code> and <code>Trials$set_duration()</code> are removed. The design it served, extending a trial at an unblinded interim while patients enrolled by the interim keep their originally planned follow-up, is expressed within the action function of the interim as <code>trial$stop_followup(additional_followup = planned_end - trial$get_current_time())</code> for the freeze, and <code>trial$update_milestone('final', when = ...)</code> for the new timing of the final analysis. The freeze point <code>planned_end</code> is the calendar time in the original triggering condition of the final analysis, which the user knows by design. Unlike <code>set_duration()</code>, this recipe does not re-randomize and regenerate patients not yet enrolled at the interim, so the random number stream is no longer advanced by the adaptation; the two are equivalent in distribution.</li>
+<li>Internal: <code>Trials$censor_trial_data()</code> no longer has a default for <code>censor_at</code>, the calendar time of administrative censoring; pass <code>censor_at = Inf</code> to apply dropout censoring only, without administrative censoring.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="updates-1-36-0">Updates<a class="anchor" aria-label="anchor" href="#updates-1-36-0"></a></h3>
+<ul><li>Trial data are no longer administratively censored at a trial-level horizon when patients are generated. Administrative censoring happens only at data locks (<code>lock_data()</code>) and through adaptations (<code><a href="../reference/stop_followup.html">stop_followup()</a></code>, <code><a href="../reference/remove_arms.html">remove_arms()</a></code>). <code>event_plot()</code> extends its x axis to the time of the last triggered milestone.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.35.8" id="trialsimulator-1358">TrialSimulator 1.35.8<a class="anchor" aria-label="anchor" href="#trialsimulator-1358"></a></h2>
 <div class="section level3">
@@ -495,7 +510,7 @@
 <h2 class="pkg-version" data-toc-text="1.9.0" id="trialsimulator-190">TrialSimulator 1.9.0<a class="anchor" aria-label="anchor" href="#trialsimulator-190"></a></h2>
 <div class="section level3">
 <h3 id="new-feature-1-9-0">New Feature<a class="anchor" aria-label="anchor" href="#new-feature-1-9-0"></a></h3>
-<ul><li>Support wrapper functions for adaptation, including <code><a href="../reference/remove_arms.html">remove_arms()</a></code>, <code><a href="../reference/add_arms.html">add_arms()</a></code>, <code><a href="../reference/update_sample_ratio.html">update_sample_ratio()</a></code>, <code><a href="../reference/set_duration.html">set_duration()</a></code>, <code><a href="../reference/resize.html">resize()</a></code> and <code><a href="../reference/update_generator.html">update_generator()</a></code>.</li>
+<ul><li>Support wrapper functions for adaptation, including <code><a href="../reference/remove_arms.html">remove_arms()</a></code>, <code><a href="../reference/add_arms.html">add_arms()</a></code>, <code><a href="../reference/update_sample_ratio.html">update_sample_ratio()</a></code>, <code>set_duration()</code>, <code><a href="../reference/resize.html">resize()</a></code> and <code><a href="../reference/update_generator.html">update_generator()</a></code>.</li>
 <li>More informative message is prompted when error is throwed from an action function; milestone’s name is printed.</li>
 </ul></div>
 </div>

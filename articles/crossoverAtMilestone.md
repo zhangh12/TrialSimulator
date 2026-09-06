@@ -131,9 +131,8 @@ handled correctly too):
   event nor dropout has occurred by `ref`;
 - a non-time-to-event endpoint is open when
   `enroll_time + readout > ref` **and** the reading will actually be
-  taken, that is `readout <= dropout_time` and the reading falls within
-  the trial duration. A baseline endpoint (`readout = 0`) is measured at
-  enrollment and is therefore never open.
+  taken, that is `readout <= dropout_time`. A baseline endpoint
+  (`readout = 0`) is measured at enrollment and is therefore never open.
 
 A patient enters the pool passed to `what()` if **any** of their
 endpoints is open. Patients who have died, dropped out, or completed all

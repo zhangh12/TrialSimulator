@@ -182,8 +182,6 @@ Methods called within action functions to adapt an ongoing trial.
   : Removing One or More Arms From a Trial
 - [`resize()`](https://zhangh12.github.io/TrialSimulator/reference/resize.md)
   : Resizing a Trial
-- [`set_duration()`](https://zhangh12.github.io/TrialSimulator/reference/set_duration.md)
-  : Extending Duration of a Trial
 - [`update_sample_ratio()`](https://zhangh12.github.io/TrialSimulator/reference/update_sample_ratio.md)
   : Updating Sampling Ratios of Existing Arms in a Trial
 - [`update_generator()`](https://zhangh12.github.io/TrialSimulator/reference/update_generator.md)

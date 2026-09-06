@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.35.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.36.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -96,7 +96,7 @@ dynamic trial behaviors, such as:</p>
 <li><p>Stopping follow-up of a sub-population or an earlier
 cohort</p></li>
 <li><p>Resizing based on sample size reassessment</p></li>
-<li><p>extending trial duration</p></li>
+<li><p>extending a trial</p></li>
 <li><p>Updating the accrual rate</p></li>
 <li><p>Logging or tracking intermediate results</p></li>
 <li><p>Locking and exporting trial data snapshot at specific
@@ -590,10 +590,10 @@ ad-hoc workarounds such as global variables.</p>
 <p>Beyond analyzing data and saving results, one of the most powerful
 uses of action functions is the ability to adapt the ongoing trial.</p>
 <p>Adaptation means that trial features—such as randomization ratios,
-sample size, trial duration, or active arms—can be modified in response
-to accumulated data. This reflects how many modern clinical trials are
-designed in practice, aiming to increase efficiency, ethical and cost
-balance.</p>
+sample size, timing of the final analysis, or active arms—can be
+modified in response to accumulated data. This reflects how many modern
+clinical trials are designed in practice, aiming to increase efficiency,
+ethical and cost balance.</p>
 <p>In <code>TrialSimulator</code>, such adaptations are implemented
 directly within action functions. At a milestone, after retrieving the
 locked data and performing statistical analyses, the action function can
@@ -629,10 +629,10 @@ trial simulation.</p>
 <td>response-adaptive design</td>
 </tr>
 <tr class="even">
-<td>Extend trial duration</td>
+<td>Extend a trial</td>
 <td>
-<code>trial$set_duration()</code> or
-<code>trial$update_milestone()</code>
+<code>trial$update_milestone()</code> +
+<code>trial$stop_followup()</code>
 </td>
 <td>actual patient or event accrual is slower than expected</td>
 </tr>
