@@ -83,7 +83,7 @@ $get_arms_name() return names of the arms in the trial at
 the time of calling, i.e., arms that have been added and not yet removed
 by $remove_arms(). Note that this can differ from the arms present
 in locked data, where data of removed arms remain available (censored at
-the time of removal).
+the time of removal, or later if additional_followup was granted).
 
 
 Statistical testing:
@@ -202,7 +202,7 @@ $get_arms_name() return names of the arms in the trial at
 the time of calling, i.e., arms that have been added and not yet removed
 by $remove_arms(). Note that this can differ from the arms present
 in locked data, where data of removed arms remain available (censored at
-the time of removal).
+the time of removal, or later if additional_followup was granted).
 
 
 Statistical testing:
@@ -245,7 +245,7 @@ too, but they are part of the user-facing API above at the same time."><meta pro
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.36.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.37.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -368,7 +368,7 @@ given milestone.</p></li>
 the time of calling, i.e., arms that have been added and not yet removed
 by <code>$remove_arms()</code>. Note that this can differ from the arms present
 in locked data, where data of removed arms remain available (censored at
-the time of removal).</p></li>
+the time of removal, or later if <code>additional_followup</code> was granted).</p></li>
 </ul><p>Statistical testing:</p><ul><li><p><code>$dunnettTest()</code> perform Dunnett's test.</p></li>
 <li><p><code>$closedTest()</code> perform combination test based on Dunnett's test.</p></li>
 <li><p><code>$conditionalPower()</code> compute conditional power at a triggered
@@ -561,16 +561,32 @@ or interim analysis (early stop for efficacy).</p>
 <p>Note that this function should only be called within action functions.
 It is users' responsibility to ensure it and <code>TrialSimulator</code> has
 no way to track this.
-In addition, data of the removed arms are censored or truncated by
-the time of arm removal.</p><div class="section">
+In addition, data of the removed arms are censored or truncated at
+the time of arm removal, or <code>additional_followup</code> later, but
+stay in the trial data and thus in the locked data of later
+milestones. A removed arm is no longer in the set of arms of the
+trial: <code>arms = NULL</code> in <code><a href="eventNumber.html">eventNumber()</a></code> and
+<code><a href="enrollment.html">enrollment()</a></code> excludes it, listing it in <code>arms</code> includes
+it, and a subset that depends on which arm was removed requires
+<code>$update_milestone()</code> in the same action function.
+See <code><a href="remove_arms.html">?remove_arms</a></code> for the three patterns and examples.</p><div class="section">
 <h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">remove_arms</span><span class="op">(</span><span class="va">arms_name</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">remove_arms</span><span class="op">(</span><span class="va">arms_name</span>, <span class="va">additional_followup</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>arms_name</code></dt>
 <dd><p>character vector. Name of arms to be removed.</p></dd>
+
+
+<dt><code>additional_followup</code></dt>
+<dd><p>numeric. Extra follow-up time granted to
+the patients of the removed arms after the current milestone, shared
+by all arms in <code>arms_name</code>. No default: 0 stops their follow-up
+at the milestone itself. <code>Inf</code> keeps following them for
+the rest of the trial. To grant different times to different arms,
+call this function once per arm.</p></dd>
 
 
 </dl><p></p></div>
@@ -773,7 +789,7 @@ It is users' responsibility to ensure it and <code>TrialSimulator</code> has
 no way to track this. Calling it before any milestone has been
 triggered is an error.</p><div class="section">
 <h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">stop_followup</span><span class="op">(</span><span class="va">...</span>, additional_followup <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">stop_followup</span><span class="op">(</span><span class="va">...</span>, <span class="va">additional_followup</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -787,8 +803,8 @@ this function is called.</p></dd>
 
 <dt><code>additional_followup</code></dt>
 <dd><p>numeric. Extra follow-up time granted to the
-selected patients after the current milestone. If 0 (default),
-follow-up stops at the milestone itself.</p></dd>
+selected patients after the current milestone. No default: 0 stops
+follow-up at the milestone itself.</p></dd>
 
 
 </dl><p></p></div>
@@ -1817,7 +1833,10 @@ of endpoints.</p></dd>
 
 <dt><code>arms</code></dt>
 <dd><p>a vector of arms' name on which number of events will be
-counted.</p></dd>
+counted. If <code>NULL</code>, arms in the trial when this function is
+called. Otherwise, every name must be an arm ever added to the trial
+(an error otherwise), and arms removed before this call are counted
+as specified, with a warning unless the trial is silent.</p></dd>
 
 
 <dt><code>target_n_events</code></dt>
@@ -1862,8 +1881,11 @@ but only focus on patient_id.</p><div class="section">
 <div class="section">
 <h4 id="arguments-27">Arguments<a class="anchor" aria-label="anchor" href="#arguments-27"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>arms</code></dt>
-<dd><p>a vector of arms' name on which number of events will be
-counted.</p></dd>
+<dd><p>a vector of arms' name on which number of patients will be
+counted. If <code>NULL</code>, arms in the trial when this function is
+called. Otherwise, every name must be an arm ever added to the trial
+(an error otherwise), and arms removed before this call are counted
+as specified, with a warning unless the trial is silent.</p></dd>
 
 
 <dt><code>target_n_patients</code></dt>

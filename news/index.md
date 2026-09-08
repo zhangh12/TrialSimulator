@@ -1,5 +1,84 @@
 # Changelog
 
+## TrialSimulator 1.37.0
+
+### Breaking changes
+
+- `additional_followup` no longer has a default in
+  [`stop_followup()`](https://zhangh12.github.io/TrialSimulator/reference/stop_followup.md),
+  `Trials$stop_followup()`,
+  [`remove_arms()`](https://zhangh12.github.io/TrialSimulator/reference/remove_arms.md)
+  and `Trials$remove_arms()`. Existing calls must state it:
+  `additional_followup = 0` reproduces the previous behavior. Whether
+  follow-up stops at the milestone or continues is a design decision
+  that should be visible in the action function.
+
+### Updates
+
+- [`remove_arms()`](https://zhangh12.github.io/TrialSimulator/reference/remove_arms.md)
+  and `Trials$remove_arms()` gain `additional_followup`; 0 is the
+  previous behavior. Patients of the removed arms are followed for that
+  much longer after the milestone, or for the rest of the trial with
+  `Inf`, e.g., to collect overall survival of a dose that stops
+  enrolling. One value is shared by all arms removed in a call; call
+  once per arm for different values. Events of a removed arm within its
+  follow-up are counted by a later milestone only if the arm is listed
+  in `arms` of its triggering condition; `arms = NULL` never counts
+  removed arms.
+
+### Bug fixes
+
+- `trial(duration = ...)` is now an error stating that the argument was
+  removed in 1.36.0. Previously `duration` fell into `...` and was
+  forwarded to the enroller and dropout generators, which ignore it, so
+  a script written for an earlier version kept running with its
+  follow-up no longer capped and nothing said so.
+- The `arms` argument of
+  [`eventNumber()`](https://zhangh12.github.io/TrialSimulator/reference/eventNumber.md)
+  and
+  [`enrollment()`](https://zhangh12.github.io/TrialSimulator/reference/enrollment.md)
+  is now validated once, at the entry shared by the C++ and R
+  implementations of the lock-time search, so both behave the same. A
+  name that has never been an arm of the trial is an error; previously
+  the default C++ path dropped it silently, so a misspelled arm only
+  delayed the milestone. The set of known arms is every arm ever added
+  in the current replicate, so an arm added and then removed within the
+  trial is accepted; the R path previously checked against the current
+  arms and the arms present when `run()` started, and rejected such an
+  arm.
+- An arm listed in `arms` that has been removed by
+  [`remove_arms()`](https://zhangh12.github.io/TrialSimulator/reference/remove_arms.md)
+  before the milestone is evaluated now raises a warning unless the
+  trial is silent (`silent = TRUE` in
+  [`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md)
+  or `run()`). Its patients are still counted as specified. Use
+  `arms = NULL` to count on the arms in the trial only.
+
+### Documentation
+
+- [`?remove_arms`](https://zhangh12.github.io/TrialSimulator/reference/remove_arms.md)
+  now states what removing an arm does (no further randomization, out of
+  the set of arms of the trial, data censored at removal but kept in
+  locked data) and documents the three patterns for counting at later
+  milestones after a data-driven removal: `arms = NULL` for the arms
+  still in the trial, listing every arm of the design to include removed
+  ones, and
+  [`update_milestone()`](https://zhangh12.github.io/TrialSimulator/reference/update_milestone.md)
+  in the same action function for a subset that depends on which arm was
+  removed. Examples show each pattern.
+- The adaptive design vignette explains why the final analysis lists all
+  three arms in
+  [`enrollment()`](https://zhangh12.github.io/TrialSimulator/reference/enrollment.md):
+  after dose selection, `arms = NULL` would count on the remaining arms
+  only and the total sample size could never be reached.
+- The
+  [`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md)
+  examples of
+  [`?controller`](https://zhangh12.github.io/TrialSimulator/reference/controller.md)
+  and
+  [`?summarizeMilestoneTime`](https://zhangh12.github.io/TrialSimulator/reference/summarizeMilestoneTime.md)
+  no longer pass `duration`.
+
 ## TrialSimulator 1.36.0
 
 ### Breaking changes

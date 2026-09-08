@@ -179,10 +179,10 @@ action1 <- function(trial){
   z_l <- fit$z[fit$arm == 'low dose']
   z_h <- fit$z[fit$arm == 'high dose']
   if(z_l > 1.28){
-    trial$remove_arms('high dose')
+    trial$remove_arms('high dose', additional_followup = 0)
     trial$save(value = 'low', name = 'kept_arm')
   }else if(z_h > 1.28){
-    trial$remove_arms('low dose')
+    trial$remove_arms('low dose', additional_followup = 0)
     trial$save(value = 'high', name = 'kept_arm')
   }else{
     trial$save(value = 'both', name = 'kept_arm')
@@ -268,7 +268,21 @@ action3 <- function(trial){
 }
 ```
 
-Next, we register three trial milestones to a listener
+Next, we register three trial milestones to a listener. Note that `arms`
+is specified explicitly in
+[`enrollment()`](https://zhangh12.github.io/TrialSimulator/reference/enrollment.md)
+of the final analysis. By default (`arms = NULL`),
+[`enrollment()`](https://zhangh12.github.io/TrialSimulator/reference/enrollment.md)
+and
+[`eventNumber()`](https://zhangh12.github.io/TrialSimulator/reference/eventNumber.md)
+count on the arms still in the trial when the milestone is evaluated, so
+after a dose is dropped at dose selection the target of 1000 patients
+would be counted on two arms only and could never be reached. Listing
+all three arms counts every randomized patient, including those in the
+dropped dose. Which dose is dropped is decided from the data, but the
+names of all arms are known by design, so they can be listed here. See
+[`?remove_arms`](https://zhangh12.github.io/TrialSimulator/reference/remove_arms.md)
+for the patterns of counting at milestones after an arm is removed.
 
 ``` r
 

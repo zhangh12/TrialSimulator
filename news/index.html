@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.36.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.37.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,6 +51,33 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.37.0" id="trialsimulator-1370">TrialSimulator 1.37.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1370"></a></h2>
+<div class="section level3">
+<h3 id="breaking-changes-1-37-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-1-37-0"></a></h3>
+<ul><li>
+<code>additional_followup</code> no longer has a default in <code><a href="../reference/stop_followup.html">stop_followup()</a></code>, <code>Trials$stop_followup()</code>, <code><a href="../reference/remove_arms.html">remove_arms()</a></code> and <code>Trials$remove_arms()</code>. Existing calls must state it: <code>additional_followup = 0</code> reproduces the previous behavior. Whether follow-up stops at the milestone or continues is a design decision that should be visible in the action function.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="updates-1-37-0">Updates<a class="anchor" aria-label="anchor" href="#updates-1-37-0"></a></h3>
+<ul><li>
+<code><a href="../reference/remove_arms.html">remove_arms()</a></code> and <code>Trials$remove_arms()</code> gain <code>additional_followup</code>; 0 is the previous behavior. Patients of the removed arms are followed for that much longer after the milestone, or for the rest of the trial with <code>Inf</code>, e.g., to collect overall survival of a dose that stops enrolling. One value is shared by all arms removed in a call; call once per arm for different values. Events of a removed arm within its follow-up are counted by a later milestone only if the arm is listed in <code>arms</code> of its triggering condition; <code>arms = NULL</code> never counts removed arms.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-1-37-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-37-0"></a></h3>
+<ul><li>
+<code>trial(duration = ...)</code> is now an error stating that the argument was removed in 1.36.0. Previously <code>duration</code> fell into <code>...</code> and was forwarded to the enroller and dropout generators, which ignore it, so a script written for an earlier version kept running with its follow-up no longer capped and nothing said so.</li>
+<li>The <code>arms</code> argument of <code><a href="../reference/eventNumber.html">eventNumber()</a></code> and <code><a href="../reference/enrollment.html">enrollment()</a></code> is now validated once, at the entry shared by the C++ and R implementations of the lock-time search, so both behave the same. A name that has never been an arm of the trial is an error; previously the default C++ path dropped it silently, so a misspelled arm only delayed the milestone. The set of known arms is every arm ever added in the current replicate, so an arm added and then removed within the trial is accepted; the R path previously checked against the current arms and the arms present when <code>run()</code> started, and rejected such an arm.</li>
+<li>An arm listed in <code>arms</code> that has been removed by <code><a href="../reference/remove_arms.html">remove_arms()</a></code> before the milestone is evaluated now raises a warning unless the trial is silent (<code>silent = TRUE</code> in <code><a href="../reference/trial.html">trial()</a></code> or <code>run()</code>). Its patients are still counted as specified. Use <code>arms = NULL</code> to count on the arms in the trial only.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-1-37-0">Documentation<a class="anchor" aria-label="anchor" href="#documentation-1-37-0"></a></h3>
+<ul><li>
+<code><a href="../reference/remove_arms.html">?remove_arms</a></code> now states what removing an arm does (no further randomization, out of the set of arms of the trial, data censored at removal but kept in locked data) and documents the three patterns for counting at later milestones after a data-driven removal: <code>arms = NULL</code> for the arms still in the trial, listing every arm of the design to include removed ones, and <code><a href="../reference/update_milestone.html">update_milestone()</a></code> in the same action function for a subset that depends on which arm was removed. Examples show each pattern.</li>
+<li>The adaptive design vignette explains why the final analysis lists all three arms in <code><a href="../reference/enrollment.html">enrollment()</a></code>: after dose selection, <code>arms = NULL</code> would count on the remaining arms only and the total sample size could never be reached.</li>
+<li>The <code><a href="../reference/trial.html">trial()</a></code> examples of <code><a href="../reference/controller.html">?controller</a></code> and <code><a href="../reference/summarizeMilestoneTime.html">?summarizeMilestoneTime</a></code> no longer pass <code>duration</code>.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.36.0" id="trialsimulator-1360">TrialSimulator 1.36.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1360"></a></h2>
 <div class="section level3">

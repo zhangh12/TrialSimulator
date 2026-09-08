@@ -107,7 +107,7 @@ Trial status queries:
   of calling, i.e., arms that have been added and not yet removed by
   `$remove_arms()`. Note that this can differ from the arms present in
   locked data, where data of removed arms remain available (censored at
-  the time of removal).
+  the time of removal, or later if `additional_followup` was granted).
 
 Statistical testing:
 
@@ -349,17 +349,36 @@ interim analysis (early stop for efficacy).
 Note that this function should only be called within action functions.
 It is users' responsibility to ensure it and `TrialSimulator` has no way
 to track this. In addition, data of the removed arms are censored or
-truncated by the time of arm removal.
+truncated at the time of arm removal, or `additional_followup` later,
+but stay in the trial data and thus in the locked data of later
+milestones. A removed arm is no longer in the set of arms of the trial:
+`arms = NULL` in
+[`eventNumber()`](https://zhangh12.github.io/TrialSimulator/reference/eventNumber.md)
+and
+[`enrollment()`](https://zhangh12.github.io/TrialSimulator/reference/enrollment.md)
+excludes it, listing it in `arms` includes it, and a subset that depends
+on which arm was removed requires `$update_milestone()` in the same
+action function. See
+[`?remove_arms`](https://zhangh12.github.io/TrialSimulator/reference/remove_arms.md)
+for the three patterns and examples.
 
 #### Usage
 
-    Trials$remove_arms(arms_name)
+    Trials$remove_arms(arms_name, additional_followup)
 
 #### Arguments
 
 - `arms_name`:
 
   character vector. Name of arms to be removed.
+
+- `additional_followup`:
+
+  numeric. Extra follow-up time granted to the patients of the removed
+  arms after the current milestone, shared by all arms in `arms_name`.
+  No default: 0 stops their follow-up at the milestone itself. `Inf`
+  keeps following them for the rest of the trial. To grant different
+  times to different arms, call this function once per arm.
 
 ------------------------------------------------------------------------
 
@@ -568,7 +587,7 @@ error.
 
 #### Usage
 
-    Trials$stop_followup(..., additional_followup = 0)
+    Trials$stop_followup(..., additional_followup)
 
 #### Arguments
 
@@ -583,8 +602,8 @@ error.
 - `additional_followup`:
 
   numeric. Extra follow-up time granted to the selected patients after
-  the current milestone. If 0 (default), follow-up stops at the
-  milestone itself.
+  the current milestone. No default: 0 stops follow-up at the milestone
+  itself.
 
 ------------------------------------------------------------------------
 
@@ -1606,7 +1625,11 @@ randomized patients after the found data lock time).
 
 - `arms`:
 
-  a vector of arms' name on which number of events will be counted.
+  a vector of arms' name on which number of events will be counted. If
+  `NULL`, arms in the trial when this function is called. Otherwise,
+  every name must be an arm ever added to the trial (an error
+  otherwise), and arms removed before this call are counted as
+  specified, with a warning unless the trial is silent.
 
 - `target_n_events`:
 
@@ -1653,7 +1676,11 @@ get_data_lock_time_by_event_number but only focus on patient_id.
 
 - `arms`:
 
-  a vector of arms' name on which number of events will be counted.
+  a vector of arms' name on which number of patients will be counted. If
+  `NULL`, arms in the trial when this function is called. Otherwise,
+  every name must be an arm ever added to the trial (an error
+  otherwise), and arms removed before this call are counted as
+  specified, with a warning unless the trial is silent.
 
 - `target_n_patients`:
 

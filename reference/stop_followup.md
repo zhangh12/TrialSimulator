@@ -35,7 +35,7 @@ directly.
 ## Usage
 
 ``` r
-stop_followup(trial, ..., additional_followup = 0)
+stop_followup(trial, ..., additional_followup)
 ```
 
 ## Arguments
@@ -56,8 +56,8 @@ stop_followup(trial, ..., additional_followup = 0)
 - additional_followup:
 
   numeric. Extra follow-up time granted to the selected patients after
-  the current milestone. If 0 (default), follow-up stops at the
-  milestone itself.
+  the current milestone. No default: 0 stops follow-up at the milestone
+  itself.
 
 ## Value
 

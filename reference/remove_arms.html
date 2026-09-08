@@ -4,22 +4,52 @@ not limited to, dose selection, enrichment analysis
 (select sub-population).
 Note that this function should only be called within action functions of
 milestones. It is users' responsibility to ensure that and
-TrialSimulator has no way to track it. In addition, data of the
-removed arms are censored or truncated by the time of arm removal.
-This is a user-friendly wrapper of the member function of trial, i.e.,
-Trials$remove_arms(), which is used in vignettes. Users who are not
-familiar with the concept of classes may consider using this wrapper
-directly."><meta property="og:description" content="remove arms from a trial. The application of this function includes, but is
+TrialSimulator has no way to track it.
+Removing an arm has three effects. No patient is randomized to it
+afterwards; unenrolled patients are randomized again among the remaining
+arms. It leaves the set of arms in the trial, e.g., arms = NULL in
+eventNumber() and enrollment() no longer counts it, and
+dunnettTest() stops testing it at later milestones. Its data are
+censored at the time of removal, or additional_followup later,
+but stay in the trial data, so they are present in the locked data of
+later milestones.
+additional_followup has no default, so that the decision is
+visible in the action function. With 0, follow-up of the patients in a
+removed arm stops at the milestone where the arm is removed, e.g., a dose
+dropped for futility. A positive value keeps following them for a fixed
+time beyond the milestone, and Inf for the rest of the trial,
+e.g., to collect overall survival or safety data of a dose that stops
+enrolling.
+The same value applies to all arms removed in one call; to grant
+different times to different arms, call this function once per arm.
+Events of a removed arm within its follow-up are counted by a later
+milestone only if the arm is listed in arms of its triggering
+condition; see the next section."><meta property="og:description" content="remove arms from a trial. The application of this function includes, but is
 not limited to, dose selection, enrichment analysis
 (select sub-population).
 Note that this function should only be called within action functions of
 milestones. It is users' responsibility to ensure that and
-TrialSimulator has no way to track it. In addition, data of the
-removed arms are censored or truncated by the time of arm removal.
-This is a user-friendly wrapper of the member function of trial, i.e.,
-Trials$remove_arms(), which is used in vignettes. Users who are not
-familiar with the concept of classes may consider using this wrapper
-directly."><meta property="og:image" content="https://zhangh12.github.io/TrialSimulator/logo.svg"></head><body>
+TrialSimulator has no way to track it.
+Removing an arm has three effects. No patient is randomized to it
+afterwards; unenrolled patients are randomized again among the remaining
+arms. It leaves the set of arms in the trial, e.g., arms = NULL in
+eventNumber() and enrollment() no longer counts it, and
+dunnettTest() stops testing it at later milestones. Its data are
+censored at the time of removal, or additional_followup later,
+but stay in the trial data, so they are present in the locked data of
+later milestones.
+additional_followup has no default, so that the decision is
+visible in the action function. With 0, follow-up of the patients in a
+removed arm stops at the milestone where the arm is removed, e.g., a dose
+dropped for futility. A positive value keeps following them for a fixed
+time beyond the milestone, and Inf for the rest of the trial,
+e.g., to collect overall survival or safety data of a dose that stops
+enrolling.
+The same value applies to all arms removed in one call; to grant
+different times to different arms, call this function once per arm.
+Events of a removed arm within its follow-up are counted by a later
+milestone only if the arm is listed in arms of its triggering
+condition; see the next section."><meta property="og:image" content="https://zhangh12.github.io/TrialSimulator/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -27,7 +57,7 @@ directly."><meta property="og:image" content="https://zhangh12.github.io/TrialSi
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.36.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.37.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -78,17 +108,32 @@ not limited to, dose selection, enrichment analysis
 (select sub-population).</p>
 <p>Note that this function should only be called within action functions of
 milestones. It is users' responsibility to ensure that and
-<code>TrialSimulator</code> has no way to track it. In addition, data of the
-removed arms are censored or truncated by the time of arm removal.</p>
-<p>This is a user-friendly wrapper of the member function of trial, i.e.,
-<code>Trials$remove_arms()</code>, which is used in vignettes. Users who are not
-familiar with the concept of classes may consider using this wrapper
-directly.</p>
+<code>TrialSimulator</code> has no way to track it.</p>
+<p>Removing an arm has three effects. No patient is randomized to it
+afterwards; unenrolled patients are randomized again among the remaining
+arms. It leaves the set of arms in the trial, e.g., <code>arms = NULL</code> in
+<code><a href="eventNumber.html">eventNumber()</a></code> and <code><a href="enrollment.html">enrollment()</a></code> no longer counts it, and
+<code>dunnettTest()</code> stops testing it at later milestones. Its data are
+censored at the time of removal, or <code>additional_followup</code> later,
+but stay in the trial data, so they are present in the locked data of
+later milestones.</p>
+<p><code>additional_followup</code> has no default, so that the decision is
+visible in the action function. With 0, follow-up of the patients in a
+removed arm stops at the milestone where the arm is removed, e.g., a dose
+dropped for futility. A positive value keeps following them for a fixed
+time beyond the milestone, and <code>Inf</code> for the rest of the trial,
+e.g., to collect overall survival or safety data of a dose that stops
+enrolling.
+The same value applies to all arms removed in one call; to grant
+different times to different arms, call this function once per arm.
+Events of a removed arm within its follow-up are counted by a later
+milestone only if the arm is listed in <code>arms</code> of its triggering
+condition; see the next section.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">remove_arms</span><span class="op">(</span><span class="va">trial</span>, <span class="va">arms_name</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">remove_arms</span><span class="op">(</span><span class="va">trial</span>, <span class="va">arms_name</span>, <span class="va">additional_followup</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -102,12 +147,121 @@ directly.</p>
 <dt id="arg-arms-name">arms_name<a class="anchor" aria-label="anchor" href="#arg-arms-name"></a></dt>
 <dd><p>character vector. Name of arms to be removed.</p></dd>
 
+
+<dt id="arg-additional-followup">additional_followup<a class="anchor" aria-label="anchor" href="#arg-additional-followup"></a></dt>
+<dd><p>numeric. Extra follow-up time granted to the
+patients of the removed arms after the current milestone, shared by all
+arms in <code>arms_name</code>. No default: 0 stops their follow-up at the
+milestone itself. <code>Inf</code> keeps following them for the rest of the
+trial.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>no return value, called for its side effect of updating <code>trial</code>.</p>
     </div>
+    <div class="section level2">
+    <h2 id="counting-on-removed-arms-at-later-milestones">Counting on removed arms at later milestones<a class="anchor" aria-label="anchor" href="#counting-on-removed-arms-at-later-milestones"></a></h2>
 
+
+
+<p>Which arms are removed, and how many, are usually decided from the data
+and thus unknown when milestones are defined. Three patterns cover the
+triggering conditions of later milestones:</p><ul><li><p>Count on the arms still in the trial: leave <code>arms = NULL</code> in
+<code><a href="eventNumber.html">eventNumber()</a></code> or <code><a href="enrollment.html">enrollment()</a></code>. It is resolved when the
+milestone is evaluated, so any arm removed by then is excluded.</p></li>
+<li><p>Count on all arms of the design, including removed ones: list every
+arm of the design in <code>arms</code> of <code><a href="eventNumber.html">eventNumber()</a></code> or
+<code><a href="enrollment.html">enrollment()</a></code>. All names are known when the design is
+written; a removed arm passes the check because it was once in the trial,
+and a warning is raised unless the trial is silent. This is how the total
+sample size of a trial is counted after a dose is dropped.</p></li>
+<li><p>Count on a subset that depends on which arm was removed, e.g., the
+control arm and the removed arm only: the subset is unknown when the
+later milestone is defined. Call <code><a href="update_milestone.html">update_milestone()</a></code> in the same
+action function as <code>remove_arms()</code> to replace the triggering
+condition of the later milestone, with <code>arms</code> built from the arm
+just removed.</p></li>
+</ul><p>See the examples.</p>
+<p>This is a user-friendly wrapper of the member function of trial, i.e.,
+<code>Trials$remove_arms()</code>, which is used in vignettes. Users who are not
+familiar with the concept of classes may consider using this wrapper
+directly.</p>
+    </div>
+
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="co">## Within an action function: drop a dose and stop following its patients</span></span></span>
+<span class="r-in"><span><span class="co">## at this milestone. additional_followup has no default.</span></span></span>
+<span class="r-in"><span><span class="fu">remove_arms</span><span class="op">(</span><span class="va">trial</span>, <span class="st">'low dose'</span>, additional_followup <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## Drop a dose but follow its patients for another 12 months, e.g., for</span></span></span>
+<span class="r-in"><span><span class="co">## overall survival.</span></span></span>
+<span class="r-in"><span><span class="fu">remove_arms</span><span class="op">(</span><span class="va">trial</span>, <span class="st">'low dose'</span>, additional_followup <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## Drop a dose and follow its patients until the end of the trial.</span></span></span>
+<span class="r-in"><span><span class="fu">remove_arms</span><span class="op">(</span><span class="va">trial</span>, <span class="st">'low dose'</span>, additional_followup <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## Different follow-up for different arms: one call per arm.</span></span></span>
+<span class="r-in"><span><span class="fu">remove_arms</span><span class="op">(</span><span class="va">trial</span>, <span class="st">'low dose'</span>, additional_followup <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">remove_arms</span><span class="op">(</span><span class="va">trial</span>, <span class="st">'mid dose'</span>, additional_followup <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## A design with placebo and two doses. At dose selection, one dose may be</span></span></span>
+<span class="r-in"><span><span class="co">## dropped; which one, if any, is decided from the data.</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## Pattern 1: the final analysis counts events in the arms still in the</span></span></span>
+<span class="r-in"><span><span class="co">## trial. arms = NULL is resolved when `final` is evaluated, so the dropped</span></span></span>
+<span class="r-in"><span><span class="co">## dose is excluded automatically.</span></span></span>
+<span class="r-in"><span><span class="va">final</span> <span class="op">&lt;-</span> <span class="fu"><a href="milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'final'</span>,</span></span>
+<span class="r-in"><span>                   when <span class="op">=</span> <span class="fu"><a href="eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'os'</span>, n <span class="op">=</span> <span class="fl">300</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                   action <span class="op">=</span> <span class="va">action_at_final</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># final is then registered with the listener</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## Pattern 2: the final analysis counts events in all arms of the design,</span></span></span>
+<span class="r-in"><span><span class="co">## including a dropped dose (events up to its removal). List every arm;</span></span></span>
+<span class="r-in"><span><span class="co">## a dropped arm is accepted, with a warning unless the trial is silent.</span></span></span>
+<span class="r-in"><span><span class="co">## In this example, final analysis is triggered when in total 1000 patients</span></span></span>
+<span class="r-in"><span><span class="co">## are enrolled, including those from the removed arm.</span></span></span>
+<span class="r-in"><span><span class="va">final</span> <span class="op">&lt;-</span> <span class="fu"><a href="milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'final'</span>,</span></span>
+<span class="r-in"><span>                   when <span class="op">=</span> <span class="fu"><a href="enrollment.html">enrollment</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1000</span>,</span></span>
+<span class="r-in"><span>                                     arms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'placebo'</span>, <span class="st">'low dose'</span>, <span class="st">'high dose'</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                   action <span class="op">=</span> <span class="va">action_at_final</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># final is then registered with the listener</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## Pattern 3: the final analysis counts events in placebo and the dropped</span></span></span>
+<span class="r-in"><span><span class="co">## dose only. The pair is unknown when `final` is defined, so `final` is</span></span></span>
+<span class="r-in"><span><span class="co">## registered with a placeholder condition, and the action of dose</span></span></span>
+<span class="r-in"><span><span class="co">## selection replaces it after the removal. The placeholder is never</span></span></span>
+<span class="r-in"><span><span class="co">## evaluated: milestones are triggered in registration order, and the</span></span></span>
+<span class="r-in"><span><span class="co">## update takes effect before `final` is checked.</span></span></span>
+<span class="r-in"><span><span class="va">final</span> <span class="op">&lt;-</span> <span class="fu"><a href="milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'final'</span>,</span></span>
+<span class="r-in"><span>                   when <span class="op">=</span> <span class="fu"><a href="eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'os'</span>, n <span class="op">=</span> <span class="fl">90</span><span class="op">)</span>, <span class="co"># placeholder</span></span></span>
+<span class="r-in"><span>                   action <span class="op">=</span> <span class="va">action_at_final</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">action_at_dose_selection</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span><span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'dose selection'</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">dropped</span> <span class="op">&lt;-</span> <span class="va">...</span>  <span class="co"># the dose to drop, selected from locked_data, or NULL</span></span></span>
+<span class="r-in"><span>  <span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">dropped</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span></span>
+<span class="r-in"><span>    <span class="va">trial</span><span class="op">$</span><span class="fu">remove_arms</span><span class="op">(</span><span class="va">dropped</span>, additional_followup <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="va">trial</span><span class="op">$</span><span class="fu">update_milestone</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'final'</span>,</span></span>
+<span class="r-in"><span>                           when <span class="op">=</span> <span class="fu"><a href="eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'os'</span>, n <span class="op">=</span> <span class="fl">300</span>,</span></span>
+<span class="r-in"><span>                           arms <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'placebo'</span>, <span class="va">dropped</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">}</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">dose_selection</span> <span class="op">&lt;-</span> <span class="fu"><a href="milestone.html">milestone</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'dose selection'</span>,</span></span>
+<span class="r-in"><span>                            when <span class="op">=</span> <span class="fu"><a href="eventNumber.html">eventNumber</a></span><span class="op">(</span>endpoint <span class="op">=</span> <span class="st">'pfs'</span>, n <span class="op">=</span> <span class="fl">150</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                            action <span class="op">=</span> <span class="va">action_at_dose_selection</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># dose_selection and final are then registered with the listener, in this</span></span></span>
+<span class="r-in"><span><span class="co"># order, so that the update in dose_selection is in effect before final</span></span></span>
+<span class="r-in"><span><span class="co"># is checked</span></span></span>
+<span class="r-in"><span><span class="va">listener</span> <span class="op">&lt;-</span> <span class="fu"><a href="listener.html">listener</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">listener</span><span class="op">$</span><span class="fu">add_milestones</span><span class="op">(</span><span class="va">dose_selection</span>, <span class="va">final</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

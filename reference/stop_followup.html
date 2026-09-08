@@ -59,7 +59,7 @@ directly."><meta property="og:image" content="https://zhangh12.github.io/TrialSi
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.36.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.37.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -136,7 +136,7 @@ directly.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">stop_followup</span><span class="op">(</span><span class="va">trial</span>, <span class="va">...</span>, additional_followup <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">stop_followup</span><span class="op">(</span><span class="va">trial</span>, <span class="va">...</span>, <span class="va">additional_followup</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -156,8 +156,8 @@ this function is called.</p></dd>
 
 <dt id="arg-additional-followup">additional_followup<a class="anchor" aria-label="anchor" href="#arg-additional-followup"></a></dt>
 <dd><p>numeric. Extra follow-up time granted to the
-selected patients after the current milestone. If 0 (default), follow-up
-stops at the milestone itself.</p></dd>
+selected patients after the current milestone. No default: 0 stops
+follow-up at the milestone itself.</p></dd>
 
 </dl></div>
     <div class="section level2">
