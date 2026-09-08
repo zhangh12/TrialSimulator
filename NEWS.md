@@ -1,4 +1,12 @@
-# TrialSimulator 1.36.1
+# TrialSimulator 1.37.0
+
+## Breaking changes
+
+- `additional_followup` no longer has a default in `stop_followup()`, `Trials$stop_followup()`, `remove_arms()` and `Trials$remove_arms()`. Existing calls must state it: `additional_followup = 0` reproduces the previous behavior. Whether follow-up stops at the milestone or continues is a design decision that should be visible in the action function.
+
+## Updates
+
+- `remove_arms()` and `Trials$remove_arms()` gain `additional_followup` (thanks, [@gravesti](https://github.com/gravesti), [#21](https://github.com/zhangh12/TrialSimulator/issues/21)); 0 is the previous behavior. Patients of the removed arms are followed for that much longer after the milestone, or for the rest of the trial with `Inf`, e.g., to collect overall survival of a dose that stops enrolling. One value is shared by all arms removed in a call; call once per arm for different values. Events of a removed arm within its follow-up are counted by a later milestone only if the arm is listed in `arms` of its triggering condition; `arms = NULL` never counts removed arms.
 
 ## Bug fixes
 

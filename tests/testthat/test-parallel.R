@@ -54,7 +54,7 @@ test_that('package behaves the same under single- and multi-process modes with s
 
     interim1 <- milestone(name = 'interim1',
                           when = eventNumber(endpoint = 'or', n = 200),
-                          action = function(trial){trial$remove_arms('trt1')})
+                          action = function(trial){trial$remove_arms('trt1', additional_followup = 0)})
 
     action2 <- function(trial){
 
@@ -155,7 +155,7 @@ test_that('stop_followup and update_accrual_rate reproduce across worker modes',
     adapt <- milestone(name = 'adapt',
                        when = calendarTime(time = 8),
                        action = function(trial){
-                         stop_followup(trial, arm == 'pbo')
+                         stop_followup(trial, arm == 'pbo', additional_followup = 0)
                          update_accrual_rate(
                            trial,
                            data.frame(end_time = Inf, piecewise_rate = 15))

@@ -333,7 +333,7 @@ run_three_arm_trial <- function(seed = 27183, remove_at_8 = NULL) {
     milestones <- c(
       list(milestone(name = "select", when = calendarTime(time = 8),
                      action = function(trial){
-                       remove_arms(trial, arm_to_drop)
+                       remove_arms(trial, arm_to_drop, additional_followup = 0)
                      })),
       milestones
     )
@@ -558,7 +558,7 @@ test_that("numeric-effect conditionalPower works for arms removed after the mile
   lstn$add_milestones(
     milestone(name = "interim", when = calendarTime(time = 15)),
     milestone(name = "select", when = calendarTime(time = 20),
-              action = function(trial){ remove_arms(trial, 'trt1') }),
+              action = function(trial){ remove_arms(trial, 'trt1', additional_followup = 0) }),
     milestone(name = "final", when = calendarTime(time = 40))
   )
   controller(tr, lstn)$run(n = 1, silent = TRUE, plot_event = FALSE)

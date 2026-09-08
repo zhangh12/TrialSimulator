@@ -192,10 +192,10 @@ action1 <- function(trial){
   z_l <- fit$z[fit$arm == 'low dose']
   z_h <- fit$z[fit$arm == 'high dose']
   if(z_l > 1.28){
-    trial$remove_arms('high dose')
+    trial$remove_arms('high dose', additional_followup = 0)
     trial$save(value = 'low', name = 'kept_arm')
   }else if(z_h > 1.28){
-    trial$remove_arms('low dose')
+    trial$remove_arms('low dose', additional_followup = 0)
     trial$save(value = 'high', name = 'kept_arm')
   }else{
     trial$save(value = 'both', name = 'kept_arm')

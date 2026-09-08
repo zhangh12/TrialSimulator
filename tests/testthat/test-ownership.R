@@ -226,7 +226,7 @@ test_that("re-adding the name of a removed arm fails atomically", {
     name = "m",
     when = calendarTime(time = 5),
     action = function(trial) {
-      trial$remove_arms("trt")
+      trial$remove_arms("trt", additional_followup = 0)
       expect_error(trial$add_arms(1, own_arm("trt")),
                    "Re-adding an arm of the same name is not supported")
       ## the failed call must not have touched any trial state

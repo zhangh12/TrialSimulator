@@ -98,7 +98,7 @@ given milestone.
 the time of calling, i.e., arms that have been added and not yet removed
 by \code{$remove_arms()}. Note that this can differ from the arms present
 in locked data, where data of removed arms remain available (censored at
-the time of removal).
+the time of removal, or later if \code{additional_followup} was granted).
 }
 
 Statistical testing:
@@ -398,22 +398,30 @@ or interim analysis (early stop for efficacy).
 Note that this function should only be called within action functions.
 It is users' responsibility to ensure it and \code{TrialSimulator} has
 no way to track this.
-In addition, data of the removed arms are censored or truncated by
-the time of arm removal, but stay in the trial data and thus in the
-locked data of later milestones. A removed arm is no longer in the
-set of arms of the trial: \code{arms = NULL} in \code{eventNumber()}
-and \code{enrollment()} excludes it, listing it in \code{arms}
-includes it, and a subset that depends on which arm was removed
-requires \code{$update_milestone()} in the same action function.
+In addition, data of the removed arms are censored or truncated at
+the time of arm removal, or \code{additional_followup} later, but
+stay in the trial data and thus in the locked data of later
+milestones. A removed arm is no longer in the set of arms of the
+trial: \code{arms = NULL} in \code{eventNumber()} and
+\code{enrollment()} excludes it, listing it in \code{arms} includes
+it, and a subset that depends on which arm was removed requires
+\code{$update_milestone()} in the same action function.
 See \code{?remove_arms} for the three patterns and examples.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$remove_arms(arms_name)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$remove_arms(arms_name, additional_followup)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{arms_name}}{character vector. Name of arms to be removed.}
+
+\item{\code{additional_followup}}{numeric. Extra follow-up time granted to
+the patients of the removed arms after the current milestone, shared
+by all arms in \code{arms_name}. No default: 0 stops their follow-up
+at the milestone itself. \code{Inf} keeps following them for
+the rest of the trial. To grant different times to different arms,
+call this function once per arm.}
 }
 \if{html}{\out{</div>}}
 }
@@ -610,7 +618,7 @@ It is users' responsibility to ensure it and \code{TrialSimulator} has
 no way to track this. Calling it before any milestone has been
 triggered is an error.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Trials$stop_followup(..., additional_followup = 0)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Trials$stop_followup(..., additional_followup)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -622,8 +630,8 @@ provided, follow-up is stopped for all patients enrolled by the time
 this function is called.}
 
 \item{\code{additional_followup}}{numeric. Extra follow-up time granted to the
-selected patients after the current milestone. If 0 (default),
-follow-up stops at the milestone itself.}
+selected patients after the current milestone. No default: 0 stops
+follow-up at the milestone itself.}
 }
 \if{html}{\out{</div>}}
 }

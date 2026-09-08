@@ -389,7 +389,7 @@ test_that('endpoint event counts work as expected when an arm is removed', {
 
   interim1 <- milestone(name = 'interim1',
                         when = eventNumber(endpoint = 'or', n = 200),
-                        action = function(trial){trial$remove_arms('trt1')})
+                        action = function(trial){trial$remove_arms('trt1', additional_followup = 0)})
 
   interim2 <- milestone(name = 'interim2',
                         when = eventNumber(endpoint = 'pfs', n = 240) &
@@ -601,7 +601,7 @@ test_that('no private field appears mid-run that make_snapshot() does not cover'
                      when = calendarTime(time = 5),
                      action = function(trial){
                        resize(trial, 250)
-                       stop_followup(trial, arm == 'pbo')
+                       stop_followup(trial, arm == 'pbo', additional_followup = 0)
                        update_accrual_rate(
                          trial,
                          data.frame(end_time = Inf, piecewise_rate = 40))

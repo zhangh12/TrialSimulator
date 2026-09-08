@@ -49,7 +49,7 @@ trial$add_arms(sample_ratio = c(1, 1), pbo, trt)
 cohort_action <- function(trial){
   locked <- trial$get_locked_data('cohort')
   trial$save(nrow(locked), 'n_locked_cohort')
-  stop_followup(trial, patient_id <= 80)
+  stop_followup(trial, patient_id <= 80, additional_followup = 0)
 }
 
 subgroup_action <- function(trial){

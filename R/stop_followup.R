@@ -39,14 +39,14 @@
 #' provided, follow-up is stopped for all patients enrolled by the time
 #' this function is called.
 #' @param additional_followup numeric. Extra follow-up time granted to the
-#' selected patients after the current milestone. If 0 (default), follow-up
-#' stops at the milestone itself.
+#' selected patients after the current milestone. No default: 0 stops
+#' follow-up at the milestone itself.
 #'
 #' @return no return value, called for its side effect of updating \code{trial}.
 #'
 #' @export
 #'
-stop_followup <- function(trial, ..., additional_followup = 0){
+stop_followup <- function(trial, ..., additional_followup){
 
   trial$stop_followup(..., additional_followup = additional_followup)
 

@@ -4,12 +4,18 @@
 \alias{remove_arms}
 \title{Removing One or More Arms From a Trial}
 \usage{
-remove_arms(trial, arms_name)
+remove_arms(trial, arms_name, additional_followup)
 }
 \arguments{
 \item{trial}{a trial object returned by \code{trial()}.}
 
 \item{arms_name}{character vector. Name of arms to be removed.}
+
+\item{additional_followup}{numeric. Extra follow-up time granted to the
+patients of the removed arms after the current milestone, shared by all
+arms in \code{arms_name}. No default: 0 stops their follow-up at the
+milestone itself. \code{Inf} keeps following them for the rest of the
+trial.}
 }
 \value{
 no return value, called for its side effect of updating \code{trial}.
@@ -21,16 +27,29 @@ not limited to, dose selection, enrichment analysis
 
 Note that this function should only be called within action functions of
 milestones. It is users' responsibility to ensure that and
-\code{TrialSimulator} has no way to track it. In addition, data of the
-removed arms are censored or truncated by the time of arm removal.
+\code{TrialSimulator} has no way to track it.
 
 Removing an arm has three effects. No patient is randomized to it
 afterwards; unenrolled patients are randomized again among the remaining
 arms. It leaves the set of arms in the trial, e.g., \code{arms = NULL} in
 \code{eventNumber()} and \code{enrollment()} no longer counts it, and
 \code{dunnettTest()} stops testing it at later milestones. Its data are
-censored at the time of removal but stay in the trial data, so they are
-present in the locked data of later milestones.
+censored at the time of removal, or \code{additional_followup} later,
+but stay in the trial data, so they are present in the locked data of
+later milestones.
+
+\code{additional_followup} has no default, so that the decision is
+visible in the action function. With 0, follow-up of the patients in a
+removed arm stops at the milestone where the arm is removed, e.g., a dose
+dropped for futility. A positive value keeps following them for a fixed
+time beyond the milestone, and \code{Inf} for the rest of the trial,
+e.g., to collect overall survival or safety data of a dose that stops
+enrolling.
+The same value applies to all arms removed in one call; to grant
+different times to different arms, call this function once per arm.
+Events of a removed arm within its follow-up are counted by a later
+milestone only if the arm is listed in \code{arms} of its triggering
+condition; see the next section.
 }
 \section{Counting on removed arms at later milestones}{
 
@@ -65,6 +84,21 @@ directly.
 
 \examples{
 \dontrun{
+## Within an action function: drop a dose and stop following its patients
+## at this milestone. additional_followup has no default.
+remove_arms(trial, 'low dose', additional_followup = 0)
+
+## Drop a dose but follow its patients for another 12 months, e.g., for
+## overall survival.
+remove_arms(trial, 'low dose', additional_followup = 12)
+
+## Drop a dose and follow its patients until the end of the trial.
+remove_arms(trial, 'low dose', additional_followup = Inf)
+
+## Different follow-up for different arms: one call per arm.
+remove_arms(trial, 'low dose', additional_followup = 12)
+remove_arms(trial, 'mid dose', additional_followup = Inf)
+
 ## A design with placebo and two doses. At dose selection, one dose may be
 ## dropped; which one, if any, is decided from the data.
 
@@ -101,7 +135,7 @@ action_at_dose_selection <- function(trial){
   locked_data <- trial$get_locked_data('dose selection')
   dropped <- ...  # the dose to drop, selected from locked_data, or NULL
   if(!is.null(dropped)){
-    trial$remove_arms(dropped)
+    trial$remove_arms(dropped, additional_followup = 0)
     trial$update_milestone(name = 'final',
                            when = eventNumber(endpoint = 'os', n = 300,
                            arms = c('placebo', dropped)))

@@ -90,7 +90,7 @@
 #' the time of calling, i.e., arms that have been added and not yet removed
 #' by \code{$remove_arms()}. Note that this can differ from the arms present
 #' in locked data, where data of removed arms remain available (censored at
-#' the time of removal).
+#' the time of removal, or later if \code{additional_followup} was granted).
 #' }
 #'
 #' Statistical testing:
@@ -291,16 +291,23 @@ Trials <- R6::R6Class(
     #' Note that this function should only be called within action functions.
     #' It is users' responsibility to ensure it and \code{TrialSimulator} has
     #' no way to track this.
-    #' In addition, data of the removed arms are censored or truncated by
-    #' the time of arm removal, but stay in the trial data and thus in the
-    #' locked data of later milestones. A removed arm is no longer in the
-    #' set of arms of the trial: \code{arms = NULL} in \code{eventNumber()}
-    #' and \code{enrollment()} excludes it, listing it in \code{arms}
-    #' includes it, and a subset that depends on which arm was removed
-    #' requires \code{$update_milestone()} in the same action function.
+    #' In addition, data of the removed arms are censored or truncated at
+    #' the time of arm removal, or \code{additional_followup} later, but
+    #' stay in the trial data and thus in the locked data of later
+    #' milestones. A removed arm is no longer in the set of arms of the
+    #' trial: \code{arms = NULL} in \code{eventNumber()} and
+    #' \code{enrollment()} excludes it, listing it in \code{arms} includes
+    #' it, and a subset that depends on which arm was removed requires
+    #' \code{$update_milestone()} in the same action function.
     #' See \code{?remove_arms} for the three patterns and examples.
     #' @param arms_name character vector. Name of arms to be removed.
-    remove_arms = function(arms_name){
+    #' @param additional_followup numeric. Extra follow-up time granted to
+    #' the patients of the removed arms after the current milestone, shared
+    #' by all arms in \code{arms_name}. No default: 0 stops their follow-up
+    #' at the milestone itself. \code{Inf} keeps following them for
+    #' the rest of the trial. To grant different times to different arms,
+    #' call this function once per arm.
+    remove_arms = function(arms_name, additional_followup){
 
       if(length(self$get_milestone_time()) == 0){
         stop('remove_arms() can only be called within an action ',
@@ -310,6 +317,28 @@ Trials <- R6::R6Class(
 
       stopifnot(is.character(arms_name))
       stopifnot(all(arms_name %in% self$get_arms_name()))
+
+      if(missing(additional_followup)){
+        stop('additional_followup in remove_arms() must be specified: 0 to ',
+             'stop follow-up of the removed arm(s) at the current milestone, ',
+             'a positive value to grant extra follow-up time beyond it, or ',
+             'Inf to keep following them for the rest of the trial. ')
+      }
+
+      if(!is.numeric(additional_followup) ||
+         length(additional_followup) != 1 ||
+         is.na(additional_followup)){
+        stop('additional_followup in remove_arms() must be a single ',
+             'numeric value. ')
+      }
+
+      if(additional_followup < 0){
+        stop('additional_followup in remove_arms() cannot be negative. <',
+             additional_followup, '> is invalid. Use 0 to stop ',
+             'follow-up of the removed arm(s) at the current milestone, a ',
+             'positive value to grant extra follow-up time beyond it, or ',
+             'Inf to keep following them for the rest of the trial. ')
+      }
 
       private$sample_ratio <-
         private$sample_ratio[!(names(private$sample_ratio) %in% arms_name)]
@@ -341,13 +370,16 @@ Trials <- R6::R6Class(
                 '>. \n')
       }
 
-      ## data of removed arms should be censored at milestone time
-      ## so that number of events of those arms are fixed.
-      ## Otherwise, number of events can possibly increase later and affect
-      ## calculation of triggering condition based on event numbers.
-      ## Ideally, number of events in removed arms should be flatten afterward,
-      ## and can be seen through Trial$event_plot().
-      private$censor_trial_data(censor_at = self$get_current_time(),
+      ## data of removed arms are censored at the milestone time plus
+      ## additional_followup, so that their number of events is fixed from
+      ## then on: it can no longer grow and affect a triggering condition
+      ## that lists the removed arms explicitly (arms = NULL never counts
+      ## them). With the default 0 the count is frozen at removal and
+      ## flattens in Trial$event_plot(); with Inf, censor_trial_data() skips
+      ## administrative censoring and the arm is followed like the others.
+      ## Trial data are pre-generated, so censoring at a future calendar
+      ## time is applied right away.
+      private$censor_trial_data(censor_at = self$get_current_time() + additional_followup,
                              selected_arms = arms_name)
       ## with an arm is removed, unenrolled patient at current time should be
       ## randomized again.
@@ -355,12 +387,12 @@ Trials <- R6::R6Class(
       ## roll_back() is indispensable here, and must follow the censoring
       ## above: censor_trial_data() is not restricted to enrolled patients,
       ## so rows of the removed arms whose enroll_time is later than the
-      ## current time have just been administratively censored at a calendar
-      ## time before their enrollment. Their event time was clipped to 0 and
-      ## their event indicator set to 0, which is meaningless data. roll_back()
-      ## discards every row with enroll_time later than the current time, so
-      ## none of them survives; enroll_patients() below then regenerates the
-      ## unenrolled patients under the remaining arms.
+      ## censoring time have just been administratively censored at a
+      ## calendar time before their enrollment. Their event time was clipped
+      ## to 0 and their event indicator set to 0, which is meaningless data.
+      ## roll_back() discards every row with enroll_time later than the
+      ## current time, so none of them survives; enroll_patients() below then
+      ## regenerates the unenrolled patients under the remaining arms.
       private$roll_back()
 
       ## update data for unrolled patients based on new arms and possibly
@@ -803,9 +835,9 @@ Trials <- R6::R6Class(
     #' provided, follow-up is stopped for all patients enrolled by the time
     #' this function is called.
     #' @param additional_followup numeric. Extra follow-up time granted to the
-    #' selected patients after the current milestone. If 0 (default),
-    #' follow-up stops at the milestone itself.
-    stop_followup = function(..., additional_followup = 0){
+    #' selected patients after the current milestone. No default: 0 stops
+    #' follow-up at the milestone itself.
+    stop_followup = function(..., additional_followup){
 
       ## context check first: outside an action function there is no cohort
       ## to act on. lock_data() saves the milestone time right before an
@@ -818,6 +850,13 @@ Trials <- R6::R6Class(
              'triggered. ')
       }
 
+      if(missing(additional_followup)){
+        stop('additional_followup in stop_followup() must be specified: 0 to ',
+             'stop follow-up at milestone <',
+             names(milestone_time)[which.max(milestone_time)],
+             '>, or a positive value to grant extra follow-up time beyond it. ')
+      }
+
       if(!is.numeric(additional_followup) ||
          length(additional_followup) != 1 ||
          is.na(additional_followup)){
@@ -827,7 +866,7 @@ Trials <- R6::R6Class(
 
       if(additional_followup < 0){
         stop('additional_followup in stop_followup() cannot be negative. <',
-             additional_followup, '> is invalid. Use the default 0 to stop ',
+             additional_followup, '> is invalid. Use 0 to stop ',
              'follow-up at milestone <',
              names(milestone_time)[which.max(milestone_time)],
              '>, or a positive value to grant extra follow-up time beyond it. ')

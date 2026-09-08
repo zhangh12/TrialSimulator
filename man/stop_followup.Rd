@@ -4,7 +4,7 @@
 \alias{stop_followup}
 \title{Stopping Follow-Up of Selected Patients in a Trial}
 \usage{
-stop_followup(trial, ..., additional_followup = 0)
+stop_followup(trial, ..., additional_followup)
 }
 \arguments{
 \item{trial}{a trial object returned by \code{trial()}.}
@@ -15,8 +15,8 @@ provided, follow-up is stopped for all patients enrolled by the time
 this function is called.}
 
 \item{additional_followup}{numeric. Extra follow-up time granted to the
-selected patients after the current milestone. If 0 (default), follow-up
-stops at the milestone itself.}
+selected patients after the current milestone. No default: 0 stops
+follow-up at the milestone itself.}
 }
 \value{
 no return value, called for its side effect of updating \code{trial}.

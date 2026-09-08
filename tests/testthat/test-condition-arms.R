@@ -42,7 +42,7 @@ run_after_removal <- function(when, seed = 11, silent = TRUE) {
   add_arms(tr, sample_ratio = c(1, 1, 1),
            make_arm("pbo", 9), make_arm("trt1", 9), make_arm("trt2", 12))
   drop <- milestone(name = "drop", when = calendarTime(time = 8),
-                    action = function(trial) remove_arms(trial, "trt1"))
+                    action = function(trial) remove_arms(trial, "trt1", additional_followup = 0))
   final <- milestone(name = "final", when = when)
   lstn <- listener(silent = TRUE)
   lstn$add_milestones(drop, final)
@@ -138,7 +138,7 @@ for (use_cpp in c(TRUE, FALSE)) {
       add <- milestone(name = "add", when = calendarTime(time = 5),
                        action = function(trial) add_arms(trial, sample_ratio = 1, make_arm("trt3", 10)))
       drop <- milestone(name = "drop", when = calendarTime(time = 12),
-                        action = function(trial) remove_arms(trial, "trt3"))
+                        action = function(trial) remove_arms(trial, "trt3", additional_followup = 0))
       final <- milestone(name = "final",
                          when = eventNumber("pfs", n = 120, arms = c("pbo", "trt3")))
       lstn <- listener(silent = TRUE)
