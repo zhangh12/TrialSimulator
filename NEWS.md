@@ -1,3 +1,10 @@
+# TrialSimulator 1.36.1
+
+## Bug fixes
+
+- The `arms` argument of `eventNumber()` and `enrollment()` is now validated once, at the entry shared by the C++ and R implementations of the lock-time search, so both behave the same. A name that has never been an arm of the trial is an error; previously the default C++ path dropped it silently, so a misspelled arm only delayed the milestone. The set of known arms is every arm ever added in the current replicate, so an arm added and then removed within the trial is accepted; the R path previously checked against the current arms and the arms present when `run()` started, and rejected such an arm.
+- An arm listed in `arms` that has been removed by `remove_arms()` before the milestone is evaluated now raises a warning unless the trial is silent (`silent = TRUE` in `trial()` or `run()`). Its patients are still counted as specified. Use `arms = NULL` to count on the arms in the trial only.
+
 # TrialSimulator 1.36.0
 
 ## Breaking changes

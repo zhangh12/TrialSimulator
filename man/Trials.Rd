@@ -1618,7 +1618,10 @@ the found data lock time).
 of endpoints.}
 
 \item{\code{arms}}{a vector of arms' name on which number of events will be
-counted.}
+counted. If \code{NULL}, arms in the trial when this function is
+called. Otherwise, every name must be an arm ever added to the trial
+(an error otherwise), and arms removed before this call are counted
+as specified, with a warning unless the trial is silent.}
 
 \item{\code{target_n_events}}{target number of events for each of the
 \code{endpoints}.}
@@ -1658,8 +1661,11 @@ but only focus on patient_id.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{arms}}{a vector of arms' name on which number of events will be
-counted.}
+\item{\code{arms}}{a vector of arms' name on which number of patients will be
+counted. If \code{NULL}, arms in the trial when this function is
+called. Otherwise, every name must be an arm ever added to the trial
+(an error otherwise), and arms removed before this call are counted
+as specified, with a warning unless the trial is silent.}
 
 \item{\code{target_n_patients}}{target number of enrolled patients.}
 

@@ -14,7 +14,12 @@ of randomized patients will be counted on subset of trial data only.}
 
 \item{arms}{vector of character. Name of arms on which the number of patients
 is counted. If \code{NULL}, use all arms that are not yet removed from the
-trial by the time of calculation.}
+trial (using \code{remove_arms()}) by the time of calculation. Otherwise,
+every name must be an arm that has ever been added to the trial by the
+time of calculation; an unknown name is an error. An arm that has been
+removed by then is counted as specified, with a warning unless the trial
+is silent, so that a count including arms dropped at an earlier milestone
+is deliberate.}
 
 \item{min_treatment_duration}{numeric. Zero or positive value.
 minimum treatment duration of enrolled patients.

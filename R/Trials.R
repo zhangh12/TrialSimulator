@@ -2877,7 +2877,10 @@ Trials <- R6::R6Class(
     #' @param target_n_events target number of events for each of the
     #' \code{endpoints}.
     #' @param arms a vector of arms' name on which number of events will be
-    #' counted.
+    #' counted. If \code{NULL}, arms in the trial when this function is
+    #' called. Otherwise, every name must be an arm ever added to the trial
+    #' (an error otherwise), and arms removed before this call are counted
+    #' as specified, with a warning unless the trial is silent.
     #' @param type \code{all} if all target number of events are reached.
     #' \code{any} if the any target number of events is reached.
     #' @param ... subset conditions compatible with \code{dplyr::filter}. Number
@@ -2897,6 +2900,39 @@ Trials <- R6::R6Class(
 
       if(is.null(arms)){
         arms <- self$get_arms_name()
+      }else{
+        ## arms is checked here, at the shared entry of the C++ and R
+        ## paths, so that both behave the same. Names of arms that have
+        ## never been in the trial are an error: the C++ path used to drop
+        ## them silently, which only delayed the milestone. Arms removed
+        ## before this milestone are accepted, with a warning unless the
+        ## trial is silent, and their patients are counted as specified.
+        ## Listing removed arms is a legitimate design, e.g., enrollment()
+        ## on all arms for the total sample size, so the warning is muted
+        ## in batch runs. arm_time records every arm
+        ## ever added in the current replicate, including arms added and
+        ## removed within the trial, which neither the current arms nor
+        ## the run-start snapshot hold.
+        unknown_arms <- setdiff(arms, names(private$arm_time))
+        if(length(unknown_arms) > 0){
+          stop('Arm(s) <', paste0(unknown_arms, collapse = ', '),
+               '> in arms of the triggering condition have never been ',
+               'in the trial. Arm(s) ever added: <',
+               paste0(names(private$arm_time), collapse = ', '), '>. ')
+        }
+        removed_arms <- setdiff(arms, self$get_arms_name())
+        if(length(removed_arms) > 0 && !private$silent){
+          warning('Arm(s) <', paste0(removed_arms, collapse = ', '),
+                  '> in arms of the triggering condition <eventNumber()> were ',
+                  'removed from the trial at time <',
+                  paste0(vapply(removed_arms, private$get_arm_removal_time,
+                                numeric(1)), collapse = ', '),
+                  '>, before this milestone is evaluated. Their patients ',
+                  'are still counted as specified. ',
+                  'Ignore this warning if it is intended. \n',
+                  'Use arms = NULL to count on arms in the trial only. ',
+                  immediate. = TRUE)
+        }
       }
 
       ## Fast path (the default): C++ helpers compute the lock time directly
@@ -2981,8 +3017,11 @@ Trials <- R6::R6Class(
     #' the found data lock time). It is similar to get_data_lock_time_by_event_number
     #' but only focus on patient_id.
     #' @param target_n_patients target number of enrolled patients.
-    #' @param arms a vector of arms' name on which number of events will be
-    #' counted.
+    #' @param arms a vector of arms' name on which number of patients will be
+    #' counted. If \code{NULL}, arms in the trial when this function is
+    #' called. Otherwise, every name must be an arm ever added to the trial
+    #' (an error otherwise), and arms removed before this call are counted
+    #' as specified, with a warning unless the trial is silent.
     #' @param min_treatment_duration numeric. Zero or positive value.
     #' minimum treatment duration of enrolled patients.
     #' If 0, it looks for triggering time based on number of enrolled
@@ -3006,6 +3045,39 @@ Trials <- R6::R6Class(
 
       if(is.null(arms)){
         arms <- self$get_arms_name()
+      }else{
+        ## arms is checked here, at the shared entry of the C++ and R
+        ## paths, so that both behave the same. Names of arms that have
+        ## never been in the trial are an error: the C++ path used to drop
+        ## them silently, which only delayed the milestone. Arms removed
+        ## before this milestone are accepted, with a warning unless the
+        ## trial is silent, and their patients are counted as specified.
+        ## Listing removed arms is a legitimate design, e.g., enrollment()
+        ## on all arms for the total sample size, so the warning is muted
+        ## in batch runs. arm_time records every arm
+        ## ever added in the current replicate, including arms added and
+        ## removed within the trial, which neither the current arms nor
+        ## the run-start snapshot hold.
+        unknown_arms <- setdiff(arms, names(private$arm_time))
+        if(length(unknown_arms) > 0){
+          stop('Arm(s) <', paste0(unknown_arms, collapse = ', '),
+               '> in arms of the triggering condition have never been ',
+               'in the trial. Arm(s) ever added: <',
+               paste0(names(private$arm_time), collapse = ', '), '>. ')
+        }
+        removed_arms <- setdiff(arms, self$get_arms_name())
+        if(length(removed_arms) > 0 && !private$silent){
+          warning('Arm(s) <', paste0(removed_arms, collapse = ', '),
+                  '> in arms of the triggering condition were removed ',
+                  'from the trial at time <',
+                  paste0(vapply(removed_arms, private$get_arm_removal_time,
+                                numeric(1)), collapse = ', '),
+                  '>, before this milestone is evaluated. Their patients ',
+                  'are still counted as specified. ',
+                  'Ignore this warning if it is intended. \n',
+                  'Use arms = NULL to count on arms in the trial only. ',
+                  immediate. = TRUE)
+        }
       }
 
       ## Fast path (the default): the C++ helper computes the enrollment lock
@@ -4413,10 +4485,14 @@ Trials <- R6::R6Class(
         arms <- self$get_arms_name()
       }
 
-      if(!all(arms %in% c(self$get_arms_name(), names(private$.snapshot[['arms']])))){
+      ## arm_time holds every arm ever added in the current replicate, so
+      ## arms removed within the trial (including those added within the
+      ## trial, which the run-start snapshot does not hold) pass this check.
+      if(!all(arms %in% names(private$arm_time))){
         stop('Arm(s) <',
-             paste0(setdiff(arms, self$get_arms_name()), collapse = ', '),
-             '> cannot be found in the trial, debug Trial$get_event_tables. ')
+             paste0(setdiff(arms, names(private$arm_time)), collapse = ', '),
+             '> have never been in the trial, debug Trial$get_event_tables ',
+             'or report an issue. ')
       }
 
       trial_data <- private$get_trial_data()

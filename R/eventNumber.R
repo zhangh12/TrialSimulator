@@ -32,7 +32,11 @@
 #' @param arms vector of character. Name of arms on which the number of
 #' events/observations is counted. If \code{NULL}, use all arms that are not yet
 #' removed from the trial (using \code{remove_arms()})
-#' by the time of calculation.
+#' by the time of calculation. Otherwise, every name must be an arm that has
+#' ever been added to the trial by the time of calculation; an unknown name
+#' is an error. An arm that has been removed by then is counted as specified,
+#' with a warning unless the trial is silent, so that a count including arms
+#' dropped at an earlier milestone is deliberate.
 #' @param ... subset conditions compatible with \code{dplyr::filter}. Number
 #' of events/observations will be counted on subset of trial data only.
 #'
