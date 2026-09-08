@@ -16,10 +16,12 @@
 ### Updates
 
 - [`remove_arms()`](https://zhangh12.github.io/TrialSimulator/reference/remove_arms.md)
-  and `Trials$remove_arms()` gain `additional_followup`; 0 is the
-  previous behavior. Patients of the removed arms are followed for that
-  much longer after the milestone, or for the rest of the trial with
-  `Inf`, e.g., to collect overall survival of a dose that stops
+  and `Trials$remove_arms()` gain `additional_followup` (thanks,
+  [@gravesti](https://github.com/gravesti),
+  [\#21](https://github.com/zhangh12/TrialSimulator/issues/21)); 0 is
+  the previous behavior. Patients of the removed arms are followed for
+  that much longer after the milestone, or for the rest of the trial
+  with `Inf`, e.g., to collect overall survival of a dose that stops
   enrolling. One value is shared by all arms removed in a call; call
   once per arm for different values. Events of a removed arm within its
   follow-up are counted by a later milestone only if the arm is listed
