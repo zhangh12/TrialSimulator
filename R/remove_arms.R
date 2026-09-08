@@ -11,6 +11,38 @@
 #' \code{TrialSimulator} has no way to track it. In addition, data of the
 #' removed arms are censored or truncated by the time of arm removal.
 #'
+#' Removing an arm has three effects. No patient is randomized to it
+#' afterwards; unenrolled patients are randomized again among the remaining
+#' arms. It leaves the set of arms in the trial, e.g., \code{arms = NULL} in
+#' \code{eventNumber()} and \code{enrollment()} no longer counts it, and
+#' \code{dunnettTest()} stops testing it at later milestones. Its data are
+#' censored at the time of removal but stay in the trial data, so they are
+#' present in the locked data of later milestones.
+#'
+#' @section Counting on removed arms at later milestones:
+#'
+#' Which arms are removed, and how many, are usually decided from the data
+#' and thus unknown when milestones are defined. Three patterns cover the
+#' triggering conditions of later milestones:
+#' \itemize{
+#' \item Count on the arms still in the trial: leave \code{arms = NULL} in
+#' \code{eventNumber()} or \code{enrollment()}. It is resolved when the
+#' milestone is evaluated, so any arm removed by then is excluded.
+#' \item Count on all arms of the design, including removed ones: list every
+#' arm of the design in \code{arms} of \code{eventNumber()} or
+#' \code{enrollment()}. All names are known when the design is
+#' written; a removed arm passes the check because it was once in the trial,
+#' and a warning is raised unless the trial is silent. This is how the total
+#' sample size of a trial is counted after a dose is dropped.
+#' \item Count on a subset that depends on which arm was removed, e.g., the
+#' control arm and the removed arm only: the subset is unknown when the
+#' later milestone is defined. Call \code{update_milestone()} in the same
+#' action function as \code{remove_arms()} to replace the triggering
+#' condition of the later milestone, with \code{arms} built from the arm
+#' just removed.
+#' }
+#' See the examples.
+#'
 #' This is a user-friendly wrapper of the member function of trial, i.e.,
 #' \code{Trials$remove_arms()}, which is used in vignettes. Users who are not
 #' familiar with the concept of classes may consider using this wrapper
@@ -20,6 +52,61 @@
 #' @param arms_name character vector. Name of arms to be removed.
 #'
 #' @return no return value, called for its side effect of updating \code{trial}.
+#'
+#' @examples
+#' \dontrun{
+#' ## A design with placebo and two doses. At dose selection, one dose may be
+#' ## dropped; which one, if any, is decided from the data.
+#'
+#' ## Pattern 1: the final analysis counts events in the arms still in the
+#' ## trial. arms = NULL is resolved when `final` is evaluated, so the dropped
+#' ## dose is excluded automatically.
+#' final <- milestone(name = 'final',
+#'                    when = eventNumber(endpoint = 'os', n = 300),
+#'                    action = action_at_final)
+#' # final is then registered with the listener
+#'
+#' ## Pattern 2: the final analysis counts events in all arms of the design,
+#' ## including a dropped dose (events up to its removal). List every arm;
+#' ## a dropped arm is accepted, with a warning unless the trial is silent.
+#' ## In this example, final analysis is triggered when in total 1000 patients
+#' ## are enrolled, including those from the removed arm.
+#' final <- milestone(name = 'final',
+#'                    when = enrollment(n = 1000,
+#'                                      arms = c('placebo', 'low dose', 'high dose')),
+#'                    action = action_at_final)
+#' # final is then registered with the listener
+#'
+#' ## Pattern 3: the final analysis counts events in placebo and the dropped
+#' ## dose only. The pair is unknown when `final` is defined, so `final` is
+#' ## registered with a placeholder condition, and the action of dose
+#' ## selection replaces it after the removal. The placeholder is never
+#' ## evaluated: milestones are triggered in registration order, and the
+#' ## update takes effect before `final` is checked.
+#' final <- milestone(name = 'final',
+#'                    when = eventNumber(endpoint = 'os', n = 90), # placeholder
+#'                    action = action_at_final)
+#'
+#' action_at_dose_selection <- function(trial){
+#'   locked_data <- trial$get_locked_data('dose selection')
+#'   dropped <- ...  # the dose to drop, selected from locked_data, or NULL
+#'   if(!is.null(dropped)){
+#'     trial$remove_arms(dropped)
+#'     trial$update_milestone(name = 'final',
+#'                            when = eventNumber(endpoint = 'os', n = 300,
+#'                            arms = c('placebo', dropped)))
+#'   }
+#' }
+#'
+#' dose_selection <- milestone(name = 'dose selection',
+#'                             when = eventNumber(endpoint = 'pfs', n = 150),
+#'                             action = action_at_dose_selection)
+#' # dose_selection and final are then registered with the listener, in this
+#' # order, so that the update in dose_selection is in effect before final
+#' # is checked
+#' listener <- listener()
+#' listener$add_milestones(dose_selection, final)
+#' }
 #'
 #' @export
 #'

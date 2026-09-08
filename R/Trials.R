@@ -292,7 +292,13 @@ Trials <- R6::R6Class(
     #' It is users' responsibility to ensure it and \code{TrialSimulator} has
     #' no way to track this.
     #' In addition, data of the removed arms are censored or truncated by
-    #' the time of arm removal.
+    #' the time of arm removal, but stay in the trial data and thus in the
+    #' locked data of later milestones. A removed arm is no longer in the
+    #' set of arms of the trial: \code{arms = NULL} in \code{eventNumber()}
+    #' and \code{enrollment()} excludes it, listing it in \code{arms}
+    #' includes it, and a subset that depends on which arm was removed
+    #' requires \code{$update_milestone()} in the same action function.
+    #' See \code{?remove_arms} for the three patterns and examples.
     #' @param arms_name character vector. Name of arms to be removed.
     remove_arms = function(arms_name){
 
