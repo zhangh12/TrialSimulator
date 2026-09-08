@@ -79,7 +79,7 @@ To efficiently utilize `TrialSimulator` for clinical trial simulations, we recom
   - [Seamless design with dose selection, interim, and multiple endpoints](https://zhangh12.github.io/TrialSimulator/articles/adaptiveDesign.html)
   - [Response-adaptive design](https://zhangh12.github.io/TrialSimulator/articles/responseAdaptive.html)
   - [Dose-ranging study](https://zhangh12.github.io/TrialSimulator/articles/doseRanging.html)
-  - [Enrichment design] vignette is under development. 
+  - [Enrichment design with SSR](https://zhangh12.github.io/TrialSimulator/articles/enrichmentDesign.html)
   - [Platform trial] vignette is under development. 
   - [Basket trial] vignette is under development. 
 - Examples: crossover

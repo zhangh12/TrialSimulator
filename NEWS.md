@@ -1,3 +1,10 @@
+# TrialSimulator 1.37.1
+
+## Updates
+
+- New vignette [An Example of Simulating a Trial with Adaptive Enrichment Design](https://zhangh12.github.io/TrialSimulator/articles/enrichmentDesign.html): a two-stage design with a biomarker-defined subgroup, where conditional power at an interim drives a five-zone decision (futility, unfavorable, enrichment, promising with sample size and event number reassessment, favorable), the two stages are combined by the inverse normal method, and the full-population and subgroup hypotheses are tested by a closed test with Simes' test. Operating characteristics from 10000 replicates under the alternative and under the global null are stored in the package.
+- `event_plot()` now shows the trial as observed, i.e., cumulative counts up to the time of the last triggered milestone. Since 1.36.0 trial data hold the full generated follow-up of every patient, so without this cut the plot extended to the last generated event, far beyond the end of the trial.
+
 # TrialSimulator 1.37.0
 
 ## Breaking changes
