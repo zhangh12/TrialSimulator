@@ -34,7 +34,6 @@
 #'                            piecewise_rate = c(30, 50))
 #' trial <- trial(name = 'trial',
 #'                n_patients = 1000,
-#'                duration = 40,
 #'                enroller = StaggeredRecruiter,
 #'                accrual_rate = accrual_rate,
 #'                dropout = rweibull, shape = 2, scale = 38)

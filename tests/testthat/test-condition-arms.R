@@ -81,7 +81,7 @@ for (use_cpp in c(TRUE, FALSE)) {
       expect_warning(
         tr <- run_after_removal(eventNumber("pfs", n = 150, arms = c("pbo", "trt1", "trt2")),
                                 silent = FALSE),
-        "Arm\\(s\\) <trt1> in arms of the triggering condition were removed from the trial at time <8>"
+        "Arm\\(s\\) <trt1> in arms of the triggering condition <eventNumber\\(\\)> were removed from the trial at time <8>"
       )
       ev <- events_by_arm(tr, "final")
       expect_equal(unname(sum(ev[c("pbo", "trt1", "trt2")])), 150)
@@ -120,7 +120,7 @@ for (use_cpp in c(TRUE, FALSE)) {
       expect_warning(
         tr <- run_after_removal(enrollment(n = 250, arms = c("pbo", "trt1", "trt2")),
                                 silent = FALSE),
-        "Arm\\(s\\) <trt1> in arms of the triggering condition were removed from the trial at time <8>"
+        "Arm\\(s\\) <trt1> in arms of the triggering condition <enrollment\\(\\)> were removed from the trial at time <8>"
       )
       d <- tr$get_locked_data("final")
       expect_equal(nrow(d), 250)
@@ -147,7 +147,7 @@ for (use_cpp in c(TRUE, FALSE)) {
         suppressMessages(
           controller(tr, lstn)$run(n = 1, silent = FALSE, plot_event = FALSE)
         ),
-        "Arm\\(s\\) <trt3> in arms of the triggering condition were removed from the trial at time <12>"
+        "Arm\\(s\\) <trt3> in arms of the triggering condition <eventNumber\\(\\)> were removed from the trial at time <12>"
       )
       ev <- events_by_arm(tr, "final")
       expect_equal(unname(ev["pbo"] + ev["trt3"]), 120)

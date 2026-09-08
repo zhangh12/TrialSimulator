@@ -94,17 +94,17 @@ final <- milestone(name = 'final',
 ## evaluated: milestones are triggered in registration order, and the
 ## update takes effect before `final` is checked.
 final <- milestone(name = 'final',
-                   when = eventNumber(endpoint = 'os', n = 300),
+                   when = eventNumber(endpoint = 'os', n = 90), # placeholder
                    action = action_at_final)
 
 action_at_dose_selection <- function(trial){
   locked_data <- trial$get_locked_data('dose selection')
   dropped <- ...  # the dose to drop, selected from locked_data, or NULL
   if(!is.null(dropped)){
-    remove_arms(trial, dropped)
-    update_milestone(trial, name = 'final',
-                     when = eventNumber(endpoint = 'os', n = 300,
-                                        arms = c('placebo', dropped)))
+    trial$remove_arms(dropped)
+    trial$update_milestone(name = 'final',
+                           when = eventNumber(endpoint = 'os', n = 300,
+                           arms = c('placebo', dropped)))
   }
 }
 
@@ -114,6 +114,8 @@ dose_selection <- milestone(name = 'dose selection',
 # dose_selection and final are then registered with the listener, in this
 # order, so that the update in dose_selection is in effect before final
 # is checked
+listener <- listener()
+listener$add_milestones(dose_selection, final)
 }
 
 }

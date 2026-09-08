@@ -2,12 +2,15 @@
 
 ## Bug fixes
 
+- `trial(duration = ...)` is now an error stating that the argument was removed in 1.36.0. Previously `duration` fell into `...` and was forwarded to the enroller and dropout generators, which ignore it, so a script written for an earlier version kept running with its follow-up no longer capped and nothing said so.
 - The `arms` argument of `eventNumber()` and `enrollment()` is now validated once, at the entry shared by the C++ and R implementations of the lock-time search, so both behave the same. A name that has never been an arm of the trial is an error; previously the default C++ path dropped it silently, so a misspelled arm only delayed the milestone. The set of known arms is every arm ever added in the current replicate, so an arm added and then removed within the trial is accepted; the R path previously checked against the current arms and the arms present when `run()` started, and rejected such an arm.
 - An arm listed in `arms` that has been removed by `remove_arms()` before the milestone is evaluated now raises a warning unless the trial is silent (`silent = TRUE` in `trial()` or `run()`). Its patients are still counted as specified. Use `arms = NULL` to count on the arms in the trial only.
 
 ## Documentation
 
 - `?remove_arms` now states what removing an arm does (no further randomization, out of the set of arms of the trial, data censored at removal but kept in locked data) and documents the three patterns for counting at later milestones after a data-driven removal: `arms = NULL` for the arms still in the trial, listing every arm of the design to include removed ones, and `update_milestone()` in the same action function for a subset that depends on which arm was removed. Examples show each pattern.
+- The adaptive design vignette explains why the final analysis lists all three arms in `enrollment()`: after dose selection, `arms = NULL` would count on the remaining arms only and the total sample size could never be reached.
+- The `trial()` examples of `?controller` and `?summarizeMilestoneTime` no longer pass `duration`.
 
 # TrialSimulator 1.36.0
 

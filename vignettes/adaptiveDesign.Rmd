@@ -279,7 +279,16 @@ action3 <- function(trial){
 }
 ```
 
-Next, we register three trial milestones to a listener
+Next, we register three trial milestones to a listener. Note that `arms` is
+specified explicitly in `enrollment()` of the final analysis. By default
+(`arms = NULL`), `enrollment()` and `eventNumber()` count on the arms still
+in the trial when the milestone is evaluated, so after a dose is dropped at
+dose selection the target of 1000 patients would be counted on two arms
+only and could never be reached. Listing all three arms counts every
+randomized patient, including those in the dropped dose. Which dose is
+dropped is decided from the data, but the names of all arms are known by
+design, so they can be listed here. See `?remove_arms` for the patterns of
+counting at milestones after an arm is removed.
 
 ```{r}
 dose_selection <- milestone(name = 'dose selection', action = action1,   

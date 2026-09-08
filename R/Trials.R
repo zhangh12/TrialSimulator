@@ -3074,7 +3074,8 @@ Trials <- R6::R6Class(
         removed_arms <- setdiff(arms, self$get_arms_name())
         if(length(removed_arms) > 0 && !private$silent){
           warning('Arm(s) <', paste0(removed_arms, collapse = ', '),
-                  '> in arms of the triggering condition were removed ',
+                  '> in arms of the triggering condition <enrollment()> were ',
+                  'removed ',
                   'from the trial at time <',
                   paste0(vapply(removed_arms, private$get_arm_removal_time,
                                 numeric(1)), collapse = ', '),
@@ -3759,6 +3760,17 @@ Trials <- R6::R6Class(
       stopifnot(is.null(dropout) || is.function(dropout))
 
       stopifnot(is.logical(silent))
+
+      ## duration was a named argument of trial() until 1.36.0. Now it would
+      ## be swallowed by ... and forwarded to the enroller and dropout
+      ## generators, which ignore it, so an old script keeps running with
+      ## its follow-up no longer capped. Make it loud instead.
+      if('duration' %in% names(list(...))){
+        stop('duration is no longer an argument of trial() since ',
+             'TrialSimulator 1.36.0 and must be removed. A trial ends when ',
+             'its last milestone is triggered; the timing of each milestone ',
+             'is determined by its triggering condition. ', call. = FALSE)
+      }
 
     },
 

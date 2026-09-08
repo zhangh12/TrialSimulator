@@ -139,3 +139,17 @@ test_that("between-replicate resets in run(n > 1) are not blocked by the guard",
   expect_equal(st$listener$get_milestone_names(), c("m1", "m2"))
   expect_equal(nrow(st$controller$get_output()), 3)
 })
+
+
+test_that("trial(duration = ...) is rejected since the argument was removed", {
+  accrual <- data.frame(end_time = Inf, piecewise_rate = 30)
+  expect_error(
+    trial(name = "t", n_patients = 100, seed = 1,
+          enroller = StaggeredRecruiter, accrual_rate = accrual,
+          dropout = rweibull, shape = 1, scale = 1e6,
+          duration = 40, silent = TRUE),
+    "duration is no longer an argument of trial\\(\\) since TrialSimulator 1.36.0"
+  )
+  ## other arguments in ... still reach the generators
+  expect_s3_class(make_trial(), "Trials")
+})
