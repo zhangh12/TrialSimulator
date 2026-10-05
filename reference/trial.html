@@ -37,7 +37,7 @@ non-tte endpoints are consistent."><meta property="og:image" content="https://zh
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.37.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.38.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -111,6 +111,7 @@ non-tte endpoints are consistent.</p>
 <span>  enroller <span class="op">=</span> <span class="va">StaggeredRecruiter</span>,</span>
 <span>  dropout <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  stratification_factors <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  global_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  silent <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -170,6 +171,16 @@ characteristics share the same distribution across arms, but endpoints
 can have same or different distributions given baseline characteristics.
 <code>NULL</code> by default, i.e., unstratified permuted block randomization is
 executed.</p></dd>
+
+
+<dt id="arg-global-data">global_data<a class="anchor" aria-label="anchor" href="#arg-global-data"></a></dt>
+<dd><p>a list with named components, e.g., design parameters
+or a template object of a testing procedure, to be shared by all
+replicates of a simulation. It is read-only and can be accessed in
+action functions by calling <code>trial$get_global_data(name)</code>. For
+temporary results passed between action functions within a single
+replicate, use <code>trial$save_custom_data()</code> instead. See
+<code><a href="../articles/actionFunctions.html">vignette('actionFunctions', package = 'TrialSimulator')</a></code>.</p></dd>
 
 
 <dt id="arg-silent">silent<a class="anchor" aria-label="anchor" href="#arg-silent"></a></dt>
@@ -243,8 +254,8 @@ simulation. Default: <code>FALSE</code>.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, <span class="va">placebo</span>, <span class="va">active</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Arm(s) &lt;pbo, ac&gt; are added to the trial. </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Randomization is done for 1 potential patients. </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Data of 100 potential patients are generated for the trial with 2 arm(s) &lt;pbo, ac&gt;. </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Randomization is done for &lt;1&gt; potential patients. </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Data of &lt;100&gt; potential patients are generated for the trial with &lt;2&gt; arm(s) &lt;pbo, ac&gt;. </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## updated information after arms are registered</span></span></span>
 <span class="r-in"><span><span class="va">trial</span></span></span>

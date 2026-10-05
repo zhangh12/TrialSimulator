@@ -289,7 +289,7 @@ milestones.
 
 `TrialSimulator` offers dedicated member functions for saving
 intermediate results during a trial. The stored information can be
-broadly classified into two categories:
+broadly classified into three categories:
 
 - **Trial output**—results that directly contribute to the summary of
   trial operating characteristics (e.g., effect estimates, test
@@ -309,7 +309,18 @@ broadly classified into two categories:
   `trial$get()`. This mechanism provides a safe way to pass data across
   milestones without relying on global variables. Unlike `trial$save()`,
   `trial$save_custom_data()` can save any objects, which provides
-  flexibility.
+  flexibility. Auxiliary information is temporary by design: it lives
+  within a single simulated trial, and the storage is cleared before the
+  next replicate starts.
+
+- **global data**—read-only data that must be available in *every*
+  replicate of a simulation, e.g., design parameters or a template
+  object of a testing procedure. They are defined once, as a named list
+  passed to the `global_data` argument of
+  [`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md),
+  and retrieved with `trial$get_global_data()`. Entries can never be
+  overwritten or removed, so every replicate sees the identical set of
+  global data.
 
 In addition, a convenience function `trial$bind()` is provided for
 sequentially appending rows to a stored data frame—useful when
@@ -333,6 +344,24 @@ in R console.
   trial.
 
   - retrieved later by calling `trial$get(name)`.
+
+  - to update an existing entry, e.g., when carrying an evolving object
+    across milestones, call it with `overwrite = TRUE`.
+
+  - the storage is cleared before every replicate, so nothing saved here
+    can leak into the next simulated trial. After `run()` completes, it
+    still holds the data of the last replicate, which can be inspected
+    like the rest of the trial’s final state (e.g., milestone times);
+    the next `run()` clears it when it starts.
+
+- `get_global_data(name)`: retrieves a component of the named list
+  passed to the `global_data` argument of
+  [`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md).
+
+  - global data is read-only and identical in every replicate: it can
+    only be set when the trial is defined, and the entry itself can
+    never be changed—an R6 object is returned as an independent deep
+    clone, so every replicate starts from the identical template.
 
 - `bind(value, name)`: a special case of `save_custom_data` for data
   frames.
@@ -427,36 +456,43 @@ action_at_final <- function(trial){
 }
 ```
 
-#### Example 3: defining auxiliary information before the trial runs
+#### Example 3: defining global data of a trial
 
-All member functions discussed in this section can be called before any
-milestone is triggered, as long as the `trial` object has been created
-by calling the function
-[`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md).
-For example, we may want to define the level of family-wise error rate
-(FWER) once, and then use it later in interim and final analysis:
+Parameters that every replicate needs, e.g., the level of family-wise
+error rate (FWER), should not be saved as auxiliary information—that
+storage is cleared before each replicate. Instead, define them once when
+the trial is created, as a named list passed to the `global_data`
+argument of
+[`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md):
 
 ``` r
 
-trial <- trial(...) ## initialize a trial with necessary arguments in ...
+trial <- trial(..., ## necessary arguments in ...
+               global_data = list(fwer = 0.025))
 trial$add_arms(sample_ratio = c(1, 2, 1), pbo, low, high)
-
-trial$save_custom_data(value = 0.025, name = 'fwer')
 ```
 
-This auxiliary information can then be retrieved in later action
-functions to adjust boundaries or multiplicity procedures:
+Gathering all such parameters in one named list keeps
+[`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md)
+readable even when a design needs many of them—the list can be built
+beforehand and passed in a single argument. Global data is read-only: it
+cannot be modified, extended or removed afterwards, which guarantees
+that all replicates of a simulation see the identical set of global
+data.
+
+This global data can then be retrieved in later action functions to
+adjust boundaries or multiplicity procedures:
 
 ``` r
 
 action_at_interim <- function(trial){
-  
+
   locked_data <- trial$get_locked_data('interim analysis')
-  
+
   ## compute p-values of PFS and OS at interim
   ## then extract FWER
-  alpha <- trial$get(name = 'fwer')
-  
+  alpha <- trial$get_global_data(name = 'fwer')
+
   ## compute decision boundaries at interim based on FWER
   ## then test PFS and OS
   
@@ -471,25 +507,71 @@ action_at_final <- function(trial){
   
   ## compute p-values of PFS and OS at final
   ## then extract FWER and testing result at interim to adjust boundaries
-  alpha <- trial$get(name = 'fwer')
+  alpha <- trial$get_global_data(name = 'fwer')
   # interim_results <- trial$get_output(...)
-  
+
   ## test PFS and OS again
-  
+
   ## save testing results for final
   # trial$save(...)
-  
+
 }
 ```
+
+#### Example 4: carrying a testing procedure object across milestones
+
+Global data and auxiliary information work together when a stateful
+object, e.g., an R6 object implementing a graphical testing procedure,
+must be updated at every milestone. Define the as-designed object once
+as global data; in each replicate, start from that template, and carry
+the updated object forward as auxiliary information:
+
+``` r
+
+trial <- trial(...,
+               global_data = list(gt_template = GraphicalTesting$new(...)))
+
+action_at_interim <- function(trial){
+
+  ## get_global_data() returns an independent copy of the template, so
+  ## this replicate can never change the registered as-designed object
+  gt <- trial$get_global_data('gt_template')
+
+  ## test hypotheses with p-values computed at this milestone
+  ## gt$test(...)
+
+  ## carry the updated object forward to later milestones
+  trial$save_custom_data(gt, name = 'gt')
+
+}
+
+action_at_final <- function(trial){
+
+  ## the object as updated at the interim analysis of this replicate
+  gt <- trial$get('gt')
+
+  ## test hypotheses with p-values computed at this milestone
+  ## gt$test(...)
+
+  trial$save_custom_data(gt, name = 'gt', overwrite = TRUE)
+
+}
+```
+
+Because auxiliary information is cleared before every replicate, each
+simulated trial starts again from the pristine template—no state can
+leak from one replicate into the next.
 
 In summary, `TrialSimulator` provides a structured saving system that
 allows users to:
 
 - record scalar results directly into trial outputs;
 
-- carry forward complex objects across milestones, and
+- carry forward complex objects across milestones;
 
-- accumulate data frames across multiple milestones.
+- accumulate data frames across multiple milestones, and
+
+- define read-only global data shared by all replicates.
 
 This ensures smooth information flow between milestones and avoids
 ad-hoc workarounds such as global variables.

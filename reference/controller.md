@@ -57,12 +57,12 @@ trial <- trial(name = 'trial',
                enroller = StaggeredRecruiter,
                accrual_rate = accrual_rate,
                dropout = rweibull, shape = 2, scale = 38)
-#> Seed is not specified. TrialSimulator sets it to 1379294730
+#> Seed is not specified. TrialSimulator sets it to <1379294730>. 
 
 trial$add_arms(sample_ratio = c(1, 1), control, active)
 #> Arm(s) <control arm, active arm> are added to the trial. 
-#> Randomization is done for 1 potential patients. 
-#> Data of 1000 potential patients are generated for the trial with 2 arm(s) <control arm, active arm>. 
+#> Randomization is done for <1> potential patients. 
+#> Data of <1000> potential patients are generated for the trial with <2> arm(s) <control arm, active arm>. 
 
 action_at_final <- function(trial){
   locked_data <- trial$get_locked_data('final analysis')
@@ -82,7 +82,7 @@ listener$add_milestones(final)
 controller <- controller(trial, listener)
 controller$run(n = 1)
 #> Condition of milestone <final analysis> is being checked. 
-#> Data is locked at time = 40 for milestone <final analysis>.
+#> Data is locked at time = <40> for milestone <final analysis>.
 #> Locked data can be accessed in Trial$get_locked_data('final analysis'). 
 #> Number of events at lock time: 
 #>   PFS patient         arms

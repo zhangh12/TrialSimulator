@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.37.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.38.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -255,8 +255,8 @@ reproducibility.</p>
 <span></span>
 <span><span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, <span class="va">low</span>, <span class="va">high</span>, <span class="va">pbo</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Arm(s) &lt;low dose, high dose, placebo&gt; are added to the trial.</span></span>
-<span><span class="co">#&gt; Randomization is done for 1 potential patients.</span></span>
-<span><span class="co">#&gt; Data of 1000 potential patients are generated for the trial with 3 arm(s) &lt;low dose, high dose, placebo&gt;.</span></span></code></pre></div>
+<span><span class="co">#&gt; Randomization is done for &lt;1&gt; potential patients.</span></span>
+<span><span class="co">#&gt; Data of &lt;1000&gt; potential patients are generated for the trial with &lt;3&gt; arm(s) &lt;low dose, high dose, placebo&gt;.</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="define-trial-milestones-and-action-functions">Define Trial Milestones and Action Functions<a class="anchor" aria-label="anchor" href="#define-trial-milestones-and-action-functions"></a>
@@ -412,21 +412,21 @@ replicates is run to save time.</p>
 <code class="sourceCode R"><span><span class="va">controller</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/controller.html">controller</a></span><span class="op">(</span><span class="va">trial</span>, <span class="va">listener</span><span class="op">)</span></span>
 <span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>plot_event <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;dose selection&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 11.1538461538462 for milestone &lt;dose selection&gt;.</span></span>
+<span><span class="co">#&gt; Data is locked at time = &lt;11.1538461538462&gt; for milestone &lt;dose selection&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('dose selection'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   pfs os surrogate patient         arms</span></span>
 <span><span class="co">#&gt; 1 137 72       300     357 c("high ....</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;interim&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 16.2818127953581 for milestone &lt;interim&gt;.</span></span>
+<span><span class="co">#&gt; Data is locked at time = &lt;16.2818127953581&gt; for milestone &lt;interim&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('interim'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   pfs  os surrogate patient         arms</span></span>
 <span><span class="co">#&gt; 1 300 154       556     614 c("high ....</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;final&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 24 for milestone &lt;final&gt;.</span></span>
+<span><span class="co">#&gt; Data is locked at time = &lt;24&gt; for milestone &lt;final&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('final'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   pfs  os surrogate patient         arms</span></span>

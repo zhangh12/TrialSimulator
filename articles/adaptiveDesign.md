@@ -151,8 +151,8 @@ trial <- trial(
 
 trial$add_arms(sample_ratio = c(1, 1, 1), low, high, pbo)
 #> Arm(s) <low dose, high dose, placebo> are added to the trial.
-#> Randomization is done for 1 potential patients.
-#> Data of 1000 potential patients are generated for the trial with 3 arm(s) <low dose, high dose, placebo>.
+#> Randomization is done for <1> potential patients.
+#> Data of <1000> potential patients are generated for the trial with <3> arm(s) <low dose, high dose, placebo>.
 ```
 
 ## Define Trial Milestones and Action Functions
@@ -326,21 +326,21 @@ simulation replicates is run to save time.
 controller <- controller(trial, listener)
 controller$run(plot_event = TRUE)
 #> Condition of milestone <dose selection> is being checked.
-#> Data is locked at time = 11.1538461538462 for milestone <dose selection>.
+#> Data is locked at time = <11.1538461538462> for milestone <dose selection>.
 #> Locked data can be accessed in Trial$get_locked_data('dose selection'). 
 #> Number of events at lock time:
 #>   pfs os surrogate patient         arms
 #> 1 137 72       300     357 c("high ....
 #> 
 #> Condition of milestone <interim> is being checked.
-#> Data is locked at time = 16.2818127953581 for milestone <interim>.
+#> Data is locked at time = <16.2818127953581> for milestone <interim>.
 #> Locked data can be accessed in Trial$get_locked_data('interim'). 
 #> Number of events at lock time:
 #>   pfs  os surrogate patient         arms
 #> 1 300 154       556     614 c("high ....
 #> 
 #> Condition of milestone <final> is being checked.
-#> Data is locked at time = 24 for milestone <final>.
+#> Data is locked at time = <24> for milestone <final>.
 #> Locked data can be accessed in Trial$get_locked_data('final'). 
 #> Number of events at lock time:
 #>   pfs  os surrogate patient         arms

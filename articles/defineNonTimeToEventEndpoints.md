@@ -146,13 +146,13 @@ trial <- trial(
   enroller = StaggeredRecruiter, accrual_rate = accrual_rate, 
   dropout = rweibull, scale = 30.636, shape = 1.939
 )
-#> Seed is not specified. TrialSimulator sets it to 1680176743
+#> Seed is not specified. TrialSimulator sets it to <1680176743>.
 
 ## add arms to the trial
 trial$add_arms(sample_ratio = c(1, 1), trt, pbo)
 #> Arm(s) <treatment, placebo> are added to the trial.
-#> Randomization is done for 1 potential patients.
-#> Data of 420 potential patients are generated for the trial with 2 arm(s) <treatment, placebo>.
+#> Randomization is done for <1> potential patients.
+#> Data of <420> potential patients are generated for the trial with <2> arm(s) <treatment, placebo>.
 trial
 #>  ⚕⚕         Trial Name:  Trial-31415  
 #>  ⚕⚕        Description:  Example Clinical Trial  
@@ -226,21 +226,21 @@ listener$add_milestones(interim, random, final)
 controller <- controller(trial, listener)
 controller$run()
 #> Condition of milestone <interim> is being checked.
-#> Data is locked at time = 8.05 for milestone <interim>.
+#> Data is locked at time = <8.05> for milestone <interim>.
 #> Locked data can be accessed in Trial$get_locked_data('interim'). 
 #> Number of events at lock time:
 #>   cfb orr patient         arms
 #> 1  20  60     101 c("place....
 #> 
 #> Condition of milestone <random> is being checked.
-#> Data is locked at time = 14.1 for milestone <random>.
+#> Data is locked at time = <14.1> for milestone <random>.
 #> Locked data can be accessed in Trial$get_locked_data('random'). 
 #> Number of events at lock time:
 #>   cfb orr patient         arms
 #> 1  98 180     222 c("place....
 #> 
 #> Condition of milestone <final> is being checked.
-#> Data is locked at time = 30 for milestone <final>.
+#> Data is locked at time = <30> for milestone <final>.
 #> Locked data can be accessed in Trial$get_locked_data('final'). 
 #> Number of events at lock time:
 #>   cfb orr patient         arms

@@ -65,10 +65,15 @@ is reset to NULL in next simulated trial. Saved results
 can be retrieved by calling get() anytime.
 $save_custom_data() save intermediate results of any format.
 The life cycle of the saved result is within a single replicate of simulation
-and is reset to NULL in next simulated trial. Saved results can be retrieved
+and is cleared before the next simulated trial. Saved results can be retrieved
 by calling get() anytime.
 $get() retrieve intermediate results saved by calling functions
 save_custom_data() or bind().
+$get_global_data() retrieve read-only data registered through
+the global_data argument of trial(), e.g., design
+parameters or a template object of a testing procedure, which is
+available in every replicate of a simulation. R6 objects are returned as
+independent deep clones so the registered template is never changed.
 $get_output() retrieve intermediate results saved by calling
 function save().
 
@@ -112,7 +117,8 @@ Internal machinery. The remaining public methods
 $get_data_lock_time_by_event_number(),
 $get_data_lock_time_by_enrollment(), $has_arm(),
 $event_plot(), $mute(), $tidy_output(), $reset(),
-$make_arms_snapshot() and $pop_milestone_updates()) are
+$make_arms_snapshot(), $has_been_run() and
+$pop_milestone_updates()) are
 public only because they are invoked on
 a trial object by other components of the package (milestones, listeners,
 controllers and triggering conditions), which R6 cannot grant through
@@ -184,10 +190,15 @@ is reset to NULL in next simulated trial. Saved results
 can be retrieved by calling get() anytime.
 $save_custom_data() save intermediate results of any format.
 The life cycle of the saved result is within a single replicate of simulation
-and is reset to NULL in next simulated trial. Saved results can be retrieved
+and is cleared before the next simulated trial. Saved results can be retrieved
 by calling get() anytime.
 $get() retrieve intermediate results saved by calling functions
 save_custom_data() or bind().
+$get_global_data() retrieve read-only data registered through
+the global_data argument of trial(), e.g., design
+parameters or a template object of a testing procedure, which is
+available in every replicate of a simulation. R6 objects are returned as
+independent deep clones so the registered template is never changed.
 $get_output() retrieve intermediate results saved by calling
 function save().
 
@@ -231,7 +242,8 @@ Internal machinery. The remaining public methods
 $get_data_lock_time_by_event_number(),
 $get_data_lock_time_by_enrollment(), $has_arm(),
 $event_plot(), $mute(), $tidy_output(), $reset(),
-$make_arms_snapshot() and $pop_milestone_updates()) are
+$make_arms_snapshot(), $has_been_run() and
+$pop_milestone_updates()) are
 public only because they are invoked on
 a trial object by other components of the package (milestones, listeners,
 controllers and triggering conditions), which R6 cannot grant through
@@ -245,7 +257,7 @@ too, but they are part of the user-facing API above at the same time."><meta pro
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.37.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.38.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -353,10 +365,15 @@ is reset to NULL in next simulated trial. Saved results
 can be retrieved by calling <code><a href="https://rdrr.io/r/base/get.html" class="external-link">get()</a></code> anytime.</p></li>
 <li><p><code>$save_custom_data()</code> save intermediate results of any format.
 The life cycle of the saved result is within a single replicate of simulation
-and is reset to NULL in next simulated trial. Saved results can be retrieved
+and is cleared before the next simulated trial. Saved results can be retrieved
 by calling <code><a href="https://rdrr.io/r/base/get.html" class="external-link">get()</a></code> anytime.</p></li>
 <li><p><code>$get()</code> retrieve intermediate results saved by calling functions
 <code>save_custom_data()</code> or <code>bind()</code>.</p></li>
+<li><p><code>$get_global_data()</code> retrieve read-only data registered through
+the <code>global_data</code> argument of <code><a href="trial.html">trial()</a></code>, e.g., design
+parameters or a template object of a testing procedure, which is
+available in every replicate of a simulation. R6 objects are returned as
+independent deep clones so the registered template is never changed.</p></li>
 <li><p><code>$get_output()</code> retrieve intermediate results saved by calling
 function <code><a href="https://rdrr.io/r/base/save.html" class="external-link">save()</a></code>.</p></li>
 </ul><p>Trial status queries:</p><ul><li><p><code>$get_current_time()</code> return the triggering time of the
@@ -389,7 +406,8 @@ and must not be called within action functions.</p></li>
 <code>$get_data_lock_time_by_event_number()</code>,
 <code>$get_data_lock_time_by_enrollment()</code>, <code>$has_arm()</code>,
 <code>$event_plot()</code>, <code>$mute()</code>, <code>$tidy_output()</code>, <code>$reset()</code>,
-<code>$make_arms_snapshot()</code> and <code>$pop_milestone_updates()</code>) are
+<code>$make_arms_snapshot()</code>, <code>$has_been_run()</code> and
+<code>$pop_milestone_updates()</code>) are
 public only because they are invoked on
 a trial object by other components of the package (milestones, listeners,
 controllers and triggering conditions), which R6 cannot grant through
@@ -426,6 +444,7 @@ too, but they are part of the user-facing API above at the same time.</p>
 <li><p><a href="#method-Trials-save_custom_data"><code>Trials$save_custom_data()</code></a></p></li>
 <li><p><a href="#method-Trials-get_custom_data"><code>Trials$get_custom_data()</code></a></p></li>
 <li><p><a href="#method-Trials-get"><code>Trials$get()</code></a></p></li>
+<li><p><a href="#method-Trials-get_global_data"><code>Trials$get_global_data()</code></a></p></li>
 <li><p><a href="#method-Trials-get_current_time"><code>Trials$get_current_time()</code></a></p></li>
 <li><p><a href="#method-Trials-get_milestone_time"><code>Trials$get_milestone_time()</code></a></p></li>
 <li><p><a href="#method-Trials-get_sample_ratio"><code>Trials$get_sample_ratio()</code></a></p></li>
@@ -445,6 +464,7 @@ too, but they are part of the user-facing API above at the same time.</p>
 <li><p><a href="#method-Trials-tidy_output"><code>Trials$tidy_output()</code></a></p></li>
 <li><p><a href="#method-Trials-reset"><code>Trials$reset()</code></a></p></li>
 <li><p><a href="#method-Trials-make_arms_snapshot"><code>Trials$make_arms_snapshot()</code></a></p></li>
+<li><p><a href="#method-Trials-has_been_run"><code>Trials$has_been_run()</code></a></p></li>
 <li><p><a href="#method-Trials-pop_milestone_updates"><code>Trials$pop_milestone_updates()</code></a></p></li>
 <li><p><a href="#method-Trials-print"><code>Trials$print()</code></a></p></li>
 <li><p><a href="#method-Trials-clone"><code>Trials$clone()</code></a></p></li>
@@ -460,6 +480,7 @@ too, but they are part of the user-facing API above at the same time.</p>
 <span>  enroller <span class="op">=</span> <span class="va">StaggeredRecruiter</span>,</span>
 <span>  dropout <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  stratification_factors <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  global_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  silent <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div><p></p></div>
@@ -516,6 +537,16 @@ characteristics share the same distribution across arms, but endpoints
 can have same or different distributions given baseline characteristics.
 <code>NULL</code> by default, i.e., unstratified permuted block randomization is
 executed.</p></dd>
+
+
+<dt><code>global_data</code></dt>
+<dd><p>a list with named components, e.g., design
+parameters or a template object of a testing procedure, to be shared
+by all replicates of a simulation. It is read-only and can be
+accessed in action functions by calling
+<code>Trials$get_global_data()</code>. For temporary results passed
+between action functions within a single replicate, use
+<code>Trials$save_custom_data()</code> instead.</p></dd>
 
 
 <dt><code>silent</code></dt>
@@ -1042,9 +1073,18 @@ multiple rows.</p></dd>
 
 </div><p></p><hr><a id="method-Trials-save_custom_data"></a><div class="section">
 <h3 id="method-save-custom-data-">Method <code>save_custom_data()</code><a class="anchor" aria-label="anchor" href="#method-save-custom-data-"></a></h3>
-<p>save arbitrary (number of) objects into a trial so that users can use
-those to control the workflow. Most common use case is to store
-simulation parameters to be used in action functions.</p><div class="section">
+<p>save temporary data into a trial to pass intermediate results between
+action functions of milestones within a single simulated trial, e.g.,
+a testing procedure object updated at every interim analysis. The
+saved data live only within the current replicate: the storage is
+cleared before every replicate, so nothing saved here can leak into
+the next replicate or be used to summarize a simulation (use
+<code>Trials$save()</code> for outputs, and the <code>global_data</code> argument
+of <code><a href="trial.html">trial()</a></code> for read-only data that must be available in all
+replicates). After <code>run()</code> returns, the storage still holds the
+data of the last replicate, which can be inspected like the rest of
+the trial's final state; the next <code>run()</code> clears it when it
+starts.</p><div class="section">
 <h4 id="usage-14">Usage<a class="anchor" aria-label="anchor" href="#usage-14"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">save_custom_data</span><span class="op">(</span><span class="va">value</span>, <span class="va">name</span>, overwrite <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -1052,7 +1092,7 @@ simulation parameters to be used in action functions.</p><div class="section">
 <div class="section">
 <h4 id="arguments-14">Arguments<a class="anchor" aria-label="anchor" href="#arguments-14"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>value</code></dt>
-<dd><p>value to be saved. Any type.</p></dd>
+<dd><p>value to be saved. Any type except <code>NULL</code>.</p></dd>
 
 
 <dt><code>name</code></dt>
@@ -1100,10 +1140,33 @@ or <code>Trials$bind()</code> with its name.</p><div class="section">
 </dl><p></p></div>
 </div>
 
+</div><p></p><hr><a id="method-Trials-get_global_data"></a><div class="section">
+<h3 id="method-get-global-data-">Method <code>get_global_data()</code><a class="anchor" aria-label="anchor" href="#method-get-global-data-"></a></h3>
+<p>return global data registered through the <code>global_data</code> argument
+of <code><a href="trial.html">trial()</a></code> with its name. Global data is read-only and
+available in every replicate of a simulation: an R6 object is
+returned as an independent deep clone and a <code>data.table</code> as a
+copy (also when nested inside plain lists), so updating the returned
+object never changes the registered template. To carry an updated
+object across milestones within a replicate, save the returned object
+with <code>Trials$save_custom_data()</code>.</p><div class="section">
+<h4 id="usage-17">Usage<a class="anchor" aria-label="anchor" href="#usage-17"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">get_global_data</span><span class="op">(</span><span class="va">name</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-17">Arguments<a class="anchor" aria-label="anchor" href="#arguments-17"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>name</code></dt>
+<dd><p>character. Name of global data to be accessed.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
 </div><p></p><hr><a id="method-Trials-get_current_time"></a><div class="section">
 <h3 id="method-get-current-time-">Method <code>get_current_time()</code><a class="anchor" aria-label="anchor" href="#method-get-current-time-"></a></h3>
 <p>return current time of a trial</p><div class="section">
-<h4 id="usage-17">Usage<a class="anchor" aria-label="anchor" href="#usage-17"></a></h4>
+<h4 id="usage-18">Usage<a class="anchor" aria-label="anchor" href="#usage-18"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">get_current_time</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1111,12 +1174,12 @@ or <code>Trials$bind()</code> with its name.</p><div class="section">
 </div><p></p><hr><a id="method-Trials-get_milestone_time"></a><div class="section">
 <h3 id="method-get-milestone-time-">Method <code>get_milestone_time()</code><a class="anchor" aria-label="anchor" href="#method-get-milestone-time-"></a></h3>
 <p>return milestone time when triggering a given milestone</p><div class="section">
-<h4 id="usage-18">Usage<a class="anchor" aria-label="anchor" href="#usage-18"></a></h4>
+<h4 id="usage-19">Usage<a class="anchor" aria-label="anchor" href="#usage-19"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">get_milestone_time</span><span class="op">(</span>milestone_name <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-17">Arguments<a class="anchor" aria-label="anchor" href="#arguments-17"></a></h4>
+<h4 id="arguments-18">Arguments<a class="anchor" aria-label="anchor" href="#arguments-18"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>milestone_name</code></dt>
 <dd><p>character. Name of milestone. If <code>NULL</code>,
 time of all triggered milestones are returned.</p></dd>
@@ -1129,12 +1192,12 @@ time of all triggered milestones are returned.</p></dd>
 <h3 id="method-get-sample-ratio-">Method <code>get_sample_ratio()</code><a class="anchor" aria-label="anchor" href="#method-get-sample-ratio-"></a></h3>
 <p>return current sample ratio of the trial. The ratio can probably change
 during the trial (e.g., arm is removed or added)</p><div class="section">
-<h4 id="usage-19">Usage<a class="anchor" aria-label="anchor" href="#usage-19"></a></h4>
+<h4 id="usage-20">Usage<a class="anchor" aria-label="anchor" href="#usage-20"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">get_sample_ratio</span><span class="op">(</span>arm_names <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-18">Arguments<a class="anchor" aria-label="anchor" href="#arguments-18"></a></h4>
+<h4 id="arguments-19">Arguments<a class="anchor" aria-label="anchor" href="#arguments-19"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>arm_names</code></dt>
 <dd><p>character vector of arms.</p></dd>
 
@@ -1145,7 +1208,7 @@ during the trial (e.g., arm is removed or added)</p><div class="section">
 </div><p></p><hr><a id="method-Trials-get_arms_name"></a><div class="section">
 <h3 id="method-get-arms-name-">Method <code>get_arms_name()</code><a class="anchor" aria-label="anchor" href="#method-get-arms-name-"></a></h3>
 <p>return arms' name of trial</p><div class="section">
-<h4 id="usage-20">Usage<a class="anchor" aria-label="anchor" href="#usage-20"></a></h4>
+<h4 id="usage-21">Usage<a class="anchor" aria-label="anchor" href="#usage-21"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">get_arms_name</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1154,7 +1217,7 @@ during the trial (e.g., arm is removed or added)</p><div class="section">
 <h3 id="method-dunnetttest-">Method <code>dunnettTest()</code><a class="anchor" aria-label="anchor" href="#method-dunnetttest-"></a></h3>
 <p>carry out closed test based on Dunnett method under group sequential
 design.</p><div class="section">
-<h4 id="usage-21">Usage<a class="anchor" aria-label="anchor" href="#usage-21"></a></h4>
+<h4 id="usage-22">Usage<a class="anchor" aria-label="anchor" href="#usage-22"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">dunnettTest</span><span class="op">(</span></span>
 <span>  <span class="va">formula</span>,</span>
 <span>  <span class="va">placebo</span>,</span>
@@ -1167,7 +1230,7 @@ design.</p><div class="section">
 </div>
 
 <div class="section">
-<h4 id="arguments-19">Arguments<a class="anchor" aria-label="anchor" href="#arguments-19"></a></h4>
+<h4 id="arguments-20">Arguments<a class="anchor" aria-label="anchor" href="#arguments-20"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>formula</code></dt>
 <dd><p>An object of class <code>formula</code> that can be used with
 <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code>. Must consist <code>arm</code> and endpoint in <code>data</code>.
@@ -1290,7 +1353,7 @@ trial$dunnettTest(Surv(pfs, pfs_event) ~ arm, 'pbo', c('high dose', 'low dose'),
 </div><p></p><hr><a id="method-Trials-closedTest"></a><div class="section">
 <h3 id="method-closedtest-">Method <code>closedTest()</code><a class="anchor" aria-label="anchor" href="#method-closedtest-"></a></h3>
 <p>perform closed test based on Dunnett test</p><div class="section">
-<h4 id="usage-22">Usage<a class="anchor" aria-label="anchor" href="#usage-22"></a></h4>
+<h4 id="usage-23">Usage<a class="anchor" aria-label="anchor" href="#usage-23"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">closedTest</span><span class="op">(</span></span>
 <span>  <span class="va">dunnett_test</span>,</span>
 <span>  <span class="va">treatments</span>,</span>
@@ -1301,7 +1364,7 @@ trial$dunnettTest(Surv(pfs, pfs_event) ~ arm, 'pbo', c('high dose', 'low dose'),
 </div>
 
 <div class="section">
-<h4 id="arguments-20">Arguments<a class="anchor" aria-label="anchor" href="#arguments-20"></a></h4>
+<h4 id="arguments-21">Arguments<a class="anchor" aria-label="anchor" href="#arguments-21"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>dunnett_test</code></dt>
 <dd><p>object returned by <code>Trial$dunnettTest()</code>.</p></dd>
 
@@ -1403,7 +1466,7 @@ quantities, although no further event will accrue on it. With a
 numeric <code>effect</code>, however, an error is raised for an arm
 removed before the milestone, as no allocation ratio of the pair is
 recorded at the milestone.</p><div class="section">
-<h4 id="usage-23">Usage<a class="anchor" aria-label="anchor" href="#usage-23"></a></h4>
+<h4 id="usage-24">Usage<a class="anchor" aria-label="anchor" href="#usage-24"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">conditionalPower</span><span class="op">(</span></span>
 <span>  <span class="va">milestone</span>,</span>
 <span>  <span class="va">formula</span>,</span>
@@ -1417,7 +1480,7 @@ recorded at the milestone.</p><div class="section">
 </div>
 
 <div class="section">
-<h4 id="arguments-21">Arguments<a class="anchor" aria-label="anchor" href="#arguments-21"></a></h4>
+<h4 id="arguments-22">Arguments<a class="anchor" aria-label="anchor" href="#arguments-22"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>milestone</code></dt>
 <dd><p>character. Name of a triggered milestone at which
 the interim results are observed.</p></dd>
@@ -1547,7 +1610,7 @@ is called internally to obtain, for every treatment arm vs
 <code>placebo</code>, the observed z statistic and the observed number of
 events <code>d</code> on the two arms of that comparison (after applying
 subset conditions in <code>...</code>, if any).</p><div class="section">
-<h4 id="usage-24">Usage<a class="anchor" aria-label="anchor" href="#usage-24"></a></h4>
+<h4 id="usage-25">Usage<a class="anchor" aria-label="anchor" href="#usage-25"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">eventNumberReestimationFromConditionalPower</span><span class="op">(</span></span>
 <span>  <span class="va">milestone</span>,</span>
 <span>  <span class="va">formula</span>,</span>
@@ -1562,7 +1625,7 @@ subset conditions in <code>...</code>, if any).</p><div class="section">
 </div>
 
 <div class="section">
-<h4 id="arguments-22">Arguments<a class="anchor" aria-label="anchor" href="#arguments-22"></a></h4>
+<h4 id="arguments-23">Arguments<a class="anchor" aria-label="anchor" href="#arguments-23"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>milestone</code></dt>
 <dd><p>character. Name of a triggered milestone at which
 the interim results are observed.</p></dd>
@@ -1744,12 +1807,12 @@ appended in-run by <code><a href="crossover.html">crossover()</a></code> do not 
 regimen object. The copy covers the regimen object itself; a mutable
 environment or R6 object captured by a <code>what</code>/<code>when</code>/<code>how</code>
 function is shared by design of R closures and is not isolated.</p><div class="section">
-<h4 id="usage-25">Usage<a class="anchor" aria-label="anchor" href="#usage-25"></a></h4>
+<h4 id="usage-26">Usage<a class="anchor" aria-label="anchor" href="#usage-26"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">add_regimen</span><span class="op">(</span><span class="va">regimen</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-23">Arguments<a class="anchor" aria-label="anchor" href="#arguments-23"></a></h4>
+<h4 id="arguments-24">Arguments<a class="anchor" aria-label="anchor" href="#arguments-24"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>regimen</code></dt>
 <dd><p>an object created by <code><a href="regimen.html">regimen()</a></code>.</p></dd>
 
@@ -1767,12 +1830,12 @@ DO NOT OVERWRITE/UPDATE private$trial_data! which can lose actual
 time-to-event information. For example, a patient may be censored at
 the first data lock. However, he may have event being observed in a
 later data lock.</p><div class="section">
-<h4 id="usage-26">Usage<a class="anchor" aria-label="anchor" href="#usage-26"></a></h4>
+<h4 id="usage-27">Usage<a class="anchor" aria-label="anchor" href="#usage-27"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">lock_data</span><span class="op">(</span><span class="va">at_calendar_time</span>, <span class="va">milestone_name</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-24">Arguments<a class="anchor" aria-label="anchor" href="#arguments-24"></a></h4>
+<h4 id="arguments-25">Arguments<a class="anchor" aria-label="anchor" href="#arguments-25"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>at_calendar_time</code></dt>
 <dd><p>time point to lock trial data</p></dd>
 
@@ -1790,12 +1853,12 @@ future reference.</p></dd>
 <p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>given the calendar time to lock the data, return it with event counts of
 each of the endpoints.</p><div class="section">
-<h4 id="usage-27">Usage<a class="anchor" aria-label="anchor" href="#usage-27"></a></h4>
+<h4 id="usage-28">Usage<a class="anchor" aria-label="anchor" href="#usage-28"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">get_data_lock_time_by_calendar_time</span><span class="op">(</span><span class="va">calendar_time</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-25">Arguments<a class="anchor" aria-label="anchor" href="#arguments-25"></a></h4>
+<h4 id="arguments-26">Arguments<a class="anchor" aria-label="anchor" href="#arguments-26"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>calendar_time</code></dt>
 <dd><p>numeric. Calendar time to lock the data</p></dd>
 
@@ -1814,7 +1877,7 @@ each of the endpoints.</p><div class="section">
 lock time for a milestone (futility, interim, final, etc.). This function does
 not change trial object (e.g. rolling back not yet randomized patients after
 the found data lock time).</p><div class="section">
-<h4 id="usage-28">Usage<a class="anchor" aria-label="anchor" href="#usage-28"></a></h4>
+<h4 id="usage-29">Usage<a class="anchor" aria-label="anchor" href="#usage-29"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">get_data_lock_time_by_event_number</span><span class="op">(</span></span>
 <span>  <span class="va">endpoints</span>,</span>
 <span>  <span class="va">arms</span>,</span>
@@ -1825,7 +1888,7 @@ the found data lock time).</p><div class="section">
 </div>
 
 <div class="section">
-<h4 id="arguments-26">Arguments<a class="anchor" aria-label="anchor" href="#arguments-26"></a></h4>
+<h4 id="arguments-27">Arguments<a class="anchor" aria-label="anchor" href="#arguments-27"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>endpoints</code></dt>
 <dd><p>character vector. Data lock time is determined by a set
 of endpoints.</p></dd>
@@ -1869,7 +1932,7 @@ lock time for a milestone (futility, interim, final, etc.). This function does
 not change trial object (e.g. rolling back not yet randomized patients after
 the found data lock time). It is similar to get_data_lock_time_by_event_number
 but only focus on patient_id.</p><div class="section">
-<h4 id="usage-29">Usage<a class="anchor" aria-label="anchor" href="#usage-29"></a></h4>
+<h4 id="usage-30">Usage<a class="anchor" aria-label="anchor" href="#usage-30"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">get_data_lock_time_by_enrollment</span><span class="op">(</span></span>
 <span>  <span class="va">arms</span>,</span>
 <span>  <span class="va">target_n_patients</span>,</span>
@@ -1879,7 +1942,7 @@ but only focus on patient_id.</p><div class="section">
 </div>
 
 <div class="section">
-<h4 id="arguments-27">Arguments<a class="anchor" aria-label="anchor" href="#arguments-27"></a></h4>
+<h4 id="arguments-28">Arguments<a class="anchor" aria-label="anchor" href="#arguments-28"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>arms</code></dt>
 <dd><p>a vector of arms' name on which number of patients will be
 counted. If <code>NULL</code>, arms in the trial when this function is
@@ -1920,7 +1983,7 @@ Time of milestone is based on event counts on the subset of trial data.</p></dd>
 <h3 id="method-has-arm-">Method <code>has_arm()</code><a class="anchor" aria-label="anchor" href="#method-has-arm-"></a></h3>
 <p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>check if the trial has any arm. Return <code>TRUE</code> or <code>FALSE</code>.</p><div class="section">
-<h4 id="usage-30">Usage<a class="anchor" aria-label="anchor" href="#usage-30"></a></h4>
+<h4 id="usage-31">Usage<a class="anchor" aria-label="anchor" href="#usage-31"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">has_arm</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1929,7 +1992,7 @@ Time of milestone is based on event counts on the subset of trial data.</p></dd>
 <h3 id="method-event-plot-">Method <code>event_plot()</code><a class="anchor" aria-label="anchor" href="#method-event-plot-"></a></h3>
 <p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>plot of cumulative number of events/samples over calendar time.</p><div class="section">
-<h4 id="usage-31">Usage<a class="anchor" aria-label="anchor" href="#usage-31"></a></h4>
+<h4 id="usage-32">Usage<a class="anchor" aria-label="anchor" href="#usage-32"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">event_plot</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1938,12 +2001,12 @@ Time of milestone is based on event counts on the subset of trial data.</p></dd>
 <h3 id="method-mute-">Method <code>mute()</code><a class="anchor" aria-label="anchor" href="#method-mute-"></a></h3>
 <p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>mute all messages (not including warnings)</p><div class="section">
-<h4 id="usage-32">Usage<a class="anchor" aria-label="anchor" href="#usage-32"></a></h4>
+<h4 id="usage-33">Usage<a class="anchor" aria-label="anchor" href="#usage-33"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">mute</span><span class="op">(</span><span class="va">silent</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-28">Arguments<a class="anchor" aria-label="anchor" href="#arguments-28"></a></h4>
+<h4 id="arguments-29">Arguments<a class="anchor" aria-label="anchor" href="#arguments-29"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>silent</code></dt>
 <dd><p>logical.</p></dd>
 
@@ -1957,12 +2020,12 @@ Time of milestone is based on event counts on the subset of trial data.</p></dd>
 <p>control whether the per-arm event count table is saved in trial
 output at every milestone. It is set by <code>controller$run()</code>
 through its argument <code>tidy</code>.</p><div class="section">
-<h4 id="usage-33">Usage<a class="anchor" aria-label="anchor" href="#usage-33"></a></h4>
+<h4 id="usage-34">Usage<a class="anchor" aria-label="anchor" href="#usage-34"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">tidy_output</span><span class="op">(</span><span class="va">tidy</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-29">Arguments<a class="anchor" aria-label="anchor" href="#arguments-29"></a></h4>
+<h4 id="arguments-30">Arguments<a class="anchor" aria-label="anchor" href="#arguments-30"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>tidy</code></dt>
 <dd><p>logical. If <code>TRUE</code>, the per-arm event count table
 (output column <code>n_events_&lt;milestone&gt;_&lt;arms&gt;</code>) is not saved in
@@ -1981,7 +2044,7 @@ so <code>event_plot()</code> is unaffected.</p></dd>
 reassigned with a new one. Enrollment time are re-generated. If the trial
 already have arms when this function is called, they are added back to
 recruit patients again.</p><div class="section">
-<h4 id="usage-34">Usage<a class="anchor" aria-label="anchor" href="#usage-34"></a></h4>
+<h4 id="usage-35">Usage<a class="anchor" aria-label="anchor" href="#usage-35"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">reset</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -1990,8 +2053,21 @@ recruit patients again.</p><div class="section">
 <h3 id="method-make-arms-snapshot-">Method <code>make_arms_snapshot()</code><a class="anchor" aria-label="anchor" href="#method-make-arms-snapshot-"></a></h3>
 <p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
 <p>make a snapshot of arms</p><div class="section">
-<h4 id="usage-35">Usage<a class="anchor" aria-label="anchor" href="#usage-35"></a></h4>
+<h4 id="usage-36">Usage<a class="anchor" aria-label="anchor" href="#usage-36"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">make_arms_snapshot</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+
+</div><p></p><hr><a id="method-Trials-has_been_run"></a><div class="section">
+<h3 id="method-has-been-run-">Method <code>has_been_run()</code><a class="anchor" aria-label="anchor" href="#method-has-been-run-"></a></h3>
+<p><strong>INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.</strong></p>
+<p>report whether the trial has left its as-designed state, i.e., at
+least one replicate has been (partially) executed on it. The
+controller refuses to start <code>run()</code> on such a trial: wrapping an
+already-run trial in a new controller would otherwise bypass the
+run-twice guard and simulate from a dirty state.</p><div class="section">
+<h4 id="usage-37">Usage<a class="anchor" aria-label="anchor" href="#usage-37"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">has_been_run</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 
@@ -2002,7 +2078,7 @@ recruit patients again.</p><div class="section">
 <code><a href="update_milestone.html">update_milestone()</a></code> within the current action function. It is
 called by the listener right after each action function returns, to
 apply the requested updates to its registered milestones.</p><div class="section">
-<h4 id="usage-36">Usage<a class="anchor" aria-label="anchor" href="#usage-36"></a></h4>
+<h4 id="usage-38">Usage<a class="anchor" aria-label="anchor" href="#usage-38"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">pop_milestone_updates</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -2010,7 +2086,7 @@ apply the requested updates to its registered milestones.</p><div class="section
 </div><p></p><hr><a id="method-Trials-print"></a><div class="section">
 <h3 id="method-print-">Method <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code><a class="anchor" aria-label="anchor" href="#method-print-"></a></h3>
 <p>print a trial</p><div class="section">
-<h4 id="usage-37">Usage<a class="anchor" aria-label="anchor" href="#usage-37"></a></h4>
+<h4 id="usage-39">Usage<a class="anchor" aria-label="anchor" href="#usage-39"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">print</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -2018,12 +2094,12 @@ apply the requested updates to its registered milestones.</p><div class="section
 </div><p></p><hr><a id="method-Trials-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-38">Usage<a class="anchor" aria-label="anchor" href="#usage-38"></a></h4>
+<h4 id="usage-40">Usage<a class="anchor" aria-label="anchor" href="#usage-40"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Trials</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-30">Arguments<a class="anchor" aria-label="anchor" href="#arguments-30"></a></h4>
+<h4 id="arguments-31">Arguments<a class="anchor" aria-label="anchor" href="#arguments-31"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

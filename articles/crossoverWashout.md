@@ -245,7 +245,7 @@ listener$add_milestones(final)
 controller <- controller(trial, listener)
 controller$run(n = 1, plot_event = TRUE)
 #> Condition of milestone <final> is being checked.
-#> Data is locked at time = 25.5 for milestone <final>.
+#> Data is locked at time = <25.5> for milestone <final>.
 #> Locked data can be accessed in Trial$get_locked_data('final'). 
 #> Number of events at lock time:
 #>   baseline1 ep1 baseline2 ep2 baseline3 ep3 baseline4 ep4 patient         arms

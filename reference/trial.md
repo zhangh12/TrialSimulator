@@ -31,6 +31,7 @@ trial(
   enroller = StaggeredRecruiter,
   dropout = NULL,
   stratification_factors = NULL,
+  global_data = list(),
   silent = FALSE,
   ...
 )
@@ -89,6 +90,16 @@ trial(
   same distribution across arms, but endpoints can have same or
   different distributions given baseline characteristics. `NULL` by
   default, i.e., unstratified permuted block randomization is executed.
+
+- global_data:
+
+  a list with named components, e.g., design parameters or a template
+  object of a testing procedure, to be shared by all replicates of a
+  simulation. It is read-only and can be accessed in action functions by
+  calling `trial$get_global_data(name)`. For temporary results passed
+  between action functions within a single replicate, use
+  `trial$save_custom_data()` instead. See
+  [`vignette('actionFunctions', package = 'TrialSimulator')`](https://zhangh12.github.io/TrialSimulator/articles/actionFunctions.md).
 
 - silent:
 
@@ -161,8 +172,8 @@ trial
 
 trial$add_arms(sample_ratio = c(1, 2), placebo, active)
 #> Arm(s) <pbo, ac> are added to the trial. 
-#> Randomization is done for 1 potential patients. 
-#> Data of 100 potential patients are generated for the trial with 2 arm(s) <pbo, ac>. 
+#> Randomization is done for <1> potential patients. 
+#> Data of <100> potential patients are generated for the trial with <2> arm(s) <pbo, ac>. 
 
 ## updated information after arms are registered
 trial

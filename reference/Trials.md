@@ -83,12 +83,20 @@ Data access and manipulation:
 
 - `$save_custom_data()` save intermediate results of any format. The
   life cycle of the saved result is within a single replicate of
-  simulation and is reset to NULL in next simulated trial. Saved results
-  can be retrieved by calling [`get()`](https://rdrr.io/r/base/get.html)
-  anytime.
+  simulation and is cleared before the next simulated trial. Saved
+  results can be retrieved by calling
+  [`get()`](https://rdrr.io/r/base/get.html) anytime.
 
 - `$get()` retrieve intermediate results saved by calling functions
   `save_custom_data()` or `bind()`.
+
+- `$get_global_data()` retrieve read-only data registered through the
+  `global_data` argument of
+  [`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md),
+  e.g., design parameters or a template object of a testing procedure,
+  which is available in every replicate of a simulation. R6 objects are
+  returned as independent deep clones so the registered template is
+  never changed.
 
 - `$get_output()` retrieve intermediate results saved by calling
   function [`save()`](https://rdrr.io/r/base/save.html).
@@ -137,13 +145,14 @@ Statistical testing:
 `$get_data_lock_time_by_calendar_time()`,
 `$get_data_lock_time_by_event_number()`,
 `$get_data_lock_time_by_enrollment()`, `$has_arm()`, `$event_plot()`,
-`$mute()`, `$tidy_output()`, `$reset()`, `$make_arms_snapshot()` and
-`$pop_milestone_updates()`) are public only because they are invoked on
-a trial object by other components of the package (milestones,
-listeners, controllers and triggering conditions), which R6 cannot grant
-through private members. Users should not call them directly. Note that
-`$save()` and `$get_output()` are invoked by those components too, but
-they are part of the user-facing API above at the same time.
+`$mute()`, `$tidy_output()`, `$reset()`, `$make_arms_snapshot()`,
+`$has_been_run()` and `$pop_milestone_updates()`) are public only
+because they are invoked on a trial object by other components of the
+package (milestones, listeners, controllers and triggering conditions),
+which R6 cannot grant through private members. Users should not call
+them directly. Note that `$save()` and `$get_output()` are invoked by
+those components too, but they are part of the user-facing API above at
+the same time.
 
 ## Value
 
@@ -189,6 +198,8 @@ to create a trial.
 
 - [`Trials$get()`](#method-Trials-get)
 
+- [`Trials$get_global_data()`](#method-Trials-get_global_data)
+
 - [`Trials$get_current_time()`](#method-Trials-get_current_time)
 
 - [`Trials$get_milestone_time()`](#method-Trials-get_milestone_time)
@@ -227,6 +238,8 @@ to create a trial.
 
 - [`Trials$make_arms_snapshot()`](#method-Trials-make_arms_snapshot)
 
+- [`Trials$has_been_run()`](#method-Trials-has_been_run)
+
 - [`Trials$pop_milestone_updates()`](#method-Trials-pop_milestone_updates)
 
 - [`Trials$print()`](#method-Trials-print)
@@ -249,6 +262,7 @@ initialize a trial
       enroller = StaggeredRecruiter,
       dropout = NULL,
       stratification_factors = NULL,
+      global_data = list(),
       silent = FALSE,
       ...
     )
@@ -305,6 +319,15 @@ initialize a trial
   same distribution across arms, but endpoints can have same or
   different distributions given baseline characteristics. `NULL` by
   default, i.e., unstratified permuted block randomization is executed.
+
+- `global_data`:
+
+  a list with named components, e.g., design parameters or a template
+  object of a testing procedure, to be shared by all replicates of a
+  simulation. It is read-only and can be accessed in action functions by
+  calling `Trials$get_global_data()`. For temporary results passed
+  between action functions within a single replicate, use
+  `Trials$save_custom_data()` instead.
 
 - `silent`:
 
@@ -840,9 +863,18 @@ are used for summarizing the simulation.
 
 ### Method `save_custom_data()`
 
-save arbitrary (number of) objects into a trial so that users can use
-those to control the workflow. Most common use case is to store
-simulation parameters to be used in action functions.
+save temporary data into a trial to pass intermediate results between
+action functions of milestones within a single simulated trial, e.g., a
+testing procedure object updated at every interim analysis. The saved
+data live only within the current replicate: the storage is cleared
+before every replicate, so nothing saved here can leak into the next
+replicate or be used to summarize a simulation (use `Trials$save()` for
+outputs, and the `global_data` argument of
+[`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md)
+for read-only data that must be available in all replicates). After
+`run()` returns, the storage still holds the data of the last replicate,
+which can be inspected like the rest of the trial's final state; the
+next `run()` clears it when it starts.
 
 #### Usage
 
@@ -852,7 +884,7 @@ simulation parameters to be used in action functions.
 
 - `value`:
 
-  value to be saved. Any type.
+  value to be saved. Any type except `NULL`.
 
 - `name`:
 
@@ -895,6 +927,29 @@ alias of function `get_custom_data` to make it short and cool.
 - `name`:
 
   character. Name of custom data to be accessed.
+
+------------------------------------------------------------------------
+
+### Method `get_global_data()`
+
+return global data registered through the `global_data` argument of
+[`trial()`](https://zhangh12.github.io/TrialSimulator/reference/trial.md)
+with its name. Global data is read-only and available in every replicate
+of a simulation: an R6 object is returned as an independent deep clone
+and a `data.table` as a copy (also when nested inside plain lists), so
+updating the returned object never changes the registered template. To
+carry an updated object across milestones within a replicate, save the
+returned object with `Trials$save_custom_data()`.
+
+#### Usage
+
+    Trials$get_global_data(name)
+
+#### Arguments
+
+- `name`:
+
+  character. Name of global data to be accessed.
 
 ------------------------------------------------------------------------
 
@@ -1801,6 +1856,22 @@ make a snapshot of arms
 #### Usage
 
     Trials$make_arms_snapshot()
+
+------------------------------------------------------------------------
+
+### Method `has_been_run()`
+
+**INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.**
+
+report whether the trial has left its as-designed state, i.e., at least
+one replicate has been (partially) executed on it. The controller
+refuses to start `run()` on such a trial: wrapping an already-run trial
+in a new controller would otherwise bypass the run-twice guard and
+simulate from a dirty state.
+
+#### Usage
+
+    Trials$has_been_run()
 
 ------------------------------------------------------------------------
 

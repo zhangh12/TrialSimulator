@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.37.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.38.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,6 +52,22 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.38.0" id="trialsimulator-1380">TrialSimulator 1.38.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1380"></a></h2>
+<div class="section level3">
+<h3 id="breaking-changes-1-38-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-1-38-0"></a></h3>
+<ul><li>Custom data (<code>save_custom_data()</code>, <code><a href="https://rdrr.io/r/base/get.html" class="external-link">get()</a></code>, <code>bind()</code>) is now strictly replicate-local: entries saved in an action function no longer leak into the next replicate, and data saved before <code>run()</code> does not reach the replicates. After <code>run()</code>, the last replicate’s custom data remains available for inspection.</li>
+<li>
+<code>save_custom_data()</code> rejects a <code>NULL</code> value and requires <code>name</code> to be a non-empty character of length 1.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-features-1-38-0">New features<a class="anchor" aria-label="anchor" href="#new-features-1-38-0"></a></h3>
+<ul><li>
+<code><a href="../reference/trial.html">trial()</a></code> gains a read-only <code>global_data</code> argument: a named list of, e.g., design parameters or template objects of testing procedures, available in every replicate through <code>trial$get_global_data(name)</code>. R6 objects and <code>data.table</code>s are copied at registration and on every read, so registered entries can never be modified; see <code><a href="../articles/actionFunctions.html">vignette('actionFunctions')</a></code>.</li>
+<li>
+<code>controller$run()</code> refuses to start on a trial that has already been run and points to <code>reset()</code>, instead of failing at the first milestone with a misleading error.</li>
+</ul></div>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.37.0" id="trialsimulator-1370">TrialSimulator 1.37.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1370"></a></h2>
 <div class="section level3">
 <h3 id="breaking-changes-1-37-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-1-37-0"></a></h3>
@@ -94,7 +110,7 @@
 </ul></div>
 </div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.35.8" id="trialsimulator-1358">TrialSimulator 1.35.8<a class="anchor" aria-label="anchor" href="#trialsimulator-1358"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.35.8" id="trialsimulator-1358">TrialSimulator 1.35.8<a class="anchor" aria-label="anchor" href="#trialsimulator-1358"></a></h2><p class="text-muted">CRAN release: 2026-09-04</p>
 <div class="section level3">
 <h3 id="performance-1-35-8">Performance<a class="anchor" aria-label="anchor" href="#performance-1-35-8"></a></h3>
 <ul><li>

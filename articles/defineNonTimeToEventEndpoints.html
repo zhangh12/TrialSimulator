@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.37.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.38.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -227,13 +227,13 @@ function:</p>
 <span>  enroller <span class="op">=</span> <span class="va">StaggeredRecruiter</span>, accrual_rate <span class="op">=</span> <span class="va">accrual_rate</span>, </span>
 <span>  dropout <span class="op">=</span> <span class="va">rweibull</span>, scale <span class="op">=</span> <span class="fl">30.636</span>, shape <span class="op">=</span> <span class="fl">1.939</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Seed is not specified. TrialSimulator sets it to 1680176743</span></span>
+<span><span class="co">#&gt; Seed is not specified. TrialSimulator sets it to &lt;1680176743&gt;.</span></span>
 <span></span>
 <span><span class="co">## add arms to the trial</span></span>
 <span><span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, <span class="va">trt</span>, <span class="va">pbo</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Arm(s) &lt;treatment, placebo&gt; are added to the trial.</span></span>
-<span><span class="co">#&gt; Randomization is done for 1 potential patients.</span></span>
-<span><span class="co">#&gt; Data of 420 potential patients are generated for the trial with 2 arm(s) &lt;treatment, placebo&gt;.</span></span>
+<span><span class="co">#&gt; Randomization is done for &lt;1&gt; potential patients.</span></span>
+<span><span class="co">#&gt; Data of &lt;420&gt; potential patients are generated for the trial with &lt;2&gt; arm(s) &lt;treatment, placebo&gt;.</span></span>
 <span><span class="va">trial</span></span>
 <span><span class="co">#&gt;  ⚕⚕         Trial Name:  Trial-31415  </span></span>
 <span><span class="co">#&gt;  ⚕⚕        Description:  Example Clinical Trial  </span></span>
@@ -303,21 +303,21 @@ controller to monitor and execute the trial.</p>
 <span><span class="va">controller</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/controller.html">controller</a></span><span class="op">(</span><span class="va">trial</span>, <span class="va">listener</span><span class="op">)</span></span>
 <span><span class="va">controller</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;interim&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 8.05 for milestone &lt;interim&gt;.</span></span>
+<span><span class="co">#&gt; Data is locked at time = &lt;8.05&gt; for milestone &lt;interim&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('interim'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   cfb orr patient         arms</span></span>
 <span><span class="co">#&gt; 1  20  60     101 c("place....</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;random&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 14.1 for milestone &lt;random&gt;.</span></span>
+<span><span class="co">#&gt; Data is locked at time = &lt;14.1&gt; for milestone &lt;random&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('random'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   cfb orr patient         arms</span></span>
 <span><span class="co">#&gt; 1  98 180     222 c("place....</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Condition of milestone &lt;final&gt; is being checked.</span></span>
-<span><span class="co">#&gt; Data is locked at time = 30 for milestone &lt;final&gt;.</span></span>
+<span><span class="co">#&gt; Data is locked at time = &lt;30&gt; for milestone &lt;final&gt;.</span></span>
 <span><span class="co">#&gt; Locked data can be accessed in Trial$get_locked_data('final'). </span></span>
 <span><span class="co">#&gt; Number of events at lock time:</span></span>
 <span><span class="co">#&gt;   cfb orr patient         arms</span></span>

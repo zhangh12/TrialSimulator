@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.37.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.38.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -392,7 +392,7 @@ future milestones.</p>
 </h3>
 <p><code>TrialSimulator</code> offers dedicated member functions for
 saving intermediate results during a trial. The stored information can
-be broadly classified into two categories:</p>
+be broadly classified into three categories:</p>
 <ul>
 <li><p><strong>Trial output</strong>—results that directly contribute to
 the summary of trial operating characteristics (e.g., effect estimates,
@@ -411,7 +411,17 @@ function <code>trial$save_custom_data()</code>. To retrieve it later,
 simply call <code>trial$get()</code>. This mechanism provides a safe way
 to pass data across milestones without relying on global variables.
 Unlike <code>trial$save()</code>, <code>trial$save_custom_data()</code>
-can save any objects, which provides flexibility.</p></li>
+can save any objects, which provides flexibility. Auxiliary information
+is temporary by design: it lives within a single simulated trial, and
+the storage is cleared before the next replicate starts.</p></li>
+<li><p><strong>global data</strong>—read-only data that must be
+available in <em>every</em> replicate of a simulation, e.g., design
+parameters or a template object of a testing procedure. They are defined
+once, as a named list passed to the <code>global_data</code> argument of
+<code><a href="../reference/trial.html">trial()</a></code>, and retrieved with
+<code>trial$get_global_data()</code>. Entries can never be overwritten
+or removed, so every replicate sees the identical set of global
+data.</p></li>
 </ul>
 <p>In addition, a convenience function <code>trial$bind()</code> is
 provided for sequentially appending rows to a stored data frame—useful
@@ -434,7 +444,26 @@ all saved outputs available so far.</p></li>
 any type as auxiliary information as a temporary and private list within
 the trial.</p>
 <ul>
-<li>retrieved later by calling <code>trial$get(name)</code>.</li>
+<li><p>retrieved later by calling <code>trial$get(name)</code>.</p></li>
+<li><p>to update an existing entry, e.g., when carrying an evolving
+object across milestones, call it with
+<code>overwrite = TRUE</code>.</p></li>
+<li><p>the storage is cleared before every replicate, so nothing saved
+here can leak into the next simulated trial. After <code>run()</code>
+completes, it still holds the data of the last replicate, which can be
+inspected like the rest of the trial’s final state (e.g., milestone
+times); the next <code>run()</code> clears it when it starts.</p></li>
+</ul>
+</li>
+<li>
+<p><code>get_global_data(name)</code>: retrieves a component of the
+named list passed to the <code>global_data</code> argument of
+<code><a href="../reference/trial.html">trial()</a></code>.</p>
+<ul>
+<li>global data is read-only and identical in every replicate: it can
+only be set when the trial is defined, and the entry itself can never be
+changed—an R6 object is returned as an independent deep clone, so every
+replicate starts from the identical template.</li>
 </ul>
 </li>
 <li>
@@ -527,29 +556,34 @@ outputs and the auxiliary information:</p>
 <span><span class="op">}</span></span></code></pre></div>
 </div>
 <div class="section level4">
-<h4 id="example-3-defining-auxiliary-information-before-the-trial-runs">Example 3: defining auxiliary information before the trial runs<a class="anchor" aria-label="anchor" href="#example-3-defining-auxiliary-information-before-the-trial-runs"></a>
+<h4 id="example-3-defining-global-data-of-a-trial">Example 3: defining global data of a trial<a class="anchor" aria-label="anchor" href="#example-3-defining-global-data-of-a-trial"></a>
 </h4>
-<p>All member functions discussed in this section can be called before
-any milestone is triggered, as long as the <code>trial</code> object has
-been created by calling the function <code><a href="../reference/trial.html">trial()</a></code>. For example,
-we may want to define the level of family-wise error rate (FWER) once,
-and then use it later in interim and final analysis:</p>
+<p>Parameters that every replicate needs, e.g., the level of family-wise
+error rate (FWER), should not be saved as auxiliary information—that
+storage is cleared before each replicate. Instead, define them once when
+the trial is created, as a named list passed to the
+<code>global_data</code> argument of <code><a href="../reference/trial.html">trial()</a></code>:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">trial</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trial.html">trial</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span> <span class="co">## initialize a trial with necessary arguments in ...</span></span>
-<span><span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>, <span class="va">pbo</span>, <span class="va">low</span>, <span class="va">high</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">trial</span><span class="op">$</span><span class="fu">save_custom_data</span><span class="op">(</span>value <span class="op">=</span> <span class="fl">0.025</span>, name <span class="op">=</span> <span class="st">'fwer'</span><span class="op">)</span></span></code></pre></div>
-<p>This auxiliary information can then be retrieved in later action
-functions to adjust boundaries or multiplicity procedures:</p>
+<code class="sourceCode R"><span><span class="va">trial</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trial.html">trial</a></span><span class="op">(</span><span class="va">...</span>, <span class="co">## necessary arguments in ...</span></span>
+<span>               global_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>fwer <span class="op">=</span> <span class="fl">0.025</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">trial</span><span class="op">$</span><span class="fu">add_arms</span><span class="op">(</span>sample_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>, <span class="va">pbo</span>, <span class="va">low</span>, <span class="va">high</span><span class="op">)</span></span></code></pre></div>
+<p>Gathering all such parameters in one named list keeps
+<code><a href="../reference/trial.html">trial()</a></code> readable even when a design needs many of them—the
+list can be built beforehand and passed in a single argument. Global
+data is read-only: it cannot be modified, extended or removed
+afterwards, which guarantees that all replicates of a simulation see the
+identical set of global data.</p>
+<p>This global data can then be retrieved in later action functions to
+adjust boundaries or multiplicity procedures:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">action_at_interim</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span><span class="op">{</span></span>
-<span>  </span>
+<span></span>
 <span>  <span class="va">locked_data</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_locked_data</span><span class="op">(</span><span class="st">'interim analysis'</span><span class="op">)</span></span>
-<span>  </span>
+<span></span>
 <span>  <span class="co">## compute p-values of PFS and OS at interim</span></span>
 <span>  <span class="co">## then extract FWER</span></span>
-<span>  <span class="va">alpha</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'fwer'</span><span class="op">)</span></span>
-<span>  </span>
+<span>  <span class="va">alpha</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_global_data</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'fwer'</span><span class="op">)</span></span>
+<span></span>
 <span>  <span class="co">## compute decision boundaries at interim based on FWER</span></span>
 <span>  <span class="co">## then test PFS and OS</span></span>
 <span>  </span>
@@ -564,21 +598,64 @@ functions to adjust boundaries or multiplicity procedures:</p>
 <span>  </span>
 <span>  <span class="co">## compute p-values of PFS and OS at final</span></span>
 <span>  <span class="co">## then extract FWER and testing result at interim to adjust boundaries</span></span>
-<span>  <span class="va">alpha</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'fwer'</span><span class="op">)</span></span>
+<span>  <span class="va">alpha</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_global_data</span><span class="op">(</span>name <span class="op">=</span> <span class="st">'fwer'</span><span class="op">)</span></span>
 <span>  <span class="co"># interim_results &lt;- trial$get_output(...)</span></span>
-<span>  </span>
+<span></span>
 <span>  <span class="co">## test PFS and OS again</span></span>
-<span>  </span>
+<span></span>
 <span>  <span class="co">## save testing results for final</span></span>
 <span>  <span class="co"># trial$save(...)</span></span>
-<span>  </span>
+<span></span>
 <span><span class="op">}</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="example-4-carrying-a-testing-procedure-object-across-milestones">Example 4: carrying a testing procedure object across
+milestones<a class="anchor" aria-label="anchor" href="#example-4-carrying-a-testing-procedure-object-across-milestones"></a>
+</h4>
+<p>Global data and auxiliary information work together when a stateful
+object, e.g., an R6 object implementing a graphical testing procedure,
+must be updated at every milestone. Define the as-designed object once
+as global data; in each replicate, start from that template, and carry
+the updated object forward as auxiliary information:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">trial</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trial.html">trial</a></span><span class="op">(</span><span class="va">...</span>,</span>
+<span>               global_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>gt_template <span class="op">=</span> <span class="va"><a href="../reference/GraphicalTesting.html">GraphicalTesting</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">...</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">action_at_interim</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span><span class="op">{</span></span>
+<span></span>
+<span>  <span class="co">## get_global_data() returns an independent copy of the template, so</span></span>
+<span>  <span class="co">## this replicate can never change the registered as-designed object</span></span>
+<span>  <span class="va">gt</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get_global_data</span><span class="op">(</span><span class="st">'gt_template'</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co">## test hypotheses with p-values computed at this milestone</span></span>
+<span>  <span class="co">## gt$test(...)</span></span>
+<span></span>
+<span>  <span class="co">## carry the updated object forward to later milestones</span></span>
+<span>  <span class="va">trial</span><span class="op">$</span><span class="fu">save_custom_data</span><span class="op">(</span><span class="va">gt</span>, name <span class="op">=</span> <span class="st">'gt'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">action_at_final</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">trial</span><span class="op">)</span><span class="op">{</span></span>
+<span></span>
+<span>  <span class="co">## the object as updated at the interim analysis of this replicate</span></span>
+<span>  <span class="va">gt</span> <span class="op">&lt;-</span> <span class="va">trial</span><span class="op">$</span><span class="fu">get</span><span class="op">(</span><span class="st">'gt'</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co">## test hypotheses with p-values computed at this milestone</span></span>
+<span>  <span class="co">## gt$test(...)</span></span>
+<span></span>
+<span>  <span class="va">trial</span><span class="op">$</span><span class="fu">save_custom_data</span><span class="op">(</span><span class="va">gt</span>, name <span class="op">=</span> <span class="st">'gt'</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>Because auxiliary information is cleared before every replicate, each
+simulated trial starts again from the pristine template—no state can
+leak from one replicate into the next.</p>
 <p>In summary, <code>TrialSimulator</code> provides a structured saving
 system that allows users to:</p>
 <ul>
 <li><p>record scalar results directly into trial outputs;</p></li>
-<li><p>carry forward complex objects across milestones, and</p></li>
-<li><p>accumulate data frames across multiple milestones.</p></li>
+<li><p>carry forward complex objects across milestones;</p></li>
+<li><p>accumulate data frames across multiple milestones, and</p></li>
+<li><p>define read-only global data shared by all replicates.</p></li>
 </ul>
 <p>This ensures smooth information flow between milestones and avoids
 ad-hoc workarounds such as global variables.</p>
