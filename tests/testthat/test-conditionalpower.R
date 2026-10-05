@@ -760,8 +760,8 @@ test_that("conditionalPower rejects d >= D with an informative message", {
     error = function(e) conditionMessage(e)
   )
   expect_match(err, 'arm <trt>')
-  expect_match(err, paste0('d = ', fit$info))
-  expect_match(err, 'D = 5')
+  expect_match(err, paste0('d = <', fit$info, '>'))
+  expect_match(err, 'D = <5>')
 })
 
 

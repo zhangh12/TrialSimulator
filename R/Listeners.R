@@ -170,8 +170,8 @@ Listeners <- R6::R6Class(
                  e$message, '\n\n',
                  'Please set a breakpoint in its action function to debug it. \n',
                  'The browser() function can be helpful for a step-by-step diagnosis. \n',
-                 'To fully replicate the issue in debugging, set seed = ',
-                 trial$get_output('seed'), ' in trial(...). ')
+                 'To fully replicate the issue in debugging, set seed = <',
+                 trial$get_output('seed'), '> in trial(...). ')
           }
         )
       }

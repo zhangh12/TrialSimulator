@@ -216,7 +216,7 @@ Trials <- R6::R6Class(
         if(is.null(seed)){
           seed <- sample(.Machine$integer.max, 1)
           if(!private$silent){
-            message('Seed is not specified. TrialSimulator sets it to ', seed)
+            message('Seed is not specified. TrialSimulator sets it to <', seed, '>. ')
           }
         }
 
@@ -292,8 +292,8 @@ Trials <- R6::R6Class(
 
       if(n_patients <= private$get_number_patients()){
         stop('TrialSimulator can only increase sample size of a trial. ',
-             'When calling Trials$resize(n_patients), use n_patients > ',
-             private$get_number_patients(), '. ')
+             'When calling Trials$resize(n_patients), use n_patients > <',
+             private$get_number_patients(), '>. ')
       }
 
       private$n_patients <- n_patients
@@ -454,11 +454,11 @@ Trials <- R6::R6Class(
 
       for(arm_name in arm_names){
         if(is.null(private$arms[[arm_name]])){
-          stop('Arm ', arm_name, ' is not in the trial. ')
+          stop('Arm <', arm_name, '> is not in the trial. ')
         }
 
         if(!(arm_name %in% names(self$get_sample_ratio()))){
-          stop('Sample ratio of arm ', arm_name, ' is not in the trial.')
+          stop('Sample ratio of arm <', arm_name, '> is not in the trial. ')
         }
       }
 
@@ -820,8 +820,8 @@ Trials <- R6::R6Class(
       }
 
       if(!private$silent){
-        message('Crossover triplet registered with earliest crossover time = ',
-                Tx, ' (milestone ', tnow, ' + delay ', delay, '). ')
+        message('Crossover triplet registered with earliest crossover time = <',
+                Tx, '> (milestone ', tnow, ' + delay ', delay, '). ')
       }
 
       invisible(NULL)
@@ -1005,7 +1005,7 @@ Trials <- R6::R6Class(
                   'the new accrual rate. ')
         }else{
           message('Accrual rate is updated at time <', current_time, '>. ',
-                  'Enrollment of ', n1, ' unenrolled patient(s) is ',
+                  'Enrollment of <', n1, '> unenrolled patient(s) is ',
                   're-planned under the new accrual rate. ')
         }
       }
@@ -1207,11 +1207,11 @@ Trials <- R6::R6Class(
       for(cname in names(value)){
         if(cname %in% names(private$output)){
           if(!overwrite){
-            stop(cname, ' has been used to name something in the output. ',
+            stop('<', cname, '> has been used to name something in the output. ',
                  'Pick another name and try again. ')
           }else{
             if(cname != 'error_message'){
-              warning(cname, ' exists in the output and is overwritten. ',
+              warning('<', cname, '> exists in the output and is overwritten. ',
                       'Set overwrite = FALSE in save() if it is not intended. ',
                       immediate. = TRUE)
             }
@@ -1596,16 +1596,16 @@ Trials <- R6::R6Class(
         }
 
         if(ncol(planned_info) != length(treatments) + 1){
-          stop('length(planned_info) should be equal to length(treatments) + 1, i.e., ',
-               length(treatments) + 1, '. ')
+          stop('length(planned_info) should be equal to length(treatments) + 1, i.e., <',
+               length(treatments) + 1, '>. ')
         }
 
         if(!setequal(names(planned_info), c(placebo, treatments))){
           stop('planned_info should use placebo and treatments\' names, <',
                paste0(c(placebo, treatments), collapse = ', '),
-               '>, for its column names. ',
+               '>, for its column names. <',
                paste0(setdiff(names(planned_info), c(placebo, treatments)), collapse = ', '),
-               ' are not accepted. ')
+               '> are not accepted. ')
         }
 
         planned_info <- planned_info[, c(placebo, treatments), drop = FALSE]
@@ -2243,8 +2243,8 @@ Trials <- R6::R6Class(
         stop('Cannot compute conditional power at milestone <', milestone,
              '> vs placebo <', placebo, '>: ',
              paste0('arm <', selected_arms[exhausted],
-                    '> observed events d = ', d[exhausted],
-                    ' >= planned final events D = ', D[exhausted],
+                    '> observed events d = <', d[exhausted],
+                    '> >= planned final events D = <', D[exhausted], '>',
                     collapse = '; '),
              '. Check D, or whether this milestone is triggered too late. ')
       }
@@ -2655,8 +2655,8 @@ Trials <- R6::R6Class(
         stop('Cannot re-estimate the event number at milestone <',
              milestone, '> vs placebo <', placebo, '>: ',
              paste0('arm <', selected_arms[exhausted],
-                    '> observed events d = ', d[exhausted],
-                    ' >= D_cap = ', unname(D_cap)[exhausted],
+                    '> observed events d = <', d[exhausted],
+                    '> >= D_cap = <', unname(D_cap)[exhausted], '>',
                     collapse = '; '),
              '. Check D_cap, or whether this milestone is triggered too ',
              'late. ')
@@ -2786,9 +2786,9 @@ Trials <- R6::R6Class(
       ## invariant as an internal assertion after the lock.
       if(at_calendar_time < private$now){
         latest <- private$milestone_time[which.max(private$milestone_time)]
-        stop('Cannot lock data for milestone <', milestone_name, '> at time ',
-             round(at_calendar_time, 2), ': the trial clock is already at time ',
-             round(private$now, 2),
+        stop('Cannot lock data for milestone <', milestone_name, '> at time <',
+             round(at_calendar_time, 2), '>: the trial clock is already at time <',
+             round(private$now, 2), '>',
              if(length(latest) > 0){
                paste0(', set by milestone <', names(latest), '>')
              },
@@ -2917,7 +2917,7 @@ Trials <- R6::R6Class(
                 name = paste0('n_events_<', milestone_name, '>'))
 
       if(!private$silent){
-        message('Data is locked at time = ', at_calendar_time, ' for milestone <',
+        message('Data is locked at time = <', at_calendar_time, '> for milestone <',
                 milestone_name, '>.\n',
                 'Locked data can be accessed in Trial$get_locked_data(\'',
                 milestone_name, '\'). \n',
@@ -3668,16 +3668,16 @@ Trials <- R6::R6Class(
 
       isValidOutput <- function(op, req_cols, func_name){
         if(!is.data.frame(op)){
-          stop('The user-defined function ', func_name,
-               ' must return a data frame. ',
-               'Please set a breakpoint in ', func_name, ' to debug it. ')
+          stop('The user-defined function <', func_name,
+               '> must return a data frame. ',
+               'Please set a breakpoint in <', func_name, '> to debug it. ')
         }
         miss_cols <- setdiff(req_cols, names(op))
         if(length(miss_cols) > 0){
           stop('Column(s) <', paste0(miss_cols, collapse = ', '),
-               '> are missing in data frame returned from the user-defined function ',
-               func_name, ' for regimen. ',
-               'Please set a breakpoint in ', func_name, ' to debug it. ')
+               '> are missing in data frame returned from the user-defined function <',
+               func_name, '> for regimen. ',
+               'Please set a breakpoint in <', func_name, '> to debug it. ')
         }
       }
 
@@ -4005,9 +4005,9 @@ Trials <- R6::R6Class(
         private$stratum_queue <- rep('all', private$get_number_unenrolled_patients())
 
         if(!private$silent){
-          message('Randomization is done for ',
+          message('Randomization is done for <',
                   private$get_number_unenrolled_patients(),
-                  ' potential patients. \n')
+                  '> potential patients. \n')
         }
 
         return(invisible(NULL))
@@ -4062,8 +4062,8 @@ Trials <- R6::R6Class(
       stopifnot(length(private$stratum_queue) == length(private$randomization_queue))
 
       if(!private$silent){
-        message('Randomization is done for ', length(randomization_queue),
-                ' potential patients. \n')
+        message('Randomization is done for <', length(randomization_queue),
+                '> potential patients. \n')
       }
     },
 
@@ -4204,7 +4204,7 @@ Trials <- R6::R6Class(
       private$trial_data <- past_td[order(past_td$enroll_time), , drop = FALSE]
 
       if(!private$silent){
-        message('Trial data is rolling back to time = ', current_time, '. \n',
+        message('Trial data is rolling back to time = <', current_time, '>. \n',
                 'Randomization will be carried out again for unenrolled patients. \n')
       }
 
@@ -4251,7 +4251,7 @@ Trials <- R6::R6Class(
     ## @param arm_name character, name of arm to be extracted
     get_an_arm = function(arm_name){
       if(!(arm_name %in% self$get_arms_name())){
-        stop(arm_name, ' is not in the trial \'', private$get_name(), '\'')
+        stop('<', arm_name, '> is not in the trial <', private$get_name(), '>. ')
       }
 
       private$get_arms()[[arm_name]]
@@ -4371,8 +4371,8 @@ Trials <- R6::R6Class(
       }
 
       if(n_patients > private$get_number_unenrolled_patients()){
-        stop('Cannot enroll ', n_patients, ' patients for the trial. ',
-             'Only ', private$get_number_unenrolled_patients(), ' left. ')
+        stop('Cannot enroll <', n_patients, '> patients for the trial. ',
+             'Only <', private$get_number_unenrolled_patients(), '> left. ')
       }
 
       ## update randomization plan for unenrolled patients
@@ -4545,9 +4545,9 @@ Trials <- R6::R6Class(
       private$censor_trial_data(censor_at = Inf)
 
       if(!private$silent){
-        message('Data of ', n_patients,
-                ' potential patients are generated for the trial with ',
-                private$get_number_arms(), ' arm(s) <',
+        message('Data of <', n_patients,
+                '> potential patients are generated for the trial with <',
+                private$get_number_arms(), '> arm(s) <',
                 paste0(self$get_arms_name(), collapse = ", "), '>. \n')#,
                 # 'Depending on the scenarios, ',
                 # 'some of those patients may be eventually enrolled \n',

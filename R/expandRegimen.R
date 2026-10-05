@@ -34,8 +34,8 @@ expandRegimen <- function(data){
   required_cols <- c('patient_id', 'regimen_trajectory')
   missing_cols  <- setdiff(required_cols, names(data))
   if(length(missing_cols) > 0){
-    stop('expandRegimen: column(s) not found in `data`: ',
-         paste(missing_cols, collapse = ', '), '. ',
+    stop('expandRegimen: column(s) not found in `data`: <',
+         paste(missing_cols, collapse = ', '), '>. ',
          '`data` does not look like it was returned by trial$get_locked_data(). ',
          'Also make sure the trial was run with a regimen registered via trial$add_regimen().',
          call. = FALSE)

@@ -84,8 +84,9 @@ DynamicRNGFunction <- function(fn, ...) {
 
     # Prevent overriding fixed arguments
     if (any(names(new_args) %in% names(fixed_args))) {
-      stop('Cannot override fixed arguments: ',
-           paste(intersect(names(new_args), names(fixed_args)), collapse = ', '))
+      stop('Cannot override fixed arguments: <',
+           paste(intersect(names(new_args), names(fixed_args)), collapse = ', '),
+           '>. ')
     }
 
     # Combine fixed and new arguments

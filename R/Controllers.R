@@ -228,7 +228,7 @@ Controllers <- R6::R6Class(
             ## Unexpected worker-level failure (e.g. package not found,
             ## serialization issue)
             if(mirai::is_error_value(result)){
-              stop('Worker ', i, ' failed unexpectedly: ', result)
+              stop('Worker <', i, '> failed unexpectedly: ', result)
             }
 
             private$output <- bind_rows(private$output, result$output)

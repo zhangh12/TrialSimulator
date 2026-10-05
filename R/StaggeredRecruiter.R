@@ -188,9 +188,9 @@ StaggeredRecruiter <- function(n, accrual_rate) {
       character(1)
     )
     stop("Some finite accrual windows are too low to enroll anyone ",
-         "(window length * piecewise_rate < 1): ",
+         "(window length * piecewise_rate < 1): <",
          paste(details, collapse = "; "),
-         ". Use piecewise_rate = 0 to pause enrollment in such a window, ",
+         ">. Use piecewise_rate = 0 to pause enrollment in such a window, ",
          "or a rate of at least 1/width.",
          call. = FALSE)
   }

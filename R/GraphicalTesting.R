@@ -195,8 +195,8 @@ GraphicalTesting <- R6::R6Class(
       }
 
       if(!private$silent){
-        message('A graph is initialized for ', length(private$hypotheses),
-                ' hypotheses at FWER = ', sum(private$alpha), '. ')
+        message('A graph is initialized for <', length(private$hypotheses),
+                '> hypotheses at FWER = <', sum(private$alpha), '>. ')
       }
 
       private$trajectory <- NULL
@@ -371,13 +371,13 @@ GraphicalTesting <- R6::R6Class(
 
       self$is_valid_hid(hid)
       if(!self$is_in_graph(hid)){
-        stop('Hypothesis ', self$get_hypothesis_name(hid),
-             ' is not in the graph or already been rejected. ')
+        stop('Hypothesis <', self$get_hypothesis_name(hid),
+             '> is not in the graph or already been rejected. ')
       }
 
       if(!self$is_testable(hid)){
-        stop('Hypothesis ', self$get_hypothesis_name(hid),
-             ' cannot be rejected because no alpha is allocated to it. ')
+        stop('Hypothesis <', self$get_hypothesis_name(hid),
+             '> cannot be rejected because no alpha is allocated to it. ')
       }
 
       private$hids_in_graph <- setdiff(private$hids_in_graph, hid)

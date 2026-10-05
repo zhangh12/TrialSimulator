@@ -80,7 +80,7 @@ CorrelatedPfsAndOs2 <- function(n, median_pfs, median_os, kendall, pfs_name = 'p
 
   if(inherits(fit, 'try-error')){
     stop("Kendall's tau (", kendall, ') between OS and PFS is too small given the two medians ',
-         median_pfs, ' and ', median_os, '. ')
+         '<', median_pfs, '> and <', median_os, '>. ')
   }
 
   ## Kendall's tau between TTP and OS

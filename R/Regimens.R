@@ -131,8 +131,8 @@ Regimens <- R6::R6Class(
         stopifnot(length(index) == 1)
         if(index > self$get_number_treatment_allocator()){
           stop('There are only <', self$get_number_treatment_allocator(),
-               '> treatment allocators, and cannot request for the ',
-               index, 'th. ')
+               '> treatment allocators, and cannot request for the <',
+               index, '>th. ')
         }
         return(private$treatment_allocator[[index]])
       }
@@ -151,8 +151,8 @@ Regimens <- R6::R6Class(
         stopifnot(length(index) == 1)
         if(index > private$get_number_time_selector()){
           stop('There are only <', private$get_number_time_selector(),
-               '> time selectors, and cannot request for the ',
-               index, 'th. ')
+               '> time selectors, and cannot request for the <',
+               index, '>th. ')
         }
         return(private$time_selector[[index]])
       }
@@ -171,8 +171,8 @@ Regimens <- R6::R6Class(
         stopifnot(length(index) == 1)
         if(index > private$get_number_data_modifier()){
           stop('There are only <', private$get_number_data_modifier(),
-               '> data modifiers, and cannot request for the ',
-               index, 'th. ')
+               '> data modifiers, and cannot request for the <',
+               index, '>th. ')
         }
         return(private$data_modifier[[index]])
       }
@@ -287,7 +287,7 @@ Regimens <- R6::R6Class(
 
       isValidFunction <- function(func, func_type, func_name){
         if(!is.function(func)){
-          stop(func_name, ' is not a function. ')
+          stop('<', func_name, '> is not a function. ')
         }
 
         if(length(formals(func)) == 0 || names(formals(func))[1] != 'patient_data'){

@@ -61,7 +61,7 @@ fitLogistic <- function(formula, placebo, data, alternative, scale, ...) {
 
   valid_scales <- c('coefficient', 'log odds ratio', 'odds ratio', 'risk ratio', 'risk difference')
   if(!is.character(scale) || length(scale) != 1 || !(scale %in% valid_scales)){
-    stop('scale must be one of ', paste0(valid_scales, collapse = ', '))
+    stop('scale must be one of <', paste0(valid_scales, collapse = ', '), '>. ')
   }
 
   vars_in_formula <- all.vars(formula)

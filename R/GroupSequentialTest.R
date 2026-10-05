@@ -181,8 +181,8 @@ GroupSequentialTest <- R6::R6Class(
       tmp <- private$planned_max_info
       private$planned_max_info <- obs_max_info
       if(!private$silent){
-        message('Maximum information is updated at stage ', self$get_stage(),
-                ' (', tmp, ' -> ', obs_max_info, '). ')
+        message('Maximum information is updated at stage <', self$get_stage(),
+                '> (', tmp, ' -> ', obs_max_info, '). ')
       }
     },
 
@@ -406,7 +406,8 @@ GroupSequentialTest <- R6::R6Class(
         }
 
         if(any(alpha_spent <= 0 | alpha_spent > self$get_alpha())){
-          stop('alpha_spent should be of values between 0 and ', self$get_alpha())
+          stop('alpha_spent should be of values between 0 and <',
+               self$get_alpha(), '>. ')
         }
 
         if(length(alpha_spent) > 1 && any(diff(alpha_spent) <= 0)){
@@ -415,8 +416,8 @@ GroupSequentialTest <- R6::R6Class(
 
         for(i in seq_along(alpha_spent)){
           if(is_final[i] && abs(alpha_spent[i] - self$get_alpha()) > 1e-6){
-            stop('At final test, the accumulated alpha_spent should be ',
-                 self$get_alpha())
+            stop('At final test, the accumulated alpha_spent should be <',
+                 self$get_alpha(), '>. ')
           }
         }
 
