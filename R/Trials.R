@@ -71,10 +71,15 @@
 #' can be retrieved by calling \code{get()} anytime.
 #' \item \code{$save_custom_data()} save intermediate results of any format.
 #' The life cycle of the saved result is within a single replicate of simulation
-#' and is reset to NULL in next simulated trial. Saved results can be retrieved
+#' and is cleared before the next simulated trial. Saved results can be retrieved
 #' by calling \code{get()} anytime.
 #' \item \code{$get()} retrieve intermediate results saved by calling functions
 #' \code{save_custom_data()} or \code{bind()}.
+#' \item \code{$get_global_data()} retrieve read-only data registered through
+#' the \code{global_data} argument of \code{trial()}, e.g., design
+#' parameters or a template object of a testing procedure, which is
+#' available in every replicate of a simulation. R6 objects are returned as
+#' independent deep clones so the registered template is never changed.
 #' \item \code{$get_output()} retrieve intermediate results saved by calling
 #' function \code{save()}.
 #' }
@@ -121,7 +126,8 @@
 #' \code{$get_data_lock_time_by_event_number()},
 #' \code{$get_data_lock_time_by_enrollment()}, \code{$has_arm()},
 #' \code{$event_plot()}, \code{$mute()}, \code{$tidy_output()}, \code{$reset()},
-#' \code{$make_arms_snapshot()} and \code{$pop_milestone_updates()}) are
+#' \code{$make_arms_snapshot()}, \code{$has_been_run()} and
+#' \code{$pop_milestone_updates()}) are
 #' public only because they are invoked on
 #' a trial object by other components of the package (milestones, listeners,
 #' controllers and triggering conditions), which R6 cannot grant through
@@ -175,6 +181,13 @@ Trials <- R6::R6Class(
     #' can have same or different distributions given baseline characteristics.
     #' \code{NULL} by default, i.e., unstratified permuted block randomization is
     #' executed.
+    #' @param global_data a list with named components, e.g., design
+    #' parameters or a template object of a testing procedure, to be shared
+    #' by all replicates of a simulation. It is read-only and can be
+    #' accessed in action functions by calling
+    #' \code{Trials$get_global_data()}. For temporary results passed
+    #' between action functions within a single replicate, use
+    #' \code{Trials$save_custom_data()} instead.
     #' @param silent logical. \code{TRUE} to mute messages. However, warning
     #' message is still displayed.
     #' @param ... (optional) arguments of \code{enroller} and \code{dropout}.
@@ -187,6 +200,7 @@ Trials <- R6::R6Class(
         enroller = StaggeredRecruiter,
         dropout = NULL,
         stratification_factors = NULL,
+        global_data = list(),
         silent = FALSE,
         ...
       ){
@@ -194,7 +208,8 @@ Trials <- R6::R6Class(
         # stratification_factors will be checked again when an arm is added
         private$validate_arguments(
           name, n_patients, description, seed,
-          enroller, dropout, stratification_factors, silent, ...)
+          enroller, dropout, stratification_factors, global_data, silent,
+          ...)
 
         private$silent <- silent
 
@@ -214,6 +229,15 @@ Trials <- R6::R6Class(
         private$locked_data <- list()
         private$output <- data.frame(trial = private$get_name())
         private$custom_data <- list()
+
+        ## the trial owns independent copies of reference-semantics entries
+        ## (R6, data.table), so the caller's objects and the registered
+        ## templates never share mutable state. Set before make_snapshot(),
+        ## so that reset() restores the identical, never-mutated list.
+        if(is.null(global_data)){
+          global_data <- list()
+        }
+        private$global_data <- copy_reference_object(global_data)
 
         private$seed <- seed
         self$save(seed, 'seed')
@@ -1324,26 +1348,42 @@ Trials <- R6::R6Class(
     },
 
     #' @description
-    #' save arbitrary (number of) objects into a trial so that users can use
-    #' those to control the workflow. Most common use case is to store
-    #' simulation parameters to be used in action functions.
-    #' @param value value to be saved. Any type.
+    #' save temporary data into a trial to pass intermediate results between
+    #' action functions of milestones within a single simulated trial, e.g.,
+    #' a testing procedure object updated at every interim analysis. The
+    #' saved data live only within the current replicate: the storage is
+    #' cleared before every replicate, so nothing saved here can leak into
+    #' the next replicate or be used to summarize a simulation (use
+    #' \code{Trials$save()} for outputs, and the \code{global_data} argument
+    #' of \code{trial()} for read-only data that must be available in all
+    #' replicates). After \code{run()} returns, the storage still holds the
+    #' data of the last replicate, which can be inspected like the rest of
+    #' the trial's final state; the next \code{run()} clears it when it
+    #' starts.
+    #' @param value value to be saved. Any type except \code{NULL}.
     #' @param name character. Name of the value to be accessed later.
     #' @param overwrite logic. \code{TRUE} if overwriting existing entries
     #' with warning, otherwise, throwing an error and stop.
     save_custom_data = function(value, name, overwrite = FALSE){
 
-      if(name == ''){
-        stop('name in custom_data cannot be empty. ')
+      if(!(is.character(name) && length(name) == 1) || is.na(name) ||
+         name == ''){
+        stop('name in custom_data should be a non-empty character of length 1. ')
+      }
+
+      if(is.null(value)){
+        ## assigning NULL into a list silently removes the entry, so a NULL
+        ## would be unrecoverable by get_custom_data() anyway
+        stop('value saved in custom_data cannot be NULL. ')
       }
 
       if(name %in% names(private$custom_data)){
         if(!overwrite){
-          stop(name, ' has been used to name something in custom data ',
-               'Pick another name and try again. ')
+          stop('<', name, '> has been used to name something in custom data. ',
+               'Pick another name, or set overwrite = TRUE to update it. ')
         }else{
           if(!private$silent){
-            warning(name, ' exists in custom_data and is overwritten. ',
+            warning('<', name, '> exists in custom_data and is overwritten. ',
                     'Set overwrite = FALSE in save_custom_data() ',
                     'if it is not intended. ',
                     immediate. = TRUE)
@@ -1352,7 +1392,6 @@ Trials <- R6::R6Class(
       }
 
       private$custom_data[[name]] <- value
-      private$.snapshot[['custom_data']][[name]] <- value
 
       invisible(NULL)
     },
@@ -1363,10 +1402,13 @@ Trials <- R6::R6Class(
     #' @param name character. Name of custom data to be accessed.
     get_custom_data = function(name){
       if(!(name %in% names(private$custom_data))){
-        stop(name, ' cannot be found in custom_data. ',
+        stop('<', name, '> cannot be found in custom_data. ',
              'Check for bug or typo in data name. ',
-             'Did you really save ', name,
-             'by using Trial$save_custom_data(value, name) before? ')
+             'Did you really save <', name, '> ',
+             'by using trial$save_custom_data(value, name) ',
+             'in this replicate before? Note that custom data is cleared ',
+             'between replicates; for data that should be available in ',
+             'every replicate, use the global_data argument of trial(). ')
       }
 
       private$custom_data[[name]]
@@ -1377,6 +1419,27 @@ Trials <- R6::R6Class(
     #' @param name character. Name of custom data to be accessed.
     get = function(name){
       self$get_custom_data(name)
+    },
+
+    #' @description
+    #' return global data registered through the \code{global_data} argument
+    #' of \code{trial()} with its name. Global data is read-only and
+    #' available in every replicate of a simulation: an R6 object is
+    #' returned as an independent deep clone and a \code{data.table} as a
+    #' copy (also when nested inside plain lists), so updating the returned
+    #' object never changes the registered template. To carry an updated
+    #' object across milestones within a replicate, save the returned object
+    #' with \code{Trials$save_custom_data()}.
+    #' @param name character. Name of global data to be accessed.
+    get_global_data = function(name){
+      if(!(name %in% names(private$global_data))){
+        stop('<', name, '> cannot be found in global_data. ',
+             'Check for bug or typo in data name. ',
+             'Did you really define <', name, '> ',
+             'in the global_data argument of trial()? ')
+      }
+
+      copy_reference_object(private$global_data[[name]])
     },
 
     #' @description
@@ -3454,6 +3517,28 @@ Trials <- R6::R6Class(
       ## triplets left over from a previous run() on the same trial object).
       private$reset_regimen()
 
+      ## make_arms_snapshot() is the run-start hook on the trial: replicate 1
+      ## starts with an empty replicate-local storage, like every later
+      ## replicate (reset() restores it empty from the init-time snapshot).
+      ## This discards data saved between trial() and run(), which would
+      ## otherwise be seen by replicate 1 only (data every replicate needs
+      ## belongs in the global_data argument of trial()), as well as the
+      ## previous run()'s last-replicate data, which is deliberately kept
+      ## after a run for inspection.
+      private$custom_data <- list()
+
+    },
+
+    #' @description
+    #' \strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+    #'
+    #' report whether the trial has left its as-designed state, i.e., at
+    #' least one replicate has been (partially) executed on it. The
+    #' controller refuses to start \code{run()} on such a trial: wrapping an
+    #' already-run trial in a new controller would otherwise bypass the
+    #' run-twice guard and simulate from a dirty state.
+    has_been_run = function(){
+      private$now > 0 || length(private$milestone_time) > 0
     },
 
     #' @description
@@ -3550,10 +3635,22 @@ Trials <- R6::R6Class(
 
     output = NULL,
 
-    ## User can save whatever they want in an unstructured way (list)
-    ## This is useful for simulation to store some setting parameters
-    ## that could be used in action functions.
+    ## Replicate-local storage for intermediate results passed between
+    ## action functions (save_custom_data()/get_custom_data()/bind()).
+    ## Cleared at the start of every replicate: make_arms_snapshot() clears
+    ## it when run() starts, and the init-time snapshot holds it empty, so
+    ## reset() restores it empty between replicates. After run() it keeps
+    ## the last replicate's data, inspectable like the rest of the trial's
+    ## final state.
     custom_data = list(),
+
+    ## Read-only data available to every replicate (design parameters,
+    ## template objects of testing procedures). Set only by the global_data
+    ## argument of trial(); reference-semantics entries are copied at
+    ## registration and again by get_global_data() on every read, so the
+    ## registered templates are never mutated. Captured by make_snapshot()
+    ## like any other field; reset() restores the identical list.
+    global_data = list(),
 
     ## Apply the regimen triplet(s) `indices` to `patient_data` and return the
     ## modified data frame. Shared by enroll_patients() (whole fresh batch, all
@@ -3783,7 +3880,8 @@ Trials <- R6::R6Class(
 
     validate_arguments =
       function(name, n_patients, description, seed,
-               enroller, dropout, stratification_factors, silent, ...){
+               enroller, dropout, stratification_factors, global_data,
+               silent, ...){
 
       stopifnot(is.null(seed) || is.wholenumber(seed))
       stopifnot(is.character(name))
@@ -3797,6 +3895,47 @@ Trials <- R6::R6Class(
 
       stopifnot(is.function(enroller))
       stopifnot(is.null(dropout) || is.function(dropout))
+
+      if(!is.null(global_data)){
+
+        if(!(is.list(global_data) && !is.object(global_data))){
+          stop('global_data in trial() should be a plain list ',
+               'with named components. ', call. = FALSE)
+        }
+
+        if(length(global_data) > 0){
+
+          nm <- names(global_data)
+          if(is.null(nm) || anyNA(nm) || any(nm == '')){
+            stop('every component of global_data in trial() should be ',
+                 'named. ', call. = FALSE)
+          }
+
+          if(anyDuplicated(nm) > 0){
+            stop('names of components of global_data in trial() should be ',
+                 'unique. Duplicated: <',
+                 paste0(unique(nm[duplicated(nm)]), collapse = ', '),
+                 '>. ', call. = FALSE)
+          }
+
+          is_null_entry <- vapply(global_data, is.null, logical(1))
+          if(any(is_null_entry)){
+            stop('component(s) <',
+                 paste0(nm[is_null_entry], collapse = ', '),
+                 '> of global_data in trial() cannot be NULL. ',
+                 call. = FALSE)
+          }
+
+          if(holds_plain_environment(global_data)){
+            stop('global_data in trial() cannot contain a plain ',
+                 'environment: it cannot be protected from modification ',
+                 'by reference. Use a list or an R6 object instead. ',
+                 call. = FALSE)
+          }
+
+        }
+
+      }
 
       stopifnot(is.logical(silent))
 

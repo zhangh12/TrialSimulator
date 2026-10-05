@@ -12,6 +12,7 @@ trial(
   enroller = StaggeredRecruiter,
   dropout = NULL,
   stratification_factors = NULL,
+  global_data = list(),
   silent = FALSE,
   ...
 )
@@ -54,6 +55,14 @@ characteristics share the same distribution across arms, but endpoints
 can have same or different distributions given baseline characteristics.
 \code{NULL} by default, i.e., unstratified permuted block randomization is
 executed.}
+
+\item{global_data}{a list with named components, e.g., design parameters
+or a template object of a testing procedure, to be shared by all
+replicates of a simulation. It is read-only and can be accessed in
+action functions by calling \code{trial$get_global_data(name)}. For
+temporary results passed between action functions within a single
+replicate, use \code{trial$save_custom_data()} instead. See
+\code{vignette('actionFunctions', package = 'TrialSimulator')}.}
 
 \item{silent}{logical. \code{TRUE} to mute messages. However, warning
 message is still displayed. Usually set it to \code{TRUE} in formal

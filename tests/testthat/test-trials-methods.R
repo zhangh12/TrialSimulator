@@ -125,6 +125,8 @@ test_that("Trials save/get_custom_data and get_output round-trip", {
   act <- function(trial) {
     trial$save(value = 42L, name = "answer")
     trial$save_custom_data(value = list(x = 1), name = "cfg")
+    ## round-trip within the replicate, where custom data lives
+    trial$save(value = trial$get_custom_data("cfg")$x, name = "cfg_x")
   }
 
   lstn <- listener(silent = TRUE)
@@ -138,6 +140,8 @@ test_that("Trials save/get_custom_data and get_output round-trip", {
   op <- ctrl$get_output()
   expect_true("answer" %in% names(op))
   expect_equal(op$answer[1], 42)
+  expect_equal(op$cfg_x[1], 1)
 
+  ## after run(), the last replicate's custom data remains for inspection
   expect_equal(tr$get_custom_data("cfg"), list(x = 1))
 })

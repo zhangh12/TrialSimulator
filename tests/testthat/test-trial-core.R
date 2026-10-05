@@ -477,7 +477,7 @@ test_that('inclusion criteria of arm work as expected', {
 
 })
 
-test_that('custom data can be re-used in multiple trials', {
+test_that('global data can be re-used in multiple trials', {
 
   ep <- endpoint(name = 'ep', type = 'tte', generator = rexp, rate = .1)
   pbo <- arm(name = 'pbo')
@@ -489,15 +489,16 @@ test_that('custom data can be re-used in multiple trials', {
   trial <- trial(
     name = 'test', n_patients = 1000,
     enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
-    silent = TRUE
+    silent = TRUE,
+    global_data = list(config = list(x = 1, y = 'a'))
   )
 
   trial$add_arms(sample_ratio = 1, pbo)
-  trial$save_custom_data(value = list(x = 1, y = 'a'), name = 'config')
 
   final <- milestone(name = 'final',
                      action = function(trial) {
-                       trial$get_custom_data('config')},
+                       stopifnot(identical(trial$get_global_data('config'),
+                                           list(x = 1, y = 'a')))},
                      when = calendarTime(time = 40))
 
   listener <- listener(silent = TRUE)

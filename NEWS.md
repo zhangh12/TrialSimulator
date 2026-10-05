@@ -1,3 +1,15 @@
+# TrialSimulator 1.38.0
+
+## Breaking changes
+
+- Custom data (`save_custom_data()`, `get()`, `bind()`) is now strictly replicate-local: entries saved in an action function no longer leak into the next replicate, and data saved before `run()` does not reach the replicates. After `run()`, the last replicate's custom data remains available for inspection.
+- `save_custom_data()` rejects a `NULL` value and requires `name` to be a non-empty character of length 1.
+
+## New features
+
+- `trial()` gains a read-only `global_data` argument: a named list of, e.g., design parameters or template objects of testing procedures, available in every replicate through `trial$get_global_data(name)`. R6 objects and `data.table`s are copied at registration and on every read, so registered entries can never be modified; see `vignette('actionFunctions')`.
+- `controller$run()` refuses to start on a trial that has already been run and points to `reset()`, instead of failing at the first milestone with a misleading error.
+
 # TrialSimulator 1.37.0
 
 ## Breaking changes

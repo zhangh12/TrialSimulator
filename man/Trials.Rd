@@ -79,10 +79,15 @@ is reset to NULL in next simulated trial. Saved results
 can be retrieved by calling \code{get()} anytime.
 \item \code{$save_custom_data()} save intermediate results of any format.
 The life cycle of the saved result is within a single replicate of simulation
-and is reset to NULL in next simulated trial. Saved results can be retrieved
+and is cleared before the next simulated trial. Saved results can be retrieved
 by calling \code{get()} anytime.
 \item \code{$get()} retrieve intermediate results saved by calling functions
 \code{save_custom_data()} or \code{bind()}.
+\item \code{$get_global_data()} retrieve read-only data registered through
+the \code{global_data} argument of \code{trial()}, e.g., design
+parameters or a template object of a testing procedure, which is
+available in every replicate of a simulation. R6 objects are returned as
+independent deep clones so the registered template is never changed.
 \item \code{$get_output()} retrieve intermediate results saved by calling
 function \code{save()}.
 }
@@ -129,7 +134,8 @@ and must not be called within action functions.
 \code{$get_data_lock_time_by_event_number()},
 \code{$get_data_lock_time_by_enrollment()}, \code{$has_arm()},
 \code{$event_plot()}, \code{$mute()}, \code{$tidy_output()}, \code{$reset()},
-\code{$make_arms_snapshot()} and \code{$pop_milestone_updates()}) are
+\code{$make_arms_snapshot()}, \code{$has_been_run()} and
+\code{$pop_milestone_updates()}) are
 public only because they are invoked on
 a trial object by other components of the package (milestones, listeners,
 controllers and triggering conditions), which R6 cannot grant through
@@ -272,6 +278,7 @@ tr$eventNumberReestimationFromConditionalPower(
 \item \href{#method-Trials-save_custom_data}{\code{Trials$save_custom_data()}}
 \item \href{#method-Trials-get_custom_data}{\code{Trials$get_custom_data()}}
 \item \href{#method-Trials-get}{\code{Trials$get()}}
+\item \href{#method-Trials-get_global_data}{\code{Trials$get_global_data()}}
 \item \href{#method-Trials-get_current_time}{\code{Trials$get_current_time()}}
 \item \href{#method-Trials-get_milestone_time}{\code{Trials$get_milestone_time()}}
 \item \href{#method-Trials-get_sample_ratio}{\code{Trials$get_sample_ratio()}}
@@ -291,6 +298,7 @@ tr$eventNumberReestimationFromConditionalPower(
 \item \href{#method-Trials-tidy_output}{\code{Trials$tidy_output()}}
 \item \href{#method-Trials-reset}{\code{Trials$reset()}}
 \item \href{#method-Trials-make_arms_snapshot}{\code{Trials$make_arms_snapshot()}}
+\item \href{#method-Trials-has_been_run}{\code{Trials$has_been_run()}}
 \item \href{#method-Trials-pop_milestone_updates}{\code{Trials$pop_milestone_updates()}}
 \item \href{#method-Trials-print}{\code{Trials$print()}}
 \item \href{#method-Trials-clone}{\code{Trials$clone()}}
@@ -310,6 +318,7 @@ initialize a trial
   enroller = StaggeredRecruiter,
   dropout = NULL,
   stratification_factors = NULL,
+  global_data = list(),
   silent = FALSE,
   ...
 )}\if{html}{\out{</div>}}
@@ -354,6 +363,14 @@ characteristics share the same distribution across arms, but endpoints
 can have same or different distributions given baseline characteristics.
 \code{NULL} by default, i.e., unstratified permuted block randomization is
 executed.}
+
+\item{\code{global_data}}{a list with named components, e.g., design
+parameters or a template object of a testing procedure, to be shared
+by all replicates of a simulation. It is read-only and can be
+accessed in action functions by calling
+\code{Trials$get_global_data()}. For temporary results passed
+between action functions within a single replicate, use
+\code{Trials$save_custom_data()} instead.}
 
 \item{\code{silent}}{logical. \code{TRUE} to mute messages. However, warning
 message is still displayed.}
@@ -866,9 +883,18 @@ multiple rows.}
 \if{html}{\out{<a id="method-Trials-save_custom_data"></a>}}
 \if{latex}{\out{\hypertarget{method-Trials-save_custom_data}{}}}
 \subsection{Method \code{save_custom_data()}}{
-save arbitrary (number of) objects into a trial so that users can use
-those to control the workflow. Most common use case is to store
-simulation parameters to be used in action functions.
+save temporary data into a trial to pass intermediate results between
+action functions of milestones within a single simulated trial, e.g.,
+a testing procedure object updated at every interim analysis. The
+saved data live only within the current replicate: the storage is
+cleared before every replicate, so nothing saved here can leak into
+the next replicate or be used to summarize a simulation (use
+\code{Trials$save()} for outputs, and the \code{global_data} argument
+of \code{trial()} for read-only data that must be available in all
+replicates). After \code{run()} returns, the storage still holds the
+data of the last replicate, which can be inspected like the rest of
+the trial's final state; the next \code{run()} clears it when it
+starts.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$save_custom_data(value, name, overwrite = FALSE)}\if{html}{\out{</div>}}
 }
@@ -876,7 +902,7 @@ simulation parameters to be used in action functions.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{value}}{value to be saved. Any type.}
+\item{\code{value}}{value to be saved. Any type except \code{NULL}.}
 
 \item{\code{name}}{character. Name of the value to be accessed later.}
 
@@ -917,6 +943,30 @@ alias of function \code{get_custom_data} to make it short and cool.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{name}}{character. Name of custom data to be accessed.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-get_global_data"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-get_global_data}{}}}
+\subsection{Method \code{get_global_data()}}{
+return global data registered through the \code{global_data} argument
+of \code{trial()} with its name. Global data is read-only and
+available in every replicate of a simulation: an R6 object is
+returned as an independent deep clone and a \code{data.table} as a
+copy (also when nested inside plain lists), so updating the returned
+object never changes the registered template. To carry an updated
+object across milestones within a replicate, save the returned object
+with \code{Trials$save_custom_data()}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$get_global_data(name)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{name}}{character. Name of global data to be accessed.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1794,6 +1844,22 @@ recruit patients again.
 make a snapshot of arms
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Trials$make_arms_snapshot()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Trials-has_been_run"></a>}}
+\if{latex}{\out{\hypertarget{method-Trials-has_been_run}{}}}
+\subsection{Method \code{has_been_run()}}{
+\strong{INTERNAL MACHINERY: DO NOT CALL THIS METHOD DIRECTLY.}
+
+report whether the trial has left its as-designed state, i.e., at
+least one replicate has been (partially) executed on it. The
+controller refuses to start \code{run()} on such a trial: wrapping an
+already-run trial in a new controller would otherwise bypass the
+run-twice guard and simulate from a dirty state.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Trials$has_been_run()}\if{html}{\out{</div>}}
 }
 
 }
