@@ -14,6 +14,7 @@
 <url><loc>https://zhangh12.github.io/TrialSimulator/articles/defineTimeToEventEndpoints.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/articles/doseRanging.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/articles/dynamicTreatmentSwitching.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/articles/enrichmentDesign.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/articles/fixedDesign.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/articles/index.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/articles/responseAdaptive.html</loc></url>
@@ -56,6 +57,7 @@
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/getAdaptiveDesignOutput.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/getConditionalPowerOutput.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/getDoseRangingOutput.html</loc></url>
+<url><loc>https://zhangh12.github.io/TrialSimulator/reference/getEnrichmentDesignOutput.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/getFixedDesignOutput.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/index.html</loc></url>
 <url><loc>https://zhangh12.github.io/TrialSimulator/reference/listener.html</loc></url>

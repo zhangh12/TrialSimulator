@@ -26,6 +26,8 @@
   Study](https://zhangh12.github.io/TrialSimulator/articles/doseRanging.md):
 - [Simulate Trials with Dynamic Treatment
   Switching](https://zhangh12.github.io/TrialSimulator/articles/dynamicTreatmentSwitching.md):
+- [An Example of Simulating a Trial with Adaptive Enrichment
+  Design](https://zhangh12.github.io/TrialSimulator/articles/enrichmentDesign.md):
 - [An Example of Fixed Design with Two Correlated
   Endpoints](https://zhangh12.github.io/TrialSimulator/articles/fixedDesign.md):
 - [Designs with Response-Adaptive

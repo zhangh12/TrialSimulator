@@ -111,7 +111,8 @@ we recommend reading the following vignettes in order:
     design](https://zhangh12.github.io/TrialSimulator/articles/responseAdaptive.html)
   - [Dose-ranging
     study](https://zhangh12.github.io/TrialSimulator/articles/doseRanging.html)
-  - \[Enrichment design\] vignette is under development.
+  - [Enrichment design with
+    SSR](https://zhangh12.github.io/TrialSimulator/articles/enrichmentDesign.html)
   - \[Platform trial\] vignette is under development.
   - \[Basket trial\] vignette is under development.
 - Examples: crossover
