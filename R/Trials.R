@@ -3315,9 +3315,17 @@ Trials <- R6::R6Class(
       }
 
 
-      ## prepare stacked area chart
+      ## prepare stacked area chart. Trial data hold the full, generated
+      ## follow-up of every patient; the plot shows the trial as it was
+      ## observed, i.e., up to the time of the last triggered milestone.
+      t_end <- if(nrow(event_number) > 0){
+        max(event_number$lock_time)
+      }else{
+        max(all_data_list$calendar_time)
+      }
       all_data <- all_data_list %>%
-        dplyr::filter(!(arm %in% '0: overall'))
+        dplyr::filter(!(arm %in% '0: overall')) %>%
+        dplyr::filter(calendar_time <= t_end)
 
       endpoints <- sort(unique(all_data$endpoint))
       arms <- sort(unique(all_data$arm))
@@ -3377,10 +3385,8 @@ Trials <- R6::R6Class(
         hcl(h = seq(0, 360 * (n-1)/n, length.out = n), c = 60, l = 70)
       }
 
-      ## the x axis extends to the latest calendar time in the locked event
-      ## tables, i.e., the time of the last triggered milestone
       p <- ggplot(new_data, aes(x = calendar_time, y = n_events, fill = arm)) +
-        xlim(0, max(ct) * 1.05) +
+        xlim(0, t_end * 1.05) +
         labs(
           x = 'Calendar Time',
           y = 'Cumulative N'

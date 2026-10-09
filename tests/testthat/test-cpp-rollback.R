@@ -54,6 +54,12 @@ test_that('adaptiveDesign: R-fallback and C++ produce identical output', {
     list(setup_file = test_path('fixtures', 'setup_adaptiveDesign.R'), n = 10))
 })
 
+test_that('enrichmentDesign: R-fallback and C++ produce identical output', {
+  skip_on_cran()
+  check_identical_paths('enrichmentDesign', run_setup_form,
+    list(setup_file = test_path('fixtures', 'setup_enrichmentDesign.R'), n = 10))
+})
+
 test_that('crossoverWashout: R-fallback and C++ produce identical output', {
   skip_on_cran()
   check_identical_paths('crossoverWashout', run_setup_form,
