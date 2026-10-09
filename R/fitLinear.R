@@ -99,8 +99,13 @@ fitLinear <- function(formula, placebo, data, alternative, ...) {
     # Fit the linear regression model
     fit <- glm(formula, data = sub_data, family = 'gaussian')
 
+    # Hand emmeans the raw data of the rows glm() used (fit$data minus
+    # fit$na.action), so it never re-evaluates the glm() call, where
+    # sub_data is not visible from the formula's environment.
+    # Row positions match because glm() gets no subset or weights.
+    emm_data <- fit$data[setdiff(seq_len(nrow(fit$data)), fit$na.action), , drop = FALSE]
     res <- fit %>%
-      emmeans(~ arm) %>%
+      emmeans(~ arm, data = emm_data) %>%
       contrast(method =
                  list('trt_vs_pbo' = setNames(c(-1, 1), c(placebo, trt_arm)))
                ) %>%

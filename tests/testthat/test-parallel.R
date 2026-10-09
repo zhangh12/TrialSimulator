@@ -14,6 +14,7 @@ test_that('package behaves the same under single- and multi-process modes with s
   # parallel path is still exercised in ordinary (non-coverage) test runs.
   skip_if(Sys.getenv("R_COVR") == "true",
           "n_workers > 1 spawns R processes that covr cannot trace")
+  skip_if_not_installed('mirai')
 
   foo <- function(n, n_workers, seed = NULL){
     pfs <- endpoint(name = 'pfs', type = 'tte', generator = rexp, rate = log(2)/10)
@@ -136,6 +137,7 @@ test_that('stop_followup and update_accrual_rate reproduce across worker modes',
 
   skip_if(Sys.getenv("R_COVR") == "true",
           "n_workers > 1 spawns R processes that covr cannot trace")
+  skip_if_not_installed('mirai')
 
   bar <- function(n, n_workers, seed = NULL){
     pfs <- endpoint(name = 'pfs', type = 'tte', generator = rexp, rate = log(2)/10)
@@ -193,6 +195,7 @@ test_that('update_milestone reproduces across worker modes', {
 
   skip_if(Sys.getenv("R_COVR") == "true",
           "n_workers > 1 spawns R processes that covr cannot trace")
+  skip_if_not_installed('mirai')
 
   baz <- function(n, n_workers, seed = NULL){
     pfs <- endpoint(name = 'pfs', type = 'tte', generator = rexp, rate = log(2)/10)
