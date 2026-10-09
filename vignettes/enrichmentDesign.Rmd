@@ -28,95 +28,98 @@ library(ggplot2)
 library(TrialSimulator)
 ```
 
-In this vignette, we illustrate how to use `TrialSimulator` to simulate
-a two-stage adaptive enrichment design. A binary baseline biomarker
-splits the population into a biomarker-positive subgroup and its
-complement. At an interim analysis, conditional power computed for the
-full population and for the subgroup drives a five-zone decision: the
-trial may stop for futility, continue unchanged, restrict further
-enrollment to the subgroup (enrichment), or increase its number of
-events and sample size (promising zone). The two stages are analyzed
-separately and combined with the inverse normal method, and the
-family-wise error rate over the full-population and subgroup hypotheses
-is controlled by a closed test with Simes' test for the intersection
-hypothesis.
+In this vignette, we walk through the simulation of a two-stage adaptive
+enrichment design with `TrialSimulator`. The idea behind the design is
+simple. A baseline biomarker splits the patients into a
+biomarker-positive subgroup and the rest, and we suspect that the
+treatment works mainly in the subgroup. At an interim analysis, we
+compute the conditional power for the full population and for the
+subgroup, and the pair of numbers tells us what to do next: stop for
+futility, carry on as planned, enroll biomarker-positive patients only
+from then on (enrichment), or enlarge the trial (promising zone). The
+two stages are analyzed separately and combined with the inverse normal
+method, and a closed test with Simes' test for the intersection
+hypothesis keeps the family-wise error rate under control across the
+full-population and subgroup hypotheses.
 
-The design borrows its building blocks from other vignettes: conditional
-power and event number reassessment are described in
+Most of the building blocks appear in other vignettes. Conditional
+power and event number reassessment are explained in
 [Conditional power and event number reassessment](conditionalPower.html),
 and the adaptation functions in
-[Action function](actionFunctions.html).
+[Action function](actionFunctions.html). Here we put them together.
 
 ## Simulation Settings
 
--   The trial consists of a placebo arm (`pbo`) and a treatment arm
-    (`trt`). Patients are randomized with ratio `1:1`.
--   A binary baseline `biomarker` is observed at randomization. Its
-    prevalence is 40%. Patients with `biomarker = 1` form the subgroup
+-   The trial has a placebo arm (`pbo`) and a treatment arm (`trt`),
+    randomized `1:1`.
+-   A binary baseline `biomarker` is measured at randomization, with a
+    prevalence of 40%. Patients with `biomarker = 1` form the subgroup
     of interest.
--   The only efficacy endpoint is progression-free survival (`PFS`),
-    which follows an exponential distribution whose median depends on
-    the arm and on the biomarker. Medians are
-    -   6 months in the placebo arm, in both biomarker strata;
+-   The only efficacy endpoint is progression-free survival (`PFS`). It
+    is exponential, with a median that depends on the arm and on the
+    biomarker:
+    -   6 months in the placebo arm, whatever the biomarker;
     -   6.5 months in biomarker-negative patients of the treatment arm
         (hazard ratio 0.92);
     -   10 months in biomarker-positive patients of the treatment arm
         (hazard ratio 0.6).
--   6 patients are randomized per month for the first 6 months, and 10
-    patients per month after then. The planned sample size is 150
-    patients; it can be increased adaptively.
--   Dropout rate is 5% at month 12, modeled by an exponential
-    distribution.
--   The trial has two stages. The first 80 randomized patients form the
-    stage 1 cohort; patients randomized afterwards form the stage 2
-    cohort. The two cohorts are analyzed separately and their p-values
-    are combined with the inverse normal method with pre-specified
-    weights $w_1 = \sqrt{65/110}$ and $w_2 = \sqrt{45/110}$, i.e., the
-    planned split of the 110 events between the stages.
--   The final analysis is planned when 110 `PFS` events are observed in
-    the whole trial, provided that the stage 1 cohort has reached 65
-    events. Note that this is the condition as planned; it is replaced
-    when the trial is adapted at the interim, as described below.
--   An interim decision is made when 45 `PFS` events are observed in
-    the stage 1 cohort. Let $CP_{full}$ be the conditional power for the
-    full population given the planned 110 events, and $CP_{sub}$ the
-    conditional power for the subgroup given 90 events in the subgroup.
-    Both are computed under the trend observed at the interim, at the
-    one-sided level $\alpha = 0.025$ of the final test. The decision
-    zones are
+-   Accrual is 6 patients per month for the first 6 months, then 12
+    patients per month. The planned sample size is 320 patients, and it
+    can grow adaptively.
+-   Dropout is exponential, with 5% of patients lost by month 12.
+-   The trial runs in two stages. The first 80 randomized patients form
+    the stage 1 cohort, everybody randomized afterwards belongs to the
+    stage 2 cohort. The two cohorts are analyzed separately and their
+    p-values are combined with the inverse normal method, using the
+    pre-specified weights $w_1 = \sqrt{65/240}$ and
+    $w_2 = \sqrt{175/240}$, i.e., the planned split of the 240 events
+    between the stages. Stage 1 is deliberately small: its job is to
+    inform the interim decision, and most of the information comes from
+    stage 2, after the adaptation.
+-   As planned, the final analysis takes place when 240 `PFS` events
+    have been observed in the whole trial and the stage 1 cohort has
+    reached 65 events. Keep in mind that this is only the plan; the
+    condition is replaced when the trial is adapted at the interim, as
+    described next.
+-   The interim decision is made when 45 `PFS` events have been
+    observed in the stage 1 cohort. Let $CP_{full}$ be the conditional
+    power for the full population given the planned 240 events, and
+    $CP_{sub}$ the conditional power for the subgroup given 150 events
+    in the subgroup. Both are computed under the trend observed at the
+    interim, at the one-sided level $\alpha = 0.025$ of the final test.
+    The five decision zones are
     -   *futility* if $CP_{full} < 0.01$ and $CP_{sub} < 0.01$: the
-        trial stops at the interim, and neither hypothesis is rejected.
-        The cutoff is chosen so that, under the alternative described
-        above, the trial stops for futility in about 8% of the
-        replicates;
-    -   *unfavorable* if $CP_{full} < 0.2$ and $CP_{sub} < 0.6$ but
-        not in the futility zone: the trial continues as planned;
-    -   *enrichment* if $CP_{full} < 0.2$ and $CP_{sub} \ge 0.6$:
-        enrollment is restricted to biomarker-positive patients, the
+        trial stops at the interim and neither hypothesis is rejected.
+        We picked this cutoff so that, under the alternative described
+        above, about 8% of the trials stop for futility;
+    -   *unfavorable* if $CP_{full} < 0.2$ and $CP_{sub} < 0.6$ but not
+        in the futility zone: the trial continues as planned;
+    -   *enrichment* if $CP_{full} < 0.2$ and $CP_{sub} \ge 0.6$: from
+        now on only biomarker-positive patients are enrolled, the
         accrual rate drops to 5 patients per month because of
-        screening, up to 150 biomarker-positive patients are enrolled
+        screening, up to 280 biomarker-positive patients are enrolled
         in total, and the number of events in the subgroup at the final
         analysis is re-estimated to reach a conditional power of 0.95,
-        with a cap of 120 events and a floor of 50 events;
-    -   *promising* if $0.2 \le CP_{full} < 0.9$: the sample size is
-        increased to 240 patients and the total number of events at the
-        final analysis is re-estimated to reach a conditional power of
-        0.95, with a cap of 200 events;
+        with a cap of 200 events and a floor of 50 events;
+    -   *promising* if $0.2 \le CP_{full} < 0.9$: the sample size grows
+        to 480 patients and the total number of events at the final
+        analysis is re-estimated to reach a conditional power of 0.95,
+        with a cap of 400 events;
     -   *favorable* if $CP_{full} \ge 0.9$: the trial continues as
         planned.
--   The stage 1 analysis is done when 65 `PFS` events are observed in
-    the stage 1 cohort. Follow-up of the stage 1 cohort is stopped at
-    that time, so that the stage 2 data are independent of the stage 1
-    data. One-sided logrank p-values are computed for the full
-    population ($p_{F,1}$) and for the subgroup ($p_{S,1}$), and Simes'
-    p-value $p_{FS,1} = \min\{2\min(p_{F,1}, p_{S,1}), \max(p_{F,1}, p_{S,1})\}$
+-   The stage 1 analysis takes place when 65 `PFS` events have been
+    observed in the stage 1 cohort. Follow-up of that cohort stops
+    there, which makes the stage 2 data independent of the stage 1
+    data. We compute one-sided logrank p-values for the full population
+    ($p_{F,1}$) and for the subgroup ($p_{S,1}$), and Simes' p-value
+    $p_{FS,1} = \min\{2\min(p_{F,1}, p_{S,1}), \max(p_{F,1}, p_{S,1})\}$
     for the intersection hypothesis.
 -   At the final analysis, the same three p-values are computed from
-    the stage 2 cohort. In the enrichment zone no biomarker-negative
-    patient is enrolled in stage 2, so the full-population hypothesis
-    cannot be tested there: its stage 2 p-value is set to 1 and the
-    intersection p-value equals the subgroup p-value.
--   Each of the three p-values is combined across stages with the
+    the stage 2 cohort. Under enrichment no biomarker-negative patient
+    joins stage 2, so the full-population hypothesis cannot be tested
+    there: its stage 2 p-value is set to 1 and the intersection p-value
+    is just the subgroup p-value.
+-   Each of the three p-values is combined across the stages with the
     inverse normal method. The closed test rejects the full-population
     hypothesis if the combined intersection and full-population
     p-values are both at most 0.025 (one-sided), and rejects the
@@ -125,14 +128,14 @@ and the adaptation functions in
 
 ## Define Two Arms
 
-The biomarker and `PFS` are generated together by a custom generator,
-so that the distribution of `PFS` can depend on the biomarker. A
-generator returns a data frame with one column per endpoint. For a
-time-to-event endpoint, an extra column with suffix `_event` holds the
-event indicator, which is always 1 here because the generator produces
-event times; censoring is applied by `TrialSimulator` at data locks and
-adaptations. The biomarker is declared with `type = 'baseline'`, i.e., a
-non-time-to-event endpoint observed at randomization, so it does not need a
+Since the distribution of `PFS` depends on the biomarker, we generate
+the two together with a custom generator. A generator returns a data
+frame with one column per endpoint. For a time-to-event endpoint, an
+extra column with the suffix `_event` holds the event indicator. It is
+always 1 here because the generator produces event times; censoring is
+handled by `TrialSimulator` at data locks, at adaptations and through
+dropout. The biomarker is declared with `type = 'baseline'`, a
+non-time-to-event endpoint observed at randomization, so it needs no
 readout time.
 
 ```{r feoaj, class.source="fold-show"}
@@ -143,37 +146,38 @@ rng <- function(n, median0, median1, prevalence){
 }
 ```
 
-The medians of the two arms are kept in two lists, because they are
-needed again when the generators are updated at enrichment.
+One call of `endpoint()` gives each arm both of its endpoints. We will
+meet these generators again at enrichment, when they are swapped for
+versions that only produce biomarker-positive patients.
 
 ```{r oeiaj, class.source="fold-show"}
-pbo_pars <- list(median0 = 6, median1 = 6)
-trt_pars <- list(median0 = 6.5, median1 = 10)
-
+pbo_endpoints <- endpoint(name = c('biomarker', 'pfs'),
+                          type = c('baseline', 'tte'),
+                          generator = rng, median0 = 6, median1 = 6,
+                          prevalence = .4)
 pbo <- arm(name = 'pbo')
-pbo$add_endpoints(
-  endpoint(name = c('biomarker', 'pfs'), type = c('baseline', 'tte'),
-           generator = rng, median0 = pbo_pars$median0,
-           median1 = pbo_pars$median1, prevalence = .4))
+pbo$add_endpoints(pbo_endpoints)
 
+trt_endpoints <- endpoint(name = c('biomarker', 'pfs'),
+                          type = c('baseline', 'tte'),
+                          generator = rng, median0 = 6.5, median1 = 10,
+                          prevalence = .4)
 trt <- arm(name = 'trt')
-trt$add_endpoints(
-  endpoint(name = c('biomarker', 'pfs'), type = c('baseline', 'tte'),
-           generator = rng, median0 = trt_pars$median0,
-           median1 = trt_pars$median1, prevalence = .4))
+trt$add_endpoints(trt_endpoints)
 ```
 
 ## Define a Trial
 
-The trial starts with 150 planned patients and a piecewise constant
-accrual rate. The end of the trial is controlled by milestones defined
-below. A seed is set so that the single run shown later is reproducible;
-in a formal simulation, leave `seed = NULL` and `TrialSimulator` picks
-and records a seed for every replicate.
+The trial starts with 320 planned patients and a piecewise constant
+accrual rate. Note that there is no end date here: the trial ends when
+its last milestone is triggered, and the milestones are defined below.
+We fix a seed so that the single run shown later can be reproduced. In
+a real simulation study, leave `seed = NULL` and let `TrialSimulator`
+pick and record a seed for every replicate.
 
 ```{r ieoaj, class.source="fold-show"}
-accrual_rate <- data.frame(end_time = c(6, Inf), piecewise_rate = c(6, 10))
-trial <- trial(name = 'enrichment', n_patients = 150, seed = 13,
+accrual_rate <- data.frame(end_time = c(6, Inf), piecewise_rate = c(6, 12))
+trial <- trial(name = 'enrichment', n_patients = 320, seed = 97,
                enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
                dropout = rexp, rate = -log(1 - .05) / 12, ## 5% by month 12
                silent = TRUE)
@@ -183,46 +187,85 @@ trial$add_arms(sample_ratio = c(1, 1), pbo, trt)
 ## Define Trial Milestones and Action Functions
 
 The trial has three milestones, named `interim`, `stage 1 analysis` and
-`final`. Their action functions are defined first, then the milestones
-are registered.
+`final`, and all three are event-driven. The conditions of `interim` and
+`stage 1 analysis` count events in the stage 1 cohort only, through the
+subset condition `patient_id <= 80`. Triggering conditions like these,
+and the way they can be filtered and combined with `&` and `|`, are
+described in the vignette
+[Condition System for Triggering Milestones in a Trial](conditionSystem.html).
+
+The condition of `final` deserves a closer look. It asks for 240 events
+in the whole trial, as planned, but also for 65 events in the stage 1
+cohort, which is the condition of `stage 1 analysis`. The second part
+looks redundant, since 65 events in a cohort of 80 patients will
+normally be reached long before 240 events in the whole trial. It is
+there for a different reason: `TrialSimulator` triggers milestones in
+the order in which they are registered, and a milestone whose condition
+is met before an earlier one raises an error. Repeating the stage 1
+condition inside `final` guarantees that `final` can never fire before
+`stage 1 analysis`, whatever the accrual pattern in a particular
+replicate. We keep this part in every condition the interim action
+installs later, for the same reason. The 240 events, on the other hand,
+are only the plan; the action function of `interim` replaces that part
+whenever the trial is adapted.
+
+Every milestone comes with an action function, which we write in the
+following subsections; see the vignette
+[Action function](actionFunctions.html) for what an action function
+can do. The milestone calls below are only displayed at this point; they
+are run once the action functions exist.
+
+```{r eaofj, class.source="fold-show", eval=FALSE}
+interim <- milestone(name = 'interim', action = interim_action,
+                     when = eventNumber(endpoint = 'pfs', n = 45, patient_id <= 80))
+stage1 <- milestone(name = 'stage 1 analysis', action = stage1_action,
+                    when = eventNumber(endpoint = 'pfs', n = 65, patient_id <= 80))
+final <- milestone(name = 'final', action = final_action,
+                   when = eventNumber(endpoint = 'pfs', n = 240) &
+                     eventNumber(endpoint = 'pfs', n = 65, patient_id <= 80))
+
+listener <- listener(silent = TRUE)
+listener$add_milestones(interim, stage1, final)
+```
 
 ### Interim decision
 
-The action function of `interim` computes the two conditional powers
-with `trial$conditionalPower()`. The subset condition `patient_id <= 80`
-restricts the calculation to the stage 1 cohort, and `biomarker == 1`
-further restricts it to the subgroup. The argument `D` is the number of
-events assumed at the final analysis, `alpha` the one-sided level of the
-final test, and `effect = 'trend'` uses the hazard ratio observed at the
-interim.
+The action function of `interim` starts by computing the two conditional
+powers with `trial$conditionalPower()`. The subset condition
+`patient_id <= 80` restricts the calculation to the stage 1 cohort, and
+`biomarker == 1` narrows it further to the subgroup. The argument `D` is
+the number of events we expect at the final analysis, `alpha` is the
+one-sided level of the final test, and `effect = 'trend'` means the
+hazard ratio observed at the interim is carried forward.
 
-In the futility zone, the trial stops. `TrialSimulator` has no dedicated
-method for stopping a trial early: a trial ends when its last milestone
-is triggered. Stopping is therefore expressed by
-`trial$update_milestone()`, which moves the two remaining milestones to
-the current calendar time, so that both are triggered right after the
-interim and enrollment stops there. Their action functions, defined
-below, skip the analyses when the decision is futility.
+What happens next depends on the zone. In the futility zone the trial
+stops. `TrialSimulator` has no dedicated method for stopping a trial
+early, because a trial simply ends when its last milestone is triggered.
+So we stop the trial with `trial$update_milestone()`, moving the two
+remaining milestones to the current calendar time. Both are then
+triggered right after the interim, enrollment stops there, and their
+action functions, written below, skip the analyses when they see a
+futility decision.
 
-In the enrichment zone, four adaptations are made:
+In the enrichment zone we make four adaptations:
 
 -   `trial$eventNumberReestimationFromConditionalPower()` finds the
     smallest number of events in the subgroup that reaches the target
     conditional power, subject to the cap `D_cap`;
--   `trial$resize()` raises the maximum sample size so that 150
+-   `trial$resize()` raises the maximum sample size so that 280
     biomarker-positive patients are enrolled in total;
--   `trial$update_accrual_rate()` slows down accrual because screening
+-   `trial$update_accrual_rate()` slows accrual down, because screening
     for the biomarker takes time;
 -   `trial$update_generator()` replaces the generators of both arms by
     the same generator with `prevalence = 1`, so that every patient
     enrolled from now on is biomarker-positive.
 
-Finally, `trial$update_milestone()` replaces the triggering condition of
-the final analysis by the re-estimated number of events in the
+Finally, `trial$update_milestone()` rewrites the triggering condition of
+the final analysis around the re-estimated number of events in the
 subgroup. In the promising zone, only the sample size and the total
-number of events are updated. In both cases the condition keeps the
-requirement of 65 events in the stage 1 cohort, so that the stage 1
-analysis always happens before the final analysis.
+number of events change. Either way, the new condition keeps asking for
+65 events in the stage 1 cohort, which guarantees that the stage 1
+analysis always comes before the final analysis.
 
 ```{r aoeif, class.source="fold-show"}
 interim_action <- function(trial){
@@ -231,12 +274,12 @@ interim_action <- function(trial){
 
   cp_full <- trial$conditionalPower(
     milestone = 'interim', Surv(pfs, pfs_event) ~ arm, placebo = 'pbo',
-    alternative = 'less', alpha = .025, D = 110, effect = 'trend',
+    alternative = 'less', alpha = .025, D = 240, effect = 'trend',
     patient_id <= 80)$cp
 
   cp_sub <- trial$conditionalPower(
     milestone = 'interim', Surv(pfs, pfs_event) ~ arm, placebo = 'pbo',
-    alternative = 'less', alpha = .025, D = 90, effect = 'trend',
+    alternative = 'less', alpha = .025, D = 150, effect = 'trend',
     patient_id <= 80 & biomarker == 1)$cp
 
   decision <- if(cp_full < .01 && cp_sub < .01){
@@ -266,10 +309,10 @@ interim_action <- function(trial){
     en <- trial$eventNumberReestimationFromConditionalPower(
       milestone = 'interim', Surv(pfs, pfs_event) ~ arm, placebo = 'pbo',
       alternative = 'less', alpha = .025, target_cp = .95, effect = 'trend',
-      patient_id <= 80 & biomarker == 1, D_cap = 120)
+      patient_id <= 80 & biomarker == 1, D_cap = 200)
 
-    max_events_in_subgroup <- ifelse(en$target_reached, en$D, 120)
-    max_patients_in_subgroup <- 150
+    max_events_in_subgroup <- ifelse(en$target_reached, en$D, 200)
+    max_patients_in_subgroup <- 280
     enrolled_in_subgroup <- sum(locked_data$biomarker)
 
     trial$resize(n_patients = nrow(locked_data) +
@@ -279,12 +322,10 @@ interim_action <- function(trial){
 
     trial$update_generator(
       arm_name = 'pbo', endpoint_name = c('pfs', 'biomarker'),
-      generator = rng, median0 = pbo_pars$median0,
-      median1 = pbo_pars$median1, prevalence = 1.0)
+      generator = rng, median0 = 6, median1 = 6, prevalence = 1.0)
     trial$update_generator(
       arm_name = 'trt', endpoint_name = c('pfs', 'biomarker'),
-      generator = rng, median0 = trt_pars$median0,
-      median1 = trt_pars$median1, prevalence = 1.0)
+      generator = rng, median0 = 6.5, median1 = 10, prevalence = 1.0)
 
     trial$update_milestone(
       name = 'final',
@@ -297,11 +338,11 @@ interim_action <- function(trial){
     en <- trial$eventNumberReestimationFromConditionalPower(
       milestone = 'interim', Surv(pfs, pfs_event) ~ arm, placebo = 'pbo',
       alternative = 'less', alpha = .025, target_cp = .95, effect = 'trend',
-      patient_id <= 80, D_cap = 200)
+      patient_id <= 80, D_cap = 400)
 
-    max_events <- ifelse(en$target_reached, en$D, 200)
+    max_events <- ifelse(en$target_reached, en$D, 400)
 
-    trial$resize(n_patients = 240)
+    trial$resize(n_patients = 480)
     trial$update_milestone(
       name = 'final',
       when = eventNumber(endpoint = 'pfs', n = max_events) &
@@ -318,27 +359,32 @@ interim_action <- function(trial){
 
 ### Stage 1 analysis
 
-At `stage 1 analysis`, `trial$stop_followup(patient_id <= 80)` stops
-the follow-up of the stage 1 cohort at the milestone time. Data of these
-patients are therefore identical in every later data lock, which is what
-makes the stage 2 p-values independent of the stage 1 p-values. The
-three stage 1 p-values are saved with `trial$save()` for use at the
-final analysis. Note that subset conditions such as `patient_id <= 80`
-are accepted by `fitLogrank()` too. When the trial has stopped for
-futility, the p-values are saved as `NA` so that every replicate has the
-same output columns.
+The first thing the action function of `stage 1 analysis` does is to
+call `trial$stop_followup(patient_id <= 80, additional_followup = 0)`,
+which freezes the stage 1 cohort at the milestone time. From now on
+these patients look the same in every data lock, and that is exactly
+what makes the stage 2 p-values independent of the stage 1 p-values.
+The three stage 1 p-values are then saved with `trial$save()`, ready to
+be picked up at the final analysis. Note that `fitLogrank()` accepts
+subset conditions such as `patient_id <= 80` too.
+
+If the trial has already stopped for futility, the action simply
+returns without saving anything. **There is no need to save `NA`
+placeholders to keep the output rectangular** — this is a feature of
+`TrialSimulator` working for you: when the outputs of the replicates
+are combined, a column that a replicate never saved is filled with `NA`
+in that replicate's row automatically. An action function only records
+what its replicate actually computed, and the summary still sees the
+same columns in every row.
 
 ```{r iefoa, class.source="fold-show"}
 stage1_action <- function(trial){
 
   if(trial$get_output('decision') == 'futility'){
-    trial$save(value = NA, name = 'pf1')
-    trial$save(value = NA, name = 'ps1')
-    trial$save(value = NA, name = 'simes1')
     return(invisible(NULL))
   }
 
-  trial$stop_followup(patient_id <= 80)
+  trial$stop_followup(patient_id <= 80, additional_followup = 0)
 
   locked_data <- trial$get_locked_data('stage 1 analysis')
 
@@ -357,10 +403,20 @@ stage1_action <- function(trial){
 
 ### Final analysis
 
-At the final analysis, values saved earlier in the same replicate are
-retrieved with `trial$get_output()`. The stage 2 p-values use the stage
-2 cohort only (`patient_id > 80`). The combination and the closed test
-are then a few lines of arithmetic.
+At the final analysis, we fetch the values saved earlier in the same
+replicate with `trial$get_output()`, and compute the stage 2 p-values
+from the stage 2 cohort only (`patient_id > 80`). After that, the
+combination and the closed test are a few lines of arithmetic.
+
+Under futility the action again returns early without saving `NA`
+placeholders for the stage 2 p-values — missing columns are filled with
+`NA` automatically, as explained at the stage 1 analysis. **The two
+rejection indicators are a different matter**: a trial stopped for
+futility rejects nothing, so `FALSE` is their true value, not a
+placeholder. Saving `FALSE` explicitly is what keeps
+`mean(reject_full)` in the summary an *unconditional* rejection rate.
+Had these two columns been left `NA`, the rates would silently have
+been computed among continuing trials only.
 
 ```{r aoeigj, class.source="fold-show"}
 final_action <- function(trial){
@@ -371,9 +427,6 @@ final_action <- function(trial){
   trial$save(value = sum(locked_data$biomarker), name = 'n_positive')
 
   if(decision == 'futility'){
-    trial$save(value = NA, name = 'pf2')
-    trial$save(value = NA, name = 'ps2')
-    trial$save(value = NA, name = 'simes2')
     trial$save(value = FALSE, name = 'reject_full')
     trial$save(value = FALSE, name = 'reject_subgroup')
     return(invisible(NULL))
@@ -403,8 +456,8 @@ final_action <- function(trial){
   trial$save(value = ps2, name = 'ps2')
   trial$save(value = simes2, name = 'simes2')
 
-  w1 <- sqrt(65 / 110)
-  w2 <- sqrt(45 / 110)
+  w1 <- sqrt(65 / 240)
+  w2 <- sqrt(175 / 240)
   combine <- function(p1, p2){
     1 - pnorm(w1 * qnorm(1 - p1) + w2 * qnorm(1 - p2))
   }
@@ -417,36 +470,26 @@ final_action <- function(trial){
 }
 ```
 
-### Register milestones
+Now that the three action functions exist, we run the milestone calls
+shown at the beginning of this section and register the milestones with
+a listener.
 
-The three milestones are all event-driven. The conditions of `interim`
-and `stage 1 analysis` count events in the stage 1 cohort only, through
-the subset condition `patient_id <= 80`. The condition of `final` is the
-one planned at design; it is replaced in the action function of
-`interim` when the trial is adapted.
-
-```{r eaofj, class.source="fold-show"}
-interim <- milestone(name = 'interim', action = interim_action,
-                     when = eventNumber(endpoint = 'pfs', n = 45, patient_id <= 80))
-stage1 <- milestone(name = 'stage 1 analysis', action = stage1_action,
-                    when = eventNumber(endpoint = 'pfs', n = 65, patient_id <= 80))
-final <- milestone(name = 'final', action = final_action,
-                   when = eventNumber(endpoint = 'pfs', n = 110) &
-                     eventNumber(endpoint = 'pfs', n = 65, patient_id <= 80))
-
-listener <- listener(silent = TRUE)
-listener$add_milestones(interim, stage1, final)
+```{r eaofj-run, ref.label='eaofj', echo=FALSE}
 ```
 
 ## Execute a Trial
 
-With the seed set above, the interim falls in the enrichment zone. The
-event plot shows cumulative counts by arm over calendar time, with the
-three milestones as dashed lines. The panel of `biomarker`, a baseline
-endpoint, is the enrollment curve: it bends at the interim when accrual
-slows down to biomarker-positive patients only, and reaches the
-increased sample size well before the final analysis, which waits for
-the re-estimated number of events in the subgroup.
+Let's run the trial once. With the seed set above, the interim lands in
+the enrichment zone. The event plot shows the cumulative counts by arm
+over calendar time, with the three milestones as dashed lines. The
+`biomarker` panel is really the enrollment curve, since a baseline
+endpoint is observed as soon as a patient is randomized. It bends at the
+interim, where accrual slows down to biomarker-positive patients only.
+In this particular replicate the re-estimated number of subgroup events
+is reached while enrollment is still going on, so the final analysis
+fires before the enlarged sample size is used up. That is by design:
+the final condition is a number of events, and the sample size is only
+an upper bound.
 
 ```{r oeaif, dpi = 1200}
 controller <- controller(trial, listener)
@@ -454,10 +497,10 @@ controller$run(plot_event = TRUE, silent = TRUE)
 ```
 
 The output of the replicate collects the milestone times, the number of
-patients and events at each milestone, and every value saved in the
-action functions. In this replicate, the subgroup hypothesis is rejected
-at the final analysis, while the full-population hypothesis is not, as
-it cannot be under enrichment.
+patients and events at each milestone, and everything we saved in the
+action functions. Here the subgroup hypothesis is rejected at the final
+analysis and the full-population hypothesis is not, which is the only
+possible outcome under enrichment.
 
 ```{r iaefj, class.source="fold-show"}
 controller$get_output() %>%
@@ -470,11 +513,13 @@ controller$get_output() %>%
 
 ## Execute Trial Simulation
 
-Operating characteristics are obtained by running many replicates. The
-code below was run with 10000 replicates under the alternative described
-in the settings, and another 10000 replicates under the global null where
-the median of `PFS` in the treatment arm equals the placebo median of 6
-months in both biomarker strata. The results are stored in the package.
+To study the operating characteristics of the design, we run many
+replicates. The code below was run with 10000 replicates under the
+alternative described in the settings, and with another 10000
+replicates under the global null, where the median of `PFS` in the
+treatment arm equals the placebo median of 6 months in both biomarker
+strata. The results are stored in the package, so the vignette does not
+have to rerun them.
 
 ```{r eoaif, eval=FALSE}
 ## reset a controller if $run has been executed before
@@ -501,10 +546,10 @@ output %>%
   scroll_box(width = "100%")
 ```
 
-Under the alternative, the five zones are reached with the following
-frequencies, and the adaptations change the duration and the size of the
-trial accordingly. In the futility zone, the trial ends at the interim,
-so the three milestone times coincide.
+Under the alternative, here is how often each zone is reached, and how
+the adaptations change the duration and the size of the trial. In the
+futility zone the trial ends at the interim, which is why the three
+milestone times coincide there.
 
 ```{r aoeij, class.source = "fold-hide"}
 output %>%
@@ -527,8 +572,10 @@ output %>%
   kable_styling(full_width = TRUE)
 ```
 
-Power is summarized by zone and overall. The last column is the
-probability of rejecting at least one of the two hypotheses.
+Power is summarized by zone and overall. The three columns "Full Only",
+"Subgroup Only" and "Both" are mutually exclusive outcomes, and "Any",
+their sum, is the probability of rejecting at least one of the two
+hypotheses.
 
 ```{r eiaof, class.source = "fold-hide"}
 power_table <- function(dat){
@@ -557,14 +604,13 @@ bind_rows(
 
 Under the global null, the probability of rejecting at least one
 hypothesis is the family-wise error rate. The closed test with the
-inverse normal combination controls it at the one-sided level 0.025 in
-the strong sense, whatever adaptation is chosen at the interim. Note
-that the rates within a zone are conditional on the interim decision:
-they are not controlled individually, and they are large in the
-favorable zone precisely because that zone is reached when the interim
-data look good by chance. Only the overall rate matters. With 10000
-replicates, the Monte Carlo standard error of the overall rate is about
-0.16 percentage points.
+inverse normal combination keeps it at the one-sided level 0.025 in the
+strong sense, whatever we decide at the interim. The rates within a
+zone, however, are conditional on the interim decision and are not
+controlled one by one. They are large in the favorable zone precisely
+because that zone is reached when the interim data happen to look good.
+Only the overall rate matters. With 10000 replicates, the Monte Carlo
+standard error of the overall rate is about 0.16 percentage points.
 
 ```{r oeiaf, class.source = "fold-hide"}
 null <- output %>% filter(scenario == 'null')

@@ -1,4 +1,4 @@
-# TrialSimulator 1.37.1
+# TrialSimulator 1.38.2
 
 ## Updates
 

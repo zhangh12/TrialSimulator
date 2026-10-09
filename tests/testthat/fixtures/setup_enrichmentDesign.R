@@ -12,29 +12,28 @@ library(survival)
 library(ggplot2)
 library(TrialSimulator)
 
-trt_pars <- list(median0 = 6.5, median1 = 10)
 rng <- function(n, median0, median1, prevalence){
   biomarker <- rbinom(n, size = 1, prob = prevalence)
   pfs <- rexp(n, rate = log(2) / ifelse(biomarker == 1, median1, median0))
   data.frame(biomarker = biomarker, pfs = pfs, pfs_event = 1)
 }
 
-pbo_pars <- list(median0 = 6, median1 = 6)
-
+pbo_endpoints <- endpoint(name = c('biomarker', 'pfs'),
+                          type = c('baseline', 'tte'),
+                          generator = rng, median0 = 6, median1 = 6,
+                          prevalence = .4)
 pbo <- arm(name = 'pbo')
-pbo$add_endpoints(
-  endpoint(name = c('biomarker', 'pfs'), type = c('baseline', 'tte'),
-           generator = rng, median0 = pbo_pars$median0,
-           median1 = pbo_pars$median1, prevalence = .4))
+pbo$add_endpoints(pbo_endpoints)
 
+trt_endpoints <- endpoint(name = c('biomarker', 'pfs'),
+                          type = c('baseline', 'tte'),
+                          generator = rng, median0 = 6.5, median1 = 10,
+                          prevalence = .4)
 trt <- arm(name = 'trt')
-trt$add_endpoints(
-  endpoint(name = c('biomarker', 'pfs'), type = c('baseline', 'tte'),
-           generator = rng, median0 = trt_pars$median0,
-           median1 = trt_pars$median1, prevalence = .4))
+trt$add_endpoints(trt_endpoints)
 
-accrual_rate <- data.frame(end_time = c(6, Inf), piecewise_rate = c(6, 10))
-trial <- trial(name = 'enrichment', n_patients = 150, seed = 13,
+accrual_rate <- data.frame(end_time = c(6, Inf), piecewise_rate = c(6, 12))
+trial <- trial(name = 'enrichment', n_patients = 320, seed = 97,
                enroller = StaggeredRecruiter, accrual_rate = accrual_rate,
                dropout = rexp, rate = -log(1 - .05) / 12, ## 5% by month 12
                silent = TRUE)
@@ -46,12 +45,12 @@ interim_action <- function(trial){
 
   cp_full <- trial$conditionalPower(
     milestone = 'interim', Surv(pfs, pfs_event) ~ arm, placebo = 'pbo',
-    alternative = 'less', alpha = .025, D = 110, effect = 'trend',
+    alternative = 'less', alpha = .025, D = 240, effect = 'trend',
     patient_id <= 80)$cp
 
   cp_sub <- trial$conditionalPower(
     milestone = 'interim', Surv(pfs, pfs_event) ~ arm, placebo = 'pbo',
-    alternative = 'less', alpha = .025, D = 90, effect = 'trend',
+    alternative = 'less', alpha = .025, D = 150, effect = 'trend',
     patient_id <= 80 & biomarker == 1)$cp
 
   decision <- if(cp_full < .01 && cp_sub < .01){
@@ -81,10 +80,10 @@ interim_action <- function(trial){
     en <- trial$eventNumberReestimationFromConditionalPower(
       milestone = 'interim', Surv(pfs, pfs_event) ~ arm, placebo = 'pbo',
       alternative = 'less', alpha = .025, target_cp = .95, effect = 'trend',
-      patient_id <= 80 & biomarker == 1, D_cap = 120)
+      patient_id <= 80 & biomarker == 1, D_cap = 200)
 
-    max_events_in_subgroup <- ifelse(en$target_reached, en$D, 120)
-    max_patients_in_subgroup <- 150
+    max_events_in_subgroup <- ifelse(en$target_reached, en$D, 200)
+    max_patients_in_subgroup <- 280
     enrolled_in_subgroup <- sum(locked_data$biomarker)
 
     trial$resize(n_patients = nrow(locked_data) +
@@ -94,12 +93,10 @@ interim_action <- function(trial){
 
     trial$update_generator(
       arm_name = 'pbo', endpoint_name = c('pfs', 'biomarker'),
-      generator = rng, median0 = pbo_pars$median0,
-      median1 = pbo_pars$median1, prevalence = 1.0)
+      generator = rng, median0 = 6, median1 = 6, prevalence = 1.0)
     trial$update_generator(
       arm_name = 'trt', endpoint_name = c('pfs', 'biomarker'),
-      generator = rng, median0 = trt_pars$median0,
-      median1 = trt_pars$median1, prevalence = 1.0)
+      generator = rng, median0 = 6.5, median1 = 10, prevalence = 1.0)
 
     trial$update_milestone(
       name = 'final',
@@ -112,11 +109,11 @@ interim_action <- function(trial){
     en <- trial$eventNumberReestimationFromConditionalPower(
       milestone = 'interim', Surv(pfs, pfs_event) ~ arm, placebo = 'pbo',
       alternative = 'less', alpha = .025, target_cp = .95, effect = 'trend',
-      patient_id <= 80, D_cap = 200)
+      patient_id <= 80, D_cap = 400)
 
-    max_events <- ifelse(en$target_reached, en$D, 200)
+    max_events <- ifelse(en$target_reached, en$D, 400)
 
-    trial$resize(n_patients = 240)
+    trial$resize(n_patients = 480)
     trial$update_milestone(
       name = 'final',
       when = eventNumber(endpoint = 'pfs', n = max_events) &
@@ -133,13 +130,12 @@ interim_action <- function(trial){
 stage1_action <- function(trial){
 
   if(trial$get_output('decision') == 'futility'){
-    trial$save(value = NA, name = 'pf1')
-    trial$save(value = NA, name = 'ps1')
-    trial$save(value = NA, name = 'simes1')
+    ## no NA placeholders: columns a replicate never saves are filled
+    ## with NA automatically when outputs are combined (see the vignette)
     return(invisible(NULL))
   }
 
-  trial$stop_followup(patient_id <= 80)
+  trial$stop_followup(patient_id <= 80, additional_followup = 0)
 
   locked_data <- trial$get_locked_data('stage 1 analysis')
 
@@ -163,9 +159,8 @@ final_action <- function(trial){
   trial$save(value = sum(locked_data$biomarker), name = 'n_positive')
 
   if(decision == 'futility'){
-    trial$save(value = NA, name = 'pf2')
-    trial$save(value = NA, name = 'ps2')
-    trial$save(value = NA, name = 'simes2')
+    ## FALSE is the true value here (a stopped trial rejects nothing),
+    ## not a placeholder: it keeps mean(reject_*) unconditional
     trial$save(value = FALSE, name = 'reject_full')
     trial$save(value = FALSE, name = 'reject_subgroup')
     return(invisible(NULL))
@@ -195,8 +190,8 @@ final_action <- function(trial){
   trial$save(value = ps2, name = 'ps2')
   trial$save(value = simes2, name = 'simes2')
 
-  w1 <- sqrt(65 / 110)
-  w2 <- sqrt(45 / 110)
+  w1 <- sqrt(65 / 240)
+  w2 <- sqrt(175 / 240)
   combine <- function(p1, p2){
     1 - pnorm(w1 * qnorm(1 - p1) + w2 * qnorm(1 - p2))
   }
@@ -213,7 +208,7 @@ interim <- milestone(name = 'interim', action = interim_action,
 stage1 <- milestone(name = 'stage 1 analysis', action = stage1_action,
                     when = eventNumber(endpoint = 'pfs', n = 65, patient_id <= 80))
 final <- milestone(name = 'final', action = final_action,
-                   when = eventNumber(endpoint = 'pfs', n = 110) &
+                   when = eventNumber(endpoint = 'pfs', n = 240) &
                      eventNumber(endpoint = 'pfs', n = 65, patient_id <= 80))
 
 listener <- listener(silent = TRUE)
