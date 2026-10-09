@@ -1,5 +1,19 @@
 # Changelog
 
+## TrialSimulator 1.39.0
+
+### Bug fixes
+
+- [`fitLinear()`](https://zhangh12.github.io/TrialSimulator/reference/fitLinear.md)
+  and
+  [`fitLogistic()`](https://zhangh12.github.io/TrialSimulator/reference/fitLogistic.md)
+  (except `scale = 'coefficient'`) no longer fail with “We are unable to
+  reconstruct the data” when the right-hand side of `formula` transforms
+  a covariate, e.g., `log(x)`. The fitted rows are now passed to
+  `emmeans` directly, so it no longer re-evaluates the model call, where
+  the analysis data are not visible. The same re-evaluation caused a
+  test failure on R-devel for Windows.
+
 ## TrialSimulator 1.38.2
 
 ### Updates

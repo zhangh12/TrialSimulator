@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TrialSimulator</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.38.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.39.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,6 +52,14 @@
       <small>Source: <a href="https://github.com/zhangh12/TrialSimulator/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.39.0" id="trialsimulator-1390">TrialSimulator 1.39.0<a class="anchor" aria-label="anchor" href="#trialsimulator-1390"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-1-39-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-39-0"></a></h3>
+<ul><li>
+<code><a href="../reference/fitLinear.html">fitLinear()</a></code> and <code><a href="../reference/fitLogistic.html">fitLogistic()</a></code> (except <code>scale = 'coefficient'</code>) no longer fail with “We are unable to reconstruct the data” when the right-hand side of <code>formula</code> transforms a covariate, e.g., <code>log(x)</code>. The fitted rows are now passed to <code>emmeans</code> directly, so it no longer re-evaluates the model call, where the analysis data are not visible. The same re-evaluation caused a test failure on R-devel for Windows.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.38.2" id="trialsimulator-1382">TrialSimulator 1.38.2<a class="anchor" aria-label="anchor" href="#trialsimulator-1382"></a></h2>
 <div class="section level3">
