@@ -2,6 +2,8 @@
 
 ## TrialSimulator 1.39.0
 
+CRAN release: 2026-10-09
+
 ### Bug fixes
 
 - [`fitLinear()`](https://zhangh12.github.io/TrialSimulator/reference/fitLinear.md)

@@ -24,8 +24,11 @@ full trial life cycle.
 
 ## Shiny App
 
-An online version of this app, `TrialDesigner`, is hosted on
-[shinyapps.io](https://bx7ttm-han-zhang.shinyapps.io/TrialDesigner/).
+An online app, `TrialDesigner2`, builds `TrialSimulator` simulations
+interactively: arms and endpoint generators, trial settings, milestones
+and analysis functions (with an editor and a debugger), quick checks and
+batch runs, and export of the generated R code. It is hosted on
+[shinyapps.io](https://bx7ttm-han-zhang.shinyapps.io/TrialDesigner2/).
 This app is still under development.
 
 ## Validation
