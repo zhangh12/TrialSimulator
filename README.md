@@ -22,6 +22,10 @@ developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.re
 
 An online version of this app, `TrialDesigner`, is hosted on [shinyapps.io](https://bx7ttm-han-zhang.shinyapps.io/TrialDesigner2/). This app is still under development. 
 
+## Talks
+
+- **Simulating Modern Clinical Trial in R: A Versatile Framework for Complex and Adaptive Trial Designs.** Short course, 2026 NIC-ASA & ICSA Midwest Chapter Joint Fall Meeting, Northbrook, IL, October 15, 2026. [Slides](https://zhangh12.github.io/TrialSimulator/talks/2026-nic-asa/)
+
 ## Installation
 
 ### Release

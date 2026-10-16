@@ -81,3 +81,13 @@ reference:
   - getDoseRangingOutput
   - getEnrichmentDesignOutput
   - getFixedDesignOutput
+
+navbar:
+  structure:
+    left: [intro, reference, articles, tutorials, talks, news]
+  components:
+    talks:
+      text: Talks
+      menu:
+      - text: "Short course: Simulating Modern Clinical Trial in R (NIC-ASA & ICSA Midwest, Oct 2026)"
+        href: https://zhangh12.github.io/TrialSimulator/talks/2026-nic-asa/
